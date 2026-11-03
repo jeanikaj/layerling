@@ -479,6 +479,29 @@ function collectHoles(brep: Brep, shapes: WorkplaneShape[], skipped: SkippedShap
   }
 }
 
+/** Rebuild an intersection from its scoped native operands, including the rounded boundary of a container grid. */
+async function buildIntersectionBody(brep: Brep, shape: WorkplaneShape, skipped: SkippedShape[]): Promise<BuildOutcome> {
+  const children = restoreGroupedChildren(shape).filter(child => !child.hidden);
+  const holes = children.filter(child => child.hole), solids = children.filter(child => !child.hole);
+  const operands = holes.length
+    ? [solids, holes.map(child => ({ ...child, hole: false }))]
+    : children.map(child => [child]);
+  if (operands.length < 2 || operands.some(operand => !operand.length)) return { skip: "intersection needs two operands" };
+  let result: BrepSolid | null = null;
+  for (const operand of operands) {
+    const before = skipped.length;
+    const parts = await buildScope(brep, operand, skipped);
+    if (!parts.length || skipped.length !== before) return { skip: "an intersection operand has no exact body" };
+    const fused = brep.fuseAll(parts.map(part => part.solid) as Parameters<Brep["fuseAll"]>[0]);
+    if (!fused.ok) return { skip: "intersection operand could not be joined" };
+    if (!result) { result = fused.value as BrepSolid; continue; }
+    const common = brep.intersect(result, fused.value as BrepSolid);
+    if (!common.ok) return { skip: "intersection could not be built" };
+    result = common.value as BrepSolid;
+  }
+  return result ? { solid: result } : { skip: "intersection is empty" };
+}
+
 /** The solids of these shapes with the holes among them cut out; a group is a scope of its own. */
 async function buildScope(brep: Brep, shapes: WorkplaneShape[], skipped: SkippedShape[]): Promise<ScopePart[]> {
   const holes: { box: Aabb; solid: BrepSolid }[] = [];
@@ -493,7 +516,9 @@ async function buildScope(brep: Brep, shapes: WorkplaneShape[], skipped: Skipped
       parts.push(...await buildScope(brep, restoreGroupedChildren(shape).filter((child) => !child.hidden), skipped));
       continue;
     }
-    if (shape.kind === "hinge" && !shape.cadBrep && !shapeHasShapeDeform(shape)) {
+    if (shape.groupOperation === "intersection" && shape.groupedShapes?.length && source === "unsupported" && !shapeHasShapeDeform(shape)) {
+      built = await buildIntersectionBody(brep, shape, skipped);
+    } else if (shape.kind === "hinge" && !shape.cadBrep && !shapeHasShapeDeform(shape)) {
       built = buildHingeBody(brep, shape);
     } else if (source === "imported") {
       built = await buildImportedBody(brep, shape);

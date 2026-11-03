@@ -1,4 +1,6 @@
 "use client";
+import { CONTAINER_GRID_DEFAULTS, savedContainerGridOptions, normalizeContainerGridOptions, type ContainerGridOptions, type ContainerGridPlan } from "@/lib/containerGrid";
+import { ContainerGridPanel } from "./workplane/ContainerGridPanel";
 import { deleteSketchDraft, loadSketchDraft, saveSketchDraft, sketchHasWork, type SketchDraft } from "@/lib/sketchDraftStore";
 import { normalizeNarrowStart, normalizeSlopeCurve, normalizeSlopeSide, shapeSupportsNarrow, shapeSupportsSlope } from "@/lib/slopeAlong";
 import { AlertTriangle, X } from "lucide-react";
@@ -221,7 +223,7 @@ import { FOOTPRINT_CUT_HEIGHT, footprintCutOffset, projectSectionPoint, SECTION_
 import type { AlignAxis, AlignHandleStatus, AlignTarget, EdgeTreatmentFeature, GridSize, ParametricSource, ProjectAsset, ProjectAttachment, ShapeAsset, ShapeCustomization, ShapeKind, SketchImage, SketchOperation, SketchPoint, SketchProfile, SketchRevolveSettings, SketchSegment, ShellEdges, ShellOpenings, ShellSide, SweepAnchor, WorkplaneNote, WorkplaneShape, WorkplaneWorkspaceSettings } from "@/types/layerling";
 import { type Vec3, type MeshData, type Cuboid, type ShapeUpdatePatch, type ManifoldSolid, MIN_SHAPE_DIMENSION, resetManifoldRuntime, cleanModelDimension, getManifoldRuntime, meshForShape, meshReachAlong, appendMeshData, formatTriangleCount, boundsForShapes, boundsForCuboids, meshAabb, boundsForPositions, quantizedPointKey, sameShapeApartFromPlacement } from "@/lib/editorMeshCore";
 import { meshPartCount } from "@/lib/meshPartCount";
-import { buildGroupedShapeOffThread, exportSolidVolumeOffThread, callOffFaceRead, faceReadInWorker, createFaceReadKeeper, faceReadPositionsOffThread, simplifyTrianglePositionsOffThread, splitShapesByPlaneOffThread, articulateShapesOffThread, lidForShapesOffThread, checkClearanceOffThread, subscribeGeometryBusy, warmGeometryWorker } from "@/lib/geometryWorker";
+import { buildGroupedShapeOffThread, exportSolidVolumeOffThread, callOffFaceRead, faceReadInWorker, createFaceReadKeeper, faceReadPositionsOffThread, simplifyTrianglePositionsOffThread, splitShapesByPlaneOffThread, articulateShapesOffThread, lidForShapesOffThread, containerGridOffThread, checkClearanceOffThread, subscribeGeometryBusy, warmGeometryWorker } from "@/lib/geometryWorker";
 import { roundedAlignedValue } from "@/lib/alignRounding";
 import { buildSketchLoftFromSelection, canSketchLoft } from "@/lib/sketchLoft";
 import { frameAabb, sizeAlignmentState, sizedShapesForSelection } from "@/lib/alignSize";
@@ -3278,6 +3280,8 @@ export function LayerlingEditor({
   /** Flexi joints (Liane's mail, 29.10.2026): the bodies `targetIds` are cut into links with a joint at every cut. */
   const [flexiTool, setFlexiTool] = useState<(FlexiToolSettings & { targetIds: string[]; busy: boolean; error: string | null }) | null>(null);
   /** A lid (#1009) for the bodies `targetIds`, open at the top; it comes out beside them. */
+  const gridRunRef = useRef(0);
+  const [gridTool, setGridTool] = useState<(ContainerGridOptions & { targetId: string; plan: ContainerGridPlan | null; fingerprint: string; busy: boolean; error: string | null }) | null>(null);
   const [lidTool, setLidTool] = useState<(LidOptions & { targetIds: string[]; busy: boolean; error: string | null }) | null>(null);
   /** The cable channel: the body, the two ends clicked on it, which end a click sets now, and its settings. */
   const [cableTool, setCableTool] = useState<(CableChannelOptions & { targetId: string; entry: CableEnd | null; exit: CableEnd | null; picking: CableChannelEndName | null; busy: boolean; error: string | null }) | null>(null);
@@ -8190,6 +8194,59 @@ export function LayerlingEditor({
     };
   }, [commitShapes, exactLid, selectedShapes]);
 
+  const closeGridTool = useCallback(() => { gridRunRef.current += 1; setGridTool(null); }, []);
+  const startGridTool = useCallback(() => {
+    if (gridTool) { closeGridTool(); return; }
+    const target = selectedShapes.length === 1 ? selectedShapes[0] : null;
+    if (!target || target.hole || target.locked || isNonSolidShape(target)) { setNotice(t("containerGrid.error.opening")); return; }
+    if (edgeModifier) invalidateCadModifierSession();
+    closeSplit(); setLidTool(null); setCableTool(null);
+    const run = ++gridRunRef.current;
+    const fingerprint = projectShapesFingerprint([target]);
+    const options = savedContainerGridOptions(target) ?? CONTAINER_GRID_DEFAULTS;
+    setGridTool({ ...options, targetId: target.id, plan: null, fingerprint, busy: true, error: null });
+    void containerGridOffThread(target, options).then(result => {
+      if (run !== gridRunRef.current) return;
+      setGridTool(current => current ? { ...current, busy: false, plan: result.plan ?? null, error: result.error ?? null } : current);
+    }).catch(error => {
+      if (run === gridRunRef.current) setGridTool(current => current ? { ...current, busy: false, error: error instanceof Error ? error.message : t("containerGrid.error.build") } : current);
+    });
+  }, [gridTool, closeGridTool, selectedShapes, edgeModifier, invalidateCadModifierSession, closeSplit]);
+
+  const makeContainerGrid = useCallback(async (target: WorkplaneShape, options: ContainerGridOptions, current: () => boolean = () => true) => {
+    if (target.locked || target.hole || isNonSolidShape(target)) return { ok: false as const, message: t("containerGrid.error.opening") };
+    const fingerprint = projectShapesFingerprint([target]), projectId = projectInfoRef.current.projectId;
+    const result = await containerGridOffThread(target, options, true, workspaceSettingsRef.current.booleanTriangleLimit, geometryAbortRef.current?.signal);
+    const now = shapesRef.current.find(shape => shape.id === target.id);
+    if (!current() || projectId !== projectInfoRef.current.projectId || !now || now.locked || projectShapesFingerprint([now]) !== fingerprint) return { ok: false as const, message: t("lid.error.changed") };
+    if (!result.group) return { ok: false as const, message: result.error ?? t("containerGrid.error.build") };
+    commitShapes(shapesRef.current.map(shape => shape.id === target.id ? result.group! : shape), result.group.id, t("containerGrid.made"));
+    return { ok: true as const, id: result.group.id };
+  }, [commitShapes]);
+  const applyGridTool = useCallback(() => {
+    if (!gridTool || gridTool.busy || !gridTool.plan) return;
+    const target = shapesRef.current.find(shape => shape.id === gridTool.targetId);
+    if (!target || target.locked || projectShapesFingerprint([target]) !== gridTool.fingerprint) { setGridTool(current => current ? { ...current, error: t("lid.error.changed") } : current); return; }
+    const run = ++gridRunRef.current;
+    setGridTool(current => current ? { ...current, busy: true, error: null } : current);
+    void makeContainerGrid(target, gridTool, () => run === gridRunRef.current).then(result => {
+      if (run !== gridRunRef.current) return;
+      if (result.ok) closeGridTool();
+      else setGridTool(current => current ? { ...current, busy: false, error: result.message } : current);
+    }).catch(error => {
+      if (run === gridRunRef.current) setGridTool(current => current ? { ...current, busy: false, error: error instanceof Error ? error.message : t("containerGrid.error.build") } : current);
+    });
+  }, [gridTool, makeContainerGrid, closeGridTool]);
+  useEffect(() => {
+    if (gridTool && !gridTool.busy && (selectedIds.length !== 1 || selectedIds[0] !== gridTool.targetId)) closeGridTool();
+  }, [selectedIds, gridTool, closeGridTool]);
+  useEffect(() => {
+    if (!gridTool) return;
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") { event.preventDefault(); event.stopImmediatePropagation(); closeGridTool(); } };
+    window.addEventListener("keydown", escape, true);
+    return () => window.removeEventListener("keydown", escape, true);
+  }, [gridTool, closeGridTool]);
+
   const startLidTool = useCallback(() => {
     if (lidTool) {
       setLidTool(null);
@@ -9834,7 +9891,7 @@ export function LayerlingEditor({
   // and does not open over it.
   const otherToolPanelOpen = Boolean(
     arrayTool || scalePercentTool || simplifyToolId || holePatternTool || faceTool || mateTool || cookieCutterTool || flexiTool
-    || lidTool || cableTool || cutOutTool || punchTool || shellTool || deleteFaceTool || splitSession || edgeModifier,
+    || gridTool || lidTool || cableTool || cutOutTool || punchTool || shellTool || deleteFaceTool || splitSession || edgeModifier,
   );
   /**
    * Checks the selection, or every visible object when nothing is selected (as the export takes them). A new check
@@ -12379,6 +12436,15 @@ export function LayerlingEditor({
         if (!result.ok) throw new Error(result.message);
         const made = currentShapes().find((shape) => shape.id === result.id);
         return { object: made ? mcpShapeSummary(made) : { id: result.id }, joints: result.joints, links: result.links, swing: result.swing, axis: result.axis === "x" ? "X" : "Y", bend: result.bend };
+      }
+
+      if (command.action === "add_container_grid") {
+        const target = currentShapes().find(shape => shape.id === params.id);
+        if (!target) throw new Error(t("containerGrid.error.opening"));
+        const result = await makeContainerGrid(target, normalizeContainerGridOptions(params));
+        if (!result.ok) throw new Error(result.message);
+        const made = currentShapes().find(shape => shape.id === result.id);
+        return { object: made ? mcpShapeSummary(made) : { id: result.id } };
       }
 
       if (command.action === "make_lid") {
@@ -15497,6 +15563,7 @@ export function LayerlingEditor({
         { key: "deleteFace", label: t("editor.tool.deleteFace"), onSelect: startDeleteFaceTool },
       );
       if (!single.hole && !isNonSolidShape(single)) {
+        items.push({ key: "containerGrid", label: t("containerGrid.title"), onSelect: startGridTool });
         items.push({ key: "holePattern", label: t("holePattern.title"), onSelect: toggleHolePattern });
         items.push({ key: "faceTool", label: t("faceTool.title"), onSelect: toggleFaceTool });
       }
@@ -15562,6 +15629,9 @@ export function LayerlingEditor({
         flexiActive={Boolean(flexiTool)}
         canLid={!selectionLocked && selectedShapes.some((shape) => !shape.hole && !isNonSolidShape(shape))}
         lidActive={Boolean(lidTool)}
+        canContainerGrid={!selectionLocked && selectedShapes.length === 1 && !selectedShapes[0].hole && !isNonSolidShape(selectedShapes[0])}
+        containerGridActive={Boolean(gridTool)}
+        onContainerGrid={startGridTool}
         canCableChannel={!selectionLocked && selectedShapes.length === 1 && !selectedShapes[0].hole && !isNonSolidShape(selectedShapes[0])}
         cableChannelActive={Boolean(cableTool)}
         onCableChannel={startCableTool}
@@ -16250,6 +16320,12 @@ export function LayerlingEditor({
           />
         );
       })() : null}
+      {gridTool ? <ContainerGridPanel
+        targetName={shapesRef.current.find(shape => shape.id === gridTool.targetId)?.name ?? ""}
+        plan={gridTool.plan} settings={gridTool} workspace={workspaceSettings} busy={gridTool.busy} error={gridTool.error}
+        onChange={patch => setGridTool(current => current ? { ...current, ...patch, error: null } : current)}
+        onApply={applyGridTool} onCancel={closeGridTool}
+      /> : null}
       {lidTool ? (
         <LidPanel
           targetName={shapesRef.current.filter((shape) => lidTool.targetIds.includes(shape.id)).map((shape) => shape.name).join(", ")}

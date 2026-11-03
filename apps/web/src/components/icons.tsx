@@ -169,6 +169,7 @@ export {
   ToolbarMiddleLineIcon,
   ToolbarLayFlatIcon,
   ToolbarLidIcon,
+  ToolbarContainerGridIcon,
   ToolbarCableChannelIcon,
   ToolbarMateFacesIcon,
   ToolbarNoteIcon,

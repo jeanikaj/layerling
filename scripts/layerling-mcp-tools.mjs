@@ -832,6 +832,27 @@ export const tools = [
     },
   },
   {
+    name: "layerling_add_container_grid",
+    description: "Add an attached grid of dividers inside one empty upright rectangular or rounded rectangular container, using the editor's Container grid tool. id is the original body. columns (2) and rows (4) set the compartment counts; maximum 40 compartments, at least 6 mm wide. thickness 0.8 to 3 mm (2). height in mm above the floor, 0 (default) fills to 5 mm below the rim to clear standard sliding lid guides. positionsX and positionsZ optionally set divider centres in mm from the inside left/back wall; each list has one fewer entry than columns/rows. removed lists individual sections to omit and merge cells: x:dividerIndex:rowIndex or z:dividerIndex:columnIndex, zero based. Dividers are native box parts clipped to a rounded boundary, grouped with the original body without changing its outside or existing guide cuts. Reopen Container grid on the resulting body to revise its saved settings. layout custom uses a recursive custom tree: {id, split?: {axis: x or z, ratio: 0..1, first: node, second: node}}. Each split affects only its compartment. An empty custom tree clears generated dividers. Refuses unrecognized existing dividers, irregular, tilted or closed boxes.",
+    inputSchema: {
+      ...editorTargetSchema,
+      required: ["id"],
+      properties: {
+        ...editorTargetSchema.properties,
+        id: { type: "string" },
+        columns: { type: "integer", minimum: 1, maximum: 24 },
+        rows: { type: "integer", minimum: 1, maximum: 24 },
+        thickness: { type: "number", minimum: 0.8, maximum: 3 },
+        height: { type: "number", minimum: 0 },
+        positionsX: { type: "array", items: { type: "number" } },
+        positionsZ: { type: "array", items: { type: "number" } },
+        removed: { type: "array", items: { type: "string", pattern: "^[xz]:[0-9]+:[0-9]+$" } },
+        layout: { type: "string", enum: ["grid", "custom"] },
+        custom: { type: "object", description: "Recursive compartment tree: id string, optional split with axis x/z, ratio 0..1, first and second child nodes. Maximum 40 compartments." },
+      },
+    },
+  },
+  {
     name: "layerling_make_lid",
     description: "For type sliding: slidingStyle recessed (default) or flush (bevelled retaining rails, top level with rim, guideRoof ignored). Modify an upright axis-aligned box with a rectangular or rounded rectangular clear opening, cutting matching guide channels and an entry opening; return both lid and modified body. openingSide front/back/left/right uses world -Z/+Z/-X/+X; verticalGap per face (0.2), engagement (0.8), guideRoof (1.2), thumbGrip (true). At least 1.2 mm outside wall must remain; dividers must be below the guides. Magnets are disabled. The lid is top-up beside the box and is not linked to later box resizing. Make a lid for a body that is open at the top, like the editor's Lid button (#1009): a box hollowed with its top open, a pot, a tray. Solids among the ids are joined and holes among them cut away; the body is cut just below its rim, and the lid follows that outline and the opening inside it, round or angular. `type`: `plug` (default) a plate as large as the body with a lip below it that goes into the opening, `cap` a plate a wall wider than the body with a rim below it that goes over the outside, `both` the lip and the rim together, so the body's wall sits in a groove between them (#1062), `flat` only the plate. Sizes in mm: `thickness` of the plate (2), `gap` per side between lid and body (0.2; 0.1 tight, 0.3 loose, up to 1), `depth` how far the lip or rim reaches down (4), `wall` its thickness (1.6). The lid is a new body beside the body, turned over with its plate down, ready to print; the body stays. Where the body is an exact one and no magnet posts are needed, the lid is an exact CAD body too (#1154), so its edges take `layerling_apply_edge_treatment`; otherwise it is a mesh. A body without an opening at the top is refused for all but flat (hollow it with `layerling_hollow_object` and the top open first). `magnets: true` holds the lid by four round magnets in the corners: a pocket for each in the body's rim and one facing it in the lid's plate, `magnetDiameter` by `magnetHeight` (6 by 2; 8 by 3 and 10 by 3 are common too), with `magnetGap` of play per side (0.1 to press them in, more to glue them, up to 0.5). A wall too thin for a pocket gets a post in that corner, which the lip goes round. The plate must be at least the magnet's height plus 0.8 mm thick (2.8 for 6 by 2). With magnets the body changes: it is grouped with the pockets (and the posts), keeping its name, and returned as `body`; `magnets` is the number of pockets and `posts` whether posts were needed.",
     inputSchema: {

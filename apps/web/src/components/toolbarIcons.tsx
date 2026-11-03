@@ -648,3 +648,8 @@ export function SketchBoltCircleIcon(props: IconProps) {
     </SketchShapeIcon>
   );
 }
+
+/** A container seen from above, with two columns and four rows. */
+export function ToolbarContainerGridIcon(props: IconProps) {
+  return <ToolbarVectorIcon {...props}><rect x="9" y="5" width="30" height="38" rx="5" {...SOLID}/><rect x="9" y="5" width="30" height="38" rx="5"/><path d="M24 5v38M9 15h30M9 24h30M9 33h30"/></ToolbarVectorIcon>;
+}

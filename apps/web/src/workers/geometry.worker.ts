@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 
+import { containerGridForShape, type ContainerGridOptions } from "@/lib/containerGrid";
 import { buildMessage } from "@/lib/buildStamp";
 import { checkClearance, type ClearanceOptions } from "@/lib/clearanceCheck";
 import { articulateShapes, type FlexiOptions } from "@/lib/flexiJoints";
@@ -52,6 +53,9 @@ self.onmessage = async (event: MessageEvent<GeometryWorkerRequest>) => {
     } else if (request.task === "lid") {
       const { targets, options } = args as { targets: WorkplaneShape[]; options: LidOptions };
       result = await lidForShapes(targets, options);
+    } else if (request.task === "containerGrid") {
+      const { target, options, build, triangleLimit } = args as { target: WorkplaneShape; options: ContainerGridOptions; build: boolean; triangleLimit: number };
+      result = await containerGridForShape(target, options, build, triangleLimit);
     } else if (request.task === "stl") {
       const { fileName, buffer } = args as { fileName: string; buffer: ArrayBuffer };
       result = importedShapeFromStl(fileName, buffer);
