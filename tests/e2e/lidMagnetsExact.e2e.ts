@@ -115,3 +115,27 @@ describe("lid magnets: posts the CAD kernel takes exactly", () => {
     }
   }, 120_000);
 });
+
+
+describe("sliding lid exact export", () => {
+  it("exports the modified box and recessed-grip lid to STEP with matching volumes", async () => {
+    const targets=openBox(0);
+    const result=await lidForShapes(targets,normalizeLidOptions({type:"sliding"}));
+    if(!result.lid || !result.sliding) throw new Error("error" in result ? result.error : "No guide cutters");
+    const grouped=await groupedWithMagnets(targets,{posts:[],pockets:result.sliding.cutters},s=>editorBooleans.buildGroupedShapeFromSelection(s,250000));
+    expect(grouped.group).toBeTruthy();
+    const shapes=[grouped.group!,result.lid];
+    const {blob,skipped,exportedCount}=await exportShapesToStep(shapes);
+    expect(skipped).toEqual([]);expect(exportedCount).toBeGreaterThanOrEqual(2);
+    const imported=await brep.importSTEP(blob);
+    if(!imported.ok) throw new Error("STEP round trip failed");
+    const volume=brep.measureVolume(imported.value);
+    if(!volume.ok) throw new Error("STEP volume failed");
+    const runtime=await meshCore.getManifoldRuntime();
+    const made: {delete?:()=>void}[]=[];
+    try {
+      const expected=shapes.reduce((sum,shape)=>sum+editorBooleans.shapeToManifoldSolid(runtime,shape,made)!.volume(),0);
+      expect(Math.abs(volume.value-expected)/expected).toBeLessThan(0.005);
+    } finally { Array.from(new Set(made)).forEach(v=>v.delete?.()); }
+  });
+});

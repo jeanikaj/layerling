@@ -105,6 +105,16 @@ Tick {{ui:lid.magnets}} and the lid holds by four round magnets instead of a tig
 
 > **Tip:** Press the magnets into the body first. Then set one more magnet on each of them, where it snaps on the right way round, and press the lid down onto them (with a drop of glue in its pockets if they are loose): each magnet goes into the lid facing its partner, so they attract.
 
+### Sliding lids
+
+Choose **Sliding** for an upright box aligned with the workplane. The opening at guide height must be rectangular; rounded inner corners and irregular openings are currently refused. Choose the opening side: front is −Z, back +Z, left −X and right +X.
+
+The tool cuts guide channels and an entry opening into the container and creates a matching plate beside it, top facing up. The far wall stops the plate when closed; the lid can be removed completely. The optional thumb grip is recessed into the top, leaving the underside flat for printing.
+
+Set plate thickness, side clearance per side, vertical clearance per face, guide engagement and the material above the guides. At least 1.2 mm of outside wall must remain beyond each channel. The defaults need at least 2 mm side walls. Dividers must stop below the channels. Magnets are unavailable for this lid type.
+
+The box and lid are created in one undo step. The container remains a group with editable cutting shapes. Native box and cylinder parts use the normal CAD reconstruction path where supported. The lid is independent: resizing the container later does not regenerate it. Print a small fit sample before committing to a large container.
+
 ## Offsetting bodies
 
 Every face of a body can be moved by the same distance, out or in. That is what a press fit, a lid or a snap joint needs: a gap of 0.1 to 0.3 mm all round while the features stay where they are, which scaling cannot give you.
