@@ -117,3 +117,12 @@ describe("click-stop options",()=>{
     expect(normalizeLidOptions({type:"sliding",clickInterference:-1}).clickInterference).toBe(0.1);
   });
 });
+
+
+describe("rounded lid options",()=>{
+ it("follows the box by default and bounds a custom radius",()=>{
+  expect(normalizeLidOptions({type:"sliding"})).toMatchObject({cornerMode:"match",lidCornerRadius:6});
+  expect(normalizeLidOptions({type:"sliding",cornerMode:"custom",lidCornerRadius:99})).toMatchObject({cornerMode:"custom",lidCornerRadius:50});
+  expect(normalizeLidOptions({type:"sliding",cornerMode:"wrong",lidCornerRadius:-1})).toMatchObject({cornerMode:"match",lidCornerRadius:0});
+ });
+});

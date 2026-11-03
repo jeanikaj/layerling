@@ -3,6 +3,7 @@ import type { ManifoldSolid } from "@/lib/editorMeshCore";
 import { sceneShape } from "@/lib/shapeCatalog";
 import { createLocalId } from "@/lib/localIds";
 import { t } from "@/lib/i18n";
+import { roundedSlidingLidParts, roundedRectangleRadius } from "@/lib/roundedSlidingLid";
 import { slidingDetent } from "@/lib/slidingDetent";
 import { slidingThumbGrip } from "@/lib/slidingThumbGrip";
 import type { LidOptions } from "@/lib/lidTool";
@@ -40,8 +41,11 @@ export function slidingLidParts(runtime: ManifoldToplevel, body: ManifoldSolid, 
     const hole = holes[0];
     const xmin = Math.min(...hole.map(p=>p[0])), xmax = Math.max(...hole.map(p=>p[0]));
     const zmin = -Math.max(...hole.map(p=>p[1])), zmax = -Math.min(...hole.map(p=>p[1]));
-    // Rounded cavities, irregular walls and dividers must not be mistaken for a clear rectangle.
-    if (Math.abs(Math.abs(area(hole)) - (xmax-xmin)*(zmax-zmin)) > 0.05) return fail("unsupported");
+    const radius = roundedRectangleRadius(hole.map(([x,z]) => [x,-z]));
+    if (radius === null) return fail("unsupported");
+    if (radius > 0.05 || (options.cornerMode === "custom" && (options.lidCornerRadius ?? 0) > 0)) {
+      return roundedSlidingLidParts(runtime, body, source, options, {xmin,xmax,zmin,zmax,radius,low,high}, bounds);
+    }
     const a = alongX ? 0 : 2, cross = alongX ? 2 : 0;
     const min = [xmin, low, zmin], max = [xmax, high, zmax];
     const cavityMin = [...min], cavityMax = [...max];
