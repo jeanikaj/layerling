@@ -111,6 +111,8 @@ Choose **Sliding** for an upright box aligned with the workplane. The opening at
 
 The tool cuts guide channels and an entry opening into the container and creates a matching plate beside it, top facing up. The far wall stops the plate when closed; the lid can be removed completely. The optional thumb grip is recessed into the top, leaving the underside flat for printing.
 
+**Style:** **Recessed** keeps the original flat plate below the rim. **Flush** brings the closed lid's top level with the rim, with bevelled edges retained by matching undercut guides. Guide engagement controls the maximum channel width; the plate bevel is sized from that width and the vertical clearance. There is no guide-roof setting for Flush. Both styles need a rectangular clear opening and sufficient wall material. Print the lid flat, top facing up; the bevels taper inward toward the top.
+
 Set plate thickness, side clearance per side, vertical clearance per face, guide engagement and the material above the guides. At least 1.2 mm of outside wall must remain beyond each channel. The defaults need at least 2 mm side walls. Dividers must stop below the channels. Magnets are unavailable for this lid type.
 
 The box and lid are created in one undo step. The container remains a group with editable cutting shapes. Native box and cylinder parts use the normal CAD reconstruction path where supported. The lid is independent: resizing the container later does not regenerate it. Print a small fit sample before committing to a large container.

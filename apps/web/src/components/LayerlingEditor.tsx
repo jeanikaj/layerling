@@ -12124,7 +12124,7 @@ export function LayerlingEditor({
           magnetDiameter: params.magnetDiameter,
           magnetHeight: params.magnetHeight,
           magnetGap: params.magnetGap,
-          openingSide: params.openingSide, verticalGap: params.verticalGap, engagement: params.engagement, guideRoof: params.guideRoof, thumbGrip: params.thumbGrip,
+          slidingStyle: params.slidingStyle, openingSide: params.openingSide, verticalGap: params.verticalGap, engagement: params.engagement, guideRoof: params.guideRoof, thumbGrip: params.thumbGrip,
         }, targets);
         if (!result.ok) throw new Error(result.message);
         const made = currentShapes().find((shape) => shape.id === result.id);

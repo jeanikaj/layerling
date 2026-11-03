@@ -839,6 +839,11 @@ export const MESSAGES_CS: Record<MessageKey, string> = {
   // Sliding lid strings use English until translated.
   "lid.type.sliding": "Sliding",
   "lid.type.slidingHint": "A recessed plate slides through one side into guides cut in the upper walls. The container is modified.",
+  "lid.sliding.style": "Sliding style",
+  "lid.sliding.style.recessed": "Recessed",
+  "lid.sliding.style.flush": "Flush",
+  "lid.sliding.flushHint": "The top sits level with the box rim when closed. Bevelled edges run in matching undercut guides. Guide engagement controls the bevel width; no guide roof is needed.",
+  "lid.sliding.bevel": "Sliding lid bevel",
   "lid.sliding.side": "Opening side (workplane axes)",
   "lid.sliding.front": "Front (−Z)",
   "lid.sliding.back": "Back (+Z)",

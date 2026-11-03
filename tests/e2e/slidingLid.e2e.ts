@@ -114,3 +114,52 @@ describe("sliding lid: real geometry", () => {
     finally { Array.from(new Set(made)).reverse().forEach(s=>s.delete?.()); }
   });
 });
+
+
+describe("flush sliding lid: real geometry", () => {
+  for(const side of ["front","back","left","right"] as const) {
+    it(`sits flush, slides freely from ${side}, and is retained against lifting`,async()=>{
+      const {k,body}=await setup();const made: {delete?:()=>void}[]=[body];
+      try {
+        const options=normalizeLidOptions({type:"sliding",slidingStyle:"flush",openingSide:side,thumbGrip:false});
+        const result=slidingLidParts(k,body,source,options);
+        if("error" in result) throw new Error(result.error);
+        expect(result.rails).toHaveLength(2);
+        const solid=(shape: Parameters<typeof shapeToManifoldSolid>[1])=>shapeToManifoldSolid(k,shape,made)!;
+        const lid=k.Manifold.union([result.plate,...result.rails!].map(solid));made.push(lid);
+        const cutters=k.Manifold.union(result.cutters.map(solid));made.push(cutters);
+        const box=body.subtract(cutters);made.push(box);
+        expect(lid.status()).toBe("NoError");expect(box.status()).toBe("NoError");
+        const components=lid.decompose();made.push(...components);expect(components).toHaveLength(1);
+        const alongX=side==="left"||side==="right", negative=side==="front"||side==="left";
+        const railWidth=0.8*2/2.4;
+        const shiftX=alongX ? 40-(negative?-30:-27.8) : 40+27.8+railWidth;
+        const closed=lid.translate([-shiftX,28,0]);made.push(closed);
+        expect(closed.boundingBox().max[1]).toBeCloseTo(30,6);
+        const sign=negative?-1:1;
+        for(let d=0;d<=70;d+=0.5) {
+          const moving=closed.translate(alongX?[sign*d,0,0]:[0,0,sign*d]);
+          const interference=moving.intersect(box);
+          expect(interference.volume(),`interference after ${d} mm`).toBeLessThan(0.001);
+          moving.delete();interference.delete();
+        }
+        const raised=closed.translate([0,1.2,0]);made.push(raised);
+        const retained=raised.intersect(box);made.push(retained);
+        expect(retained.volume()).toBeGreaterThan(0.01);
+        const overclosed=closed.translate(alongX?[-sign,0,0]:[0,0,-sign]);made.push(overclosed);
+        const stopped=overclosed.intersect(box);made.push(stopped);expect(stopped.volume()).toBeGreaterThan(0.1);
+      } finally {Array.from(new Set(made)).reverse().forEach(v=>v.delete?.());}
+    });
+  }
+  it("ignores recessed roof settings and rejects ineffective bevels",async()=>{
+    const {k,body}=await setup();
+    try {
+      const a=slidingLidParts(k,body,source,normalizeLidOptions({type:"sliding",slidingStyle:"flush",guideRoof:5}));
+      const b=slidingLidParts(k,body,source,normalizeLidOptions({type:"sliding",slidingStyle:"flush",guideRoof:0.8}));
+      if("error" in a || "error" in b) throw new Error("Flush failed");
+      expect(a.plate.height).toEqual(b.plate.height);
+      expect(a.cutters.map(c=>[c.elevation,c.height])).toEqual(b.cutters.map(c=>[c.elevation,c.height]));
+      expect(slidingLidParts(k,body,source,normalizeLidOptions({type:"sliding",slidingStyle:"flush",gap:0.7}))).toHaveProperty("error");
+    } finally {body.delete();}
+  });
+});

@@ -41,6 +41,7 @@ export type LidOptions = {
   magnetDiameter: number;
   magnetHeight: number;
   magnetGap: number;
+  slidingStyle?: "recessed" | "flush";
   openingSide?: SlidingSide;
   verticalGap?: number;
   engagement?: number;
@@ -111,6 +112,7 @@ export function normalizeLidOptions(value?: Partial<Record<keyof LidOptions, unk
   const magnetGap = finiteNumber(value?.magnetGap);
   if (magnetGap !== null) result.magnetGap = clamp(magnetGap, 0, MAX_MAGNET_GAP);
   if (result.type === "sliding") {
+    result.slidingStyle = value?.slidingStyle === "flush" ? "flush" : "recessed";
     result.openingSide = ["front", "back", "left", "right"].includes(String(value?.openingSide)) ? value!.openingSide as SlidingSide : "front";
     result.verticalGap = clamp(finiteNumber(value?.verticalGap) ?? 0.2, 0.05, 1);
     result.engagement = clamp(finiteNumber(value?.engagement) ?? 0.8, 0.4, 3);
@@ -508,8 +510,8 @@ export async function lidForShapes(targets: readonly WorkplaneShape[], given: Li
       const parts = slidingLidParts(runtime, body, solids[0], options);
       if ("error" in parts) return { lid: null, error: parts.error };
       let lid = parts.plate;
-      if (parts.grip) {
-        const grouped = await buildGroupedShapeFromSelection([lid, parts.grip], 500000);
+      if (parts.grip || parts.rails?.length) {
+        const grouped = await buildGroupedShapeFromSelection([lid, ...(parts.rails ?? []), ...(parts.grip ? [parts.grip] : [])], 500000);
         if (!grouped.group) return { lid: null, error: grouped.failureNotice || t("lid.error.kernelUnknown") };
         lid = canonicalizeShape({ ...grouped.group, name: parts.plate.name, groupOperation: "group" });
       }

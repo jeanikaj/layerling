@@ -93,7 +93,9 @@ describe("lid magnets", () => {
 describe("sliding lid options", () => {
   it("normalizes sliding-only fields and disables incompatible magnets", () => {
     const options=normalizeLidOptions({type:"sliding",openingSide:"wrong",verticalGap:-2,engagement:99,guideRoof:0,thumbGrip:false,magnets:true});
-    expect(options).toMatchObject({type:"sliding",openingSide:"front",verticalGap:0.05,engagement:3,guideRoof:0.8,thumbGrip:false,magnets:false});
+    expect(normalizeLidOptions({type:"sliding",slidingStyle:"flush"}).slidingStyle).toBe("flush");
+    expect(normalizeLidOptions({type:"sliding",slidingStyle:"unknown"}).slidingStyle).toBe("recessed");
+    expect(options).toMatchObject({type:"sliding",slidingStyle:"recessed",openingSide:"front",verticalGap:0.05,engagement:3,guideRoof:0.8,thumbGrip:false,magnets:false});
     expect(normalizeLidOptions({type:"sliding"})).toMatchObject({openingSide:"front",verticalGap:0.2,engagement:0.8,guideRoof:1.2,thumbGrip:true});
   });
 });

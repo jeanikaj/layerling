@@ -84,7 +84,7 @@ export function LidPanel({
 
       <div className="edge-modifier-target">
         <strong>{targetName}</strong>
-        <span>{t(settings.type === "sliding" ? "lid.type.slidingHint" : "lid.help")}</span>
+        {settings.type !== "sliding" ? <span>{t("lid.help")}</span> : null}
       </div>
 
       <div className="edge-modifier-field shell-openings" role="radiogroup" aria-label={t("lid.type")}>
@@ -99,14 +99,14 @@ export function LidPanel({
               className={settings.type === option ? "active" : ""}
               title={t(`lid.type.${option}Hint`)}
               disabled={busy}
-              onClick={() => onChange(option === "sliding" ? { type: option, openingSide: "front", verticalGap: 0.2, engagement: 0.8, guideRoof: 1.2, thumbGrip: true, magnets: false } : { type: option })}
+              onClick={() => onChange(option === "sliding" ? { type: option, slidingStyle: "recessed", openingSide: "front", verticalGap: 0.2, engagement: 0.8, guideRoof: 1.2, thumbGrip: true, magnets: false } : { type: option })}
             >
               {t(`lid.type.${option}`)}
             </button>
           ))}
         </div>
       </div>
-      <span className="shell-openings-summary">{t(`lid.type.${settings.type}Hint`)}</span>
+      {settings.type !== "sliding" ? <span className="shell-openings-summary">{t(`lid.type.${settings.type}Hint`)}</span> : null}
 
       <EdgeModifierSlider
         label={t("lid.thickness")}
@@ -129,6 +129,11 @@ export function LidPanel({
       ) : null}
 
       {settings.type === "sliding" ? (<>
+        <div className="edge-modifier-field shell-openings" role="radiogroup" aria-label={t("lid.sliding.style")}>
+          <span>{t("lid.sliding.style")}</span>
+          <div className="shell-opening-options">{(["recessed", "flush"] as const).map(style => <button key={style} type="button" role="radio" aria-checked={(settings.slidingStyle ?? "recessed") === style} className={(settings.slidingStyle ?? "recessed") === style ? "active" : ""} disabled={busy} onClick={() => onChange({ slidingStyle: style })}>{t(`lid.sliding.style.${style}`)}</button>)}</div>
+        </div>
+        <span className="shell-openings-summary">{t(settings.slidingStyle === "flush" ? "lid.sliding.flushHint" : "lid.type.slidingHint")}</span>
         <div className="edge-modifier-field shell-openings" role="radiogroup" aria-label={t("lid.sliding.side")}>
           <span>{t("lid.sliding.side")}</span>
           <div className="shell-opening-options">{(["front", "back", "left", "right"] as const).map(side => (
@@ -140,7 +145,7 @@ export function LidPanel({
           ["verticalGap", "lid.sliding.verticalGap", settings.verticalGap ?? 0.2, 0.05, 1],
           ["engagement", "lid.sliding.engagement", settings.engagement ?? 0.8, 0.4, 3],
           ["guideRoof", "lid.sliding.roof", settings.guideRoof ?? 1.2, 0.8, 5],
-        ] as const).map(([key,label,value,min,max]) => <EdgeModifierSlider key={key} label={t(label)} value={value} min={min} max={max} step={0.05} workspace={workspace} length disabled={busy} onChange={value => onChange({ [key]: value })} />)}
+        ] as const).filter(([key]) => settings.slidingStyle !== "flush" || key !== "guideRoof").map(([key,label,value,min,max]) => <EdgeModifierSlider key={key} label={t(label)} value={value} min={min} max={max} step={0.05} workspace={workspace} length disabled={busy} onChange={value => onChange({ [key]: value })} />)}
         <label className="edge-modifier-field offset-copy"><input type="checkbox" checked={settings.thumbGrip !== false} disabled={busy} onChange={event => onChange({ thumbGrip: event.target.checked })} /><span>{t("lid.sliding.grip")}</span></label>
         <span className="shell-openings-summary">{t("lid.sliding.help")}</span>
       </>) : null}
