@@ -1,5 +1,6 @@
+import { slidingLidParts } from "@/lib/slidingLid";
 import type { CrossSection, ManifoldToplevel, Mat4 } from "manifold-3d";
-import { shapeToManifoldSolid, disposeManifold, type GroupBuildResult } from "@/lib/editorBooleans";
+import { buildGroupedShapeFromSelection, shapeToManifoldSolid, disposeManifold, type GroupBuildResult } from "@/lib/editorBooleans";
 import { getManifoldRuntime, type ManifoldSolid } from "@/lib/editorMeshCore";
 import { numberLocale, t } from "@/lib/i18n";
 import { createLocalId } from "@/lib/localIds";
@@ -22,7 +23,8 @@ import type { WorkplaneShape } from "@/types/layerling";
  * print. Everything is worked out with Manifold, in a frame where z is up (the scene's y).
  */
 
-export type LidType = "plug" | "cap" | "both" | "flat";
+export type LidType = "plug" | "cap" | "both" | "flat" | "sliding";
+export type SlidingSide = "front" | "back" | "left" | "right";
 
 /**
  * The kind of lid; the plate's thickness, the gap per side, how deep the lip or rim reaches down and how thick its wall
@@ -39,9 +41,25 @@ export type LidOptions = {
   magnetDiameter: number;
   magnetHeight: number;
   magnetGap: number;
+  slidingStyle?: "recessed" | "flush";
+  openingSide?: SlidingSide;
+  verticalGap?: number;
+  engagement?: number;
+  guideRoof?: number;
+  clickStop?: boolean;
+  clickInterference?: number;
+  thumbGrip?: boolean;
+  gripShape?: "circle" | "oval" | "roundedRectangle" | "slot";
+  gripMode?: "recessed" | "raised";
+  gripWidth?: number;
+  gripLength?: number;
+  gripDepth?: number;
+  gripCornerRadius?: number;
+  gripPosition?: "inset" | "edge";
+  gripInset?: number;
 };
 
-export const LID_TYPES: readonly LidType[] = ["plug", "cap", "both", "flat"];
+export const LID_TYPES: readonly LidType[] = ["plug", "cap", "both", "flat", "sliding"];
 export const LID_DEFAULTS: LidOptions = { type: "plug", thickness: 2, gap: 0.2, depth: 4, wall: 1.6, magnets: false, magnetDiameter: 6, magnetHeight: 2, magnetGap: 0.1 };
 export const LID_FITS = [0.1, 0.2, 0.3] as const;
 export const MIN_LID_THICKNESS = 0.4;
@@ -103,6 +121,27 @@ export function normalizeLidOptions(value?: Partial<Record<keyof LidOptions, unk
   if (magnetHeight !== null) result.magnetHeight = clamp(magnetHeight, MIN_MAGNET_HEIGHT, MAX_MAGNET_HEIGHT);
   const magnetGap = finiteNumber(value?.magnetGap);
   if (magnetGap !== null) result.magnetGap = clamp(magnetGap, 0, MAX_MAGNET_GAP);
+  if (result.type === "sliding") {
+    result.slidingStyle = value?.slidingStyle === "flush" ? "flush" : "recessed";
+    result.openingSide = ["front", "back", "left", "right"].includes(String(value?.openingSide)) ? value!.openingSide as SlidingSide : "front";
+    result.verticalGap = clamp(finiteNumber(value?.verticalGap) ?? 0.2, 0.05, 1);
+    result.engagement = clamp(finiteNumber(value?.engagement) ?? 0.8, 0.4, 3);
+    result.guideRoof = clamp(finiteNumber(value?.guideRoof) ?? 1.2, 0.8, 5);
+    result.clickStop = value?.clickStop === true;
+    result.clickInterference = clamp(finiteNumber(value?.clickInterference) ?? 0.2, 0.1, 0.25);
+    result.thumbGrip = value?.thumbGrip !== false;
+    result.gripShape = ["circle", "oval", "roundedRectangle", "slot"].includes(String(value?.gripShape)) ? value!.gripShape as LidOptions["gripShape"] : "circle";
+    result.gripMode = value?.gripMode === "raised" ? "raised" : "recessed";
+    result.gripPosition = value?.gripPosition === "edge" ? "edge" : "inset";
+    result.gripInset = clamp(finiteNumber(value?.gripInset) ?? 1, 0, 50);
+    result.gripDepth = clamp(finiteNumber(value?.gripDepth) ?? 0.6, 0.1, 5);
+    result.gripCornerRadius = clamp(finiteNumber(value?.gripCornerRadius) ?? 2, 0, 25);
+    for (const key of ["gripWidth", "gripLength"] as const) {
+      const size = finiteNumber(value?.[key]);
+      if (size !== null) result[key] = clamp(size, 1, 100);
+    }
+    result.magnets = false;
+  }
   return result;
 }
 
@@ -297,6 +336,7 @@ export function lidForSolid(runtime: ManifoldToplevel, body: ManifoldSolid, give
   const handed = new Set<unknown>();
   try {
     const options = normalizeLidOptions(given);
+    if (options.type === "sliding") return { error: { code: "kernel", message: "Sliding lids require lidForShapes, which returns the matching body cutters." } };
     const up = keep(created, body.transform(SCENE_TO_UP));
     const box = up.boundingBox();
     const top = box.max[2];
@@ -459,7 +499,7 @@ function positionsOf(mesh: ReturnType<ManifoldSolid["getMesh"]>) {
  */
 export type LidShapeMagnets = { posts: WorkplaneShape[]; pockets: WorkplaneShape[] };
 
-export type LidShapeResult = { lid: WorkplaneShape; magnets?: LidShapeMagnets } | { lid: null; error: string };
+export type LidShapeResult = { lid: WorkplaneShape; magnets?: LidShapeMagnets; sliding?: { cutters: WorkplaneShape[]; posts?: WorkplaneShape[] } } | { lid: null; error: string };
 
 /**
  * The lid for the selected bodies: the solids joined and the holes among them cut away, then the lid made for what is
@@ -486,6 +526,18 @@ export async function lidForShapes(targets: readonly WorkplaneShape[], given: Li
     if (cutters.length) {
       body = body.subtract(runtime.Manifold.union(cutters));
       created.push(body);
+    }
+    if (given.type === "sliding") {
+      const options = normalizeLidOptions(given);
+      const parts = slidingLidParts(runtime, body, solids[0], options);
+      if ("error" in parts) return { lid: null, error: parts.error };
+      let lid = parts.plate;
+      if (parts.grip || parts.rails?.length || parts.lidAdditions?.length) {
+        const grouped = await buildGroupedShapeFromSelection([lid, ...(parts.rails ?? []), ...(parts.grip ? [parts.grip] : []), ...(parts.lidAdditions ?? [])], 500000);
+        if (!grouped.group) return { lid: null, error: grouped.failureNotice || t("lid.error.kernelUnknown") };
+        lid = canonicalizeShape({ ...grouped.group, name: parts.plate.name, groupOperation: "group" });
+      }
+      return { lid, sliding: { cutters: parts.cutters, posts: parts.bodyAdditions } };
     }
     const result = lidForSolid(runtime, body, given);
     if ("error" in result) return { lid: null, error: lidErrorMessage(result.error) };

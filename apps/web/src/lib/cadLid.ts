@@ -107,6 +107,7 @@ function rimFaces(cad: OcctKernel, body: ShapeHandle, rim: number) {
  * (the editor then keeps the mesh lid).
  */
 export function cadLidSolid(kernel: OcctKernel, body: ShapeHandle, request: CadLidRequest): ShapeHandle | null {
+  if (request.type === "sliding") return null;
   const made: ShapeHandle[] = [];
   const cad = tracking(kernel, made);
   let result: ShapeHandle | null = null;

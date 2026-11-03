@@ -88,3 +88,32 @@ describe("lid magnets", () => {
     expect(magnetPlaces([], 4.3, 7.4)).toBeNull();
   });
 });
+
+
+describe("sliding lid options", () => {
+  it("normalizes sliding-only fields and disables incompatible magnets", () => {
+    const options=normalizeLidOptions({type:"sliding",openingSide:"wrong",verticalGap:-2,engagement:99,guideRoof:0,thumbGrip:false,magnets:true});
+    expect(normalizeLidOptions({type:"sliding",slidingStyle:"flush"}).slidingStyle).toBe("flush");
+    expect(normalizeLidOptions({type:"sliding",slidingStyle:"unknown"}).slidingStyle).toBe("recessed");
+    expect(options).toMatchObject({type:"sliding",slidingStyle:"recessed",openingSide:"front",verticalGap:0.05,engagement:3,guideRoof:0.8,thumbGrip:false,magnets:false});
+    expect(normalizeLidOptions({type:"sliding"})).toMatchObject({openingSide:"front",verticalGap:0.2,engagement:0.8,guideRoof:1.2,thumbGrip:true});
+  });
+});
+
+
+describe("thumb grip options",()=>{
+  it("keeps the circular recess default, normalizes enums and clamps invalid values",()=>{
+    expect(normalizeLidOptions({type:"sliding"})).toMatchObject({gripShape:"circle",gripMode:"recessed",gripPosition:"inset",gripInset:1,gripDepth:0.6});
+    expect(normalizeLidOptions({type:"sliding",gripShape:"wrong",gripMode:"wrong",gripPosition:"wrong",gripWidth:-10,gripLength:999,gripDepth:-1,gripCornerRadius:999,gripInset:-10})).toMatchObject({gripShape:"circle",gripMode:"recessed",gripPosition:"inset",gripWidth:1,gripLength:100,gripDepth:0.1,gripCornerRadius:25,gripInset:0});
+    expect(normalizeLidOptions({type:"sliding",thumbGrip:false}).thumbGrip).toBe(false);
+  });
+});
+
+
+describe("click-stop options",()=>{
+  it("is opt-in and bounds the interference",()=>{
+    expect(normalizeLidOptions({type:"sliding"}).clickStop).toBe(false);
+    expect(normalizeLidOptions({type:"sliding",clickStop:true,clickInterference:9})).toMatchObject({clickStop:true,clickInterference:0.25});
+    expect(normalizeLidOptions({type:"sliding",clickInterference:-1}).clickInterference).toBe(0.1);
+  });
+});

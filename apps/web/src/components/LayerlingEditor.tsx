@@ -8019,7 +8019,7 @@ export function LayerlingEditor({
    * and with posts for the magnets, which the lip has to go round: the mesh lid stays then.
    */
   const exactLid = useCallback(async (targets: readonly WorkplaneShape[], options: LidOptions, meshLid: WorkplaneShape, magnets?: { posts: WorkplaneShape[]; pockets: WorkplaneShape[] }): Promise<WorkplaneShape | null> => {
-    if (targets.length !== 1 || targets[0].hole || magnets?.posts.length) return null;
+    if (options.type === "sliding" || targets.length !== 1 || targets[0].hole || magnets?.posts.length) return null;
     const pocketDepth = magnetPocketDepth(options);
     const request: CadLidRequest = {
       type: options.type,
@@ -8060,8 +8060,8 @@ export function LayerlingEditor({
     if (!targets.some((shape) => !shape.hole)) return fail(t("lid.error.needsBody"));
     const options = normalizeLidOptions(given);
     // The pockets go into the body, so it must be free to change and one body.
-    if (options.magnets && targets.some((shape) => shape.locked)) return fail(t("status.objectLocked"));
-    if (options.magnets && targets.some((shape) => shape.groupOperation === "bundle")) return fail(t("lid.error.magnetsBundle"));
+    if ((options.magnets || options.type === "sliding") && targets.some((shape) => shape.locked)) return fail(t("status.objectLocked"));
+    if ((options.magnets || options.type === "sliding") && targets.some((shape) => shape.groupOperation === "bundle")) return fail(t("lid.error.magnetsBundle"));
     const sourceFingerprint = projectShapesFingerprint(shapesRef.current);
     const sourceProjectId = projectInfoRef.current.projectId;
     const changed = () => projectInfoRef.current.projectId !== sourceProjectId || projectShapesFingerprint(shapesRef.current) !== sourceFingerprint;
@@ -8072,6 +8072,21 @@ export function LayerlingEditor({
     const lid = (await exactLid(targets, options, result.lid, result.magnets)) ?? result.lid;
     if (changed()) return fail(t("lid.error.changed"));
     const type = t(`lid.type.${options.type}`);
+    if (result.sliding) {
+      const grouped = await groupedWithMagnets(targets, { posts: [], pockets: result.sliding.cutters }, (shapes) => buildGroupedShapeOffThread(shapes, workspaceSettingsRef.current.booleanTriangleLimit, geometryAbortRef.current?.signal));
+      if (changed()) return fail(t("lid.error.changed"));
+      if (!grouped.group) return fail(grouped.failureNotice || t("lid.error.kernelUnknown"));
+      if (result.sliding.posts?.length) {
+        const added = await buildGroupedShapeOffThread([canonicalizeShape({ ...grouped.group, groupOperation: "group" }), ...result.sliding.posts], workspaceSettingsRef.current.booleanTriangleLimit, geometryAbortRef.current?.signal);
+        if (changed()) return fail(t("lid.error.changed"));
+        if (!added.group) return fail(added.failureNotice || t("lid.error.kernelUnknown"));
+        grouped.group = added.group;
+      }
+      const body = canonicalizeShape({ ...grouped.group, groupOperation: "group", name: targets.find(shape => !shape.hole)?.name ?? grouped.group.name });
+      const consumed = new Set(targets.map(shape => shape.id));
+      commitShapes([...shapesRef.current.filter(shape => !consumed.has(shape.id)), body, lid], lid.id, t("lid.sliding.made"));
+      return { ok: true as const, id: lid.id, bodyId: body.id, type: options.type };
+    }
     if (!result.magnets) {
       commitShapes([...shapesRef.current, lid], lid.id, t("status.lidMade", { type }));
       return { ok: true as const, id: lid.id, type: options.type };
@@ -8109,9 +8124,9 @@ export function LayerlingEditor({
       setLidTool(null);
       return;
     }
-    const { type, thickness, gap, depth, wall, magnets, magnetDiameter, magnetHeight, magnetGap } = lidTool;
+    const { targetIds: _targetIds, busy: _busy, error: _error, ...options } = lidTool;
     setLidTool((current) => current ? { ...current, busy: true, error: null } : current);
-    void makeLid({ type, thickness, gap, depth, wall, magnets, magnetDiameter, magnetHeight, magnetGap }, targets).then((result) => {
+    void makeLid(options, targets).then((result) => {
       if (result.ok) setLidTool(null);
       else setLidTool((current) => current ? { ...current, busy: false, error: result.message } : current);
     });
@@ -12115,6 +12130,8 @@ export function LayerlingEditor({
           magnetDiameter: params.magnetDiameter,
           magnetHeight: params.magnetHeight,
           magnetGap: params.magnetGap,
+          clickStop: params.clickStop, clickInterference: params.clickInterference, slidingStyle: params.slidingStyle, openingSide: params.openingSide, verticalGap: params.verticalGap, engagement: params.engagement, guideRoof: params.guideRoof, thumbGrip: params.thumbGrip,
+          gripShape: params.gripShape, gripMode: params.gripMode, gripWidth: params.gripWidth, gripLength: params.gripLength, gripDepth: params.gripDepth, gripCornerRadius: params.gripCornerRadius, gripPosition: params.gripPosition, gripInset: params.gripInset,
         }, targets);
         if (!result.ok) throw new Error(result.message);
         const made = currentShapes().find((shape) => shape.id === result.id);

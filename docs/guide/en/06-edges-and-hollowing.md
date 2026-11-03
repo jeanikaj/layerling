@@ -105,6 +105,22 @@ Tick {{ui:lid.magnets}} and the lid holds by four round magnets instead of a tig
 
 > **Tip:** Press the magnets into the body first. Then set one more magnet on each of them, where it snaps on the right way round, and press the lid down onto them (with a drop of glue in its pockets if they are loose): each magnet goes into the lid facing its partner, so they attract.
 
+### Sliding lids
+
+Choose **Sliding** for an upright box aligned with the workplane. The opening at guide height must be rectangular; rounded inner corners and irregular openings are currently refused. Choose the opening side: front is −Z, back +Z, left −X and right +X.
+
+The tool cuts guide channels and an entry opening into the container and creates a matching plate beside it, top facing up. The far wall stops the plate when closed; the lid can be removed completely. The optional thumb grip is recessed into the top, leaving the underside flat for printing.
+
+**Style:** **Recessed** keeps the original flat plate below the rim. **Flush** brings the closed lid's top level with the rim, with bevelled edges retained by matching undercut guides. Guide engagement controls the maximum channel width; the plate bevel is sized from that width and the vertical clearance. The entry opening follows the same bevelled profile as the guides, preserving the upper corners. There is no guide-roof setting for Flush. Both styles need a rectangular clear opening and sufficient wall material. Print the lid flat, top facing up; the bevels taper inward toward the top.
+
+**Thumb grip:** switch it off for a plain lid, or choose Circle, Oval, Rounded rectangle or Slot. Set its width across the lid, length along the slide direction (except Circle), recess depth or raised height, and the corner radius for a rounded rectangle. Slot uses fully rounded ends. Choose **Inset from edge** and set the distance from the opening edge, or **At opening edge** for an open recess or an edge-aligned raised grip. Width, length and inset are limited to the central plate so the grip clears the guides; corner radii are limited to half the shorter dimension. Recesses always retain a floor. Raised grips project above the top, including on Flush lids. These are surface grips, not through-holes.
+
+**Click-stop when closed:** optional on both sliding styles. Two small blind notches near the back of the lid engage matching rounded bumps inside both guide walls when closed. A 0.6 mm wide relief underneath each edge leaves a continuous top skin (up to 0.6 mm), so there is no visible slot through the lid. The remaining skin makes these edges stiffer than an open cantilever; release force needs a test print. **Click-stop interference** adjusts the nominal overlap from 0.1 to 0.25 mm (default 0.2); it is independent of the sliding fit. The lid needs at least 1.2 mm thickness, 22 mm length and 10 mm central width, with room for the tab clear of the thumb grip. The wall bumps stay within the original outside walls. The feature adds intentional local interference; holding force, fatigue life and the feel of the click require a test print in your material. It is a detent rather than a secure latch.
+
+Set plate thickness, side clearance per side, vertical clearance per face, guide engagement and the material above the guides. At least 1.2 mm of outside wall must remain beyond each channel. The defaults need at least 2 mm side walls. Dividers must stop below the channels. Magnets are unavailable for this lid type.
+
+The box and lid are created in one undo step. The container remains a group with editable cutting shapes. Native box and cylinder parts use the normal CAD reconstruction path where supported. The lid is independent: resizing the container later does not regenerate it. Print a small fit sample before committing to a large container.
+
 ## Offsetting bodies
 
 Every face of a body can be moved by the same distance, out or in. That is what a press fit, a lid or a snap joint needs: a gap of 0.1 to 0.3 mm all round while the features stay where they are, which scaling cannot give you.
