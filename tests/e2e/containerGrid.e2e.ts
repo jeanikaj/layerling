@@ -96,3 +96,16 @@ it("preserves later sliding lid cuts when changing or clearing a generated grid"
  try {const a=shapeToManifoldSolid(k,cleared.group!,made)!,b=shapeToManifoldSolid(k,expected.group!,made)!;const difference=a.subtract(b);made.push(difference);expect(difference.volume()).toBeLessThan(0.01);expect(a.volume()).toBeCloseTo(b.volume(),2);}finally{Array.from(new Set(made)).reverse().forEach(s=>s.delete());}
  expect(noError(await containerGridForShape(wrapped.group!,{...CONTAINER_GRID_DEFAULTS,rows:2},true)).group).toBeTruthy();
 });
+
+for(const [columns,rows] of [[1,2],[2,1]]) for(const custom of [false,true]) it(`builds ${columns} by ${rows} compartments with a single ${custom?"custom":"regular"} divider`,async()=>{
+ const target=await tray(),options={...CONTAINER_GRID_DEFAULTS,columns,rows,...(custom?{layout:"custom" as const,custom:{id:"root",split:{axis:columns===2?"x" as const:"z" as const,ratio:0.5,first:{id:"a"},second:{id:"b"}}}}:{})};
+ const first=noError(await containerGridForShape(target,options,true));
+ const revised=noError(await containerGridForShape(first.group!,options,true));
+ const k=await getManifoldRuntime(),made:ManifoldSolid[]=[];
+ try {
+  const body=shapeToManifoldSolid(k,revised.group!,made)!;
+  const parts=body.decompose();made.push(...parts);expect(parts).toHaveLength(1);
+  const up=body.rotate([90,0,0]);made.push(up);const section=up.slice(15);try{expect(section.toPolygons()).toHaveLength(3);}finally{section.delete();}
+  expect(body.volume()).toBeCloseTo(shapeToManifoldSolid(k,first.group!,made)!.volume(),3);
+ }finally{Array.from(new Set(made)).reverse().forEach(s=>s.delete());}
+});

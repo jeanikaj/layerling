@@ -121,7 +121,8 @@ export async function containerGridForShape(target:WorkplaneShape, options:Conta
       const alongX=s.axis==="x",span=s.to-s.from+layout.thickness;
       return sceneShape({...base,name:t("containerGrid.divider"),kind:"box",x:plan.xmin+(alongX?s.position:(s.from+s.to)/2),z:plan.zmin+(alongX?(s.from+s.to)/2:s.position),width:alongX?layout.thickness:span,depth:alongX?span:layout.thickness});
     });
-    const union=await buildGroupedShapeFromSelection(strips,triangleLimit);
+    // Grouping requires multiple operands; a single divider already is the complete grid.
+    const union=strips.length===1?{group:strips[0],failureNotice:undefined}:await buildGroupedShapeFromSelection(strips,triangleLimit);
     if(!union.group) return {error:union.failureNotice||t("containerGrid.error.build")};
     // Clip to an inset of the original outside wall: rounded corner ends join the wall without protruding.
     const inset=0.3;
