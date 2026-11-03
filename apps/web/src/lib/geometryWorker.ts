@@ -1,3 +1,4 @@
+import { containerGridForShape, type ContainerGridOptions, type ContainerGridResult } from "@/lib/containerGrid";
 import { buildsDiffer, BUILD_ID, isBuildMessage, reportWorkerBuild } from "@/lib/buildStamp";
 import { checkClearance, type ClearanceOptions, type ClearanceResult } from "@/lib/clearanceCheck";
 import { buildGroupedShapeFromSelection, exportSolidVolume, faceReadJoins, faceReadPositions, splitShapeIfCrossed, splitShapesByPlane, type ExportSolidVolume, type GroupBuildResult, type SplitShapesOutcome } from "@/lib/editorBooleans";
@@ -475,4 +476,8 @@ export function createFaceReadKeeper(onRead: (fingerprint: string, positions: Fl
       callOffFaceRead(entry?.abort, closing);
     },
   };
+}
+
+export function containerGridOffThread(target: WorkplaneShape, options: ContainerGridOptions, build = false, triangleLimit = 500000, signal?: AbortSignal): Promise<ContainerGridResult> {
+  return runGeometryTask<ContainerGridResult>("containerGrid", { target, options, build, triangleLimit }, () => containerGridForShape(target, options, build, triangleLimit), () => ({ error: t("status.computeTimedOut") }), signal);
 }

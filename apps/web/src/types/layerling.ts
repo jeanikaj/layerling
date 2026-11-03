@@ -1,3 +1,7 @@
+/** Editable rectangular compartment partitions, stored with the generated container group. */
+export type ContainerGridNode = { id: string; split?: { axis: "x" | "z"; ratio: number; first: ContainerGridNode; second: ContainerGridNode } };
+export type ContainerGridOptions = { columns: number; rows: number; thickness: number; height: number; positionsX?: number[]; positionsZ?: number[]; removed?: string[]; layout?: "grid" | "custom"; custom?: ContainerGridNode };
+
 export type ShapeKind =
   | "box"
   | "roundedBox"
@@ -1371,6 +1375,7 @@ export type WorkplaneShape = {
    * its own body.
    */
   groupOperation?: "group" | "intersection" | "hull" | "bundle" | "loft";
+  containerGrid?: { version: 1; sourceId: string; options: ContainerGridOptions };
   /**
    * The point this body turns about, kept with the body: a fraction of its
    * width, height and depth from its centre, in its own frame, so it moves,

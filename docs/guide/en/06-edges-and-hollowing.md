@@ -125,6 +125,18 @@ Set plate thickness, side clearance per side, vertical clearance per face, guide
 
 The box and lid are created in one undo step. The container remains a group with editable cutting shapes. Native box and cylinder parts use the normal CAD reconstruction path where supported. The lid is independent: resizing the container later does not regenerate it. Print a small fit sample before committing to a large container.
 
+### Custom grids inside a container
+
+Select one empty upright box and choose **Container grid** in **Edges & walls**, command search, or the right-click menu. Rectangular and rounded rectangular boxes are supported, including boxes with the sliding lid guides already made. Hollow the box with its top open first.
+
+The default grid has two columns and four rows, making eight compartments. Set the counts, divider thickness (0.8–3 mm), and height above the floor. Every compartment stays at least 6 mm wide, with at most 40 cells in the starting grid. The dividers stop at least 5 mm below the rim, leaving room for standard sliding lid guides. Thicker lids or unusual guide settings may need more clearance: lower the divider height.
+
+The layout is viewed from above. Click an individual divider section to remove or restore it, joining neighbouring cells into larger compartments. Dashed sections are removed. Move a divider using its position slider for unequal widths or lengths; the value is measured from the inside of the left or back wall to its centre. **Reset to equal compartments** restores equal spacing and every divider section.
+
+**Add grid** joins the dividers to the floor and walls in one undo step. The original container and its guide cuts stay scoped inside the group; they do not cut away the grid. Native divider parts and a rounded clipping boundary remain available through **Edit group** and **Ungroup**, and use the normal CAD export path. Imported STL containers stay meshes. There is no new project format, and STL/3MF export uses the normal grouped result. Select the resulting box and reopen **Container grid** to revise its saved settings. Applying a revision replaces the generated walls, preserving the original body and later lid cuts. Optional layout metadata is saved in LYL projects and copied with the shape. Existing projects remain compatible. Unrecognized dividers in imported or manually divided boxes must be removed first.
+
+Choose **Custom compartments** for an asymmetric layout. Select a compartment and choose **Split into columns** or **Split into rows**. Drag a divider, use its arrow keys, or set its first compartment dimension to resize it. Each split affects only its own region; other branches keep their proportions. **Clear selected division** merges its two sides, including any nested divisions. **Clear all divisions** returns to one open compartment. The regular grid also offers row and column clearing, preserving their surrounding borders. Select the box again to reopen and adjust either layout.
+
 ## A cable channel through a body
 
 {{ui:editor.tool.cableChannel}} runs a round tunnel through a body for a cable or an LED lead, from where it goes in to where it comes out, and finds the way itself. Select the body and click {{ui:editor.tool.cableChannel}}, then click on the body where the cable goes in ({{ui:cable.entry}}) and where it comes out ({{ui:cable.exit}}). The way starts and ends straight along the surface, runs straight where it can and bends where it must, never tighter than {{ui:cable.minBend}}, and keeps as far from the outside as it can, never closer than {{ui:cable.minWall}}. A cable pushes through a bend of about five times its diameter; {{ui:cable.diameter}} is the channel's own.

@@ -111,6 +111,7 @@ export type LayerlingMcpCommandName =
   | "hull_objects"
   | "cookie_cutter"
   | "flexi_joints"
+  | "add_container_grid"
   | "make_lid"
   | "make_cable_channel"
   | "loft_sketches"

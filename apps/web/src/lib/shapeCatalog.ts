@@ -884,6 +884,7 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     groupedBaseDepth: shape.groupedBaseDepth,
     groupedBaseHeight: shape.groupedBaseHeight,
     groupOperation: shape.groupOperation,
+    containerGrid: shape.containerGrid,
     locked: shape.locked ?? false,
     hidden: shape.hidden ?? false,
   });
