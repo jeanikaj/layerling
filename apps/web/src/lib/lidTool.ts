@@ -42,6 +42,8 @@ export type LidOptions = {
   magnetHeight: number;
   magnetGap: number;
   slidingStyle?: "recessed" | "flush";
+  cornerMode?: "match" | "custom";
+  lidCornerRadius?: number;
   openingSide?: SlidingSide;
   verticalGap?: number;
   engagement?: number;
@@ -122,6 +124,8 @@ export function normalizeLidOptions(value?: Partial<Record<keyof LidOptions, unk
   const magnetGap = finiteNumber(value?.magnetGap);
   if (magnetGap !== null) result.magnetGap = clamp(magnetGap, 0, MAX_MAGNET_GAP);
   if (result.type === "sliding") {
+    result.cornerMode = value?.cornerMode === "custom" ? "custom" : "match";
+    result.lidCornerRadius = clamp(finiteNumber(value?.lidCornerRadius) ?? 6, 0, 50);
     result.slidingStyle = value?.slidingStyle === "flush" ? "flush" : "recessed";
     result.openingSide = ["front", "back", "left", "right"].includes(String(value?.openingSide)) ? value!.openingSide as SlidingSide : "front";
     result.verticalGap = clamp(finiteNumber(value?.verticalGap) ?? 0.2, 0.05, 1);

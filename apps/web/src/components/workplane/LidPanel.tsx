@@ -134,6 +134,11 @@ export function LidPanel({
           <div className="shell-opening-options">{(["recessed", "flush"] as const).map(style => <button key={style} type="button" role="radio" aria-checked={(settings.slidingStyle ?? "recessed") === style} className={(settings.slidingStyle ?? "recessed") === style ? "active" : ""} disabled={busy} onClick={() => onChange({ slidingStyle: style })}>{t(`lid.sliding.style.${style}`)}</button>)}</div>
         </div>
         <span className="shell-openings-summary">{t(settings.slidingStyle === "flush" ? "lid.sliding.flushHint" : "lid.type.slidingHint")}</span>
+        <div className="edge-modifier-field shell-openings" role="radiogroup" aria-label={t("lid.rounded.mode")}>
+          <span>{t("lid.rounded.mode")}</span><div className="shell-opening-options">{(["match", "custom"] as const).map(mode => <button key={mode} type="button" role="radio" aria-checked={(settings.cornerMode ?? "match") === mode} className={(settings.cornerMode ?? "match") === mode ? "active" : ""} disabled={busy} onClick={() => onChange({cornerMode:mode})}>{t(`lid.rounded.mode.${mode}`)}</button>)}</div>
+        </div>
+        {settings.cornerMode === "custom" ? <EdgeModifierSlider label={t("lid.rounded.radius")} value={settings.lidCornerRadius ?? 6} min={0} max={50} step={0.5} workspace={workspace} length disabled={busy} onChange={lidCornerRadius => onChange({lidCornerRadius})} /> : null}
+        <span className="shell-openings-summary">{t("lid.rounded.help")}</span>
         <div className="edge-modifier-field shell-openings" role="radiogroup" aria-label={t("lid.sliding.side")}>
           <span>{t("lid.sliding.side")}</span>
           <div className="shell-opening-options">{(["front", "back", "left", "right"] as const).map(side => (

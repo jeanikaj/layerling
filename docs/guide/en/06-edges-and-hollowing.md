@@ -107,11 +107,13 @@ Tick {{ui:lid.magnets}} and the lid holds by four round magnets instead of a tig
 
 ### Sliding lids
 
-Choose **Sliding** for an upright box aligned with the workplane. The opening at guide height must be rectangular; rounded inner corners and irregular openings are currently refused. Choose the opening side: front is −Z, back +Z, left −X and right +X.
+Choose **Sliding** for an upright box aligned with the workplane. The opening at guide height must be rectangular or a rounded rectangle with circular corners; irregular openings are refused. Choose the opening side: front is −Z, back +Z, left −X and right +X.
 
 The tool cuts guide channels and an entry opening into the container and creates a matching plate beside it, top facing up. The far wall stops the plate when closed; the lid can be removed completely. The optional thumb grip is recessed into the top, leaving the underside flat for printing.
 
 **Style:** **Recessed** keeps the original flat plate below the rim. **Flush** brings the closed lid's top level with the rim, with bevelled edges retained by matching undercut guides. Guide engagement controls the maximum channel width; the plate bevel is sized from that width and the vertical clearance. The entry opening follows the same bevelled profile as the guides, preserving the upper corners. There is no guide-roof setting for Flush. Both styles need a rectangular clear opening and sufficient wall material. Print the lid flat, top facing up; the bevels taper inward toward the top.
+
+**Rounded corners:** use Rounded Box, set its corner radius, then hollow it with the top open. Sliding lids recognise an upright rounded rectangular opening. **Follow box opening** derives matching corners with fit clearance; **Custom radius** lets the lid corners be rounded further. A smaller radius that would cut into the container corners is refused. The rounded guide sweeps straight through the entry, while following the curve at the closed end. Leave sufficient straight side length for guidance and, when enabled, the paired click-stop. Large raised grips may need a smaller size or more inset to stay within a rounded lid.
 
 **Thumb grip:** switch it off for a plain lid, or choose Circle, Oval, Rounded rectangle or Slot. Set its width across the lid, length along the slide direction (except Circle), recess depth or raised height, and the corner radius for a rounded rectangle. Slot uses fully rounded ends. Choose **Inset from edge** and set the distance from the opening edge, or **At opening edge** for an open recess or an edge-aligned raised grip. Width, length and inset are limited to the central plate so the grip clears the guides; corner radii are limited to half the shorter dimension. Recesses always retain a floor. Raised grips project above the top, including on Flush lids. These are surface grips, not through-holes.
 

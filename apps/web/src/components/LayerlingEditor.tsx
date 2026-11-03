@@ -12130,7 +12130,7 @@ export function LayerlingEditor({
           magnetDiameter: params.magnetDiameter,
           magnetHeight: params.magnetHeight,
           magnetGap: params.magnetGap,
-          clickStop: params.clickStop, clickInterference: params.clickInterference, slidingStyle: params.slidingStyle, openingSide: params.openingSide, verticalGap: params.verticalGap, engagement: params.engagement, guideRoof: params.guideRoof, thumbGrip: params.thumbGrip,
+          cornerMode: params.cornerMode, lidCornerRadius: params.lidCornerRadius, clickStop: params.clickStop, clickInterference: params.clickInterference, slidingStyle: params.slidingStyle, openingSide: params.openingSide, verticalGap: params.verticalGap, engagement: params.engagement, guideRoof: params.guideRoof, thumbGrip: params.thumbGrip,
           gripShape: params.gripShape, gripMode: params.gripMode, gripWidth: params.gripWidth, gripLength: params.gripLength, gripDepth: params.gripDepth, gripCornerRadius: params.gripCornerRadius, gripPosition: params.gripPosition, gripInset: params.gripInset,
         }, targets);
         if (!result.ok) throw new Error(result.message);

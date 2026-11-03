@@ -167,3 +167,30 @@ describe("click-stop exact CAD export",()=>{
     } finally {Array.from(new Set(made)).reverse().forEach(v=>v.delete?.());}
   });
 });
+
+
+describe("rounded sliding lids: exact export",()=>{
+ for(const radius of [3,6,10]) for(const slidingStyle of ["recessed","flush"] as const) it(`${radius} mm ${slidingStyle} exports both rounded bodies exactly`,async()=>{
+   const {sceneShape}=await import("@/lib/shapeCatalog");
+   const source=sceneShape({id:"round-outer",name:"Rounded container",kind:"roundedBox",color:"#aa3333",x:0,z:0,elevation:0,width:60,depth:40,height:30,rotation:0,cornerFillet:radius,topBottomFillet:0,roundedBoxQuality:24});
+   const cavity=sceneShape({...source,id:"round-inner",name:"Opening",hole:true,width:56,depth:36,elevation:2,cornerFillet:radius-2});
+   const targets=[source,cavity];
+   const result=await lidForShapes(targets,normalizeLidOptions({type:"sliding",slidingStyle,clickStop:radius<=6,gripShape:"slot"}));
+   if(!result.lid||!result.sliding) throw new Error("error" in result?result.error:"Missing guides");
+   const grouped=await groupedWithMagnets(targets,{posts:[],pockets:result.sliding.cutters},s=>editorBooleans.buildGroupedShapeFromSelection(s,500000));
+   expect(grouped.group).toBeTruthy();
+   if(result.sliding.posts?.length) {
+     const added=await editorBooleans.buildGroupedShapeFromSelection([{...grouped.group!,groupOperation:"group"},...result.sliding.posts],500000);
+     expect(added.group).toBeTruthy();grouped.group=added.group;
+   }
+   const shapes=[grouped.group!,result.lid];
+   const {blob,skipped}=await exportShapesToStep(shapes);expect(skipped).toEqual([]);
+   const read=await brep.importSTEP(blob);if(!read.ok) throw new Error("STEP import failed");
+   const volume=brep.measureVolume(read.value);if(!volume.ok) throw new Error("STEP volume missing");
+   const k=await meshCore.getManifoldRuntime();const made: {delete?:()=>void}[]=[];
+   try {
+     const expected=shapes.reduce((sum,s)=>sum+editorBooleans.shapeToManifoldSolid(k,s,made)!.volume(),0);
+     expect(Math.abs(volume.value-expected)/expected).toBeLessThan(0.005);
+   } finally {Array.from(new Set(made)).reverse().forEach(v=>v.delete?.());}
+ });
+});
