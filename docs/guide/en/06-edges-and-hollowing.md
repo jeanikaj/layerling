@@ -103,6 +103,8 @@ Then you set the {{ui:lid.thickness}}, the {{ui:lid.fit}} (the {{ui:lid.gap}} be
 
 Tick {{ui:lid.magnets}} and the lid holds by four round magnets instead of a tight fit. Pick a {{ui:lid.magnetSize}} (6 × 2, 8 × 3 or 10 × 3 mm) or set its {{ui:lid.magnetDiameter}} and {{ui:lid.magnetHeight}}, and the {{ui:lid.magnetGap}}: 0.1 mm to press the magnets in, 0.2 to 0.3 mm to glue them. Layerling cuts a pocket into each corner of the body's rim and one facing it into the lid's plate, a little deeper than the magnet, so it never stands proud. Where the wall is too thin for a pocket, a post fills the corner from the bottom up to the rim, and the lid's lip goes round it. The body is grouped with its pockets and posts: ungroup it and you have it back as it was. The plate must be at least the magnet's height plus 0.8 mm thick; switching the magnets on makes it so.
 
+Tick {{ui:lid.hinge}} and the lid swings open about a pin along the body's straight back side. Knuckles take turns along it, the outer ones on the body and those between on the lid, {{ui:lid.hingeGap}} apart, and a hole for the pin goes through them all: with a {{ui:lid.hingePin}} of 1.75 mm a piece of filament is the pin; tick {{ui:lid.hingePrintPin}} for a thicker one printed apart. The body's knuckles stand on a 45° slope, so the body prints upright without support; the lid's are flush with its top, so it still prints turned over. {{ui:lid.hingeKnuckles}} at 0 gives about one knuckle per 10 mm. A hinge goes with a lid that pushes in or a flat one; a rim round the outside would hit the back wall as it opens.
+
 > **Tip:** Press the magnets into the body first. Then set one more magnet on each of them, where it snaps on the right way round, and press the lid down onto them (with a drop of glue in its pockets if they are loose): each magnet goes into the lid facing its partner, so they attract.
 
 ### Sliding lids
@@ -122,6 +124,13 @@ The tool cuts guide channels and an entry opening into the container and creates
 Set plate thickness, side clearance per side, vertical clearance per face, guide engagement and the material above the guides. At least 1.2 mm of outside wall must remain beyond each channel. The defaults need at least 2 mm side walls. Dividers must stop below the channels. Magnets are unavailable for this lid type.
 
 The box and lid are created in one undo step. The container remains a group with editable cutting shapes. Native box and cylinder parts use the normal CAD reconstruction path where supported. The lid is independent: resizing the container later does not regenerate it. Print a small fit sample before committing to a large container.
+
+## A cable channel through a body
+
+{{ui:editor.tool.cableChannel}} runs a round tunnel through a body for a cable or an LED lead, from where it goes in to where it comes out, and finds the way itself. Select the body and click {{ui:editor.tool.cableChannel}}, then click on the body where the cable goes in ({{ui:cable.entry}}) and where it comes out ({{ui:cable.exit}}). The way starts and ends straight along the surface, runs straight where it can and bends where it must, never tighter than {{ui:cable.minBend}}, and keeps as far from the outside as it can, never closer than {{ui:cable.minWall}}. A cable pushes through a bend of about five times its diameter; {{ui:cable.diameter}} is the channel's own.
+
+While the panel is open the body is seen through, with the channel inside it and a mark on each end. The panel says how long the channel is, its tightest bend and its thinnest wall, and in red when a bend or the wall had to be smaller than asked; a smaller value for {{ui:cable.minBend}} or another entry or exit helps then. {{ui:cable.pickAgain}} moves an end. {{ui:cable.apply}} cuts the channel in: it becomes a {{ui:shape.bentTube}} as a hole, grouped with the body, so the body stays exact, and after ungrouping the tube can still be changed. A bent tube has at most eleven bends; a way that needs more asks for another entry or exit.
+
 
 ## Offsetting bodies
 

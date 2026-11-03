@@ -35,6 +35,14 @@ Telepíti, amire a layerlingnek szüksége van, letölti a layerlinget a felhasz
 
 **5. Mondd meg a Claude-nak, mit építsen.** Például: „Használd a layerling eszközeit, és építs nekem egy kerek dobozt, 60 mm átmérővel és 40 mm magasan, 2,5 mm-es fallal.” Ha nincs nyitva szerkesztő, a Claude megnyit egyet a böngésződben, ott lépésről lépésre megépíti a dobozt, és képeket készít, hogy ellenőrizze a munkáját. Te nézed, és bármikor magad is módosíthatsz bármit.
 
+**Macen** ugyanígy megy, ezekkel a változtatásokkal. Az 1. lépésben nyisd meg a Terminal alkalmazást (nyomd meg a Cmd+szóköz billentyűt, írd be: `Terminal`, majd nyomj Entert), illeszd be ezt a sort, és nyomj Entert:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/henmedia/layerling/main/scripts/mac-quickstart.sh | sh
+```
+
+Ha a Git vagy a Node.js hiányzik, megmondja, mit telepíts (a Gitet a macOS egy ablakban kínálja fel, a Node.js telepítőként érhető el a nodejs.org oldalon); utána futtasd le ugyanazt a sort még egyszer. A 2. lépésben az asztali parancsikon neve itt is „Start layerling“. A 3. lépésben telepítsd a Claude alkalmazást Machez.
+
 > **Tipp:** Ha valami nem működik, mondd el a Claude-nak, mit látsz. El tudja olvasni a hibát, és többnyire maga kijavítja. Ha a szerkesztőben semmi sem történik, először nézd meg, fut-e még a layerling (2. lépés).
 
 ## Beállítás
@@ -99,6 +107,7 @@ Az MI ugyanazokkal a funkciókkal dolgozik, mint te, ugyanazon az úton, mint a 
 | `layerling_cookie_cutter` | makes a cookie cutter from the objects: a wall and a rim round the outline (Cookie cutter) |
 | `layerling_flexi_joints` | cuts a flat body into links with joints printed in place that swing to the sides (Flexi joints) |
 | `layerling_make_lid` | makes a lid for a body open at the top: pushed in, over the top or flat, with the fit you choose and magnets if you like (Lid) |
+| `layerling_make_cable_channel` | runs a round channel for a cable through a body from an entry to an exit, finding the way itself with gentle bends (Cable channel) |
 | `layerling_loft_sketches` | joins two sketch bodies into a loft from one outline to the other (Loft sketches) |
 | `layerling_separate_parts` | egy alakzatot a különálló részeire bont, a vázlattestet körvonalanként egy testre |
 | `layerling_split_objects` | tömör testeket vagy lyukakat vág ketté egy síkkal |
@@ -113,6 +122,7 @@ Az MI ugyanazokkal a funkciókkal dolgozik, mint te, ugyanazon az úton, mint a 
 | `layerling_array_objects` | sorban vagy körön sokszoroz |
 | `layerling_bundle_objects` | objektumokat fog kötegbe, mint a Ctrl+B: együtt mozognak, megtartják a színüket és a fajtájukat, és exportáláskor külön kerülnek ki |
 | `layerling_layer_text` | egy szöveget rétegekből álló kötegbe alakít többszínű nyomtatáshoz (betűk, szélesebb szegélyek, egy lyukak nélküli lap), vagy újraépít egy köteget, kulcstartólyukkal, rétegenkénti sarkokkal és lekerekített vagy letört betűéllel; névlistával nevenként egy címkét készít |
+| `layerling_text_block` | szövegblokkot készít: egy szöveg lesz több sor közül az első, mindegyik önálló szöveg a felette lévő alatt, balra, középre vagy jobbra igazítva, minden sor ugyanakkora vagy kisebb |
 | `layerling_layer_icon` | egy SVG-ikont (a fájl szövegét vagy egy kihúzott vázlattestet) rétegekből álló ikoncímkévé alakít többszínű nyomtatáshoz – az ikon, szélesebb szegélyek, egy lyukak nélküli lap –, vagy új szélességgel vagy rétegekkel újraépít egyet; darabszámmal másolatokkal tölti meg a tárgyasztalt |
 | `layerling_create_qr_code` | szövegből vagy webcímből QR-kódot készít, mint az alakzatkönyvtár {{ui:shape.qrCode}} eleme – csak a kódot, lapon kiemelve vagy gravírozva, hibajavítással, szélességgel, magassággal, csendes zónával és kérésre üregként; figyelmeztet, ha egy modul 0,8 mm alá kerül |
 | `layerling_create_sbc_board` | valódi méretű SBC lapot tesz le, mint az alakzatkönyvtár {{ui:shape.sbcBoard}} eleme – Raspberry Pi 5, 4, 3 B+, Zero 2 W vagy BIGTREETECH Pi, furatokkal és csatlakozókkal, a szélső csatlakozók holtjátékával, helyzettel, és kivágásként doboz vágásához |

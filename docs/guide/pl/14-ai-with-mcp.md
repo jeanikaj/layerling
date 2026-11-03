@@ -35,6 +35,14 @@ Instaluje to, czego potrzebuje layerling, pobiera layerling do folderu `layerlin
 
 **5. Powiedz Claude, co ma zbudować.** Na przykład: „Użyj narzędzi layerlinga i zbuduj mi okrągłe pudełko o średnicy 60 mm i wysokości 40 mm, ze ścianką 2,5 mm”. Jeśli żaden edytor nie jest otwarty, Claude otworzy go w przeglądarce, zbuduje tam pudełko krok po kroku i zrobi zdjęcia, żeby sprawdzić swoją pracę. Ty patrzysz i w każdej chwili możesz sam coś zmienić.
 
+**Na Macu** wygląda to tak samo, z tymi zmianami. W kroku 1 otwórz aplikację Terminal (naciśnij Cmd+spację, wpisz `Terminal` i naciśnij Enter), wklej ten wiersz i naciśnij Enter:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/henmedia/layerling/main/scripts/mac-quickstart.sh | sh
+```
+
+Jeśli brakuje Gita lub Node.js, skrypt powie ci, co zainstalować (Gita oferuje macOS w oknie, Node.js jest instalatorem na nodejs.org); potem uruchom ten sam wiersz jeszcze raz. W kroku 2 skrót na pulpicie też nazywa się „Start layerling”. W kroku 3 zainstaluj aplikację Claude na Maca.
+
 > **Wskazówka:** Jeśli coś nie działa, powiedz Claude, co widzisz. Potrafi odczytać błąd i zwykle sam go naprawia. Jeśli w edytorze nic się nie dzieje, najpierw sprawdź, czy layerling nadal działa (krok 2).
 
 ## Konfiguracja
@@ -103,6 +111,7 @@ AI pracuje tymi samymi funkcjami co Ty, tą samą drogą co Twoja praca w edytor
 | `layerling_cookie_cutter` | robi z obiektów foremkę do ciastek: ściankę z ostrzem i kołnierz wokół odbitego konturu (Foremka do ciastek) |
 | `layerling_flexi_joints` | tnie płaską bryłę na ogniwa z przegubami drukowanymi w miejscu, które wychylają się na boki (Przeguby flexi) |
 | `layerling_make_lid` | robi pokrywkę do bryły otwartej u góry: wciskaną, nakładaną albo płaską, z wybranym pasowaniem (Pokrywka) |
+| `layerling_make_cable_channel` | prowadzi okrągły kanał na kabel przez bryłę, od wejścia do wyjścia, i sam znajduje drogę łagodnymi łukami (Kanał na kabel) |
 | `layerling_loft_sketches` | łączy dwie bryły ze szkicu w przejście od jednego konturu do drugiego (Przejście między szkicami) |
 | `layerling_separate_parts` | rozdziela kształt na jego luźne części, bryłę ze szkicu na jedną bryłę na kontur |
 | `layerling_split_objects` | przecina bryły albo otwory na dwie części płaszczyzną |
@@ -117,6 +126,7 @@ AI pracuje tymi samymi funkcjami co Ty, tą samą drogą co Twoja praca w edytor
 | `layerling_array_objects` | powiela w rzędzie albo na okręgu |
 | `layerling_bundle_objects` | łączy obiekty w zestaw jak Ctrl+B: poruszają się razem, zachowują kolor i rodzaj, a w eksporcie wychodzą osobno |
 | `layerling_layer_text` | zmienia tekst w stos warstw do druku wielokolorowego (litery, szersze obrzeża, płytka bez otworów) albo buduje stos ponownie, z otworem na kółko do kluczy, narożnikami dla każdej warstwy i zaokrągloną lub sfazowaną krawędzią liter. Z listą imion jedna plakietka na imię |
+| `layerling_text_block` | tworzy blok tekstu: tekst staje się pierwszym z kilku wierszy, każdy osobnym tekstem pod poprzednim, wyrównanych do lewej, do środka lub do prawej, każdy wiersz tej samej wielkości lub mniejszy |
 | `layerling_layer_icon` | zmienia ikonę SVG (tekst pliku albo wyciągniętą bryłę ze szkicu) w warstwową plakietkę z ikoną do druku wielokolorowego (ikona, szersze obrzeża, płytka bez otworów) albo buduje ją ponownie z nową szerokością lub warstwami. Z liczbą wypełnia płytę kopiami |
 | `layerling_create_qr_code` | tworzy kod QR z tekstu lub adresu strony, jak {{ui:shape.qrCode}} w bibliotece kształtów – sam kod, wypukły na płytce albo grawerowany, z korekcją błędów, szerokością, wysokością, strefą ciszy i na życzenie jako otwór; ostrzega, gdy moduł jest mniejszy niż 0,8 mm |
 | `layerling_create_sbc_board` | wstawia płytkę SBC w rzeczywistym rozmiarze, jak {{ui:shape.sbcBoard}} w bibliotece kształtów – Raspberry Pi 5, 4, 3 B+, Zero 2 W lub BIGTREETECH Pi, z otworami i złączami, luzem wokół złączy na krawędzi, położeniem i jako otwór do wycięcia obudowy |

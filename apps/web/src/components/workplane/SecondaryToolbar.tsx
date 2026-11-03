@@ -2,6 +2,7 @@
 
 import { GuideHelpLink } from "@/components/GuideHelpLink";
 import { ShapeMenuPanel } from "@/components/workplane/ShapeMenuPanel";
+import { ShapeLibraryList } from "@/components/workplane/ShapeLibraryList";
 import { AlertTriangle, ArrowDownToLine, ArrowUpFromLine, Check, CircleHelp, Percent, Circle as CircleIcon, Eye, EyeOff, Hexagon as HexagonIcon, ListTree, Pencil, Pentagon as PentagonIcon, Pin, PinOff, Rotate3d, Route as RouteIcon, ScanEye, Search, Square as SquareIcon, Star as StarIcon, Triangle as TriangleIcon, X } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { useWheelField } from "@/lib/useWheelField";
@@ -12,13 +13,14 @@ import { useLanguage } from "@/lib/useLanguage";
 import { useSimpleMode } from "@/lib/useSimpleMode";
 import { simpleModeKeepsShape, simpleModeKeepsTool } from "@/lib/simpleMode";
 import { normalizePolygonSides, normalizeStarInnerPercent, SKETCH_POLYGON_MAX_SIDES, SKETCH_POLYGON_MIN_SIDES, SKETCH_STAR_MAX_INNER_PERCENT, SKETCH_STAR_MIN_INNER_PERCENT } from "@/lib/sketchPrimitives";
-import { SketchBoltCircleIcon, SketchEllipseIcon, SketchHalfCircleIcon, SketchPieSliceIcon, ToolbarAlignIcon, ToolbarAttachmentsIcon, ToolbarCenterOnWorkplaneIcon, ToolbarChamferIcon, ToolbarCaretDownIcon, ToolbarCookieCutterIcon, ToolbarFlexiIcon, ToolbarLidIcon, ToolbarCopyIcon, ToolbarDuplicateIcon, ToolbarDropToWorkplaneIcon, ToolbarBundleIcon, ToolbarGroupIcon, ToolbarGuideIcon, ToolbarHideSelectedIcon, ToolbarHomeIcon, ToolbarImportIcon, ToolbarIntersectionIcon, ToolbarIntersectPreviewIcon, ToolbarClearanceIcon, ToolbarHullIcon, ToolbarLoftSketchesIcon, ToolbarKeyboardIcon, ToolbarFilletIcon, ToolbarHistoryIcon, ToolbarHollowIcon, ToolbarOffsetIcon, ToolbarCutOutIcon, ToolbarPunchIcon, ToolbarDeleteFaceIcon, ToolbarSimplifyIcon, ToolbarSurfaceTextureIcon, ToolbarMirrorIcon, ToolbarRotationPivotIcon, ToolbarPatternIcon, ToolbarHolePatternIcon, ToolbarFaceToolIcon, ToolbarConstructionLineIcon, ToolbarMiddleLineIcon, ToolbarLayFlatIcon, ToolbarMateFacesIcon, ToolbarNoteIcon, ToolbarSplitIcon, ToolbarPasteIcon, ToolbarRedoIcon, ToolbarSnapGridIcon, ToolbarSettingsIcon, ToolbarShapeAddIcon, ToolbarTrashIcon, ToolbarUngroupIcon, ToolbarUndoIcon, ToolbarVectorExportIcon } from "../icons";
+import { SketchBoltCircleIcon, SketchEllipseIcon, SketchHalfCircleIcon, SketchPieSliceIcon, ToolbarAlignIcon, ToolbarAttachmentsIcon, ToolbarCenterOnWorkplaneIcon, ToolbarChamferIcon, ToolbarCaretDownIcon, ToolbarCookieCutterIcon, ToolbarFlexiIcon, ToolbarLidIcon,
+  ToolbarCableChannelIcon, ToolbarCopyIcon, ToolbarDuplicateIcon, ToolbarDropToWorkplaneIcon, ToolbarBundleIcon, ToolbarGroupIcon, ToolbarGuideIcon, ToolbarHideSelectedIcon, ToolbarHomeIcon, ToolbarImportIcon, ToolbarIntersectionIcon, ToolbarIntersectPreviewIcon, ToolbarClearanceIcon, ToolbarHullIcon, ToolbarLoftSketchesIcon, ToolbarKeyboardIcon, ToolbarFilletIcon, ToolbarHistoryIcon, ToolbarHollowIcon, ToolbarOffsetIcon, ToolbarCutOutIcon, ToolbarPunchIcon, ToolbarDeleteFaceIcon, ToolbarSimplifyIcon, ToolbarSurfaceTextureIcon, ToolbarMirrorIcon, ToolbarRotationPivotIcon, ToolbarPatternIcon, ToolbarHolePatternIcon, ToolbarFaceToolIcon, ToolbarConstructionLineIcon, ToolbarMiddleLineIcon, ToolbarLayFlatIcon, ToolbarMateFacesIcon, ToolbarNoteIcon, ToolbarSplitIcon, ToolbarPasteIcon, ToolbarRedoIcon, ToolbarSnapGridIcon, ToolbarSettingsIcon, ToolbarShapeAddIcon, ToolbarTrashIcon, ToolbarUngroupIcon, ToolbarUndoIcon, ToolbarVectorExportIcon } from "../icons";
 import { type SketchPrimitive, type SketchTool } from "../SketchWorkspace";
 import { CommandPalette, type PaletteCommand } from "./CommandPalette";
 import { COMMAND_KEYWORDS, COMMAND_SHORTCUTS, SHAPE_KEYWORDS } from "@/lib/commandKeywords";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { ThemeSwitch } from "@/components/ThemeSwitch";
-import { libraryShapeAssets, shapeAssetColor, shapeAssetLabel, shapeAssetMenuLabel } from "@/lib/shapeCatalog";
+import { libraryShapeAssets, shapeAssetColor, shapeAssetLabel, shapeAssetMenuLabel, type ToolbarShapeAsset } from "@/lib/shapeCatalog";
 import type { CadModifierKind } from "@/lib/cadModifierTypes";
 import type { ShapeAsset, SketchOperation, WorkplaneWorkspaceSettings } from "@/types/layerling";
 import { TopPanel } from "./TopActionPanel";
@@ -212,6 +214,8 @@ export function SecondaryToolbar({
   flexiActive,
   canLid,
   lidActive,
+  canCableChannel,
+  cableChannelActive,
   canLoftSketches,
   canRedo,
   canUngroup,
@@ -287,6 +291,7 @@ export function SecondaryToolbar({
   onCookieCutter,
   onFlexi,
   onLid,
+  onCableChannel,
   onLoftSketches,
   onIntersectPreview,
   intersectPreviewActive,
@@ -367,6 +372,9 @@ export function SecondaryToolbar({
   flexiActive: boolean;
   canLid: boolean;
   lidActive: boolean;
+  /** The cable channel (one solid selected) and whether its panel is open. */
+  canCableChannel: boolean;
+  cableChannelActive: boolean;
   canLoftSketches: boolean;
   canRedo: boolean;
   canUngroup: boolean;
@@ -446,6 +454,7 @@ export function SecondaryToolbar({
   onCookieCutter: () => void;
   onFlexi: () => void;
   onLid: () => void;
+  onCableChannel: () => void;
   onLoftSketches: () => void;
   onIntersectPreview: () => void;
   intersectPreviewActive: boolean;
@@ -820,6 +829,7 @@ export function SecondaryToolbar({
     { id: "fillet", section: "edges", label: t("editor.tool.fillet"), icon: ToolbarFilletIcon, action: onFillet, enabled: canEdgeModify, active: edgeModifierKind === "fillet", needs: need("oneBody") },
     { id: "hollow", section: "edges", label: t("editor.tool.hollow"), icon: ToolbarHollowIcon, action: onHollow, enabled: canEdgeModify, active: hollowActive, needs: need("oneBody") },
     { id: "lid", section: "edges", label: t("editor.tool.lid"), icon: ToolbarLidIcon, action: onLid, enabled: canLid || lidActive, active: lidActive, needs: need("solid") },
+    { id: "cableChannel", section: "edges", label: t("editor.tool.cableChannel"), icon: ToolbarCableChannelIcon, action: onCableChannel, enabled: canCableChannel || cableChannelActive, active: cableChannelActive, needs: need("oneSolid") },
     { id: "offset", section: "edges", label: t("editor.tool.offset"), icon: ToolbarOffsetIcon, action: onOffset, enabled: canEdgeModify, active: offsetActive, needs: need("oneBody") },
     { id: "deleteFace", section: "edges", label: t("editor.tool.deleteFace"), icon: ToolbarDeleteFaceIcon, action: onDeleteFace, enabled: canEdgeModify, active: deleteFaceActive, needs: need("oneBody") },
     { id: "simplify", section: "surface", label: t("editor.tool.simplify"), icon: ToolbarSimplifyIcon, action: onSimplify, enabled: canSimplify, active: simplifyActive, needs: need("mesh") },
@@ -854,6 +864,82 @@ export function SecondaryToolbar({
   type ToolbarTool = (typeof leftTools)[number] | (typeof visibilityTools)[number] | (typeof combineTools)[number] | (typeof modifyTools)[number] | (typeof arrangeTools)[number]
     | Pick<(typeof leftTools)[number], "id" | "label" | "icon" | "action" | "enabled">;
   const renderToolButton = (tool: ToolbarTool) => toolButton(tool, false);
+  /** One shape of the library: a click puts it in, a drag drops it where it is let go, a tap does on a touch screen. */
+  function shapeTile(shape: ToolbarShapeAsset) {
+    return (
+      <button
+        className="shape-menu-item"
+        key={shape.id}
+        type="button"
+        title={shapeAssetMenuLabel(shape).replace(/\s+/g, " ")}
+        aria-label={shapeAssetMenuLabel(shape).replace(/\s+/g, " ")}
+        style={{ "--shape-default-color": shapeAssetColor(shape, shapeCustomizations[shape.kind]) } as CSSProperties}
+        draggable
+        onClick={() => {
+          if (suppressNextShapeClickRef.current) {
+            suppressNextShapeClickRef.current = false;
+            return;
+          }
+          addShapeFromMenu(shape);
+        }}
+        onPointerDown={(event) => {
+          if (event.pointerType === "touch") {
+            touchShapeStartRef.current = { id: shape.id, x: event.clientX, y: event.clientY };
+          }
+        }}
+        onPointerUp={(event) => {
+          if (event.pointerType !== "touch") {
+            return;
+          }
+          const start = touchShapeStartRef.current;
+          touchShapeStartRef.current = null;
+          if (!start || start.id !== shape.id || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 8) {
+            return;
+          }
+          event.preventDefault();
+          suppressNextShapeClickRef.current = true;
+          window.setTimeout(() => {
+            suppressNextShapeClickRef.current = false;
+          }, 350);
+          addShapeFromMenu(shape);
+        }}
+        onTouchStart={(event) => {
+          const touch = event.changedTouches[0];
+          if (touch) {
+            touchShapeStartRef.current = { id: shape.id, x: touch.clientX, y: touch.clientY };
+          }
+        }}
+        onTouchEnd={(event) => {
+          const touch = event.changedTouches[0];
+          const start = touchShapeStartRef.current;
+          touchShapeStartRef.current = null;
+          if (!touch || !start || start.id !== shape.id || Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > 8) {
+            return;
+          }
+          event.preventDefault();
+          suppressNextShapeClickRef.current = true;
+          window.setTimeout(() => {
+            suppressNextShapeClickRef.current = false;
+          }, 350);
+          addShapeFromMenu(shape);
+        }}
+        onDragStart={(event) => {
+          event.dataTransfer.effectAllowed = "copy";
+          event.dataTransfer.setData("application/x-layerling-shape", JSON.stringify(shape));
+        }}
+        onDragEnd={closeShapesAfterPick}
+      >
+        <span
+          className="shape-menu-thumb"
+          style={{ "--shape-icon": `url(/${shape.menuIcon.replace(/^\/+/, "")})` } as CSSProperties}
+        >
+          <img src={shape.menuIcon} alt="" draggable={false} />
+        </span>
+        <span className={shapeAssetMenuLabel(shape).split(/\s+/).some((word) => word.length > 13) ? "long-word" : undefined}>{shapeAssetMenuLabel(shape)}</span>
+      </button>
+    );
+  }
+
   /** `inFold`: the copy on a folded group's button, which leaves the tool's name for MCP and tests to the one in the group. */
   function toolButton(tool: ToolbarTool, inFold: boolean) {
     const { id, icon: Icon, action, label } = tool;
@@ -1061,86 +1147,17 @@ export function SecondaryToolbar({
               resizable
             >
               <div className="shape-menu-body">
-              {renderMyShapes && !simpleMode ? (
-                <>
-                  {renderMyShapes(closeShapesAfterPick)}
-                  <div className="shape-menu-subtitle">{t("myShapes.basicShapes")}</div>
-                </>
-              ) : null}
-              <div className="shape-menu-list">
-                {shownShapeAssets.map((shape) => (
-                  <button
-                    className="shape-menu-item"
-                    key={shape.id}
-                    type="button"
-                    title={shapeAssetMenuLabel(shape).replace(/\s+/g, " ")}
-                    aria-label={shapeAssetMenuLabel(shape).replace(/\s+/g, " ")}
-                    style={{ "--shape-default-color": shapeAssetColor(shape, shapeCustomizations[shape.kind]) } as CSSProperties}
-                    draggable
-                    onClick={() => {
-                      if (suppressNextShapeClickRef.current) {
-                        suppressNextShapeClickRef.current = false;
-                        return;
-                      }
-                      addShapeFromMenu(shape);
-                    }}
-                    onPointerDown={(event) => {
-                      if (event.pointerType === "touch") {
-                        touchShapeStartRef.current = { id: shape.id, x: event.clientX, y: event.clientY };
-                      }
-                    }}
-                    onPointerUp={(event) => {
-                      if (event.pointerType !== "touch") {
-                        return;
-                      }
-                      const start = touchShapeStartRef.current;
-                      touchShapeStartRef.current = null;
-                      if (!start || start.id !== shape.id || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 8) {
-                        return;
-                      }
-                      event.preventDefault();
-                      suppressNextShapeClickRef.current = true;
-                      window.setTimeout(() => {
-                        suppressNextShapeClickRef.current = false;
-                      }, 350);
-                      addShapeFromMenu(shape);
-                    }}
-                    onTouchStart={(event) => {
-                      const touch = event.changedTouches[0];
-                      if (touch) {
-                        touchShapeStartRef.current = { id: shape.id, x: touch.clientX, y: touch.clientY };
-                      }
-                    }}
-                    onTouchEnd={(event) => {
-                      const touch = event.changedTouches[0];
-                      const start = touchShapeStartRef.current;
-                      touchShapeStartRef.current = null;
-                      if (!touch || !start || start.id !== shape.id || Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > 8) {
-                        return;
-                      }
-                      event.preventDefault();
-                      suppressNextShapeClickRef.current = true;
-                      window.setTimeout(() => {
-                        suppressNextShapeClickRef.current = false;
-                      }, 350);
-                      addShapeFromMenu(shape);
-                    }}
-                    onDragStart={(event) => {
-                      event.dataTransfer.effectAllowed = "copy";
-                      event.dataTransfer.setData("application/x-layerling-shape", JSON.stringify(shape));
-                    }}
-                    onDragEnd={closeShapesAfterPick}
-                  >
-                    <span
-                      className="shape-menu-thumb"
-                      style={{ "--shape-icon": `url(/${shape.menuIcon.replace(/^\/+/, "")})` } as CSSProperties}
-                    >
-                      <img src={shape.menuIcon} alt="" draggable={false} />
-                    </span>
-                    <span className={shapeAssetMenuLabel(shape).split(/\s+/).some((word) => word.length > 13) ? "long-word" : undefined}>{shapeAssetMenuLabel(shape)}</span>
-                  </button>
-                ))}
-              </div>
+              {simpleMode ? (
+                // The simple mode keeps its short list as it was, without sections (#1170).
+                <div className="shape-menu-list">{shownShapeAssets.map(shapeTile)}</div>
+              ) : (
+                <ShapeLibraryList
+                  shapes={shownShapeAssets}
+                  label={(shape) => shapeAssetMenuLabel(shape).replace(/\s+/g, " ")}
+                  renderTile={shapeTile}
+                  customShapes={renderMyShapes ? renderMyShapes(closeShapesAfterPick) : null}
+                />
+              )}
               </div>
             </ShapeMenuPanel>
           ) : null}

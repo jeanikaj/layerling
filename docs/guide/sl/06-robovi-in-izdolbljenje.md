@@ -100,7 +100,15 @@ Nato nastaviš {{ui:lid.thickness}}, {{ui:lid.fit}} ({{ui:lid.gap}} med pokrovom
 
 Ko vklopiš {{ui:lid.magnets}}, pokrov držijo štirje okrogli magneti namesto tesnega ujema. Izberi {{ui:lid.magnetSize}} (6 × 2, 8 × 3 ali 10 × 3 mm) ali sam nastavi {{ui:lid.magnetDiameter}} in {{ui:lid.magnetHeight}}, poleg tega pa še {{ui:lid.magnetGap}}: 0,1 mm, da magnete vtisneš, 0,2 do 0,3 mm, da jih zalepiš. Layerling izreže žep v vsak kot roba telesa in nasproti še enega v ploščo pokrova, malo globlje od magneta, da nikoli ne štrli ven. Kjer je stena za žep pretanka, kot od dna do roba zapolni steber, ustnica pokrova pa gre okoli njega. Telo se združi s svojimi žepi in stebri: ko skupino razdružiš, ga imaš spet takšnega, kot je bilo. Plošča mora biti debela vsaj za višino magneta in še 0,8 mm; ko magnete vklopiš, se tako odebeli.
 
+Ko vklopiš {{ui:lid.hinge}}, se pokrov odpira okoli zatiča vzdolž ravne zadnje strani telesa. Tam se izmenjujejo členki, zunanji na telesu in tisti vmes na pokrovu, z {{ui:lid.hingeGap}} vmes, skozi vse pa gre luknja za zatič: pri {{ui:lid.hingePin}} 1,75 mm je zatič kos filamenta; vklopi {{ui:lid.hingePrintPin}} za debelejšega, natisnjenega posebej. Členki telesa stojijo na 45-stopinjskem naklonu, zato se telo tiska pokončno brez podpor; členki pokrova so poravnani z njegovo zgornjo stranjo, zato se še vedno tiska obrnjen. {{ui:lid.hingeKnuckles}} na 0 da približno en členek na 10 mm. Tečaj gre z vstavljenim ali ploščatim pokrovom; rob okoli bi ob odpiranju zadel zadnjo steno.
+
 > **Namig:** Najprej vtisni magnete v telo. Nato na vsakega postavi še en magnet, ki se nanj sam obrne prav, in nanje pritisni pokrov (s kapljico lepila v žepih, če so ohlapni): tako gre vsak magnet v pokrov nasproti svojemu paru in se privlačita.
+
+## Kabelski kanal skozi telo
+
+{{ui:editor.tool.cableChannel}} napelje okrogel prehod skozi telo za kabel ali žico LED, od mesta, kjer vstopi, do mesta, kjer izstopi, in sam najde pot. Izberi telo in klikni {{ui:editor.tool.cableChannel}}, nato klikni na telo, kjer kabel vstopi ({{ui:cable.entry}}), in kjer izstopi ({{ui:cable.exit}}). Pot se začne in konča naravnost, pravokotno na površino, gre naravnost, kjer gre, in se ukrivi, kjer mora, nikoli ožje od {{ui:cable.minBend}}, in ostane čim dlje od zunanje površine, nikoli bliže od {{ui:cable.minWall}}. Kabel se da potisniti skozi lok s polmerom približno petkratnika njegovega premera; {{ui:cable.diameter}} je premer kanala.
+
+Dokler je plošča odprta, vidiš skozi telo, s kanalom v njem in oznako na vsakem koncu. Plošča pove, kako dolg je kanal, kako ozek je najožji lok in kako tanka najtanjša stena, z rdečo, ko sta morala biti lok ali stena manjša od želenih; takrat pomaga manjša vrednost pri {{ui:cable.minBend}} ali drug vhod ali izhod. {{ui:cable.pickAgain}} premakne konec. {{ui:cable.apply}} izreže kanal: postane {{ui:shape.bentTube}} kot luknja, združena s telesom, ki tako ostane natančno, in po razdružitvi lahko cev še spremeniš. Ukrivljena cev ima največ enajst lokov; pot, ki jih potrebuje več, zahteva drug vhod ali izhod.
 
 ## Odmik teles
 

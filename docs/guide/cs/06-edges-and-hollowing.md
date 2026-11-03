@@ -100,7 +100,15 @@ Pak nastavíš {{ui:lid.thickness}}, {{ui:lid.fit}} ({{ui:lid.gap}} mezi víkem 
 
 Když zapneš {{ui:lid.magnets}}, drží víko čtyři kulaté magnety místo těsného uložení. Vyber {{ui:lid.magnetSize}} (6 × 2, 8 × 3 nebo 10 × 3 mm) nebo nastav {{ui:lid.magnetDiameter}} a {{ui:lid.magnetHeight}} sám, k tomu {{ui:lid.magnetGap}}: 0,1 mm k zalisování magnetů, 0,2 až 0,3 mm k vlepení. Layerling vyřízne do každého rohu okraje tělesa kapsu a naproti ní další do desky víka, o něco hlubší než magnet, aby nikdy nevyčníval. Kde je stěna na kapsu příliš tenká, vyplní roh od dna po okraj sloupek a lem víka ho obejde. Těleso se seskupí se svými kapsami a sloupky: když skupinu zrušíš, máš ho zpátky, jak bylo. Deska musí být silná alespoň jako výška magnetu plus 0,8 mm; zapnutím magnetů se na tuto sílu nastaví.
 
+Když zapneš {{ui:lid.hinge}}, víko se otevírá kolem čepu podél rovné zadní strany těla. Tam se střídají kloubky, krajní na těle a ty mezi nimi na víku, s mezerou {{ui:lid.hingeGap}}, a všemi prochází otvor pro čep: při {{ui:lid.hingePin}} 1,75 mm poslouží jako čep kousek filamentu; zapni {{ui:lid.hingePrintPin}}, chceš-li silnější čep tištěný zvlášť. Kloubky těla stojí na šikmině 45°, takže tělo se tiskne nastojato bez podpor; kloubky víka lícují s jeho horní plochou, takže se dál tiskne obrácené. {{ui:lid.hingeKnuckles}} na 0 dá zhruba jeden kloubek na 10 mm. Pant jde s vkládacím nebo plochým víkem; okraj kolem dokola by při otevírání narazil do zadní stěny.
+
 > **Tip:** Nejdřív zalisuj magnety do tělesa. Pak na každý polož ještě jeden magnet, který se na něm sám otočí správně, a přitlač na ně víko (s kapkou lepidla v kapsách, pokud sedí volně): každý magnet tak skončí ve víku naproti svému protějšku a budou se přitahovat.
+
+## Kabelový kanál tělesem
+
+{{ui:editor.tool.cableChannel}} vede tělesem kulatý průchod pro kabel nebo vodič LED, od místa, kde vstupuje, k místu, kde vychází, a cestu najde sám. Vyberte těleso a klikněte na {{ui:editor.tool.cableChannel}}, pak klikněte na těleso tam, kde kabel vstupuje ({{ui:cable.entry}}), a kde vychází ({{ui:cable.exit}}). Cesta začíná a končí rovně, kolmo k povrchu, vede rovně, kde to jde, a ohýbá se, kde musí, nikdy ostřeji než {{ui:cable.minBend}}, a drží se co nejdál od vnějšího povrchu, nikdy blíž než {{ui:cable.minWall}}. Kabel se dá protlačit obloukem o poloměru asi pětinásobku jeho průměru; {{ui:cable.diameter}} je průměr kanálu.
+
+Dokud je panel otevřený, těleso je průhledné, s kanálem uvnitř a značkou na každém konci. Panel ukáže délku kanálu, nejostřejší oblouk a nejtenčí stěnu, červeně, když musel být oblouk nebo stěna menší, než bylo žádáno; pak pomůže menší hodnota u {{ui:cable.minBend}} nebo jiný vstup či výstup. {{ui:cable.pickAgain}} přesune konec. {{ui:cable.apply}} kanál vyřízne: stane se z něj {{ui:shape.bentTube}} jako výřez, seskupená s tělesem, takže těleso zůstane přesné, a po zrušení skupiny se trubka dá ještě změnit. Ohnutá trubka má nejvýš jedenáct oblouků; cesta, která jich potřebuje víc, chce jiný vstup nebo výstup.
 
 ## Odsazení těles
 

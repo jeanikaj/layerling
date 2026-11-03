@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SAVED_VIEW_KEYS } from "@/lib/designView";
 import * as THREE from "three";
 import type { AppThemePreference, ResolvedAppTheme } from "@/lib/appTheme";
-import { getLanguage, t, type MessageKey } from "@/lib/i18n";
+import { getLanguage, numberLocale, t, type MessageKey } from "@/lib/i18n";
 import { isObjectListOrder, sortObjectList } from "@/lib/objectListSearch";
 import { useLanguage } from "@/lib/useLanguage";
 import { loftShapePatch, normalizeLoftMiddles, type LoftMeasures } from "@/lib/loftGeometry";
@@ -17,13 +17,15 @@ import { bentTubeNaturalDimensions, normalizedBentTubeFields } from "@/lib/bentT
 import { gridfinityListPatch, gridfinityOutlineFit, gridfinityOutlineFromLoops, gridfinityOutlineToPlate, gridfinityPlan, gridfinityPlateFlat, gridfinityPlateToWorld } from "@/lib/gridfinityGeometry";
 import { DEFAULT_THREAD_PROFILE, defaultThreadHeadHeight, normalizeThreadHeadHeight, threadCollarFields, threadCollarSettings, threadDriveFields, threadDriveSettings, threadNaturalFootprint, threadSettings } from "@/lib/threadGeometry";
 import { textOffsetAsFill } from "@/lib/textFillChoice";
-import { curvedTextPatch, MAX_TEXT_SPACING, MIN_TEXT_SPACING } from "@/lib/textGeometry";
+import { curvedTextPatch, MAX_TEXT_LETTER_WIDTH, MAX_TEXT_SPACING, MIN_TEXT_LETTER_WIDTH, MIN_TEXT_SPACING } from "@/lib/textGeometry";
 import { normalizeTextEdge } from "@/lib/textEdge";
 import { DEFAULT_TEXT_LAYERS, layerTextKeyringArgument, placedKeyring, layerTextLayersError, nameTagOffsets, normalizeTextLayers, type NameTagKeyring } from "@/lib/textLayers";
 import { NAME_TAG_LAYERS, NAME_TAG_LETTER_SIZE, textLetterSize, textLetterSizePatch, textShrinkPatch, textSpacingPatch } from "@/lib/nameTag";
 import { DEFAULT_ICON_TAG_WIDTH, ICON_TAG_LAYERS, MAX_ICON_TAG_WIDTH, MIN_ICON_TAG_WIDTH, isIconLayerBody, normalizeIconTagCount } from "@/lib/iconTag";
 import { automaticFlexiJoints, automaticFoldJoints, DEFAULT_FLEXI_FOLD, FLEXI_DEFAULTS, normalizeFlexiOptions, type FlexiOptions } from "@/lib/flexiJoints";
 import { LID_DEFAULTS, groupedWithMagnets, magnetPocketDepth, normalizeLidOptions, type LidOptions } from "@/lib/lidTool";
+import { CABLE_DEFAULTS, cableChannelShapeFields, cableEndNear, cableGrid, findCableChannel, normalizeCableOptions, type CableChannelError, type CableChannelOptions, type CableChannelResult, type CableEnd, type CableGrid, type Vec3 as CableVec3 } from "@/lib/cableChannel";
+import { CableChannelPanel, type CableChannelEndName, type CableChannelPanelResult } from "./workplane/CableChannelPanel";
 import type { CadLidRequest } from "@/lib/cadLid";
 import { cookieCutterFillets, cookieCutterProfiles, normalizeCookieCutterOptions, outlineFromCurves, outlineFromLoops, sampledCurveLoop, unitedFootprint, type CookieCutterOptions, type CurveLoop } from "@/lib/cookieCutter";
 import type { IconLayerPatch, IconTagControls, ReferenceImageControls, TextLayerPatch } from "@/components/workplane/ShapeInspector";
@@ -107,7 +109,8 @@ import { projectShapesExtent } from "@/components/workplane/ViewportOverlays";
 import { bakeCadMetadataForShapeTransform, cadBrepTransformForShape, cadModifierPrimitiveForAnalyticShape, cadModifierPrimitiveForBakedShape, importedStepPartForShape } from "@/lib/cadBakeMetadata";
 import { hasOneToOneCadComponentMapping } from "@/lib/cadModifierGroups";
 import { cadModifierGridfinityForShape, cadModifierHelicalGearForShape, cadModifierHirthForShape, cadModifierProfileForShape, cadModifierSpringForShape, cadModifierThreadForShape, cadProfileExpectation, cadProfileSegmentCount, textGlyphProfiles, withinExactProfileLimit } from "@/lib/cadProfileExtrusion";
-import { DEFAULT_OVERHANG_ANGLE, normalizeOverhangAngle, overhangArea } from "@/lib/overhang";
+import { DEFAULT_OVERHANG_ANGLE, normalizeOverhangAngle } from "@/lib/overhang";
+import { bodyOverhang, overhangBodies, overhangFigures, overhangFiguresText, type OverhangFigures } from "@/lib/overhangFigures";
 import { sectionMeasurement, sectionPointToWorld, snapSectionPoint } from "@/lib/sectionMeasure";
 import { DEFAULT_INFILL_PERCENT, DEFAULT_WALLS, PRINT_MATERIAL_DENSITY, PRINT_MATERIALS, FILAMENT_DIAMETER_MM, normalizePrintMaterial, printEstimate, printEstimateWithInfill } from "@/lib/printEstimate";
 import { matchingEdgeIds } from "@/lib/edgeMatching";
@@ -150,7 +153,9 @@ import { useFileAccept } from "@/lib/fileAccept";
 import { exportLylProject, LYL_CREATED_WITH_VERSION, LYL_MEDIA_TYPE } from "@/lib/lylProject";
 import { isBuildMessage, reportWorkerBuild } from "@/lib/buildStamp";
 import { ensureLylFileWritable, forgetLylFile, forgetStlFile, linkedLylFile, linkedStlFile, lylFileAccessSupported, pickLylFileToOpen, pickLylFileToSave, pickStlFileToSave, rememberLylFile, rememberStlFile, writeLylFile, type LylFileHandle } from "@/lib/lylFileAccess";
+import { copyNamePatterns, shapeNamesIn, withCopyName } from "@/lib/shapeCopyName";
 import { clipboardShape, displayShapeName, hasOwnShapeName, iconTagAsset, qrCodeAsset, makeShapeFromAsset, nameTagAsset, sbcBoardAsset, shapeAssetLabel, toolbarShapeAssets } from "@/lib/shapeCatalog";
+import { storeRecentShape } from "@/lib/shapeLibrarySections";
 import { PORT_PRESET_ORDER, PORT_PRESETS, portPresetSize, type PortPreset } from "@/lib/portGeometry";
 import { WASHER_SIZE_ORDER, isWasherSize, washerTubeFields } from "@/lib/washerSizes";
 import { finishingWasherFields, finishingWasherSizes, isFinishingWasherSize, isScrewHoleSize, screwHoleFields, screwHoleSizesFor } from "@/lib/screwHoleSizes";
@@ -230,6 +235,7 @@ import { debugShapeSummary, mcpPivotRequest, compactShapeSummary, mcpShapeSummar
 import { sweepAnchorFromParams, sweepPathFromParams, sweepSectionFromParams, sweepSketchProfile } from "@/lib/sweepSketch";
 import { emptySketchProfile, cadShapeFromSketchProfile, cadShapeFromSketchSweep, revolveBuildProfile, shapeFromRevolvedSketchProfile, shapeFromCadMesh, sketchBodyAsOperation, sketchBodyOperation, sketchProfileLeftOfAxis, sketchReferenceShapeOnWorkplane, defaultMcpSketchProfile, type SketchMirrorAbout } from "@/lib/editorSketchCad";
 import { drawingLabelsInLanguage } from "@/lib/drawingLabels";
+import { DEFAULT_TEXT_BLOCK_GAP, offersTextBlock, TEXT_BLOCK_ALIGNS, textBlockFor, textBlockLines, type TextBlockAlign, type TextBlockOptions } from "@/lib/textBlock";
 import { offersTextLayers, textLayerStack, layeredTextShape, nameTagSource, nameTagsFor, offersIconLayers, iconLayerStack, iconTagArea, layeredIconShape, iconTagCopies, svgIconArea, iconTagFromSvg, keyringTabShape, keyringTabTag, keyringTabAt, keyringTabPlace, textFreeKeyring, textFreeKeyringPlace, iconFreeKeyring, iconFreeKeyringPlace } from "@/lib/editorTextTags";
 import { DEFAULT_KEYRING_DIAMETER } from "@/lib/textGeometry";
 import { TopPanel, DirectExportFormat, SvgExportView, DxfExportView, ViewImageOptions, LylHistoryLimit, LylExportTarget, TopActionPanel } from "./workplane/TopActionPanel";
@@ -3273,6 +3279,11 @@ export function LayerlingEditor({
   const [flexiTool, setFlexiTool] = useState<(FlexiToolSettings & { targetIds: string[]; busy: boolean; error: string | null }) | null>(null);
   /** A lid (#1009) for the bodies `targetIds`, open at the top; it comes out beside them. */
   const [lidTool, setLidTool] = useState<(LidOptions & { targetIds: string[]; busy: boolean; error: string | null }) | null>(null);
+  /** The cable channel: the body, the two ends clicked on it, which end a click sets now, and its settings. */
+  const [cableTool, setCableTool] = useState<(CableChannelOptions & { targetId: string; entry: CableEnd | null; exit: CableEnd | null; picking: CableChannelEndName | null; busy: boolean; error: string | null }) | null>(null);
+  const [cableSearch, setCableSearch] = useState<{ working: boolean; result: CableChannelResult | null } | null>(null);
+  /** The body as a grid for the search, kept while the body stays as it is: moving an end or a slider searches again at once. */
+  const cableGridRef = useRef<{ key: string; grid: CableGrid | null } | null>(null);
   /** The cookie cutter's panel (#982): what it is made from and the settings it is built with, kept for the next cutter. */
   const [cookieCutterTool, setCookieCutterTool] = useState<(CookieCutterSettings & { targetIds: string[]; busy: boolean; error: string | null }) | null>(null);
   const [simplifyToolId, setSimplifyToolId] = useState<string | null>(null);
@@ -3763,6 +3774,8 @@ export function LayerlingEditor({
   // A shape on the pointer and a tool that waits for a click cannot share the
   // click: the one taken up last wins and puts the other one down.
   const startCruise = useCallback((asset: ShapeAsset) => {
+    // The icon tag, the QR code and the SBC board are not carried, so this is where they are put in (#1170).
+    if (asset.id === iconTagAsset.id || asset.id === qrCodeAsset.id || asset.id === sbcBoardAsset.id) storeRecentShape(asset.id);
     // The icon tag has no shape to carry: it starts from an SVG file, in its own window.
     if (asset.id === iconTagAsset.id) {
       setQrCodePanelOpen(false);
@@ -4010,8 +4023,45 @@ export function LayerlingEditor({
     const keys = new Set(result.overlaps.flatMap((overlap) => [overlap.a, overlap.b]));
     return new Set(result.parts.filter((part) => keys.has(part.key)).map((part) => part.id));
   }, [clearanceTool?.result]);
+  // The cable channel's preview: the tube the search found, inside its body seen through, and a mark on each end.
+  // While an end is being clicked the body is shown as it is, so the click lands on it.
+  const cablePreviewShapes = useMemo((): WorkplaneShape[] => {
+    if (!cableTool || cableTool.picking) return [];
+    const preview: WorkplaneShape[] = [];
+    const result = cableSearch?.result;
+    const tubeAsset = toolbarShapeAssets.find((asset) => asset.kind === "bentTube");
+    if (result?.ok && tubeAsset) {
+      preview.push(canonicalizeShape({
+        ...makeShapeFromAsset(tubeAsset, { x: 0, z: 0 }),
+        ...cableChannelShapeFields(result, cableTool.diameter),
+        id: "cable-channel-preview",
+        name: t("cable.title"),
+        color: result.tight || result.thin ? "#e5484d" : "#dd7906",
+        hole: false,
+        locked: true,
+        previewOnly: true,
+      } as WorkplaneShape));
+    }
+    const sphereAsset = toolbarShapeAssets.find((asset) => asset.kind === "sphere");
+    const mark = (end: CableEnd | null, id: string, color: string) => {
+      if (!end || !sphereAsset) return;
+      const size = Math.max(3, cableTool.diameter * 1.4);
+      preview.push(canonicalizeShape({
+        ...makeShapeFromAsset(sphereAsset, { x: end.point[0], z: end.point[2] }),
+        id, name: t(id === "cable-channel-entry" ? "cable.entry" : "cable.exit"), color,
+        x: end.point[0], z: end.point[2], elevation: end.point[1] - size / 2, width: size, depth: size, height: size, size,
+        locked: true, previewOnly: true,
+      } as WorkplaneShape));
+    };
+    mark(cableTool.entry, "cable-channel-entry", "#2ea043");
+    mark(cableTool.exit, "cable-channel-exit", "#c83c32");
+    return preview;
+  }, [cableSearch?.result, cableTool]);
   const viewportShapes = useMemo(() => {
     let shown = baseViewportShapes;
+    if (cablePreviewShapes.length && cableTool) {
+      shown = [...shown.map((shape) => (shape.id === cableTool.targetId ? { ...shape, transparent: true } : shape)), ...cablePreviewShapes];
+    }
     if (intersectPreviewIds) {
       const operands = new Set(intersectPreviewIds);
       const ghosts = shown.map((shape) => (operands.has(shape.id) && !shape.hole ? { ...shape, transparent: true } : shape));
@@ -4021,7 +4071,7 @@ export function LayerlingEditor({
       shown = [...shown.map((shape) => (clearanceGhostIds.has(shape.id) ? { ...shape, transparent: true } : shape)), ...clearanceOverlapShapes];
     }
     return shown;
-  }, [baseViewportShapes, clearanceGhostIds, clearanceOverlapShapes, clearanceStale, intersectPreviewIds, intersectPreviewShape]);
+  }, [baseViewportShapes, cablePreviewShapes, cableTool, clearanceGhostIds, clearanceOverlapShapes, clearanceStale, intersectPreviewIds, intersectPreviewShape]);
   // A revolve sketch on the base plate is a side view: the bodies are shown from the front, as the profile is drawn (#525).
   // Opened again to edit a body that stands upright, it is the same side view: that body stands at its height, not on the plate's workplane.
   const editedRevolveShape = sketchActive && sketchOperation === "revolve" && editingSketchShapeId ? shapes.find((shape) => shape.id === editingSketchShapeId) : undefined;
@@ -4776,6 +4826,25 @@ export function LayerlingEditor({
       return next;
     });
   }, [setNotice, stopCruise]);
+
+  // While overhangs are shown, a line under the view says how much needs supports and the steepest overhang; it
+  // follows every change a moment later, as the hatching does.
+  const [overhangLine, setOverhangLine] = useState<OverhangFigures | null>(null);
+  const overhangAngle = workspaceSettings.overhangAngle;
+  useEffect(() => {
+    if (!overhangsVisible) {
+      setOverhangLine(null);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      try {
+        setOverhangLine(overhangFigures(shapes, overhangAngle));
+      } catch {
+        setOverhangLine(null);
+      }
+    }, 200);
+    return () => window.clearTimeout(timer);
+  }, [overhangsVisible, shapes, overhangAngle]);
 
   const toggleOverhangsVisible = useCallback(() => {
     setOverhangsVisible((current) => {
@@ -6060,6 +6129,8 @@ export function LayerlingEditor({
   const addShape = useCallback(
     (asset: ShapeAsset, point?: PlacementPoint, onFace?: PlacementWorkplane, sunk?: boolean) => {
       setCruiseAsset(null);
+      // Put in from the library, by a click, a drag or set down where it was carried: "Recently used" (#1170).
+      storeRecentShape(asset.id);
       if (asset.id === iconTagAsset.id) {
         setQrCodePanelOpen(false);
         setIconTagPanelOpen(true);
@@ -6323,13 +6394,14 @@ export function LayerlingEditor({
       const continuing = chain?.chainId === shape.id;
       const movedSinceCreation = continuing ? shapeMoveDeltaBetween(chain.baseline, shapeTransformSnapshot(shape)) : ZERO_MOVE_DELTA;
       const delta = continuing && isZeroMoveDelta(movedSinceCreation) ? chain.delta : movedSinceCreation;
-      const duplicate = applyShapeMoveDelta(cloneWorkplaneShapeTreeWithFreshIds(shape, "copy"), delta);
+      const duplicate = applyShapeMoveDelta(withCopyName(cloneWorkplaneShapeTreeWithFreshIds(shape, "copy"), shapeNamesIn(shapes), copyNamePatterns()), delta);
       commitShapes([...shapes, duplicate], [duplicate.id], t("status.duplicatedOne"));
       smartDuplicateRef.current = { chainId: duplicate.id, baseline: shapeTransformSnapshot(duplicate), delta };
       return;
     }
     smartDuplicateRef.current = null;
-    const duplicates = selectedShapes.map((shape) => cloneWorkplaneShapeTreeWithFreshIds(shape, "copy"));
+    const takenNames = shapeNamesIn(shapes);
+    const duplicates = selectedShapes.map((shape) => withCopyName(cloneWorkplaneShapeTreeWithFreshIds(shape, "copy"), takenNames, copyNamePatterns()));
     commitShapes([...shapes, ...duplicates], duplicates.map((shape) => shape.id), t("status.duplicatedMany", { count: duplicates.length }));
   }, [commitShapes, hasSelection, selectedShapes, shapes]);
 
@@ -6440,15 +6512,16 @@ export function LayerlingEditor({
   const duplicateShapeAt = useCallback((id: string, position: { x: number; z: number }) => {
     const shape = shapesRef.current.find((entry) => entry.id === id);
     if (!shape) return;
-    const duplicate = { ...cloneWorkplaneShapeTreeWithFreshIds(shape, "copy"), x: position.x, z: position.z };
+    const duplicate = { ...withCopyName(cloneWorkplaneShapeTreeWithFreshIds(shape, "copy"), shapeNamesIn(shapesRef.current), copyNamePatterns()), x: position.x, z: position.z };
     commitShapes([...shapesRef.current, duplicate], [duplicate.id], t("status.duplicatedOne"));
   }, [commitShapes]);
 
   /** Alt-drag: copies of the dragged shapes at the place they were dropped, selected like the drag was. */
   const duplicateShapesMoved = useCallback((ids: string[], delta: { dx: number; dz: number; delevation: number }) => {
+    const takenNames = shapeNamesIn(shapesRef.current);
     const duplicates = ids.flatMap((id) => {
       const shape = shapesRef.current.find((entry) => entry.id === id);
-      return shape ? [applyShapeMoveDelta(cloneWorkplaneShapeTreeWithFreshIds(shape, "copy"), { ...ZERO_MOVE_DELTA, ...delta })] : [];
+      return shape ? [applyShapeMoveDelta(withCopyName(cloneWorkplaneShapeTreeWithFreshIds(shape, "copy"), takenNames, copyNamePatterns()), { ...ZERO_MOVE_DELTA, ...delta })] : [];
     });
     if (duplicates.length === 0) return;
     smartDuplicateRef.current = null;
@@ -6496,7 +6569,8 @@ export function LayerlingEditor({
       clipboardCopiedAtRef.current = newest.copiedAt;
       setClipboard(sourceClipboard);
     }
-    const copies = sourceClipboard.map((shape) => cloneWorkplaneShapeTreeWithFreshIds(shape, "paste"));
+    const takenNames = shapeNamesIn(shapesRef.current);
+    const copies = sourceClipboard.map((shape) => withCopyName(cloneWorkplaneShapeTreeWithFreshIds(shape, "paste"), takenNames, copyNamePatterns(), true));
     // With "Paste in the middle and drop" the parts come together to the middle of the workplane and stand on it,
     // wherever the other program had them (#876); else each is moved a little from where it was.
     const centering = workspaceSettings.pasteCentered ? pasteCenteringShift(copies, placementWorkplaneRef.current) : null;
@@ -8019,7 +8093,9 @@ export function LayerlingEditor({
    * and with posts for the magnets, which the lip has to go round: the mesh lid stays then.
    */
   const exactLid = useCallback(async (targets: readonly WorkplaneShape[], options: LidOptions, meshLid: WorkplaneShape, magnets?: { posts: WorkplaneShape[]; pockets: WorkplaneShape[] }): Promise<WorkplaneShape | null> => {
-    if (options.type === "sliding" || targets.length !== 1 || targets[0].hole || magnets?.posts.length) return null;
+    // A hinged lid stays the mesh lid for now: the exact one has no knuckles.
+    if (options.type === "sliding" || targets.length !== 1 || targets[0].hole || magnets?.posts.length || options.hinge) return null;
+
     const pocketDepth = magnetPocketDepth(options);
     const request: CadLidRequest = {
       type: options.type,
@@ -8059,9 +8135,10 @@ export function LayerlingEditor({
     const targets = (only ?? selectedShapes).filter((shape) => !isNonSolidShape(shape));
     if (!targets.some((shape) => !shape.hole)) return fail(t("lid.error.needsBody"));
     const options = normalizeLidOptions(given);
-    // The pockets go into the body, so it must be free to change and one body.
-    if ((options.magnets || options.type === "sliding") && targets.some((shape) => shape.locked)) return fail(t("status.objectLocked"));
-    if ((options.magnets || options.type === "sliding") && targets.some((shape) => shape.groupOperation === "bundle")) return fail(t("lid.error.magnetsBundle"));
+    // The pockets and the hinge's knuckles go into the body, so it must be free to change and one body.
+    if ((options.magnets || options.hinge || options.type === "sliding") && targets.some((shape) => shape.locked)) return fail(t("status.objectLocked"));
+    if ((options.magnets || options.hinge || options.type === "sliding") && targets.some((shape) => shape.groupOperation === "bundle")) return fail(t("lid.error.magnetsBundle"));
+
     const sourceFingerprint = projectShapesFingerprint(shapesRef.current);
     const sourceProjectId = projectInfoRef.current.projectId;
     const changed = () => projectInfoRef.current.projectId !== sourceProjectId || projectShapesFingerprint(shapesRef.current) !== sourceFingerprint;
@@ -8087,19 +8164,30 @@ export function LayerlingEditor({
       commitShapes([...shapesRef.current.filter(shape => !consumed.has(shape.id)), body, lid], lid.id, t("lid.sliding.made"));
       return { ok: true as const, id: lid.id, bodyId: body.id, type: options.type };
     }
-    if (!result.magnets) {
+    const hinge = result.hinge;
+    if (!result.magnets && !hinge) {
+
       commitShapes([...shapesRef.current, lid], lid.id, t("status.lidMade", { type }));
       return { ok: true as const, id: lid.id, type: options.type };
     }
-    const { posts, pockets } = result.magnets;
-    const grouped = await groupedWithMagnets(targets, result.magnets, (shapes) => buildGroupedShapeOffThread(shapes, workspaceSettingsRef.current.booleanTriangleLimit, geometryAbortRef.current?.signal));
+    const posts = result.magnets?.posts ?? [];
+    const pockets = result.magnets?.pockets ?? [];
+    // The body's knuckles are grouped with it as the magnets' posts are.
+    const grouped = await groupedWithMagnets(targets, { posts: [...posts, ...(hinge ? [hinge.knuckles] : [])], pockets }, (shapes) => buildGroupedShapeOffThread(shapes, workspaceSettingsRef.current.booleanTriangleLimit, geometryAbortRef.current?.signal));
     if (changed()) return fail(t("lid.error.changed"));
-    if (!grouped.group) return fail(grouped.failureNotice || t("lid.error.magnetsKernel"));
+    if (!grouped.group) return fail(grouped.failureNotice || t(hinge ? "lid.error.hingeKernel" : "lid.error.magnetsKernel"));
     const body = canonicalizeShape({ ...grouped.group, groupOperation: "group", name: targets.find((shape) => !shape.hole)?.name ?? grouped.group.name });
     const consumed = new Set(targets.map((shape) => shape.id));
     const remaining = shapesRef.current.filter((shape) => !consumed.has(shape.id));
-    commitShapes([...remaining, body, lid], lid.id, withClosedHolesNote(t(posts.length ? "status.lidMadeMagnetsPosts" : "status.lidMadeMagnets", { type, count: pockets.length }), grouped.closedHoles));
-    return { ok: true as const, id: lid.id, type: options.type, bodyId: body.id, magnets: pockets.length, posts: posts.length > 0 };
+    const pin = options.hingePin.toLocaleString(numberLocale());
+    const message = hinge
+      ? t(pockets.length ? "status.lidMadeHingeMagnets" : "status.lidMadeHinge", { type, count: hinge.count, pin, magnets: pockets.length })
+      : t(posts.length ? "status.lidMadeMagnetsPosts" : "status.lidMadeMagnets", { type, count: pockets.length });
+    commitShapes([...remaining, body, lid, ...(hinge?.pin ? [hinge.pin] : [])], lid.id, withClosedHolesNote(message, grouped.closedHoles));
+    return {
+      ok: true as const, id: lid.id, type: options.type, bodyId: body.id, magnets: pockets.length, posts: posts.length > 0,
+      ...(hinge ? { hinge: { knuckles: hinge.count, pinDiameter: options.hingePin, pinId: hinge.pin?.id ?? null } } : {}),
+    };
   }, [commitShapes, exactLid, selectedShapes]);
 
   const startLidTool = useCallback(() => {
@@ -8127,6 +8215,7 @@ export function LayerlingEditor({
     const { targetIds: _targetIds, busy: _busy, error: _error, ...options } = lidTool;
     setLidTool((current) => current ? { ...current, busy: true, error: null } : current);
     void makeLid(options, targets).then((result) => {
+
       if (result.ok) setLidTool(null);
       else setLidTool((current) => current ? { ...current, busy: false, error: result.message } : current);
     });
@@ -8136,6 +8225,140 @@ export function LayerlingEditor({
   useEffect(() => {
     setLidTool((current) => current && !current.busy && !(selectedIds.length === current.targetIds.length && current.targetIds.every((id) => selectedIds.includes(id))) ? null : current);
   }, [selectedIds]);
+
+  /** The search for a cable channel through `target`; the body's grid is kept while the body stays as it is. */
+  const searchCableChannel = useCallback(async (target: WorkplaneShape, entry: CableEnd, exit: CableEnd, options: CableChannelOptions): Promise<CableChannelResult> => {
+    const key = projectShapesFingerprint([target]);
+    let grid = cableGridRef.current?.key === key ? cableGridRef.current.grid : null;
+    if (!grid) {
+      grid = cableGrid(await faceReadPositionsOffThread(target, geometryAbortRef.current?.signal));
+      cableGridRef.current = { key, grid };
+    }
+    return grid ? findCableChannel(grid, entry, exit, options) : { ok: false, error: "noBody" };
+  }, []);
+
+  /**
+   * Cuts the channel into `target`: the bent tube the search found, as a hole, grouped with the body, so it stays a
+   * bent tube to change later (ungroup) and the body stays exact.
+   */
+  const makeCableChannel = useCallback(async (target: WorkplaneShape, path: Extract<CableChannelResult, { ok: true }>, options: CableChannelOptions) => {
+    const tubeAsset = toolbarShapeAssets.find((asset) => asset.kind === "bentTube");
+    if (!tubeAsset) throw new Error(t("cable.error.kernel"));
+    const name = displayShapeName(target);
+    const hole = canonicalizeShape({
+      ...makeShapeFromAsset(tubeAsset, { x: 0, z: 0 }),
+      ...cableChannelShapeFields(path, options.diameter),
+      name: t("cable.name", { name }),
+    } as WorkplaneShape);
+    const sourceFingerprint = projectShapesFingerprint(shapesRef.current);
+    const sourceProjectId = projectInfoRef.current.projectId;
+    const result = await buildGroupedShapeOffThread([target, hole], workspaceSettingsRef.current.booleanTriangleLimit, geometryAbortRef.current?.signal);
+    if (projectInfoRef.current.projectId !== sourceProjectId || projectShapesFingerprint(shapesRef.current) !== sourceFingerprint) throw new Error(t("status.groupChanged"));
+    if (!result.group) throw new Error(result.failureNotice || t("cable.error.kernel"));
+    const group = canonicalizeShape({ ...result.group, groupOperation: "group" });
+    const length = Math.round(path.length);
+    commitShapes(
+      [...shapesRef.current.filter((shape) => shape.id !== target.id), group],
+      group.id,
+      path.tight ? t("status.cableMadeTight", { length, name, bend: Math.round(path.minBend * 10) / 10 }) : t("status.cableMade", { length, name }),
+    );
+    return { group, hole };
+  }, [commitShapes]);
+
+  const startCableTool = useCallback(() => {
+    if (cableTool) {
+      setCableTool(null);
+      return;
+    }
+    const target = selectedShapes.length === 1 ? selectedShapes[0] : null;
+    if (!target || target.hole || isNonSolidShape(target)) {
+      setNotice(t("cable.error.needsBody"));
+      return;
+    }
+    if (edgeModifier) invalidateCadModifierSession();
+    closeSplit();
+    setCableSearch(null);
+    setCableTool({ ...CABLE_DEFAULTS, targetId: target.id, entry: null, exit: null, picking: "entry", busy: false, error: null });
+  }, [cableTool, closeSplit, edgeModifier, invalidateCadModifierSession, selectedShapes]);
+
+  /** A click while an end waits for it: on the body it sets that end (the entry first, then the exit). */
+  const pickCableEnd = useCallback((pick: LayFlatPick | null) => {
+    setCableTool((current) => {
+      if (!current?.picking) return current;
+      if (!pick || pick.shapeId !== current.targetId) return { ...current, error: t("cable.error.missed") };
+      const end: CableEnd = { point: [pick.point.x, pick.point.y, pick.point.z], normal: [pick.normal.x, pick.normal.y, pick.normal.z] };
+      const next = current.picking === "entry" ? { ...current, entry: end } : { ...current, exit: end };
+      return { ...next, error: null, picking: current.picking === "entry" && !current.exit ? "exit" : null };
+    });
+  }, []);
+
+  // Both ends set: the search runs, and again a moment after an end or a setting changes.
+  useEffect(() => {
+    if (!cableTool) {
+      setCableSearch(null);
+      return;
+    }
+    const { entry, exit, picking, targetId } = cableTool;
+    if (!entry || !exit || picking) return;
+    const target = shapesRef.current.find((shape) => shape.id === targetId);
+    if (!target) return;
+    const options = normalizeCableOptions(cableTool);
+    let cancelled = false;
+    setCableSearch((current) => ({ working: true, result: current?.result ?? null }));
+    const timer = window.setTimeout(() => {
+      void searchCableChannel(target, entry, exit, options)
+        .then((result) => {
+          if (!cancelled) setCableSearch({ working: false, result });
+        })
+        .catch(() => {
+          if (!cancelled) setCableSearch({ working: false, result: { ok: false, error: "noBody" } });
+        });
+    }, 200);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cableTool?.targetId, cableTool?.entry, cableTool?.exit, cableTool?.picking, cableTool?.diameter, cableTool?.minBend, cableTool?.minWall, Boolean(cableTool), searchCableChannel]);
+
+  const applyCableTool = useCallback(() => {
+    const path = cableSearch?.result;
+    if (!cableTool || cableTool.busy || !path?.ok) return;
+    const target = shapesRef.current.find((shape) => shape.id === cableTool.targetId);
+    if (!target) {
+      setCableTool(null);
+      return;
+    }
+    setCableTool((current) => current ? { ...current, busy: true, error: null } : current);
+    void makeCableChannel(target, path, normalizeCableOptions(cableTool))
+      .then(() => setCableTool(null))
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? localizedError(error.message) : String(error);
+        setCableTool((current) => current ? { ...current, busy: false, error: message } : current);
+      });
+  }, [cableSearch?.result, cableTool, makeCableChannel]);
+
+  // The panel belongs to the one body it was opened for; another selection closes it.
+  useEffect(() => {
+    setCableTool((current) => current && !current.busy && !(selectedIds.length === 1 && selectedIds[0] === current.targetId) ? null : current);
+  }, [selectedIds]);
+
+  const cableErrorMessage = (error: CableChannelError) => t(({
+    noBody: "cable.error.noBody",
+    endsTooClose: "cable.error.endsTooClose",
+    endTooThin: "cable.error.endTooThin",
+    noWay: "cable.error.noWay",
+    tooWinding: "cable.error.tooWinding",
+  } satisfies Record<CableChannelError, MessageKey>)[error]);
+  const cablePanelResult: CableChannelPanelResult = !cableSearch
+    ? { state: "idle" }
+    : cableSearch.working
+      ? { state: "working" }
+      : cableSearch.result?.ok
+        ? { state: "found", length: cableSearch.result.length, minBend: cableSearch.result.minBend, minWall: cableSearch.result.minWall, tight: cableSearch.result.tight, thin: cableSearch.result.thin }
+        : cableSearch.result
+          ? { state: "error", message: cableErrorMessage(cableSearch.result.error) }
+          : { state: "idle" };
 
   const applyShellTool = useCallback(() => {
     if (!shellTool || shellTool.busy) return;
@@ -9611,7 +9834,7 @@ export function LayerlingEditor({
   // and does not open over it.
   const otherToolPanelOpen = Boolean(
     arrayTool || scalePercentTool || simplifyToolId || holePatternTool || faceTool || mateTool || cookieCutterTool || flexiTool
-    || lidTool || cutOutTool || punchTool || shellTool || deleteFaceTool || splitSession || edgeModifier,
+    || lidTool || cableTool || cutOutTool || punchTool || shellTool || deleteFaceTool || splitSession || edgeModifier,
   );
   /**
    * Checks the selection, or every visible object when nothing is selected (as the export takes them). A new check
@@ -10375,6 +10598,20 @@ export function LayerlingEditor({
       tags.map((tag) => tag.id),
       t("status.textTagsMade", { count: tags.length }),
     );
+  }, [commitShapes, selectedShape, selectedShapes.length]);
+
+  /**
+   * The text block (#1207): the selected text becomes the first of several lines, each a text of its own under the
+   * one above, aligned left, centred or right. All of them are selected afterwards, so they move as one.
+   */
+  const makeTextBlock = useCallback((lines: string[], options: TextBlockOptions) => {
+    if (selectedShapes.length !== 1 || !offersTextBlock(selectedShape) || lines.length === 0) return;
+    const block = textBlockFor(selectedShape, lines, options);
+    if (!block.length) return;
+    const index = shapesRef.current.findIndex((shape) => shape.id === selectedShape.id);
+    const next = [...shapesRef.current];
+    next.splice(index < 0 ? next.length : index, index < 0 ? 0 : 1, ...block);
+    commitShapes(next, block.map((line) => line.id), t("status.textBlockMade", { count: block.length }));
   }, [commitShapes, selectedShape, selectedShapes.length]);
 
   /** The selected icon tag, or a sketch body that can become one, as its card shows it. */
@@ -11323,6 +11560,12 @@ export function LayerlingEditor({
             if (!Number.isFinite(spacing) || spacing < MIN_TEXT_SPACING || spacing > MAX_TEXT_SPACING) throw new Error(`spacing must be a number from ${MIN_TEXT_SPACING} to ${MAX_TEXT_SPACING} (per cent of the letter size)`);
             Object.assign(patch, textSpacingPatch({ ...target, ...patch } as WorkplaneShape, spacing));
           }
+          // Curved text (#1196): how wide the letters are drawn, in per cent of their own width; the box follows in curvedTextPatch.
+          if (params.letterWidth !== undefined) {
+            const letterWidth = Number(params.letterWidth);
+            if (!Number.isFinite(letterWidth) || letterWidth < MIN_TEXT_LETTER_WIDTH || letterWidth > MAX_TEXT_LETTER_WIDTH) throw new Error(`letterWidth must be a number from ${MIN_TEXT_LETTER_WIDTH} to ${MAX_TEXT_LETTER_WIDTH} (per cent of the letters' own width)`);
+            patch.textLetterWidth = letterWidth === 100 ? undefined : letterWidth;
+          }
           // The top edge of the letters (#225): { kind: "round" | "chamfer", size } or null for none.
           if (params.letterEdge !== undefined) {
             if (params.letterEdge === null || params.letterEdge === false) {
@@ -11778,6 +12021,28 @@ export function LayerlingEditor({
         return { object: mcpShapeSummary(bundle) };
       }
 
+      if (command.action === "text_block") {
+        const id = typeof params.id === "string" ? params.id : null;
+        const target = id ? currentShapes().find((shape) => shape.id === id) : null;
+        if (!target) throw new Error("text_block needs the id of a text");
+        if (target.locked) throw new Error("Unlock the object first");
+        if (!offersTextBlock(target)) throw new Error("Only a plain straight text can become a text block: not curved, not stacked top to bottom, without a key ring");
+        const lines = Array.isArray(params.lines) ? textBlockLines(mcpStringArray(params.lines).join(String.fromCharCode(10))) : [];
+        if (!lines.length) throw new Error("lines needs at least one line of text");
+        const align = typeof params.align === "string" ? params.align : "center";
+        if (!TEXT_BLOCK_ALIGNS.includes(align as TextBlockAlign)) throw new Error("align must be left, center or right");
+        const block = textBlockFor(target, lines, {
+          align: align as TextBlockAlign,
+          gap: typeof params.gap === "number" ? params.gap : DEFAULT_TEXT_BLOCK_GAP,
+          step: typeof params.step === "number" ? params.step : 100,
+        });
+        const index = currentShapes().findIndex((shape) => shape.id === target.id);
+        const next = [...currentShapes()];
+        next.splice(index, 1, ...block);
+        commitShapes(next, block.map((line) => line.id), t("status.textBlockMade", { count: block.length }));
+        return { objects: block.map(mcpShapeSummary) };
+      }
+
       if (command.action === "layer_text") {
         const id = typeof params.id === "string" ? params.id : null;
         const target = id ? currentShapes().find((shape) => shape.id === id) : null;
@@ -12132,12 +12397,58 @@ export function LayerlingEditor({
           magnetGap: params.magnetGap,
           cornerMode: params.cornerMode, lidCornerRadius: params.lidCornerRadius, clickStop: params.clickStop, clickInterference: params.clickInterference, slidingStyle: params.slidingStyle, openingSide: params.openingSide, verticalGap: params.verticalGap, engagement: params.engagement, guideRoof: params.guideRoof, thumbGrip: params.thumbGrip,
           gripShape: params.gripShape, gripMode: params.gripMode, gripWidth: params.gripWidth, gripLength: params.gripLength, gripDepth: params.gripDepth, gripCornerRadius: params.gripCornerRadius, gripPosition: params.gripPosition, gripInset: params.gripInset,
+          hinge: params.hinge,
+          hingePin: params.hingePin,
+          hingeGap: params.hingeGap,
+          hingeKnuckles: params.hingeKnuckles,
+          hingePrintPin: params.hingePrintPin,
+
         }, targets);
         if (!result.ok) throw new Error(result.message);
         const made = currentShapes().find((shape) => shape.id === result.id);
         if (!("bodyId" in result)) return { object: made ? mcpShapeSummary(made) : { id: result.id }, type: result.type };
         const body = currentShapes().find((shape) => shape.id === result.bodyId);
-        return { object: made ? mcpShapeSummary(made) : { id: result.id }, type: result.type, body: body ? mcpShapeSummary(body) : { id: result.bodyId }, magnets: result.magnets, posts: result.posts };
+        const pin = "hinge" in result && result.hinge?.pinId ? currentShapes().find((shape) => shape.id === result.hinge!.pinId) : null;
+        return {
+          object: made ? mcpShapeSummary(made) : { id: result.id }, type: result.type, body: body ? mcpShapeSummary(body) : { id: result.bodyId }, magnets: "magnets" in result ? result.magnets : 0, posts: "posts" in result ? result.posts : false,
+          ...("hinge" in result && result.hinge ? { hinge: { knuckles: result.hinge.knuckles, pinDiameter: result.hinge.pinDiameter, pin: pin ? mcpShapeSummary(pin) : null } } : {}),
+        };
+      }
+
+      if (command.action === "make_cable_channel") {
+        const target = currentShapes().find((shape) => shape.id === params.id);
+        if (!target) throw new Error("Pass the id of the body to run the cable channel through");
+        if (target.hole || isNonSolidShape(target)) throw new Error(t("cable.error.needsBody"));
+        if (target.locked) throw new Error("Unlock the body before cutting a cable channel into it");
+        const coordinates = (value: unknown, name: string): CableVec3 => {
+          const point = value as { x?: unknown; y?: unknown; z?: unknown } | null;
+          const numbers = [point?.x, point?.y, point?.z].map(Number);
+          if (!point || numbers.some((entry) => !Number.isFinite(entry))) throw new Error(`Pass ${name} as { x, y, z }`);
+          return numbers as CableVec3;
+        };
+        const triangles = await faceReadPositionsOffThread(target, geometryAbortRef.current?.signal);
+        const entry = cableEndNear(triangles, coordinates(params.entry, "entry"));
+        const exit = cableEndNear(triangles, coordinates(params.exit, "exit"));
+        if (!entry || !exit) throw new Error(t("cable.error.noBody"));
+        const options = normalizeCableOptions({ diameter: Number(params.diameter ?? NaN), minBend: Number(params.minBend ?? NaN), minWall: Number(params.minWall ?? NaN) });
+        const result = await searchCableChannel(target, entry, exit, options);
+        if (!result.ok) throw new Error(cableErrorMessage(result.error));
+        const round = (value: number) => Math.round(value * 100) / 100;
+        const channel = {
+          length: round(result.length),
+          minBend: Number.isFinite(result.minBend) ? round(result.minBend) : null,
+          minWall: round(result.minWall),
+          segments: result.segments.length,
+          chain: result.segments.map((segment) => ({ length: round(segment.length), bendAngle: round(segment.bendAngle), bendRadius: round(segment.bendRadius), roll: round(segment.roll) })),
+          tight: result.tight,
+          thin: result.thin,
+          entry: { x: round(entry.point[0]), y: round(entry.point[1]), z: round(entry.point[2]) },
+          exit: { x: round(exit.point[0]), y: round(exit.point[1]), z: round(exit.point[2]) },
+          diameter: options.diameter,
+        };
+        if (params.apply === false) return { channel };
+        const { group } = await makeCableChannel(target, result, options);
+        return { object: mcpShapeSummary(group), channel };
       }
 
       if (command.action === "loft_sketches") {
@@ -12718,22 +13029,14 @@ export function LayerlingEditor({
         }
         const angle = workspaceSettingsRef.current.overhangAngle;
         const requestedIds = mcpStringArray(params.ids ?? params.id);
-        const solids = currentShapes().filter((shape) => !shape.hidden && !shape.hole && !isNonSolidShape(shape)
-          && (requestedIds.length === 0 || requestedIds.includes(shape.id)));
-        const objects = solids.map((shape) => {
-          const parts = expandBundles([shape]).filter((part) => !part.hole && !part.hidden);
-          const mesh = parts.length === 1 ? meshForShape(parts[0]) : (() => {
-            const vertices: Vec3[] = [];
-            const faces: [number, number, number][] = [];
-            parts.forEach((part) => appendMeshData(vertices, faces, meshForShape(part)));
-            return { name: shape.name, vertices, faces };
-          })();
-          const found = overhangArea(mesh.vertices, mesh.faces, angle);
+        const objects = overhangBodies(currentShapes(), requestedIds).map((shape) => {
+          const found = bodyOverhang(shape, angle);
           return {
             id: shape.id,
             name: shape.name,
             overhangAreaMm2: Number(found.areaMm2.toFixed(2)),
             lowestOverhangHeight: found.lowestY === null ? null : Number(found.lowestY.toFixed(3)),
+            steepestOverhangAngle: found.steepestDegrees === null ? null : Number(found.steepestDegrees.toFixed(1)),
           };
         });
         return {
@@ -15259,6 +15562,9 @@ export function LayerlingEditor({
         flexiActive={Boolean(flexiTool)}
         canLid={!selectionLocked && selectedShapes.some((shape) => !shape.hole && !isNonSolidShape(shape))}
         lidActive={Boolean(lidTool)}
+        canCableChannel={!selectionLocked && selectedShapes.length === 1 && !selectedShapes[0].hole && !isNonSolidShape(selectedShapes[0])}
+        cableChannelActive={Boolean(cableTool)}
+        onCableChannel={startCableTool}
         canLoftSketches={!selectionLocked && canSketchLoft(selectedShapes)}
         canUngroup={!selectionLocked && selectedShapes.some((shape) => Boolean(shape.groupedShapes?.length) || wasGroupBeforeEdgeTreatments(shape))}
         canModifySelection={hasSelection && !selectionLocked}
@@ -15646,6 +15952,7 @@ export function LayerlingEditor({
           onVaseAccessories={selectedShapes.length === 1 && selectedShape?.kind === "vase" && !selectedShape.locked ? () => layOutVaseAccessories(selectedShape.id) : undefined}
           onLayerText={selectedShapes.length === 1 && offersTextLayers(selectedShape) ? layerSelectedText : undefined}
           onTextTags={selectedShapes.length === 1 && offersTextLayers(selectedShape) ? makeTextTags : undefined}
+          onTextBlock={selectedShapes.length === 1 && offersTextBlock(selectedShape) && !historyViewState ? makeTextBlock : undefined}
           onFixKeyringTab={selectedShapes.length === 1 && selectedShape?.keyringTab && !historyViewState ? () => void fixKeyringTab() : undefined}
           onPortPresetWithScrewHoles={selectedShapes.length === 1 && selectedShape?.kind === "port" && !historyViewState ? choosePortPresetWithScrewHoles : undefined}
           textLayerStack={selectedNameTag}
@@ -15670,8 +15977,8 @@ export function LayerlingEditor({
           onPivotPick={(point, face) => void pickRotationPivot(point, face)}
           imageCalibrationId={imageCalibration && imageCalibration.points.length < 2 ? imageCalibration.id : null}
           onImageCalibrationPoint={addImageCalibrationPoint}
-          layFlatPickMode={layFlatPickMode}
-          onLayFlatPick={layFlatOnFace}
+          layFlatPickMode={layFlatPickMode || Boolean(cableTool?.picking)}
+          onLayFlatPick={cableTool?.picking ? pickCableEnd : layFlatOnFace}
           mateFacePick={mateTool && mateTool.step !== "ready"
             ? { shapeIds: mateTool.step === "source" ? [mateTool.sourceId] : shapes.filter((shape) => shape.id !== mateTool.sourceId && !shape.hidden).map((shape) => shape.id), round: mateTool.mode === "concentric" }
             : holePatternTool?.step === "pick"
@@ -15753,6 +16060,12 @@ export function LayerlingEditor({
           </span>
           <button type="button" className="open-group-cancel" onClick={cancelOpenGroup} disabled={openGroupBusy}>{t("common.cancel")}</button>
           <button type="button" className="open-group-done" onClick={() => void finishOpenGroup()} disabled={openGroupBusy}>{t("group.done")}</button>
+        </div>
+      ) : null}
+      {overhangLine ? (
+        <div className={`overhang-figures${overhangWarning ? (openGroup ? " stacked-2" : " stacked-1") : ""}`} role="status" data-testid="overhang-figures">
+          <span className="overhang-figures-swatch" aria-hidden="true" />
+          <span>{overhangFiguresText(overhangLine)}</span>
         </div>
       ) : null}
       {overhangWarning ? (
@@ -15947,6 +16260,26 @@ export function LayerlingEditor({
           onChange={(patch) => setLidTool((current) => current ? { ...current, ...patch, error: null } : current)}
           onApply={applyLidTool}
           onCancel={() => setLidTool(null)}
+        />
+      ) : null}
+      {cableTool ? (
+        <CableChannelPanel
+          targetName={(() => {
+            const target = shapesRef.current.find((shape) => shape.id === cableTool.targetId);
+            return target ? displayShapeName(target) : "";
+          })()}
+          settings={cableTool}
+          entrySet={Boolean(cableTool.entry)}
+          exitSet={Boolean(cableTool.exit)}
+          picking={cableTool.picking}
+          result={cablePanelResult}
+          workspace={workspaceSettings}
+          busy={cableTool.busy}
+          error={cableTool.error}
+          onChange={(patch) => setCableTool((current) => current ? { ...current, ...patch, error: null } : current)}
+          onPick={(end) => setCableTool((current) => current ? { ...current, picking: end, error: null } : current)}
+          onApply={applyCableTool}
+          onCancel={() => setCableTool(null)}
         />
       ) : null}
       {cutOutTool ? (
