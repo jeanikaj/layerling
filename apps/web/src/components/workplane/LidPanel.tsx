@@ -147,6 +147,23 @@ export function LidPanel({
           ["guideRoof", "lid.sliding.roof", settings.guideRoof ?? 1.2, 0.8, 5],
         ] as const).filter(([key]) => settings.slidingStyle !== "flush" || key !== "guideRoof").map(([key,label,value,min,max]) => <EdgeModifierSlider key={key} label={t(label)} value={value} min={min} max={max} step={0.05} workspace={workspace} length disabled={busy} onChange={value => onChange({ [key]: value })} />)}
         <label className="edge-modifier-field offset-copy"><input type="checkbox" checked={settings.thumbGrip !== false} disabled={busy} onChange={event => onChange({ thumbGrip: event.target.checked })} /><span>{t("lid.sliding.grip")}</span></label>
+        {settings.thumbGrip !== false ? (<>
+          <div className="edge-modifier-field shell-openings" role="radiogroup" aria-label={t("lid.grip.shape")}>
+            <span>{t("lid.grip.shape")}</span><div className="shell-opening-options">{(["circle", "oval", "roundedRectangle", "slot"] as const).map(shape => <button key={shape} type="button" role="radio" aria-checked={(settings.gripShape ?? "circle") === shape} className={(settings.gripShape ?? "circle") === shape ? "active" : ""} disabled={busy} onClick={() => onChange({gripShape:shape, ...(shape === "slot" ? {gripWidth:20,gripLength:5} : {})})}>{t(`lid.grip.shape.${shape}`)}</button>)}</div>
+          </div>
+          <div className="edge-modifier-field shell-openings" role="radiogroup" aria-label={t("lid.grip.mode")}>
+            <span>{t("lid.grip.mode")}</span><div className="shell-opening-options">{(["recessed", "raised"] as const).map(mode => <button key={mode} type="button" role="radio" aria-checked={(settings.gripMode ?? "recessed") === mode} className={(settings.gripMode ?? "recessed") === mode ? "active" : ""} disabled={busy} onClick={() => onChange({gripMode:mode})}>{t(`lid.grip.mode.${mode}`)}</button>)}</div>
+          </div>
+          <div className="edge-modifier-field shell-openings" role="radiogroup" aria-label={t("lid.grip.position")}>
+            <span>{t("lid.grip.position")}</span><div className="shell-opening-options">{(["inset", "edge"] as const).map(position => <button key={position} type="button" role="radio" aria-checked={(settings.gripPosition ?? "inset") === position} className={(settings.gripPosition ?? "inset") === position ? "active" : ""} disabled={busy} onClick={() => onChange({gripPosition:position})}>{t(`lid.grip.position.${position}`)}</button>)}</div>
+          </div>
+          <EdgeModifierSlider label={t("lid.grip.width")} value={settings.gripWidth ?? 12} min={1} max={100} step={0.5} workspace={workspace} length disabled={busy} onChange={gripWidth => onChange({gripWidth})} />
+          {settings.gripShape && settings.gripShape !== "circle" ? <EdgeModifierSlider label={t("lid.grip.length")} value={settings.gripLength ?? 12} min={1} max={100} step={0.5} workspace={workspace} length disabled={busy} onChange={gripLength => onChange({gripLength})} /> : null}
+          <EdgeModifierSlider label={t(settings.gripMode === "raised" ? "lid.grip.height" : "lid.grip.depth")} value={settings.gripDepth ?? 0.6} min={0.1} max={5} step={0.1} workspace={workspace} length disabled={busy} onChange={gripDepth => onChange({gripDepth})} />
+          {settings.gripShape === "roundedRectangle" ? <EdgeModifierSlider label={t("lid.grip.radius")} value={settings.gripCornerRadius ?? 2} min={0} max={25} step={0.25} workspace={workspace} length disabled={busy} onChange={gripCornerRadius => onChange({gripCornerRadius})} /> : null}
+          {settings.gripPosition !== "edge" ? <EdgeModifierSlider label={t("lid.grip.inset")} value={settings.gripInset ?? 1} min={0} max={50} step={0.5} workspace={workspace} length disabled={busy} onChange={gripInset => onChange({gripInset})} /> : null}
+          <span className="shell-openings-summary">{t("lid.grip.help")}</span>
+        </>) : null}
         <span className="shell-openings-summary">{t("lid.sliding.help")}</span>
       </>) : null}
       {settings.type === "flat" || settings.type === "sliding" ? null : (<>

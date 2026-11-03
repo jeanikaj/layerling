@@ -3,6 +3,7 @@ import type { ManifoldSolid } from "@/lib/editorMeshCore";
 import { sceneShape } from "@/lib/shapeCatalog";
 import { createLocalId } from "@/lib/localIds";
 import { t } from "@/lib/i18n";
+import { slidingThumbGrip } from "@/lib/slidingThumbGrip";
 import type { LidOptions } from "@/lib/lidTool";
 import type { WorkplaneShape } from "@/types/layerling";
 
@@ -132,18 +133,7 @@ export function slidingLidParts(runtime: ManifoldToplevel, body: ManifoldSolid, 
         rails.push(wedge(lo,hi,positive,false));
       }
     }
-    let grip: WorkplaneShape | undefined;
-    if (options.thumbGrip !== false) {
-      const length=lidMax[a]-lidMin[a], width=lidMax[cross]-lidMin[cross];
-      const diameter=Math.min(12,width-2,length/3);
-      if (diameter >= 3) {
-        const centre=[(lidMin[0]+lidMax[0])/2,0,(lidMin[2]+lidMax[2])/2];
-        centre[a]=negative ? lidMin[a]+diameter/2+1 : lidMax[a]-diameter/2-1;
-        const depth=Math.min(0.6,options.thickness/3);
-        grip=sceneShape({ id:createLocalId(`${source.id}-thumb-grip`), name:t("lid.sliding.grip"), kind:"cylinder", hole:true, color:source.color,
-          x:centre[0],z:centre[2],elevation:lidMax[1]-depth,width:diameter,depth:diameter,height:depth+1,sides:48,rotation:0 });
-      }
-    }
+    const grip = slidingThumbGrip(source, options, lidMin, lidMax, alongX, negative);
     return { plate, rails, grip, cutters:[...guideCutters,entry] };
   } finally { Array.from(new Set(made)).reverse().forEach(v=>v.delete?.()); }
 }

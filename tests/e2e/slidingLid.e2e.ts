@@ -163,3 +163,67 @@ describe("flush sliding lid: real geometry", () => {
     } finally {body.delete();}
   });
 });
+
+
+describe("configurable thumb grips: real geometry",()=>{
+  for(const side of ["front","back","left","right"] as const) {
+    for(const gripShape of ["circle","oval","roundedRectangle","slot"] as const) {
+      for(const gripMode of ["recessed","raised"] as const) {
+        it(`${side}: ${gripShape} ${gripMode} fits both styles and placements`,async()=>{
+          const {k,body}=await setup();const made: {delete?:()=>void}[]=[body];
+          try {
+            const solid=(s:Parameters<typeof shapeToManifoldSolid>[1])=>shapeToManifoldSolid(k,s,made)!;
+            for(const slidingStyle of ["recessed","flush"] as const) for(const gripPosition of ["inset","edge"] as const) {
+              const options=normalizeLidOptions({type:"sliding",slidingStyle,openingSide:side,gripShape,gripMode,gripPosition,gripWidth:18,gripLength:6,gripCornerRadius:2,gripDepth:0.6});
+              const result=slidingLidParts(k,body,source,options);
+              if("error" in result || !result.grip) throw new Error("Missing grip");
+              const plain=k.Manifold.union([result.plate,...(result.rails??[])].map(solid));made.push(plain);
+              const grip=solid(result.grip);
+              const lid=gripMode==="raised"?plain.add(grip):plain.subtract(grip);made.push(lid);
+              expect(lid.status()).toBe("NoError");
+              const components=lid.decompose();made.push(...components);expect(components).toHaveLength(1);
+              expect(gripMode==="raised" ? lid.volume()>plain.volume():lid.volume()<plain.volume()).toBe(true);
+              expect(lid.boundingBox().min[1]).toBeCloseTo(0,5);
+              if(gripMode==="raised") expect(lid.boundingBox().max[1]).toBeCloseTo(2.6,4);
+              else expect(result.grip.elevation).toBeGreaterThanOrEqual(0.4);
+              const cuts=k.Manifold.union(result.cutters.map(solid));made.push(cuts);
+              const modified=body.subtract(cuts);made.push(modified);
+              const alongX=side==="left"||side==="right",negative=side==="front"||side==="left";
+              const shiftX=alongX?40-(negative?-30:-27.8):slidingStyle==="flush"?40+27.8+0.8*2/2.4:68.6;
+              const height=slidingStyle==="flush"?28:26.6;
+              const closed=lid.translate([-shiftX,height,0]);made.push(closed);
+              // Many positions include entry, closed and fully withdrawn; a raised grip
+              // must clear the guides as well as the plate beneath it.
+              for(let d=0;d<=70;d+=2) {
+                const distance=(negative?-1:1)*d;
+                const moving=closed.translate(alongX?[distance,0,0]:[0,0,distance]);
+                const overlap=moving.intersect(modified);
+                expect(overlap.volume()).toBeLessThan(0.001);
+                moving.delete();overlap.delete();
+              }
+              const min=lid.boundingBox().min,max=lid.boundingBox().max;
+              const across=alongX?2:0;
+              expect(min[across]).toBeCloseTo(plain.boundingBox().min[across],4);
+              expect(max[across]).toBeCloseTo(plain.boundingBox().max[across],4);
+            }
+          } finally {Array.from(new Set(made)).reverse().forEach(v=>v.delete?.());}
+        });
+      }
+    }
+  }
+  it("limits oversized grips, corner radii, inset and deep recesses to the plate",async()=>{
+    const {k,body}=await setup();
+    try {
+      for(const thickness of [0.4,2]) {
+        const options=normalizeLidOptions({type:"sliding",thickness,gripShape:"roundedRectangle",gripWidth:100,gripLength:100,gripCornerRadius:25,gripInset:50,gripDepth:5});
+        const result=slidingLidParts(k,body,source,options);
+        if("error" in result || !result.grip) throw new Error("Missing grip");
+        const g=result.grip;
+        expect(g.elevation).toBeCloseTo(Math.min(0.4,2*thickness/3),5);
+        expect(g.width!).toBeLessThan(result.plate.width!);
+        expect(g.depth!).toBeLessThan(result.plate.depth!);
+        expect(g.cornerFillet!).toBeLessThanOrEqual(Math.min(g.width!,g.depth!)/2);
+      }
+    } finally {body.delete();}
+  });
+});

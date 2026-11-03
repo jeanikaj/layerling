@@ -118,9 +118,9 @@ describe("lid magnets: posts the CAD kernel takes exactly", () => {
 
 
 describe("sliding lid exact export", () => {
-  for (const slidingStyle of ["recessed", "flush"] as const) it(`exports the ${slidingStyle} box and recessed-grip lid to STEP with matching volumes`, async () => {
+  for (const slidingStyle of ["recessed", "flush"] as const) for(const gripShape of ["circle","oval","roundedRectangle","slot"] as const) for(const gripMode of ["recessed","raised"] as const) it(`exports the ${slidingStyle} box and ${gripShape} ${gripMode} grip to STEP with matching volumes`, async () => {
     const targets=openBox(0);
-    const result=await lidForShapes(targets,normalizeLidOptions({type:"sliding",slidingStyle}));
+    const result=await lidForShapes(targets,normalizeLidOptions({type:"sliding",slidingStyle,gripShape,gripMode,gripPosition:"edge",gripWidth:16,gripLength:5}));
     if(!result.lid || !result.sliding) throw new Error("error" in result ? result.error : "No guide cutters");
     const grouped=await groupedWithMagnets(targets,{posts:[],pockets:result.sliding.cutters},s=>editorBooleans.buildGroupedShapeFromSelection(s,250000));
     expect(grouped.group).toBeTruthy();

@@ -99,3 +99,12 @@ describe("sliding lid options", () => {
     expect(normalizeLidOptions({type:"sliding"})).toMatchObject({openingSide:"front",verticalGap:0.2,engagement:0.8,guideRoof:1.2,thumbGrip:true});
   });
 });
+
+
+describe("thumb grip options",()=>{
+  it("keeps the circular recess default, normalizes enums and clamps invalid values",()=>{
+    expect(normalizeLidOptions({type:"sliding"})).toMatchObject({gripShape:"circle",gripMode:"recessed",gripPosition:"inset",gripInset:1,gripDepth:0.6});
+    expect(normalizeLidOptions({type:"sliding",gripShape:"wrong",gripMode:"wrong",gripPosition:"wrong",gripWidth:-10,gripLength:999,gripDepth:-1,gripCornerRadius:999,gripInset:-10})).toMatchObject({gripShape:"circle",gripMode:"recessed",gripPosition:"inset",gripWidth:1,gripLength:100,gripDepth:0.1,gripCornerRadius:25,gripInset:0});
+    expect(normalizeLidOptions({type:"sliding",thumbGrip:false}).thumbGrip).toBe(false);
+  });
+});

@@ -47,6 +47,14 @@ export type LidOptions = {
   engagement?: number;
   guideRoof?: number;
   thumbGrip?: boolean;
+  gripShape?: "circle" | "oval" | "roundedRectangle" | "slot";
+  gripMode?: "recessed" | "raised";
+  gripWidth?: number;
+  gripLength?: number;
+  gripDepth?: number;
+  gripCornerRadius?: number;
+  gripPosition?: "inset" | "edge";
+  gripInset?: number;
 };
 
 export const LID_TYPES: readonly LidType[] = ["plug", "cap", "both", "flat", "sliding"];
@@ -118,6 +126,16 @@ export function normalizeLidOptions(value?: Partial<Record<keyof LidOptions, unk
     result.engagement = clamp(finiteNumber(value?.engagement) ?? 0.8, 0.4, 3);
     result.guideRoof = clamp(finiteNumber(value?.guideRoof) ?? 1.2, 0.8, 5);
     result.thumbGrip = value?.thumbGrip !== false;
+    result.gripShape = ["circle", "oval", "roundedRectangle", "slot"].includes(String(value?.gripShape)) ? value!.gripShape as LidOptions["gripShape"] : "circle";
+    result.gripMode = value?.gripMode === "raised" ? "raised" : "recessed";
+    result.gripPosition = value?.gripPosition === "edge" ? "edge" : "inset";
+    result.gripInset = clamp(finiteNumber(value?.gripInset) ?? 1, 0, 50);
+    result.gripDepth = clamp(finiteNumber(value?.gripDepth) ?? 0.6, 0.1, 5);
+    result.gripCornerRadius = clamp(finiteNumber(value?.gripCornerRadius) ?? 2, 0, 25);
+    for (const key of ["gripWidth", "gripLength"] as const) {
+      const size = finiteNumber(value?.[key]);
+      if (size !== null) result[key] = clamp(size, 1, 100);
+    }
     result.magnets = false;
   }
   return result;
