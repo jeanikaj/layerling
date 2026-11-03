@@ -40,7 +40,7 @@ Wenn das Maß zu groß für die Kante ist, sagt layerling das und schlägt einen
 
 Scheitert eine Auswahl, die eben noch ging, nachdem du eine weitere Kante angeklickt hast, wird diese Kante rot und breiter gezeichnet: Sie ist die, die sich bei diesem Maß nicht zusammen mit den anderen bearbeiten lässt. Klicke sie noch einmal an, um sie herauszunehmen, oder nimm ein kleineres Maß. Klickst du weitere Kanten an, solange die Meldung steht, bleibt die erste rot. Gibt es keine frühere Auswahl, die ging - beim allerersten Klick oder nach einem größeren Maß -, werden die Kanten rot, die schon allein scheitern, oder alle, wenn nur ihr Zusammenspiel scheitert.
 
-Bevor es aufgibt, versucht layerling es noch einmal mit den kurzen Kanten an den Enden der gewählten, höchstens doppelt so lang wie die Größe. So eine sitzt dort, wo eine frühere Fase an einer noch scharfen Wand endet: eine kurze, schräge Kante in der Ecke, und solange sie scharf bleibt, lässt sich die Ecke nicht bearbeiten. Hilft das, sind diese Kanten danach mit gewählt, und eine Meldung sagt, wie viele mitgenommen wurden.
+Bevor es aufgibt, versucht layerling es noch einmal mit den kurzen Kanten an den Enden der gewählten, höchstens doppelt so lang wie die Größe. So eine sitzt dort, wo eine frühere Fase an einer noch scharfen Wand endet: eine kurze, schräge Kante in der Ecke, und solange sie scharf bleibt, lässt sich die Ecke nicht bearbeiten. Hilft das, sind diese Kanten danach mit gewählt, und eine Meldung sagt, wie viele mitgenommen wurden. Und wo die gewählten Kanten sich in einer spitzen Innenecke treffen, wie zwei Scheiben einer Wolke, hat eine Rundung bei keiner Größe Platz: Dann rundet layerling diese Ecken zuerst, mit derselben oder einer kleineren Größe, und die Meldung sagt, wie viele und mit wie viel (bei einer Fase werden sie angefast).
 
 Auch die Kante unter dem Mauszeiger wird breiter gezeichnet, damit du siehst, welche ein Klick wählt.
 
@@ -56,7 +56,7 @@ Bei einer Gruppe, etwa einem Zylinder mit einer Bohrung, gehört die bearbeitete
 
 > **Gut zu wissen:** layerling rechnet bei Rundungen und Fasen mit echter CAD-Geometrie, nicht nur mit einem Dreiecksnetz. Deshalb bleibt eine verrundete Kante auch im STEP-Export eine verrundete Kante.
 
-Ein als STEP importiertes Teil behält seine CAD-Geometrie ebenfalls: Fasen, Rundungen und das Aushöhlen arbeiten am Körper aus der Datei, egal wie fein das Teil auf dem Bildschirm gezeichnet ist. STL, OBJ und 3MF bringen nur Dreiecke mit, und ein fein gezeichnetes Teil kann für die Kantenbearbeitung zu dicht sein. Gibt es ein Teil auch als STEP, importiere lieber das.
+Ein als STEP importiertes Teil behält seine CAD-Geometrie ebenfalls: Fasen, Rundungen und das Aushöhlen arbeiten am Körper aus der Datei, egal wie fein das Teil auf dem Bildschirm gezeichnet ist. STL, OBJ und 3MF bringen nur Dreiecke mit, und ein fein gezeichnetes Teil kann für die Kantenbearbeitung zu dicht sein. Gibt es ein Teil auch als STEP, importiere lieber das. {{ui:editor.tool.makeExact}} macht aus so einem Teil zuerst einen exakten Körper mit echten Ebenen und Zylindern, siehe [Dateien, Speichern und Weitergeben](chapter:dateien-und-speichern), „Ein importiertes Netz exakt machen“.
 
 ## Körper aushöhlen
 

@@ -87,6 +87,7 @@ The AI works with the same functions as you, through the same path as your opera
 | `layerling_list_objects` | lists all objects with dimensions, position, rotation and id |
 | `layerling_select_objects` | selects objects |
 | `layerling_delete_objects` | deletes objects |
+| `layerling_move_object` | moves an object to another place in the object list |
 | `layerling_create_shape` | creates a shape: box, cylinder, text (also curved), thread, gear, sketch body and all the others |
 | `layerling_import_file` | imports a file as the import window does, a coloured OBJ or 3MF as one body per colour, a 3MF with several objects as one body per object |
 | `layerling_add_font` | adds a font of one's own for text from a TrueType, OpenType or WOFF file; it stays in the browser, a design keeps only the letters it uses |
@@ -124,7 +125,7 @@ The AI works with the same functions as you, through the same path as your opera
 | `layerling_offset_object` | builds the clearance of a press fit: grows or shrinks a solid, or adds the grown copy as a hole, or moves only the sides |
 | `layerling_list_faces` | lists the faces of an exact body |
 | `layerling_delete_faces` | deletes faces and closes the gap |
-| `layerling_array_objects` | multiplies in a row or on a circle |
+| `layerling_array_objects` | multiplies in a row, in a grid or on a circle |
 | `layerling_bundle_objects` | bundles objects like Ctrl+B: they move together, keep their colour and kind and go out separately in an export |
 | `layerling_layer_text` | turns a text into a stack of layers for a multicolour print (letters, wider rims, a plate without holes) or builds a stack again, with a key ring hole, the corners per layer and a rounded or chamfered letter edge; with a name list, one tag per name |
 | `layerling_text_block` | makes a text block: a text becomes the first of several lines, each a text of its own under the one above, aligned left, centred or right, each line the same size or smaller |
@@ -140,6 +141,7 @@ The AI works with the same functions as you, through the same path as your opera
 | `layerling_list_reference_points` | lists the reference points with their ids and positions |
 | `layerling_remove_reference_points` | deletes reference points by id, or all of them |
 | `layerling_list_notes` | reads the user's notes with their text, the body each is pinned to and whether it is a request for the AI |
+| `layerling_wait_for_notes` | waits until you tick {{ui:note.forAi}} on a note, and hands the request over at once |
 | `layerling_add_note` | puts a note on the model, pinned to an object or free on the plate |
 | `layerling_update_note` | changes a note or answers it; an answer closes the request |
 | `layerling_remove_notes` | deletes notes by id |
@@ -147,6 +149,7 @@ The AI works with the same functions as you, through the same path as your opera
 | `layerling_wrap_around_cylinder` | wraps a body lying flat, an SVG or text for example, around a cylinder, outward or inward as an engraving |
 | `layerling_texture_surface` | lays a surface texture onto a body: grooves, knurling, honeycomb or bumps, for grip or for looks, and changes or removes it later |
 | `layerling_simplify_mesh` | reduces the triangle count of an imported mesh, to a share in percent or to a number of triangles |
+| `layerling_make_exact` | turns an imported mesh into an exact CAD body: planes, cylinders, cones, spheres and tori become real faces, so edges round cleanly and STEP carries them |
 | `layerling_save_custom_shape` | keeps bodies as a custom shape, on the server or in the browser, to insert them into other designs |
 | `layerling_list_custom_shapes` | lists the custom shapes on the server and in the browser |
 | `layerling_insert_custom_shape` | inserts a custom shape into the open design, at a spot x/z if you like |
@@ -154,6 +157,7 @@ The AI works with the same functions as you, through the same path as your opera
 | `layerling_show_workplane` | hides and shows the plate with its grid, for a picture of the underside for example (only the view) |
 | `layerling_set_section_view` | cuts the view open along a plane to look inside (only the view, nothing is cut apart) |
 | `layerling_measurements` | shows or hides the measurements of the tape measure and lists them with their lengths, and hides or shows the sizes around the selection like [[Q]] |
+| `layerling_measure_angle` | measures an angle like the protractor: at the corner of three points or between two flat faces, and shows it in the view |
 | `layerling_saved_view` | saves the current view under the key 7, 8, 9 or 0 and goes back to it, like Shift+key and the key (only the view); also sets the start view of new designs |
 | `layerling_clear_history` | deletes every undo step for good, as the History view's "Delete history" button does; needs `confirm: true` |
 | `layerling_set_history_view` | looks back at an earlier state of the project, like the History view (the real design stays untouched; changing tools wait until it is closed) |

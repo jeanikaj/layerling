@@ -40,7 +40,7 @@ If the size is too large for the edge, layerling says so and suggests a smaller 
 
 When a selection that worked fails after you click one more edge, that edge turns red and is drawn wider: it is the one that cannot be treated together with the others at this size. Click it again to take it out, or make the size smaller. If you click more edges while the message stands, the first one stays red. When there is no earlier selection that worked - the very first click, or a size you just raised - the edges that fail even on their own turn red, or all of them if it is only their combination.
 
-Before it gives up, layerling tries once more with the short edges at the ends of the picked ones, up to twice the size long. One sits where an earlier chamfer ends on a wall that is still sharp: a short slanted edge in the corner, and the corner cannot be treated while it stays sharp. If that helps, those edges are picked as well, and a message says how many were taken along.
+Before it gives up, layerling tries once more with the short edges at the ends of the picked ones, up to twice the size long. One sits where an earlier chamfer ends on a wall that is still sharp: a short slanted edge in the corner, and the corner cannot be treated while it stays sharp. If that helps, those edges are picked as well, and a message says how many were taken along. And where the picked edges meet in a sharp inner corner, as two discs of a cloud do, a fillet has no room at any size: layerling then rounds those corners first, at the same size or a smaller one, and the message says how many and how much (a chamfer chamfers them).
 
 The edge under the pointer is drawn wider too, so you can see which one a click will pick.
 
@@ -56,7 +56,7 @@ On a group, say a cylinder with a hole, the treated edge belongs to the finished
 
 > **Good to know:** layerling works with real CAD geometry for fillets and chamfers, not just a triangle mesh. That is why a rounded edge is still a rounded edge in the STEP export.
 
-A part imported as STEP keeps its CAD geometry too: chamfers, fillets and hollowing work on the body from the file, however finely the part is drawn on screen. STL, OBJ and 3MF bring only triangles, and a finely drawn part can be too dense for the edge tool. If a part is also available as STEP, import that.
+A part imported as STEP keeps its CAD geometry too: chamfers, fillets and hollowing work on the body from the file, however finely the part is drawn on screen. STL, OBJ and 3MF bring only triangles, and a finely drawn part can be too dense for the edge tool. If a part is also available as STEP, import that. {{ui:editor.tool.makeExact}} turns such a part into an exact body with real planes and cylinders first, see [Files, saving and sharing](chapter:files-and-saving), "Making an imported mesh exact".
 
 ## Hollowing bodies
 

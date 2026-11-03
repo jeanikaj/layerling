@@ -63,7 +63,7 @@ export const LYL_FILE_TYPES_FORMAT_VERSION = 4;
 /** The newest format this layerling reads. */
 export const LYL_NEWEST_READABLE_FORMAT_VERSION = LYL_FILE_TYPES_FORMAT_VERSION;
 export const LYL_OLDEST_READABLE_FORMAT_VERSION = 1;
-export const LYL_CREATED_WITH_VERSION = "1.134.0";
+export const LYL_CREATED_WITH_VERSION = "1.136.0";
 export const LYL_MEDIA_TYPE = "application/vnd.layerling.project+zip";
 
 export const LYL_LIMITS = {
@@ -1706,7 +1706,7 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
     if (definition.gridfinityType !== undefined && definition.gridfinityType !== "bin" && definition.gridfinityType !== "baseplate" && definition.gridfinityType !== "tray") {
       throw new Error(`${label}.gridfinityType is invalid`);
     }
-    for (const key of ["gridfinityLip", "gridfinityMagnets", "gridfinityHalfGrid", "gridfinityLargePlate", "gridfinityLabelBack", "gridfinityLabelFront", "gridfinityLabelLeft", "gridfinityLabelRight", "gridfinityScoopBack", "gridfinityScoopFront", "gridfinityScoopLeft", "gridfinityScoopRight", "gridfinityOpenBack", "gridfinityOpenFront", "gridfinityOpenLeft", "gridfinityOpenRight", "hingePinless"] as const) {
+    for (const key of ["gridfinityLip", "gridfinityMagnets", "gridfinityHalfGrid", "gridfinityLargePlate", "gridfinitySwallowtail", "gridfinityLabelBack", "gridfinityLabelFront", "gridfinityLabelLeft", "gridfinityLabelRight", "gridfinityScoopBack", "gridfinityScoopFront", "gridfinityScoopLeft", "gridfinityScoopRight", "gridfinityOpenBack", "gridfinityOpenFront", "gridfinityOpenLeft", "gridfinityOpenRight", "hingePinless"] as const) {
       if (definition[key] !== undefined && typeof definition[key] !== "boolean") throw new Error(`${label}.${key} must be true or false`);
     }
     for (const key of ["gridfinityLabelBackWidth", "gridfinityLabelBackLength", "gridfinityLabelBackOffset", "gridfinityLabelFrontWidth", "gridfinityLabelFrontLength", "gridfinityLabelFrontOffset", "gridfinityLabelLeftWidth", "gridfinityLabelLeftLength", "gridfinityLabelLeftOffset", "gridfinityLabelRightWidth", "gridfinityLabelRightLength", "gridfinityLabelRightOffset", "gridfinityLabelCornerSize", "gridfinityScoopRadius", "gridfinityFloorHeight", "gridfinityLipChamfer", "gridfinityWallThickness", "gridfinityOpeningCornerSize", "gridfinityPaddingBack", "gridfinityPaddingFront", "gridfinityPaddingLeft", "gridfinityPaddingRight", "gridfinityCornerRadius", "gridfinityBinCornerRadius", "gridfinityCompartmentsX", "gridfinityCompartmentsZ", "gridfinityDividerThickness"] as const) {
@@ -2454,6 +2454,31 @@ export async function withLylProjectName(input: ArrayBuffer | Uint8Array, projec
   const raw = JSON.parse(strFromU8(files["project.json"])) as { metadata: { projectName: string } };
   raw.metadata.projectName = name;
   files["project.json"] = strToU8(JSON.stringify(raw));
+  return zipAsync(Object.fromEntries(Object.entries(files).sort(([a], [b]) => a.localeCompare(b))), 1);
+}
+
+/**
+ * Where a package carries the picture of its design, the one on the design's card: other programs, a file manager or a
+ * library of models, show it without building the design (Discussion #1226). layerling itself does not read it.
+ */
+export const LYL_THUMBNAIL_FILE = "thumbnail.png";
+
+/** The picture as an extra file of the package (`extraFiles`), or nothing when there is none. */
+export function lylThumbnailFiles(png: Uint8Array | null | undefined): Record<string, Uint8Array> | undefined {
+  return png && png.byteLength > 0 ? { [LYL_THUMBNAIL_FILE]: png } : undefined;
+}
+
+/**
+ * The package with the picture of its design in it, in place of one it had; without a picture, as it is. For a package
+ * written before, as the browser keeps it, on its way to the server.
+ */
+export async function withLylThumbnail(input: ArrayBuffer | Uint8Array, png: Uint8Array | null | undefined): Promise<Uint8Array> {
+  const bytes = projectInputBytes(input);
+  const prefix = strFromU8(bytes.subarray(0, Math.min(bytes.length, 64))).trimStart();
+  if (!png || png.byteLength === 0 || prefix.startsWith("{")) return bytes;
+  inspectZipBeforeExpansion(bytes);
+  const files = await unzipAsync(bytes);
+  files[LYL_THUMBNAIL_FILE] = png;
   return zipAsync(Object.fromEntries(Object.entries(files).sort(([a], [b]) => a.localeCompare(b))), 1);
 }
 

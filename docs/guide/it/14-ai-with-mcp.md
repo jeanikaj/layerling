@@ -87,6 +87,7 @@ L’IA usa le stesse funzioni che hai a disposizione, attraverso lo stesso perco
 | `layerling_list_objects` | Elenca tutti gli oggetti con dimensioni, posizione, rotazione e ID. |
 | `layerling_select_objects` | Seleziona gli oggetti. |
 | `layerling_delete_objects` | Elimina gli oggetti. |
+| `layerling_move_object` | sposta un oggetto in un altro punto dell'elenco degli oggetti |
 | `layerling_create_shape` | Crea una forma: cubo, cilindro, testo (anche curvo), filettatura, ingranaggio, corpo da schizzo e tutte le altre forme. |
 | `layerling_import_file` | Importa un file come fa la finestra di importazione: un OBJ o 3MF a colori diventa un corpo per colore; un 3MF con più oggetti diventa un corpo per oggetto. |
 | `layerling_add_font` | Aggiunge un font personalizzato per il testo da un file TrueType, OpenType o WOFF. Il font resta nel browser e il progetto conserva solo le lettere che usa. |
@@ -124,7 +125,7 @@ L’IA usa le stesse funzioni che hai a disposizione, attraverso lo stesso perco
 | `layerling_offset_object` | sposta tutte le facce di un corpo per il gioco di un accoppiamento: lo ingrandisce o riduce, o aggiunge la copia ingrandita come vuoto, o sposta solo i lati |
 | `layerling_list_faces` | Elenca le facce di un corpo CAD esatto. |
 | `layerling_delete_faces` | Elimina le facce e chiude l’apertura. |
-| `layerling_array_objects` | Crea copie in fila o disposte in cerchio. |
+| `layerling_array_objects` | Crea copie in fila, a griglia o disposte in cerchio. |
 | `layerling_bundle_objects` | Raggruppa gli oggetti come con Ctrl+B: si spostano insieme, mantengono colore e tipo e vengono esportati separatamente. |
 | `layerling_layer_text` | Trasforma un testo in una serie di livelli per la stampa multicolore (lettere, bordi più larghi e piastra senza fori) oppure ricostruisce la serie, con foro per portachiavi, angoli per livello e bordo delle lettere arrotondato o smussato. Se fornisci un elenco di nomi, crea un’etichetta per ciascuno. |
 | `layerling_text_block` | crea un blocco di testo: un testo diventa la prima di più righe, ognuna un testo a sé sotto quella sopra, allineate a sinistra, al centro o a destra, ogni riga uguale o più piccola |
@@ -140,6 +141,7 @@ L’IA usa le stesse funzioni che hai a disposizione, attraverso lo stesso perco
 | `layerling_list_reference_points` | Elenca i punti di riferimento con i rispettivi ID e posizioni. |
 | `layerling_remove_reference_points` | Elimina i punti di riferimento indicati tramite ID oppure li elimina tutti. |
 | `layerling_list_notes` | legge le note dell'utente con il testo, il corpo a cui è fissata ciascuna e se è una richiesta per l'IA |
+| `layerling_wait_for_notes` | attende che tu spunti {{ui:note.forAi}} su una nota e passa subito la richiesta |
 | `layerling_add_note` | mette una nota sul modello, fissata a un oggetto o libera sul piano |
 | `layerling_update_note` | modifica una nota o le risponde; una risposta chiude la richiesta |
 | `layerling_remove_notes` | elimina note per id |
@@ -147,6 +149,7 @@ L’IA usa le stesse funzioni che hai a disposizione, attraverso lo stesso perco
 | `layerling_wrap_around_cylinder` | Avvolge attorno a un cilindro un corpo appoggiato in piano, per esempio un SVG o un testo, verso l’esterno oppure verso l’interno come incisione. |
 | `layerling_texture_surface` | Applica una texture di superficie a un corpo: scanalature, zigrinatura, nido d’ape o bugnature, per una presa migliore o per l’aspetto, e in seguito la modifica o la rimuove. |
 | `layerling_simplify_mesh` | Riduce il numero di triangoli di una mesh importata, mantenendo una percentuale o un numero preciso di triangoli. |
+| `layerling_make_exact` | Trasforma una mesh importata in un corpo CAD esatto: piani, cilindri, coni, sfere e tori diventano facce vere, così gli spigoli si arrotondano in modo pulito e STEP li porta. |
 | `layerling_save_custom_shape` | Salva i corpi come forma personalizzata, sul server o nel browser, per inserirli in altri progetti. |
 | `layerling_list_custom_shapes` | Elenca le forme personalizzate salvate sul server e nel browser. |
 | `layerling_insert_custom_shape` | Inserisce una forma personalizzata nel progetto aperto, anche in una posizione x/z specifica. |
@@ -154,6 +157,7 @@ L’IA usa le stesse funzioni che hai a disposizione, attraverso lo stesso perco
 | `layerling_show_workplane` | Nasconde o mostra il piano con la griglia, per esempio per fotografare la parte inferiore (modifica solo la vista). |
 | `layerling_set_section_view` | Apre la vista lungo un piano di sezione per mostrare l’interno; non taglia realmente il pezzo (modifica solo la vista). |
 | `layerling_measurements` | mostra o nasconde le misurazioni del metro a nastro e le elenca con le loro lunghezze, e nasconde o mostra le misure attorno alla selezione come [[Q]] |
+| `layerling_measure_angle` | misura un angolo come il goniometro: al vertice di tre punti o tra due facce piane, e lo mostra nella vista |
 | `layerling_saved_view` | Salva la vista corrente con il tasto 7, 8, 9 o 0 e la richiama in seguito, come con Maiusc+tasto e poi il tasto (modifica solo la vista). Imposta anche la vista di avvio dei nuovi progetti. |
 | `layerling_clear_history` | Elimina definitivamente tutti i passaggi annullabili, come il pulsante «Elimina cronologia» nella vista Cronologia; richiede `confirm: true`. |
 | `layerling_set_history_view` | Mostra uno stato precedente del progetto, come la vista Cronologia. Il progetto vero e proprio non viene modificato; gli strumenti di modifica restano in attesa finché la vista non viene chiusa. |

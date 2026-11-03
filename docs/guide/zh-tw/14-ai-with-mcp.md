@@ -87,6 +87,7 @@ AI 使用的是與你相同的功能，走的也是你在編輯器中操作時�
 | `layerling_list_objects` | 列出所有物件及其尺寸、位置、旋轉與 id |
 | `layerling_select_objects` | 選取物件 |
 | `layerling_delete_objects` | 刪除物件 |
+| `layerling_move_object` | 把物件移到物件清單中的另一個位置 |
 | `layerling_create_shape` | 建立形狀：方塊、圓柱、文字（也能彎曲）、螺紋、齒輪、草圖實體，以及其他所有形狀 |
 | `layerling_import_file` | 像匯入視窗一樣匯入檔案：彩色 OBJ 或 3MF 會依顏色各成一個實體，含多個物件的 3MF 則依物件各成一個實體 |
 | `layerling_add_font` | 為文字新增自訂字型，支援 TrueType、OpenType 或 WOFF 檔案；字型會留在瀏覽器中，設計只保留用到的字母 |
@@ -124,7 +125,7 @@ AI 使用的是與你相同的功能，走的也是你在編輯器中操作時�
 | `layerling_offset_object` | 移動實體的所有面以得到配合間隙：放大或縮小實體，或把放大的副本作為孔加入，或只移動側面 |
 | `layerling_list_faces` | 列出精確實體的面 |
 | `layerling_delete_faces` | 刪除面並補平缺口 |
-| `layerling_array_objects` | 以直線排列或環繞圓周複製 |
+| `layerling_array_objects` | 以直線、網格排列或環繞圓周複製 |
 | `layerling_bundle_objects` | 像 Ctrl+B 一樣綁定物件：它們一起移動、保留各自的顏色與類型，匯出時分開輸出 |
 | `layerling_layer_text` | 把文字變成多色列印用的分層堆疊（字母、較寬的外框、無孔底板），或再次重建這樣的堆疊，可加入鑰匙圈孔、設定每層轉角，以及圓角或倒角的字母邊緣；給出名稱清單時，每個名稱做一個名牌 |
 | `layerling_text_block` | 產生文字區塊：一段文字成為多行中的第一行，每行都是上一行下方的獨立文字，靠左、置中或靠右對齊，每行大小相同或更小 |
@@ -140,6 +141,7 @@ AI 使用的是與你相同的功能，走的也是你在編輯器中操作時�
 | `layerling_list_reference_points` | 列出參考點及其 id 與位置 |
 | `layerling_remove_reference_points` | 依 id 刪除參考點，或全部刪除 |
 | `layerling_list_notes` | 讀取使用者的備註，包括文字、每則所附著的實體，以及它是否是給 AI 的請求 |
+| `layerling_wait_for_notes` | 等待你在註記上勾選 {{ui:note.forAi}}，並立即轉交該請求 |
 | `layerling_add_note` | 在模型上放一則備註，附著在物件上或自由放在工作板上 |
 | `layerling_update_note` | 修改一則備註或回覆它；回覆會關閉請求 |
 | `layerling_remove_notes` | 依 id 刪除備註 |
@@ -147,6 +149,7 @@ AI 使用的是與你相同的功能，走的也是你在編輯器中操作時�
 | `layerling_wrap_around_cylinder` | 把平放的實體（例如 SVG 或文字）包覆到圓柱上，可向外，或向內作為雕刻 |
 | `layerling_texture_surface` | 為實體加上表面紋理：凹槽、滾花、蜂巢或凸點，用於止滑或美觀，之後仍可修改或移除 |
 | `layerling_simplify_mesh` | 減少匯入網格的三角面數量，可縮減到某個百分比，或指定三角面數 |
+| `layerling_make_exact` | 將匯入網格轉為精確的 CAD 實體：平面、圓柱面、圓錐面、球面和圓環面成為真正的面，邊能乾淨地倒圓角，STEP 也會帶上它們 |
 | `layerling_save_custom_shape` | 把實體儲存為自訂形狀，可儲存在伺服器或瀏覽器，之後插入其他設計 |
 | `layerling_list_custom_shapes` | 列出伺服器與瀏覽器中的自訂形狀 |
 | `layerling_insert_custom_shape` | 把自訂形狀插入開啟中的設計，可指定 x/z 位置 |
@@ -154,6 +157,7 @@ AI 使用的是與你相同的功能，走的也是你在編輯器中操作時�
 | `layerling_show_workplane` | 隱藏或顯示帶格線的平台，例如為了拍攝底面（只影響檢視） |
 | `layerling_set_section_view` | 沿平面剖開檢視以查看內部（只影響檢視，不會真的切開任何東西） |
 | `layerling_measurements` | 顯示或隱藏捲尺的量測，並列出它們及其長度，並像 [[Q]] 一樣隱藏或顯示所選物件周圍的尺寸 |
+| `layerling_measure_angle` | 像量角器一樣量測角度：三點的頂點處或兩個平面之間，並在檢視中顯示 |
 | `layerling_saved_view` | 把目前檢視儲存到按鍵 7、8、9 或 0，之後可回到該檢視，就像 Shift+按鍵與單按該鍵（只影響檢視）；也可設定新設計的起始視圖 |
 | `layerling_clear_history` | 永久刪除所有復原步驟，就像歷史記錄檢視的「刪除歷史記錄」按鈕；需要 `confirm: true` |
 | `layerling_set_history_view` | 回看專案較早的狀態，就像歷史記錄檢視（實際設計不受影響；會修改設計的工具會等到它關閉） |

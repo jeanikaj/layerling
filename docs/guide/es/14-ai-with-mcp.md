@@ -87,6 +87,7 @@ La IA trabaja con las mismas funciones que tú, por el mismo camino que sigues c
 | `layerling_list_objects` | lista todos los objetos con sus medidas, posición, giro e id |
 | `layerling_select_objects` | selecciona objetos |
 | `layerling_delete_objects` | elimina objetos |
+| `layerling_move_object` | mueve un objeto a otro lugar de la lista de objetos |
 | `layerling_create_shape` | crea una forma: caja, cilindro, texto (también curvado), rosca, engranaje, cuerpo de boceto y todas las demás |
 | `layerling_import_file` | importa un archivo igual que la ventana de importación: un OBJ o 3MF con colores, como un cuerpo por color; un 3MF con varios objetos, como un cuerpo por objeto |
 | `layerling_add_font` | añade una fuente propia para textos desde un archivo TrueType, OpenType o WOFF; se queda en el navegador, y un diseño solo guarda las letras que usa |
@@ -124,7 +125,7 @@ La IA trabaja con las mismas funciones que tú, por el mismo camino que sigues c
 | `layerling_offset_object` | desfasa todas las caras de un cuerpo para la holgura de un ajuste: lo agranda o reduce, o añade la copia agrandada como orificio, o mueve solo los lados |
 | `layerling_list_faces` | lista las caras de un cuerpo exacto |
 | `layerling_delete_faces` | elimina caras y cierra el hueco |
-| `layerling_array_objects` | multiplica en una fila o en un círculo |
+| `layerling_array_objects` | multiplica en una fila, una cuadrícula o un círculo |
 | `layerling_bundle_objects` | crea un conjunto con objetos, como Ctrl+B: se mueven juntos, conservan su color y su tipo, y en una exportación salen por separado |
 | `layerling_layer_text` | convierte un texto en una pila de capas para una impresión multicolor (letras, contornos más anchos, una placa sin orificios) o vuelve a construir una pila, con orificio para llavero, las esquinas de cada capa y un canto de letra redondeado o achaflanado; con una lista de nombres, hace una placa por nombre |
 | `layerling_text_block` | crea un bloque de texto: un texto pasa a ser la primera de varias líneas, cada una un texto propio debajo de la anterior, alineadas a la izquierda, al centro o a la derecha, cada línea del mismo tamaño o más pequeña |
@@ -140,6 +141,7 @@ La IA trabaja con las mismas funciones que tú, por el mismo camino que sigues c
 | `layerling_list_reference_points` | lista los puntos de referencia con sus id y posiciones |
 | `layerling_remove_reference_points` | elimina puntos de referencia por id, o todos |
 | `layerling_list_notes` | lee las notas del usuario con su texto, el cuerpo al que está fijada cada una y si es un encargo para la IA |
+| `layerling_wait_for_notes` | espera hasta que marques {{ui:note.forAi}} en una nota y entrega la petición al momento |
 | `layerling_add_note` | pone una nota en el modelo, fijada a un objeto o libre en la placa |
 | `layerling_update_note` | cambia una nota o la responde; una respuesta cierra el encargo |
 | `layerling_remove_notes` | borra notas por id |
@@ -147,6 +149,7 @@ La IA trabaja con las mismas funciones que tú, por el mismo camino que sigues c
 | `layerling_wrap_around_cylinder` | envuelve un cuerpo plano, como un SVG o un texto, alrededor de un cilindro, hacia fuera o hacia dentro como grabado |
 | `layerling_texture_surface` | aplica una textura de superficie a un cuerpo: estrías, moleteado, panal o bultos, para un mejor agarre o por estética, y la cambia o la quita después |
 | `layerling_simplify_mesh` | reduce el número de triángulos de una malla importada, a un porcentaje o a un número de triángulos |
+| `layerling_make_exact` | convierte una malla importada en un cuerpo CAD exacto: planos, cilindros, conos, esferas y toros pasan a ser caras reales, para redondear aristas limpiamente y que STEP las lleve |
 | `layerling_save_custom_shape` | guarda cuerpos como forma personalizada, en el servidor o en el navegador, para insertarlos en otros diseños |
 | `layerling_list_custom_shapes` | lista las formas personalizadas del servidor y del navegador |
 | `layerling_insert_custom_shape` | inserta una forma personalizada en el diseño abierto, en un punto x/z si quieres |
@@ -154,6 +157,7 @@ La IA trabaja con las mismas funciones que tú, por el mismo camino que sigues c
 | `layerling_show_workplane` | oculta y muestra la placa con su cuadrícula, por ejemplo para una captura de la parte de abajo (solo la vista) |
 | `layerling_set_section_view` | abre la vista en corte por un plano para mirar dentro (solo la vista: no se corta nada) |
 | `layerling_measurements` | muestra u oculta las mediciones de la cinta métrica y las lista con sus longitudes, y oculta o muestra las medidas alrededor de la selección como [[Q]] |
+| `layerling_measure_angle` | mide un ángulo como el transportador: en el vértice de tres puntos o entre dos caras planas, y lo muestra en la vista |
 | `layerling_saved_view` | guarda la vista actual en la tecla 7, 8, 9 o 0 y vuelve a ella, como Mayús+tecla y la tecla (solo la vista); también fija la vista de arranque de los diseños nuevos |
 | `layerling_clear_history` | elimina para siempre todos los pasos de deshacer, como el botón «Eliminar historial» de la vista del historial; necesita `confirm: true` |
 | `layerling_set_history_view` | consulta un estado anterior del proyecto, como la vista del historial (el diseño real no se toca; las herramientas que cambian algo esperan a que se cierre) |

@@ -87,6 +87,7 @@ AI'en arbejder med de samme funktioner som dig, gennem den samme vej som din han
 | `layerling_list_objects` | lister alle objekter med dimensioner, position, rotation og id |
 | `layerling_select_objects` | vælger objekter |
 | `layerling_delete_objects` | sletter objekter |
+| `layerling_move_object` | flytter et objekt til et andet sted i objektlisten |
 | `layerling_create_shape` | skaber en form: kasse, cylinder, tekst (også buet), gevind, tandhjul, skitseform og alle de andre |
 | `layerling_import_file` | importerer en fil som importvinduet gør, en farvet OBJ eller 3MF som én form pr. farve, en 3MF med flere objekter som én form pr. objekt |
 | `layerling_add_font` | tilføjer en font du selv har til tekst fra en TrueType-, OpenType- eller WOFF-fil; den bliver i browseren, et design beholder kun de bogstaver det bruger |
@@ -124,7 +125,7 @@ AI'en arbejder med de samme funktioner som dig, gennem den samme vej som din han
 | `layerling_offset_object` | forskyder alle flader på et legeme til spillerummet i en pasning: forstørrer eller formindsker det, eller tilføjer den forstørrede kopi som hul, eller flytter kun siderne |
 | `layerling_list_faces` | lister fladerne på en eksakt form |
 | `layerling_delete_faces` | sletter flader og lukker åbningen |
-| `layerling_array_objects` | mangfoldiggør i en række eller på en cirkel |
+| `layerling_array_objects` | mangfoldiggør i en række, et gitter eller på en cirkel |
 | `layerling_bundle_objects` | bundter objekter som Ctrl+B: de flytter sammen, beholder deres farve og slags og går ud hver for sig i en eksport |
 | `layerling_layer_text` | laver en tekst om til en stak lag til et flerfarvet print (bogstaver, bredere kanter, en plade uden huller) eller bygger en stak igen, med et nøgleringshul, hjørnerne pr. lag og en rundet eller faset bogstavkant; med en navneliste, ét tag pr. navn |
 | `layerling_text_block` | laver en tekstblok: en tekst bliver den første af flere linjer, hver en tekst for sig under den ovenover, venstre-, midter- eller højrejusteret, hver linje lige stor eller mindre |
@@ -140,6 +141,7 @@ AI'en arbejder med de samme funktioner som dig, gennem den samme vej som din han
 | `layerling_list_reference_points` | lister referencepunkterne med deres id'er og positioner |
 | `layerling_remove_reference_points` | sletter referencepunkter efter id, eller alle sammen |
 | `layerling_list_notes` | læser brugerens noter med tekst, det legeme hver er fæstnet til, og om den er en opgave til AI'en |
+| `layerling_wait_for_notes` | venter, til du sætter flueben i {{ui:note.forAi}} på en note, og giver straks opgaven videre |
 | `layerling_add_note` | sætter en note på modellen, fæstnet til et objekt eller frit på pladen |
 | `layerling_update_note` | ændrer en note eller svarer på den; et svar lukker opgaven |
 | `layerling_remove_notes` | sletter noter efter id |
@@ -147,6 +149,7 @@ AI'en arbejder med de samme funktioner som dig, gennem den samme vej som din han
 | `layerling_wrap_around_cylinder` | vikler en form der ligger fladt, for eksempel en SVG eller tekst, rundt om en cylinder, udad eller indad som gravering |
 | `layerling_texture_surface` | lægger en overfladestruktur på en form: riller, riflinger, bikager eller knopper, for bedre greb eller for udseendet, og ændrer eller fjerner den senere |
 | `layerling_simplify_mesh` | reducerer trekantsantallet i et importeret mesh, til en andel i procent eller til et antal trekanter |
+| `layerling_make_exact` | gør et importeret mesh til en eksakt CAD-form: planer, cylindre, kegler, kugler og tori bliver rigtige flader, så kanter rundes rent, og STEP bærer dem |
 | `layerling_save_custom_shape` | beholder former som en egen form, på serveren eller i browseren, for at indsætte dem i andre designs |
 | `layerling_list_custom_shapes` | lister de egne former på serveren og i browseren |
 | `layerling_insert_custom_shape` | indsætter en egen form i det åbne design, evt. på en position x/z |
@@ -154,6 +157,7 @@ AI'en arbejder med de samme funktioner som dig, gennem den samme vej som din han
 | `layerling_show_workplane` | skjuler og viser pladen med sit gitter, for et billede af undersiden for eksempel (kun visningen) |
 | `layerling_set_section_view` | skærer visningen op langs et plan for at kigge indeni (kun visningen, intet skæres fra hinanden) |
 | `layerling_measurements` | viser eller skjuler målebåndets målinger og viser dem med deres længder, og skjuler eller viser målene omkring markeringen som [[Q]] |
+| `layerling_measure_angle` | måler en vinkel som gradskiven: i hjørnet af tre punkter eller mellem to plane flader, og viser den i visningen |
 | `layerling_saved_view` | gemmer den aktuelle visning under tasten 7, 8, 9 eller 0 og går tilbage til den, som Shift+tast og tasten (kun visningen); sætter også startvisningen for nye designs |
 | `layerling_clear_history` | sletter hvert fortryd-trin for evigt, som historikvisningens "Slet historik"-knap; kræver `confirm: true` |
 | `layerling_set_history_view` | ser tilbage på en tidligere tilstand af projektet, som historikvisningen (det rigtige design forbliver urørt; ændringsværktøjer venter indtil den er lukket) |

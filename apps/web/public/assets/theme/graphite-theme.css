@@ -3128,6 +3128,25 @@ html[data-theme="dark"]:where([data-palette="graphite"]) .inspector-bundle-note 
   stroke: #7a7a7a;
 }
 
+:where(html[data-theme="dark"][data-palette="graphite"]) .protractor-leg,
+:where(html[data-theme="dark"][data-palette="graphite"]) .protractor-arc {
+  stroke: #c86a12;
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .protractor-normal {
+  stroke: #1677c8;
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .protractor-point {
+  fill: #c86a12;
+  stroke: #fff;
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .protractor-hover {
+  fill: rgba(200, 106, 18, 0.22);
+  stroke: #c86a12;
+}
+
 :where(html[data-theme="dark"][data-palette="graphite"]) .section-checkbox-label {
   color: #606060;
 }
@@ -5850,7 +5869,8 @@ html[data-theme="dark"]:where([data-palette="graphite"]) .section-measure-help {
   color: #858585;
 }
 
-html[data-theme="dark"]:where([data-palette="graphite"]) .section-measure-outline {
+html[data-theme="dark"]:where([data-palette="graphite"]) .section-measure-outline,
+html[data-theme="dark"]:where([data-palette="graphite"]) .protractor-normal {
   stroke: #4ba3ec;
 }
 
@@ -6550,13 +6570,13 @@ html[data-theme="dark"]:where([data-palette="graphite"]) .grid-settings {
   color: #888888;
 }
 
-@media (max-width: 2180px) {
+@media (max-width: 2215px) {
   :root:where([data-theme="dark"][data-palette="graphite"]) {
     --toolbar-icon-size: calc(37px * var(--toolbar-scale));
   }
 }
 
-@media (max-width: 1850px) {
+@media (max-width: 1897px) {
   :root:where([data-theme="dark"][data-palette="graphite"]) {
     --toolbar-icon-size: calc(34px * var(--toolbar-scale));
   }
@@ -6720,6 +6740,26 @@ html[data-theme="dark"]:where([data-palette="graphite"]) .theme-check {
   background: #e3e3e3;
 }
 
+:where(html[data-theme="dark"][data-palette="graphite"]) .outliner-drag-handle {
+  color: #797979;
+  background: transparent;
+  border: none;
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .outliner-drag-handle:hover,
+:where(html[data-theme="dark"][data-palette="graphite"]) .outliner-drag-handle:focus-visible {
+  color: #676767;
+  background: #e3e3e3;
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .outliner-item.drop-before {
+  box-shadow: inset 0 2px 0 #d9832b;
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .outliner-item.drop-after {
+  box-shadow: inset 0 -2px 0 #d9832b;
+}
+
 :where(html[data-theme="dark"][data-palette="graphite"]) .outliner-swatch {
   border: 1px solid rgba(0, 0, 0, 0.15);
   box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4);
@@ -6877,6 +6917,16 @@ html[data-theme="dark"]:where([data-palette="graphite"]) .outliner-shape-name {
 
 html[data-theme="dark"]:where([data-palette="graphite"]) .outliner-shape-kind {
   color: #6e6e6e;
+}
+
+html[data-theme="dark"]:where([data-palette="graphite"]) .outliner-drag-handle {
+  color: #5f5f5f;
+}
+
+html[data-theme="dark"]:where([data-palette="graphite"]) .outliner-drag-handle:hover,
+html[data-theme="dark"]:where([data-palette="graphite"]) .outliner-drag-handle:focus-visible {
+  color: #828282;
+  background: #3d3d3d;
 }
 
 html[data-theme="dark"]:where([data-palette="graphite"]) .outliner-expand-toggle {

@@ -35,7 +35,7 @@ Při změně velikosti se náhled přepočítává. Výpočet může chvíli trv
 
 Pokud je úprava pro danou hranu příliš velká, Layerling navrhne menší hodnotu. Často stačí ubrat jeden nebo dva milimetry. V ostrých úhlech potřebuje zaoblení více prostoru, než by naznačoval samotný poloměr. Na malém displeji okno samo posune obsah tak, aby bylo hlášení vidět.
 
-Jestliže dříve funkční výběr přestane fungovat po přidání další hrany, tato hrana zčervená a zesílí. Při dané velikosti ji nelze upravit společně s ostatními. Odeberte ji dalším kliknutím nebo zmenšete velikost. Přidáváte-li při zobrazené chybě další hrany, červeně zůstává první problémová. Neexistuje-li předchozí funkční výběr, například při prvním kliknutí nebo po zvětšení poloměru, zčervenají hrany selhávající samostatně, případně celý výběr, pokud vadí až jejich kombinace.
+Jestliže dříve funkční výběr přestane fungovat po přidání další hrany, tato hrana zčervená a zesílí. Při dané velikosti ji nelze upravit společně s ostatními. Odeberte ji dalším kliknutím nebo zmenšete velikost. Přidáváte-li při zobrazené chybě další hrany, červeně zůstává první problémová. Neexistuje-li předchozí funkční výběr, například při prvním kliknutí nebo po zvětšení poloměru, zčervenají hrany selhávající samostatně, případně celý výběr, pokud vadí až jejich kombinace. A tam, kde se vybrané hrany stýkají v ostrém vnitřním rohu, jako dva kotouče „mráčku“, nemá zaoblení místo při žádné velikosti: layerling pak tyto rohy nejdřív zaoblí stejnou nebo menší velikostí a hlášení řekne kolik a o kolik (u zkosení je zkosí).
 
 Než to vzdá, zkusí to layerling ještě jednou s krátkými hranami na koncích vybraných, dlouhými nejvýš dvojnásobek velikosti. Taková hrana je tam, kde dřívější sražení končí na stěně, která je ještě ostrá: krátká šikmá hrana v rohu, a dokud zůstane ostrá, roh nejde upravit. Pokud to pomůže, jsou tyto hrany potom vybrané také a zpráva řekne, kolik jich bylo přibráno.
 
@@ -53,7 +53,7 @@ Na sloučeném celku, například válci s otvorem, patří upravovaná hrana v�
 
 > **Dobré vědět:** Layerling při zkosení a zaoblení používá skutečnou CAD geometrii. Zaoblená hrana proto zůstává oblou plochou i při exportu STEP.
 
-Přesnou geometrii si zachová i import STEP. Úpravy hran a dutiny pracují s tělesem ze souboru bez ohledu na jemnost zobrazení. STL, OBJ a 3MF obsahují pouze trojúhelníky a příliš hustá síť může překročit možnosti nástroje. Je-li díl dostupný i jako STEP, použijte jej.
+Přesnou geometrii si zachová i import STEP. Úpravy hran a dutiny pracují s tělesem ze souboru bez ohledu na jemnost zobrazení. STL, OBJ a 3MF obsahují pouze trojúhelníky a příliš hustá síť může překročit možnosti nástroje. Je-li díl dostupný i jako STEP, použijte jej. {{ui:editor.tool.makeExact}} z takového dílu nejdřív udělá přesné těleso se skutečnými rovinami a válci, viz [Soubory, ukládání a sdílení](chapter:files-and-saving), „Převod importované sítě na přesné těleso“.
 
 ## Vytváření dutin
 

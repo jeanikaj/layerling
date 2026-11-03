@@ -83,6 +83,7 @@ L'IA fonctionne avec les mêmes fonctions que vous, via le même chemin que votr
 | `layerling_list_objects` | répertorie tous les objets avec les dimensions, la position, la rotation et l'identifiant |
 | `layerling_select_objects` | sélectionne des objets |
 | `layerling_delete_objects` | supprime des objets |
+| `layerling_move_object` | déplace un objet à un autre endroit de la liste des objets |
 | `layerling_create_shape` | crée une forme : boîte, cylindre, texte (également courbé), fil, engrenage, corps d'esquisse et tous les autres |
 | `layerling_import_file` | importe un fichier comme le fait la fenêtre d'import, un OBJ ou 3MF coloré comme un corps par couleur, un 3MF avec plusieurs objets comme un corps par objet |
 | `layerling_add_font` | ajoute sa propre police pour le texte d'un fichier TrueType, OpenType ou WOFF ; il reste dans le navigateur, un design ne conserve que les lettres qu'il utilise |
@@ -120,7 +121,7 @@ L'IA fonctionne avec les mêmes fonctions que vous, via le même chemin que votr
 | `layerling_offset_object` | décale toutes les faces d'un corps pour le jeu d'un ajustement : l'agrandit ou le réduit, ou ajoute la copie agrandie comme trou, ou ne déplace que les côtés |
 | `layerling_list_faces` | répertorie les faces d'un corps exact |
 | `layerling_delete_faces` | supprime des faces et referme le vide |
-| `layerling_array_objects` | se multiplie en ligne ou sur un cercle |
+| `layerling_array_objects` | se multiplie en ligne, en grille ou sur un cercle |
 | `layerling_bundle_objects` | regroupe les objets comme Ctrl+B : ils se déplacent ensemble, gardent leur couleur et leur nature et sortent séparément lors d'un export |
 | `layerling_layer_text` | transforme un texte en une pile de calques pour une impression multicolore (lettres, bords plus larges, plaque sans trous) ou reconstitue une pile, avec un trou en porte-clés, les coins par calque et un bord de lettre arrondi ou chanfreiné ; avec une liste de noms, une balise par nom |
 | `layerling_text_block` | crée un bloc de texte : un texte devient la première de plusieurs lignes, chacune un texte à part sous celle du dessus, alignées à gauche, au centre ou à droite, chaque ligne de même taille ou plus petite |
@@ -136,6 +137,7 @@ L'IA fonctionne avec les mêmes fonctions que vous, via le même chemin que votr
 | `layerling_list_reference_points` | répertorie les points de référence avec leurs identifiants et positions |
 | `layerling_remove_reference_points` | supprime les points de référence par identifiant, ou tous |
 | `layerling_list_notes` | lit les notes de l'utilisateur avec leur texte, le corps auquel chacune est fixée et si c'est une demande pour l'IA |
+| `layerling_wait_for_notes` | attend que vous cochiez {{ui:note.forAi}} sur une note et transmet aussitôt la demande |
 | `layerling_add_note` | pose une note sur le modèle, fixée à un objet ou libre sur le plateau |
 | `layerling_update_note` | modifie une note ou y répond ; une réponse clôt la demande |
 | `layerling_remove_notes` | supprime des notes par identifiant |
@@ -143,6 +145,7 @@ L'IA fonctionne avec les mêmes fonctions que vous, via le même chemin que votr
 | `layerling_wrap_around_cylinder` | enroule un corps posé à plat, un SVG ou un texte par exemple, autour d'un cylindre, vers l'extérieur ou vers l'intérieur comme une gravure |
 | `layerling_texture_surface` | applique une texture de surface sur un corps : rainures, moletage, nid d'abeille ou picots, pour la prise en main ou pour l'aspect, et la change ou la retire plus tard |
 | `layerling_simplify_mesh` | réduit le nombre de triangles d'un maillage importé, à une part en pourcentage ou à un nombre de triangles |
+| `layerling_make_exact` | transforme un maillage importé en corps CAO exact : plans, cylindres, cônes, sphères et tores deviennent de vraies faces, pour des arêtes qui s'arrondissent proprement et un STEP qui les transporte |
 | `layerling_save_custom_shape` | conserve les corps sous forme de forme personnalisée, sur le serveur ou dans le navigateur, pour les insérer dans d'autres conceptions |
 | `layerling_list_custom_shapes` | répertorie les formes personnalisées sur le serveur et dans le navigateur |
 | `layerling_insert_custom_shape` | insère une forme personnalisée dans le design ouvert, à un endroit x/z si vous le souhaitez |
@@ -150,6 +153,7 @@ L'IA fonctionne avec les mêmes fonctions que vous, via le même chemin que votr
 | `layerling_show_workplane` | cache et affiche la plaque avec sa grille, pour une photo du dessous par exemple (uniquement la vue) |
 | `layerling_set_section_view` | coupe la vue ouverte le long d'un plan pour regarder à l'intérieur (seulement la vue, rien n'est coupé) |
 | `layerling_measurements` | affiche ou masque les mesures du ruban à mesurer et les liste avec leurs longueurs, et masque ou affiche les cotes autour de la sélection comme [[Q]] |
+| `layerling_measure_angle` | mesure un angle comme le rapporteur : au sommet de trois points ou entre deux faces planes, et l'affiche dans la vue |
 | `layerling_saved_view` | enregistre la vue actuelle sous la touche 7, 8, 9 ou 0 et y revient, comme Maj+touche et la touche (seulement la vue); règle aussi la vue de départ des nouveaux designs |
 | `layerling_clear_history` | supprime définitivement chaque étape d'annulation, comme le fait le bouton "Supprimer l'historique" de la vue Historique ; besoins `confirm: true` |
 | `layerling_set_history_view` | revient sur un état antérieur du projet, comme la vue Historique (la conception réelle reste intacte ; les outils de changement attendent qu'il soit fermé) |

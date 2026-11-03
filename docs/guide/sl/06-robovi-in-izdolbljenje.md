@@ -35,7 +35,7 @@ Medtem ko vrtiš mero, layerling predogled preračuna. To lahko traja trenutek. 
 
 Če je mera prevelika za rob, layerling to pove in predlaga manjšo vrednost. Običajno zadostuje vzeti en do dva milimetra manj. Na ostrih kotih potrebuje zaokrožitev več prostora, kot bi domnevali po polmeru. Na majhnem zaslonu se okno samo pomakne navzdol, da je sporočilo v vidnem polju.
 
-Če izbor, ki je deloval, odpove, ko klikneš še en rob, ta rob postane rdeč in se nariše širše: to je rob, ki ga pri tej meri ni mogoče obdelati skupaj z drugimi. Klikni ga znova, da ga odstraniš, ali pa zmanjšaj mero. Če med prikazanim sporočilom klikneš še več robov, prvi ostane rdeč. Kadar ni prejšnjega izbora, ki bi deloval – pri prvem kliku ali pri meri, ki si jo ravnokar povečal – rdeči postanejo robovi, ki odpovedo že sami, ali vsi, če gre le za njihovo kombinacijo.
+Če izbor, ki je deloval, odpove, ko klikneš še en rob, ta rob postane rdeč in se nariše širše: to je rob, ki ga pri tej meri ni mogoče obdelati skupaj z drugimi. Klikni ga znova, da ga odstraniš, ali pa zmanjšaj mero. Če med prikazanim sporočilom klikneš še več robov, prvi ostane rdeč. Kadar ni prejšnjega izbora, ki bi deloval – pri prvem kliku ali pri meri, ki si jo ravnokar povečal – rdeči postanejo robovi, ki odpovedo že sami, ali vsi, če gre le za njihovo kombinacijo. Kjer pa se izbrani robovi stikajo v ostrem notranjem vogalu, kot dva diska oblaka, zaokrožitev pri nobeni velikosti nima prostora: layerling tedaj te vogale najprej zaokroži z enako ali manjšo velikostjo, sporočilo pa pove, koliko in s koliko (pri posnetju jih posname).
 
 Preden obupa, layerling poskusi še enkrat s kratkimi robovi na koncih izbranih, dolgimi največ dvakratno velikost. Tak rob je tam, kjer se prejšnje posnetje konča na steni, ki je še ostra: kratek poševen rob v vogalu, in dokler ostane oster, vogala ni mogoče obdelati. Če to pomaga, so ti robovi nato prav tako izbrani in sporočilo pove, koliko jih je bilo dodanih.
 
@@ -53,7 +53,7 @@ Pri skupini, na primer valju z izvrtino, obdelani rob spada k dokončanemu teles
 
 > **Dobro je vedeti:** layerling pri zaokrožitvah in posnetjih računa z resnično geometrijo CAD, ne samo z mrežo trikotnikov. Zato zaokrožen rob ostane zaokrožen tudi v izvozu STEP.
 
-Del, uvožen kot STEP, prav tako obdrži svojo geometrijo CAD: posnetja, zaokrožitve in izdolbljenje delujejo na telesu iz datoteke, ne glede na to, kako fino je del narisan na zaslonu. STL, OBJ in 3MF prinesejo samo trikotnike, fino narisan del pa je lahko za obdelavo robov preveč gost. Če del obstaja tudi kot STEP, raje uvozi tega.
+Del, uvožen kot STEP, prav tako obdrži svojo geometrijo CAD: posnetja, zaokrožitve in izdolbljenje delujejo na telesu iz datoteke, ne glede na to, kako fino je del narisan na zaslonu. STL, OBJ in 3MF prinesejo samo trikotnike, fino narisan del pa je lahko za obdelavo robov preveč gost. Če del obstaja tudi kot STEP, raje uvozi tega. {{ui:editor.tool.makeExact}} tak del najprej spremeni v natančno telo s pravimi ravninami in valji, glej [Datoteke, shranjevanje in deljenje](chapter:datoteke-in-shranjevanje), »Uvoženo mrežo naredi natančno«.
 
 ## Izdolbljenje teles
 

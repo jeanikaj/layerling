@@ -87,6 +87,7 @@ AI 使用与你相同的功能，走的是与你在编辑器中的操作相同�
 | `layerling_list_objects` | 列出所有对象及其尺寸、位置、旋转和 id |
 | `layerling_select_objects` | 选择对象 |
 | `layerling_delete_objects` | 删除对象 |
+| `layerling_move_object` | 把对象移到对象列表中的另一个位置 |
 | `layerling_create_shape` | 创建形状：长方体、圆柱体、文字（也支持弯曲）、螺纹、齿轮、草图实体以及其他所有形状 |
 | `layerling_import_file` | 像导入窗口一样导入文件：彩色 OBJ 或 3MF 按颜色各成一个实体，含多个对象的 3MF 按对象各成一个实体 |
 | `layerling_add_font` | 为文字添加自己的字体，支持 TrueType、OpenType 或 WOFF 文件；字体保存在浏览器中，设计只保留用到的字母 |
@@ -124,7 +125,7 @@ AI 使用与你相同的功能，走的是与你在编辑器中的操作相同�
 | `layerling_offset_object` | 移动实体的所有面以得到配合间隙：放大或缩小实体，或把放大的副本作为孔添加，或只移动侧面 |
 | `layerling_list_faces` | 列出精确实体的面 |
 | `layerling_delete_faces` | 删除面并闭合缺口 |
-| `layerling_array_objects` | 按行或沿圆周复制 |
+| `layerling_array_objects` | 按行、按网格或沿圆周复制 |
 | `layerling_bundle_objects` | 像 Ctrl+B 一样捆绑对象：它们一起移动，保留各自颜色和类型，导出时分开输出 |
 | `layerling_layer_text` | 把文字变成用于多色打印的分层堆叠（字母、更宽的边沿、无孔底板），或重新构建堆叠，可加钥匙孔、设置每层圆角和圆角或倒角的字母边缘；给出名称列表时，每个名称生成一个名牌 |
 | `layerling_text_block` | 生成文本块：一段文字成为多行中的第一行，每行都是上一行下方的独立文字，左对齐、居中或右对齐，每行大小相同或更小 |
@@ -140,6 +141,7 @@ AI 使用与你相同的功能，走的是与你在编辑器中的操作相同�
 | `layerling_list_reference_points` | 列出参考点及其 id 和位置 |
 | `layerling_remove_reference_points` | 按 id 删除参考点，或删除全部 |
 | `layerling_list_notes` | 读取用户的备注，包括文字、每条所附着的实体，以及它是否是给 AI 的请求 |
+| `layerling_wait_for_notes` | 等待你在注释上勾选 {{ui:note.forAi}}，并立即转交该请求 |
 | `layerling_add_note` | 在模型上放一条备注，附着在对象上或自由放在工作板上 |
 | `layerling_update_note` | 修改一条备注或回复它；回复会关闭请求 |
 | `layerling_remove_notes` | 按 id 删除备注 |
@@ -147,6 +149,7 @@ AI 使用与你相同的功能，走的是与你在编辑器中的操作相同�
 | `layerling_wrap_around_cylinder` | 把平躺的实体（例如 SVG 或文字）包裹到圆柱上，可向外，也可向内作为雕刻 |
 | `layerling_texture_surface` | 给实体加上表面纹理：凹槽、滚花、蜂窝或凸点，用于防滑或美观，之后还可以修改或去除 |
 | `layerling_simplify_mesh` | 减少导入网格的三角面数，可缩减到百分比比例或指定三角面数量 |
+| `layerling_make_exact` | 将导入网格转为精确的 CAD 实体：平面、圆柱面、圆锥面、球面和圆环面成为真正的面，边能干净地倒圆角，STEP 也会带上它们 |
 | `layerling_save_custom_shape` | 把实体保存为自定义形状，可存到服务器或浏览器，以便插入其他设计 |
 | `layerling_list_custom_shapes` | 列出服务器和浏览器中的自定义形状 |
 | `layerling_insert_custom_shape` | 把自定义形状插入当前设计，可指定 x/z 位置 |
@@ -154,6 +157,7 @@ AI 使用与你相同的功能，走的是与你在编辑器中的操作相同�
 | `layerling_show_workplane` | 隐藏和显示带网格的平台，例如为了拍摄底部图片（仅改变视图） |
 | `layerling_set_section_view` | 沿一个平面把视图剖开以便查看内部（仅改变视图，不会真正切开任何东西） |
 | `layerling_measurements` | 显示或隐藏卷尺的测量，并列出它们及其长度，并像 [[Q]] 一样隐藏或显示所选对象周围的尺寸 |
+| `layerling_measure_angle` | 像量角器一样测量角度：三点的顶点处或两个平面之间，并在视图中显示 |
 | `layerling_saved_view` | 把当前视图保存在按键 7、8、9 或 0 下，并可回到该视图，如同 Shift+按键和单独按该键（仅改变视图）；也可设置新设计的起始视图 |
 | `layerling_clear_history` | 永久删除所有撤销步骤，如同历史记录视图的“删除历史记录”按钮；需要 `confirm: true` |
 | `layerling_set_history_view` | 回看项目更早的状态，如同历史记录视图（实际设计不受影响；会改动设计的工具会等到它关闭） |

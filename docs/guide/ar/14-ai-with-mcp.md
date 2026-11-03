@@ -87,6 +87,7 @@ curl -fsSL https://raw.githubusercontent.com/henmedia/layerling/main/scripts/mac
 | `layerling_list_objects` | تسرد جميع الأجسام مع الأبعاد والموضع والتدوير والمعرّف (id) |
 | `layerling_select_objects` | تحدد أجسامًا |
 | `layerling_delete_objects` | تحذف أجسامًا |
+| `layerling_move_object` | تنقل جسمًا إلى مكان آخر في قائمة الأجسام |
 | `layerling_create_shape` | تنشئ شكلًا: صندوقًا، أسطوانة، نصًا (منحنيًا أيضًا)، سنًا لولبيًا، ترسًا، جسم رسم تخطيطي وكل الأشكال الأخرى |
 | `layerling_import_file` | تستورد ملفًا كما تفعل نافذة الاستيراد: ملف OBJ أو 3MF الملوّن كجسم واحد لكل لون، وملف 3MF الذي فيه عدة أجسام كجسم واحد لكل منها |
 | `layerling_add_font` | تضيف خطًا خاصًا للنص من ملف TrueType أو OpenType أو WOFF؛ يبقى في المتصفح، ولا يحتفظ التصميم إلا بالحروف التي يستخدمها |
@@ -124,7 +125,7 @@ curl -fsSL https://raw.githubusercontent.com/henmedia/layerling/main/scripts/mac
 | `layerling_offset_object` | تزيح كل أوجه الجسم لخلوص التركيب: تكبّره أو تصغّره أو تضيف النسخة المكبّرة كثقب، أو يحرّك الجوانب فقط |
 | `layerling_list_faces` | تسرد أوجه جسم دقيق |
 | `layerling_delete_faces` | تحذف أوجهًا وتسدّ الفجوة |
-| `layerling_array_objects` | تكرّر في صف أو على دائرة |
+| `layerling_array_objects` | تكرّر في صف أو شبكة أو على دائرة |
 | `layerling_bundle_objects` | تحزم الأجسام كما يفعل Ctrl+B: تتحرك معًا، وتحتفظ بلونها ونوعها، وتخرج منفصلة في التصدير |
 | `layerling_layer_text` | تحوّل نصًا إلى طبقات متراكبة لطباعة متعددة الألوان (حروف، وحواف أعرض، ولوحة بلا ثقوب) أو تعيد بناء هذه الطبقات، مع ثقب لحلقة مفاتيح، وزوايا لكل طبقة، وحافة حروف مستديرة أو مشطوفة؛ ومع قائمة أسماء، بطاقة لكل اسم |
 | `layerling_text_block` | تنشئ كتلة نص: يصبح النص أول عدة أسطر، كل سطر نص مستقل تحت الذي فوقه، بمحاذاة لليسار أو للوسط أو لليمين، وكل سطر بالحجم نفسه أو أصغر |
@@ -140,6 +141,7 @@ curl -fsSL https://raw.githubusercontent.com/henmedia/layerling/main/scripts/mac
 | `layerling_list_reference_points` | تسرد النقاط المرجعية مع معرّفاتها ومواضعها |
 | `layerling_remove_reference_points` | تحذف نقاطًا مرجعية حسب المعرّف، أو كلها |
 | `layerling_list_notes` | يقرأ ملاحظات المستخدم مع نصها والجسم المثبتة عليه كل واحدة وهل هي طلب للذكاء الاصطناعي |
+| `layerling_wait_for_notes` | ينتظر حتى تضع علامة {{ui:note.forAi}} على ملاحظة، ثم يسلّم الطلب فورًا |
 | `layerling_add_note` | يضع ملاحظة على النموذج، مثبتة على كائن أو حرة على اللوحة |
 | `layerling_update_note` | يعدّل ملاحظة أو يرد عليها؛ الرد يغلق الطلب |
 | `layerling_remove_notes` | يحذف ملاحظات بحسب المعرّف |
@@ -147,6 +149,7 @@ curl -fsSL https://raw.githubusercontent.com/henmedia/layerling/main/scripts/mac
 | `layerling_wrap_around_cylinder` | تلفّ جسمًا مستلقيًا مسطحًا، كملف SVG أو نص مثلًا، حول أسطوانة، للخارج أو للداخل كنقش محفور |
 | `layerling_texture_surface` | تضع على جسم نسيجًا للسطح: أخاديد أو تخريشًا أو خلايا سداسية أو نتوءات، لقبضة أفضل أو للمظهر، وتغيّره أو تزيله لاحقًا |
 | `layerling_simplify_mesh` | تقلّل عدد مثلثات شبكة مستوردة، إلى نسبة مئوية أو إلى عدد محدد من المثلثات |
+| `layerling_make_exact` | تحوّل شبكة مستوردة إلى جسم CAD دقيق: تصير المستويات والأسطوانات والمخاريط والكرات والطارات أوجهًا حقيقية، فتُدوَّر الحواف بنظافة ويحملها STEP |
 | `layerling_save_custom_shape` | تحفظ أجسامًا كشكل مخصص، على الخادم أو في المتصفح، لإدراجها في تصاميم أخرى |
 | `layerling_list_custom_shapes` | تسرد الأشكال المخصصة على الخادم وفي المتصفح |
 | `layerling_insert_custom_shape` | تدرج شكلًا مخصصًا في التصميم المفتوح، في موضع x/z إذا أردت |
@@ -154,6 +157,7 @@ curl -fsSL https://raw.githubusercontent.com/henmedia/layerling/main/scripts/mac
 | `layerling_show_workplane` | تخفي اللوحة بشبكتها وتظهرها، لالتقاط صورة للجانب السفلي مثلًا (العرض فقط) |
 | `layerling_set_section_view` | تفتح العرض بقطعه على طول مستوى للنظر إلى الداخل (العرض فقط، لا يُقطع شيء فعليًا) |
 | `layerling_measurements` | يُظهر قياسات شريط القياس أو يخفيها ويسردها مع أطوالها، ويخفي الأبعاد حول التحديد أو يظهرها مثل [[Q]] |
+| `layerling_measure_angle` | يقيس زاوية مثل المنقلة: عند ركن ثلاث نقاط أو بين وجهين مستويين، ويعرضها في العرض |
 | `layerling_saved_view` | يحفظ العرض الحالي تحت المفتاح 7 أو 8 أو 9 أو 0 ويعود إليه، مثل Shift+المفتاح والمفتاح وحده (العرض فقط)؛ ويضبط أيضًا عرض البداية للتصاميم الجديدة |
 | `layerling_clear_history` | تحذف كل خطوات التراجع نهائيًا، كما يفعل زر "حذف السجل" في عرض السجل؛ وتحتاج `confirm: true` |
 | `layerling_set_history_view` | تعرض حالة سابقة للمشروع، كعرض السجل (يبقى التصميم الحقيقي دون تغيير؛ وتنتظر الأدوات التي تغيّر التصميم حتى يُغلق) |
