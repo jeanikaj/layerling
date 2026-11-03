@@ -3,6 +3,7 @@ import type { ManifoldSolid } from "@/lib/editorMeshCore";
 import { sceneShape } from "@/lib/shapeCatalog";
 import { createLocalId } from "@/lib/localIds";
 import { t } from "@/lib/i18n";
+import { slidingDetent } from "@/lib/slidingDetent";
 import { slidingThumbGrip } from "@/lib/slidingThumbGrip";
 import type { LidOptions } from "@/lib/lidTool";
 import type { WorkplaneShape } from "@/types/layerling";
@@ -13,7 +14,7 @@ import type { WorkplaneShape } from "@/types/layerling";
  * Native box/cylinder parts preserve the existing CAD reconstruction and STEP path.
  */
 export function slidingLidParts(runtime: ManifoldToplevel, body: ManifoldSolid, source: WorkplaneShape, options: LidOptions):
-  { plate: WorkplaneShape; rails?: WorkplaneShape[]; grip?: WorkplaneShape; cutters: WorkplaneShape[] } | { error: string } {
+  { plate: WorkplaneShape; rails?: WorkplaneShape[]; grip?: WorkplaneShape; lidAdditions?: WorkplaneShape[]; bodyAdditions?: WorkplaneShape[]; cutters: WorkplaneShape[] } | { error: string } {
   const made: { delete?: () => void }[] = [];
   const keep = <T extends { delete?: () => void }>(v: T): T => { made.push(v); return v; };
   const fail = (key: "unsupported" | "thin" | "blocked" | "shallow") => ({ error: t(`lid.sliding.error.${key}`) });
@@ -105,7 +106,20 @@ export function slidingLidParts(runtime: ManifoldToplevel, body: ManifoldSolid, 
     entryMax[1]=bounds.max[1]+1;
     if (negative) { entryMin[a]=outside[a]-1; entryMax[a]=min[a]+0.05; }
     else { entryMin[a]=max[a]-0.05; entryMax[a]=outsideMax[a]+1; }
-    const entry = makeBox(t("lid.sliding.entry"), entryMin, entryMax, true);
+    const entries: WorkplaneShape[] = [];
+    if (flush) {
+      // Continue the same cross-section through the entry wall. A full-width box
+      // here removes the upper guide corners unnecessarily, leaving square notches.
+      const coreMin=[...entryMin],coreMax=[...entryMax];
+      coreMin[cross]+=engagement;coreMax[cross]-=engagement;
+      entries.push(makeBox(t("lid.sliding.entry"),coreMin,coreMax,true));
+      for (const positive of [false,true]) {
+        const edgeMin=[...entryMin],edgeMax=[...entryMax];
+        edgeMax[1]=high;
+        if (positive) edgeMin[cross]=coreMax[cross]; else edgeMax[cross]=coreMin[cross];
+        entries.push(wedge(edgeMin,edgeMax,positive,true));
+      }
+    } else entries.push(makeBox(t("lid.sliding.entry"),entryMin,entryMax,true));
     const lidMin=[...min], lidMax=[...max];
     lidMin[cross]+=options.gap; lidMax[cross]-=options.gap;
     lidMin[a]+=options.gap; lidMax[a]-=options.gap;
@@ -134,6 +148,8 @@ export function slidingLidParts(runtime: ManifoldToplevel, body: ManifoldSolid, 
       }
     }
     const grip = slidingThumbGrip(source, options, lidMin, lidMax, alongX, negative);
-    return { plate, rails, grip, cutters:[...guideCutters,entry] };
+    const detent = options.clickStop ? slidingDetent(source, options, lidMin, lidMax, alongX, negative, shift, low, bounds.min[cross], bounds.max[cross], grip) : undefined;
+    if (detent && "error" in detent) return detent;
+    return { plate, rails, grip, lidAdditions:detent?.lidParts, bodyAdditions:detent?.bodyParts, cutters:[...guideCutters,...entries] };
   } finally { Array.from(new Set(made)).reverse().forEach(v=>v.delete?.()); }
 }

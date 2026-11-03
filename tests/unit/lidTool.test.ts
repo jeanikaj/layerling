@@ -108,3 +108,12 @@ describe("thumb grip options",()=>{
     expect(normalizeLidOptions({type:"sliding",thumbGrip:false}).thumbGrip).toBe(false);
   });
 });
+
+
+describe("click-stop options",()=>{
+  it("is opt-in and bounds the interference",()=>{
+    expect(normalizeLidOptions({type:"sliding"}).clickStop).toBe(false);
+    expect(normalizeLidOptions({type:"sliding",clickStop:true,clickInterference:9})).toMatchObject({clickStop:true,clickInterference:0.25});
+    expect(normalizeLidOptions({type:"sliding",clickInterference:-1}).clickInterference).toBe(0.1);
+  });
+});

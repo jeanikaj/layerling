@@ -8076,6 +8076,12 @@ export function LayerlingEditor({
       const grouped = await groupedWithMagnets(targets, { posts: [], pockets: result.sliding.cutters }, (shapes) => buildGroupedShapeOffThread(shapes, workspaceSettingsRef.current.booleanTriangleLimit, geometryAbortRef.current?.signal));
       if (changed()) return fail(t("lid.error.changed"));
       if (!grouped.group) return fail(grouped.failureNotice || t("lid.error.kernelUnknown"));
+      if (result.sliding.posts?.length) {
+        const added = await buildGroupedShapeOffThread([canonicalizeShape({ ...grouped.group, groupOperation: "group" }), ...result.sliding.posts], workspaceSettingsRef.current.booleanTriangleLimit, geometryAbortRef.current?.signal);
+        if (changed()) return fail(t("lid.error.changed"));
+        if (!added.group) return fail(added.failureNotice || t("lid.error.kernelUnknown"));
+        grouped.group = added.group;
+      }
       const body = canonicalizeShape({ ...grouped.group, groupOperation: "group", name: targets.find(shape => !shape.hole)?.name ?? grouped.group.name });
       const consumed = new Set(targets.map(shape => shape.id));
       commitShapes([...shapesRef.current.filter(shape => !consumed.has(shape.id)), body, lid], lid.id, t("lid.sliding.made"));
@@ -12124,7 +12130,7 @@ export function LayerlingEditor({
           magnetDiameter: params.magnetDiameter,
           magnetHeight: params.magnetHeight,
           magnetGap: params.magnetGap,
-          slidingStyle: params.slidingStyle, openingSide: params.openingSide, verticalGap: params.verticalGap, engagement: params.engagement, guideRoof: params.guideRoof, thumbGrip: params.thumbGrip,
+          clickStop: params.clickStop, clickInterference: params.clickInterference, slidingStyle: params.slidingStyle, openingSide: params.openingSide, verticalGap: params.verticalGap, engagement: params.engagement, guideRoof: params.guideRoof, thumbGrip: params.thumbGrip,
           gripShape: params.gripShape, gripMode: params.gripMode, gripWidth: params.gripWidth, gripLength: params.gripLength, gripDepth: params.gripDepth, gripCornerRadius: params.gripCornerRadius, gripPosition: params.gripPosition, gripInset: params.gripInset,
         }, targets);
         if (!result.ok) throw new Error(result.message);

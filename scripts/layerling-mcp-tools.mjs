@@ -851,6 +851,8 @@ export const tools = [
         verticalGap: { type: "number" },
         engagement: { type: "number" },
         guideRoof: { type: "number" },
+        clickStop: { type: "boolean", description: "Optional paired blind notches in the lid sides near the closed end, matching wall bumps and underside relief with an unbroken lid top; needs at least 1.2 mm lid thickness, 22 mm length and 10 mm central width. Print-test retention." },
+        clickInterference: { type: "number", description: "Detent interference 0.1–0.25 mm, default 0.2; more usually increases resistance." },
         thumbGrip: { type: "boolean" },
         gripShape: { type: "string", enum: ["circle", "oval", "roundedRectangle", "slot"] },
         gripMode: { type: "string", enum: ["recessed", "raised"] },

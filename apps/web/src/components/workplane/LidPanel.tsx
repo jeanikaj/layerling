@@ -146,6 +146,11 @@ export function LidPanel({
           ["engagement", "lid.sliding.engagement", settings.engagement ?? 0.8, 0.4, 3],
           ["guideRoof", "lid.sliding.roof", settings.guideRoof ?? 1.2, 0.8, 5],
         ] as const).filter(([key]) => settings.slidingStyle !== "flush" || key !== "guideRoof").map(([key,label,value,min,max]) => <EdgeModifierSlider key={key} label={t(label)} value={value} min={min} max={max} step={0.05} workspace={workspace} length disabled={busy} onChange={value => onChange({ [key]: value })} />)}
+        <label className="edge-modifier-field offset-copy"><input type="checkbox" checked={settings.clickStop === true} disabled={busy} onChange={event => onChange({clickStop:event.target.checked})} /><span>{t("lid.click.enabled")}</span></label>
+        {settings.clickStop ? <>
+          <EdgeModifierSlider label={t("lid.click.interference")} value={settings.clickInterference ?? 0.2} min={0.1} max={0.25} step={0.05} workspace={workspace} length disabled={busy} onChange={clickInterference => onChange({clickInterference})} />
+          <span className="shell-openings-summary">{t("lid.click.help")}</span>
+        </> : null}
         <label className="edge-modifier-field offset-copy"><input type="checkbox" checked={settings.thumbGrip !== false} disabled={busy} onChange={event => onChange({ thumbGrip: event.target.checked })} /><span>{t("lid.sliding.grip")}</span></label>
         {settings.thumbGrip !== false ? (<>
           <div className="edge-modifier-field shell-openings" role="radiogroup" aria-label={t("lid.grip.shape")}>

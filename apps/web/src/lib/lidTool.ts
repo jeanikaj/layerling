@@ -46,6 +46,8 @@ export type LidOptions = {
   verticalGap?: number;
   engagement?: number;
   guideRoof?: number;
+  clickStop?: boolean;
+  clickInterference?: number;
   thumbGrip?: boolean;
   gripShape?: "circle" | "oval" | "roundedRectangle" | "slot";
   gripMode?: "recessed" | "raised";
@@ -125,6 +127,8 @@ export function normalizeLidOptions(value?: Partial<Record<keyof LidOptions, unk
     result.verticalGap = clamp(finiteNumber(value?.verticalGap) ?? 0.2, 0.05, 1);
     result.engagement = clamp(finiteNumber(value?.engagement) ?? 0.8, 0.4, 3);
     result.guideRoof = clamp(finiteNumber(value?.guideRoof) ?? 1.2, 0.8, 5);
+    result.clickStop = value?.clickStop === true;
+    result.clickInterference = clamp(finiteNumber(value?.clickInterference) ?? 0.2, 0.1, 0.25);
     result.thumbGrip = value?.thumbGrip !== false;
     result.gripShape = ["circle", "oval", "roundedRectangle", "slot"].includes(String(value?.gripShape)) ? value!.gripShape as LidOptions["gripShape"] : "circle";
     result.gripMode = value?.gripMode === "raised" ? "raised" : "recessed";
@@ -495,7 +499,7 @@ function positionsOf(mesh: ReturnType<ManifoldSolid["getMesh"]>) {
  */
 export type LidShapeMagnets = { posts: WorkplaneShape[]; pockets: WorkplaneShape[] };
 
-export type LidShapeResult = { lid: WorkplaneShape; magnets?: LidShapeMagnets; sliding?: { cutters: WorkplaneShape[] } } | { lid: null; error: string };
+export type LidShapeResult = { lid: WorkplaneShape; magnets?: LidShapeMagnets; sliding?: { cutters: WorkplaneShape[]; posts?: WorkplaneShape[] } } | { lid: null; error: string };
 
 /**
  * The lid for the selected bodies: the solids joined and the holes among them cut away, then the lid made for what is
@@ -528,12 +532,12 @@ export async function lidForShapes(targets: readonly WorkplaneShape[], given: Li
       const parts = slidingLidParts(runtime, body, solids[0], options);
       if ("error" in parts) return { lid: null, error: parts.error };
       let lid = parts.plate;
-      if (parts.grip || parts.rails?.length) {
-        const grouped = await buildGroupedShapeFromSelection([lid, ...(parts.rails ?? []), ...(parts.grip ? [parts.grip] : [])], 500000);
+      if (parts.grip || parts.rails?.length || parts.lidAdditions?.length) {
+        const grouped = await buildGroupedShapeFromSelection([lid, ...(parts.rails ?? []), ...(parts.grip ? [parts.grip] : []), ...(parts.lidAdditions ?? [])], 500000);
         if (!grouped.group) return { lid: null, error: grouped.failureNotice || t("lid.error.kernelUnknown") };
         lid = canonicalizeShape({ ...grouped.group, name: parts.plate.name, groupOperation: "group" });
       }
-      return { lid, sliding: { cutters: parts.cutters } };
+      return { lid, sliding: { cutters: parts.cutters, posts: parts.bodyAdditions } };
     }
     const result = lidForSolid(runtime, body, given);
     if ("error" in result) return { lid: null, error: lidErrorMessage(result.error) };

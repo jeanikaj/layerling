@@ -227,3 +227,94 @@ describe("configurable thumb grips: real geometry",()=>{
     } finally {body.delete();}
   });
 });
+
+
+describe("click-stop: real geometry",()=>{
+  for(const side of ["front","back","left","right"] as const) for(const slidingStyle of ["recessed","flush"] as const) {
+    it(`${slidingStyle} ${side}: seats without overlap and has two side notches, a solid top and local closing resistance`,async()=>{
+      const {k,body}=await setup();const made: {delete?:()=>void}[]=[body];
+      try {
+        const options=normalizeLidOptions({type:"sliding",slidingStyle,openingSide:side,thumbGrip:false,clickStop:true});
+        const result=slidingLidParts(k,body,source,options);
+        if("error" in result || !result.lidAdditions) throw new Error("Missing detent");
+        expect(result.lidAdditions).toHaveLength(4);
+        expect(result.bodyAdditions).toHaveLength(2);
+        const solid=(s:Parameters<typeof shapeToManifoldSolid>[1])=>shapeToManifoldSolid(k,s,made)!;
+        const slotShape=result.lidAdditions[1];
+        const reliefs=k.Manifold.union(result.lidAdditions.map(solid));made.push(reliefs);
+        const blank=k.Manifold.union([result.plate,...(result.rails??[])].map(solid));made.push(blank);
+        const lid=blank.subtract(reliefs);made.push(lid);
+        // Neither the notches nor the underside reliefs may open the top surface.
+        const top=k.Manifold.cube([200,0.3,200]).translate([-100,1.7,-100]);made.push(top);
+        const topBefore=blank.intersect(top),topAfter=lid.intersect(top);made.push(topBefore,topAfter);
+        expect(topAfter.volume()).toBeCloseTo(topBefore.volume(),5);
+        const components=lid.decompose();made.push(...components);expect(components).toHaveLength(1);
+        expect(lid.status()).toBe("NoError");
+        const cuts=k.Manifold.union(result.cutters.map(solid));made.push(cuts);
+        const withoutBumps=body.subtract(cuts);made.push(withoutBumps);
+        const bumps=k.Manifold.union(result.bodyAdditions!.map(solid));made.push(bumps);
+        const modified=withoutBumps.add(bumps);made.push(modified);
+        expect(modified.status()).toBe("NoError");
+        const alongX=side==="left"||side==="right",negative=side==="front"||side==="left";
+        const shiftX=alongX?40-(negative?-30:-27.8):slidingStyle==="flush"?40+27.8+0.8*2/2.4:68.6;
+        const height=slidingStyle==="flush"?28:26.6;
+        const closed=lid.translate([-shiftX,height,0]);made.push(closed);
+
+        const seated=closed.intersect(modified);made.push(seated);expect(seated.volume()).toBeLessThan(0.001);
+        let peak=0;
+        for(let d=0.5;d<=70;d+=0.5) {
+          const distance=(negative?-1:1)*d;
+          const move: [number,number,number]=alongX?[distance,0,0]:[0,0,distance];
+          const moving=closed.translate(move),overlap=moving.intersect(modified);
+          peak=Math.max(peak,overlap.volume());
+          const rigidOverlap=moving.intersect(withoutBumps);
+          expect(rigidOverlap.volume()).toBeLessThan(0.001);
+          moving.delete();overlap.delete();rigidOverlap.delete();
+        }
+        expect(peak).toBeGreaterThan(0.005);expect(peak).toBeLessThan(1);
+        // The relief slot is wide enough for the intended nominal interference.
+        expect(Math.min(slotShape.width!,slotShape.depth!)).toBeCloseTo(0.6,5);
+      } finally {Array.from(new Set(made)).reverse().forEach(v=>v.delete?.());}
+    });
+  }
+  it("rejects thin lids and a grip placed across the flexure",async()=>{
+    const {k,body}=await setup();
+    try {
+      expect(slidingLidParts(k,body,source,normalizeLidOptions({type:"sliding",clickStop:true,thickness:0.8}))).toHaveProperty("error");
+      expect(slidingLidParts(k,body,source,normalizeLidOptions({type:"sliding",clickStop:true,gripShape:"roundedRectangle",gripWidth:100,gripLength:100}))).toHaveProperty("error");
+      const plain=slidingLidParts(k,body,source,normalizeLidOptions({type:"sliding"}));
+      if("error" in plain) throw new Error(plain.error);
+      expect(plain.lidAdditions).toBeUndefined();
+    } finally {body.delete();}
+  });
+});
+
+
+it("refuses a flush detent needing more deflection than its relief slot",async()=>{
+  const {k,body}=await setup(5);
+  try {expect(slidingLidParts(k,body,source,normalizeLidOptions({type:"sliding",slidingStyle:"flush",clickStop:true,engagement:3,thickness:1.2,verticalGap:0.05,thumbGrip:false}))).toHaveProperty("error");}
+  finally {body.delete();}
+});
+
+
+describe("flush entry keeps its upper guide corners",()=>{
+  for(const side of ["front","back","left","right"] as const) it(side,async()=>{
+    const {k,body}=await setup();const made: {delete?:()=>void}[]=[body];
+    try {
+      const result=slidingLidParts(k,body,source,normalizeLidOptions({type:"sliding",slidingStyle:"flush",openingSide:side,thumbGrip:false}));
+      if("error" in result) throw new Error(result.error);
+      const cuts=k.Manifold.union(result.cutters.map(s=>shapeToManifoldSolid(k,s,made)!));made.push(cuts);
+      const box=body.subtract(cuts);made.push(box);
+      const alongX=side==="left"||side==="right",negative=side==="front"||side==="left";
+      for(const sign of [-1,1]) {
+        // These small regions at the entry's top corners used to be removed by
+        // the rectangular cutter. Both must remain solid with the profiled entry.
+        const size: [number,number,number]=alongX?[1.6,0.1,0.1]:[0.1,0.1,1.6];
+        const lo: [number,number,number]=alongX?[negative?-29.8:28.2,29.85,sign*18.4-0.05]:[sign*28.4-0.05,29.85,negative?-19.8:18.2];
+        const raw=k.Manifold.cube(size);made.push(raw);
+        const probe=raw.translate(lo),remaining=probe.intersect(box);made.push(probe,remaining);
+        expect(remaining.volume()).toBeCloseTo(probe.volume(),5);
+      }
+    } finally {Array.from(new Set(made)).reverse().forEach(v=>v.delete?.());}
+  });
+});

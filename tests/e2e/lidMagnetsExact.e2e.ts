@@ -124,6 +124,10 @@ describe("sliding lid exact export", () => {
     if(!result.lid || !result.sliding) throw new Error("error" in result ? result.error : "No guide cutters");
     const grouped=await groupedWithMagnets(targets,{posts:[],pockets:result.sliding.cutters},s=>editorBooleans.buildGroupedShapeFromSelection(s,250000));
     expect(grouped.group).toBeTruthy();
+    if(result.sliding.posts?.length) {
+      const added=await editorBooleans.buildGroupedShapeFromSelection([{...grouped.group!,groupOperation:"group"},...result.sliding.posts],250000);
+      expect(added.group).toBeTruthy();grouped.group=added.group;
+    }
     const shapes=[grouped.group!,result.lid];
     const {blob,skipped,exportedCount}=await exportShapesToStep(shapes);
     expect(skipped).toEqual([]);expect(exportedCount).toBeGreaterThanOrEqual(2);
@@ -137,5 +141,29 @@ describe("sliding lid exact export", () => {
       const expected=shapes.reduce((sum,shape)=>sum+editorBooleans.shapeToManifoldSolid(runtime,shape,made)!.volume(),0);
       expect(Math.abs(volume.value-expected)/expected).toBeLessThan(0.005);
     } finally { Array.from(new Set(made)).forEach(v=>v.delete?.()); }
+  });
+});
+
+
+describe("click-stop exact CAD export",()=>{
+  for(const slidingStyle of ["recessed","flush"] as const) it(`${slidingStyle} retains its flexure and pocket through STEP export`,async()=>{
+    const targets=openBox(0);
+    const result=await lidForShapes(targets,normalizeLidOptions({type:"sliding",slidingStyle,clickStop:true}));
+    if(!result.lid || !result.sliding) throw new Error("error" in result?result.error:"Missing result");
+    const grouped=await groupedWithMagnets(targets,{posts:[],pockets:result.sliding.cutters},s=>editorBooleans.buildGroupedShapeFromSelection(s,250000));
+    expect(grouped.group).toBeTruthy();
+    if(result.sliding.posts?.length) {
+      const added=await editorBooleans.buildGroupedShapeFromSelection([{...grouped.group!,groupOperation:"group"},...result.sliding.posts],250000);
+      expect(added.group).toBeTruthy();grouped.group=added.group;
+    }
+    const shapes=[grouped.group!,result.lid];
+    const {blob,skipped}=await exportShapesToStep(shapes);expect(skipped).toEqual([]);
+    const read=await brep.importSTEP(blob);if(!read.ok) throw new Error("STEP import failed");
+    const volume=brep.measureVolume(read.value);if(!volume.ok) throw new Error("Missing volume");
+    const k=await meshCore.getManifoldRuntime();const made: {delete?:()=>void}[]=[];
+    try {
+      const expected=shapes.reduce((sum,s)=>sum+editorBooleans.shapeToManifoldSolid(k,s,made)!.volume(),0);
+      expect(Math.abs(volume.value-expected)/expected).toBeLessThan(0.005);
+    } finally {Array.from(new Set(made)).reverse().forEach(v=>v.delete?.());}
   });
 });
