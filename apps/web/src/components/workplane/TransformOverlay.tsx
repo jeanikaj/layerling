@@ -42,6 +42,7 @@ export {
   type TransformHandleKind,
   type TransformOverlayState,
 } from "@/components/workplane/transformOverlayTypes";
+import { sizeDimensionAxis } from "@/lib/dimensionAxisColors";
 import { selectWholeValue } from "@/lib/numberField";
 import { useTouchSecondTap } from "@/lib/touchSecondTap";
 import { visibleWorkArea, type VisibleWorkArea } from "@/lib/visibleWorkArea";
@@ -69,6 +70,7 @@ export function TransformOverlay({
   rotationReadout,
   angleBadge = null,
   locked = false,
+  sizeLocked = false,
   showRotationWheel,
   hideSelectionChrome,
   hideDimensionMarks,
@@ -222,9 +224,10 @@ export function TransformOverlay({
         <button
           key={`${mark.key}-label`}
           className={armed === mark.key ? "dimension-label armed" : "dimension-label"}
+          data-axis={sizeDimensionAxis(mark.axis)}
           type="button"
           style={overlayPoint(keepVisible, mark.labelX, mark.labelY)}
-          disabled={locked}
+          disabled={locked || sizeLocked}
           onPointerDown={(event) => event.stopPropagation()}
           onClick={() => { if (accept(mark.key)) onBeginDimensionEdit(mark); }}
         >
@@ -234,6 +237,7 @@ export function TransformOverlay({
       {editingDimension ? (
         <input
           className="dimension-input"
+          data-axis={sizeDimensionAxis(editingDimension.axis)}
           style={overlayPoint(keepVisible, editingDimension.x, editingDimension.y)}
           value={editingDimension.value}
           autoFocus
@@ -261,6 +265,7 @@ export function TransformOverlay({
           key={entry.key}
           className="dimension-input"
           data-corner-input="true"
+          data-axis={sizeDimensionAxis(entry.axis)}
           style={overlayPoint(keepVisible, entry.x, entry.y)}
           value={entry.value}
           autoFocus={index === 0}
@@ -302,7 +307,8 @@ export function TransformOverlay({
           <span>&deg;</span>
         </label>
       ) : null}
-      {box.handles.map((handle) => (
+      {/* Lock shape (#1277): no handle that changes the size; the lift arrow and the turns stay. */}
+      {box.handles.filter((handle) => !sizeLocked || (handle.kind !== "scale" && handle.kind !== "height")).map((handle) => (
         <button
           key={handle.key}
           className={`transform-handle ${handle.className}`}

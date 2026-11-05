@@ -236,6 +236,11 @@ export type CadModifierThreadPart = {
   /** The chamfer at the bottom end, when the part has one (`chamferBottom`). */
   chamferLow: number;
   chamferBottom: boolean;
+  /**
+   * A tapered thread (NPT, #1267): every radius at height y (above the shape's bottom) is shifted
+   * by `slope * (y - at)`, as the mesh draws it. Absent for a straight thread.
+   */
+  taper?: { slope: number; at: number };
   /** A nut body or screw head of outline tiers (#1131): square, flange, wing or star knob. It takes the place of the hexagon or head kind. */
   tiers?: ThreadOutlineTier[];
   /** Screw only. */
@@ -446,6 +451,10 @@ export type CadFaceInfo = {
   center: { x: number; y: number; z: number };
   /** Out of the body, for flat faces only. */
   normal?: { x: number; y: number; z: number };
+  /** Twice the area over the perimeter: how narrow the face is, for the thin faces Delete face takes along. */
+  width: number;
+  /** The faces it shares an edge with. */
+  neighbours: number[];
 };
 
 /** The prepared body's faces: each face's description and, for picking, the tessellation with the face of every triangle. */

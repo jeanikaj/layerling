@@ -2,7 +2,7 @@
 
 import { previewLabelSpot } from "@/lib/sketchPreviewLabel";
 import { AlignCenterHorizontal, AlignCenterVertical, AlignEndHorizontal, AlignEndVertical, AlignStartHorizontal, AlignStartVertical, Check, ChevronUp, CornerDownRight, Crop, Crosshair, Eye, EyeOff, FlipHorizontal2, FlipVertical2, Home, Layers, Link, Link2Off, LockKeyhole, LockKeyholeOpen, Magnet, Minus, Plus, Ruler, RulerDimensionLine, Scissors, Slash, Spline, Split, Trash2, WandSparkles, Waves, X } from "lucide-react";
-import { displayedHandle } from "@/lib/sketchBezierHandles";
+import { displayedHandle, handleAtOffset, handleOffset } from "@/lib/sketchBezierHandles";
 import { curveStretches } from "@/lib/sketchCurveThroughPoints";
 import { markEscapeHandled } from "@/lib/escapeHandled";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type Dispatch, type SetStateAction, type FocusEvent as ReactFocusEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from "react";
@@ -38,7 +38,7 @@ import { resizePointerOnGrid } from "@/lib/sketchFrameResize";
 import { viewArrowStep } from "@/lib/viewArrowKeys";
 import { resizeSketchPoints, resizeSketchPointsToSize, type ResizeHandle, type SelectionBounds } from "@/lib/sketchSelectionResize";
 import { alignSketchSelection, canAlignSketchSelection, type SketchAlignMode } from "@/lib/sketchAlign";
-import { changesLockedOutline, sketchLockState } from "@/lib/sketchLock";
+import { changesLockedOutline, lockedCornerTurn, lockedLengthAnchor, sketchLockState } from "@/lib/sketchLock";
 import { dragRotationDegrees, rotateSketchPointsAbout, sketchPointsPivot, sketchTurnRing, sketchTurnStep, SKETCH_TURN_RING_STEP } from "@/lib/sketchRotation";
 import { calibrateImage, centreImage, cropImage, imageAngleTo, imageCorners, imageCropViewBox, imageHandlePositions, normalizeImageRotation, resizeImage, rotateImage, uncropImage } from "@/lib/sketchImageTransform";
 import { MAX_TRACE_CORNER_ANGLE, MIN_TRACE_CORNER_ANGLE, type PictureTrace, type TracePart } from "@/lib/pictureTrace";
@@ -56,9 +56,9 @@ import { arcPreviewPoints, arcThroughThreePoints, type SketchArcEnd } from "@/li
 import { constrainToAngle, sketchLineAngle, sketchPolarPoint, splitTypedLine } from "@/lib/sketchPolar";
 
 export type { SketchPrimitive } from "@/lib/sketchPrimitives";
-export type SketchTool = "line" | "arc" | "bezier" | "smooth" | SketchPrimitive | "select" | "refine" | "erase" | "measure";
+export type SketchTool = "line" | "arc" | "bezier" | "smooth" | "freehand" | SketchPrimitive | "select" | "refine" | "erase" | "measure";
 /** The keys 1 to 4 and the drawing tool each picks, in the order of the tools on the left (#347). */
-export const SKETCH_TOOL_KEYS: Readonly<Record<string, SketchTool>> = { "1": "line", "2": "bezier", "3": "smooth", "4": "refine" };
+export const SKETCH_TOOL_KEYS: Readonly<Record<string, SketchTool>> = { "1": "line", "2": "bezier", "3": "smooth", "4": "refine", "5": "freehand" };
 /** With the Select tool and something selected, the same keys change it instead (#347): 1 straight / corner, 2 curve, 3 smooth. */
 export const SKETCH_EDIT_KEYS: Readonly<Record<string, "straight" | "curve" | "smooth">> = { "1": "straight", "2": "curve", "3": "smooth" };
 export type { SketchSelection } from "@/lib/sketchSelection";
@@ -94,6 +94,8 @@ type SketchWorkspaceProps = {
   onAddPrimitive: (primitive: SketchPrimitive, center: { x: number; z: number }) => void;
   /** The three-point arc (#643): first the two ends, then a point the arc runs through. */
   onAddArc?: (start: SketchArcEnd, through: { x: number; z: number }, end: SketchArcEnd) => void;
+  /** Freehand (#1280): the line drawn with the pen, a finger or the mouse, unsnapped, and the size of a screen pixel in mm. */
+  onFreehandStroke?: (samples: Array<{ x: number; z: number }>, screenUnit: number) => void;
   onPointPress: (id: string) => void;
   /** Ends the chain of points being drawn, keeping the tool: a right click on the plane or a double click on the last point (#520). */
   onFinishLine?: () => void;
@@ -731,6 +733,7 @@ export function SketchWorkspace({
   fromMiddle,
   onAddPrimitive,
   onAddArc,
+  onFreehandStroke,
   onPointPress,
   onFinishLine,
   onSelectSegment,
@@ -839,6 +842,10 @@ export function SketchWorkspace({
   const lastPointerRef = useRef<{ clientX: number; clientY: number } | null>(null);
   const [refinePreview, setRefinePreview] = useState<{ segmentId: string; placement: SketchSegmentPlacement } | null>(null);
   const [pointerAction, setPointerAction] = useState<PointerAction | null>(null);
+  // A freehand stroke (#1280) in progress: its samples in a ref, not in state, so no move of a fast pen is lost
+  // between two renders, and its preview drawn straight into the polyline, without rendering the workspace.
+  const freehandRef = useRef<{ pointerId: number; samples: Array<{ x: number; z: number }> } | null>(null);
+  const freehandLineRef = useRef<SVGPolylineElement>(null);
   // The reference image's crop mode and calibration (#216): both belong to the selected image.
   const [cropMode, setCropMode] = useState(false);
   const [calibration, setCalibration] = useState<{ imageId: string; points: Array<{ x: number; z: number }> } | null>(null);
@@ -1214,11 +1221,12 @@ export function SketchWorkspace({
     const length = parseLengthMm(editingDimension.value);
     const segment = profile.segments.find((entry) => entry.id === editingDimension.segmentId);
     if (segment && Number.isFinite(length) && length > 0.001) {
-      const anchor = symmetric
+      // A locked end (#629) stays, whatever end the selection asks to keep.
+      const anchor = lockedLengthAnchor(segment, profile.points, symmetric
         ? SEGMENT_DIMENSION_CENTER
         : selectedPoint?.id === segment.endId ? segment.startId
         : selectedPoint?.id === segment.startId ? segment.endId
-        : segment.startId;
+        : segment.startId);
       const updatedPoints = applySegmentDimension(segment, profile.points, length, anchor);
       if (updatedPoints !== profile.points) onTransformPoints(updatedPoints, t("sketch.dimensionUpdated"));
     }
@@ -1246,8 +1254,10 @@ export function SketchWorkspace({
   const angleEditDoneRef = useRef(false);
   const startAngleEdit = useCallback((pointId: string, value: string, sketchPos: { x: number; z: number }) => {
     angleEditDoneRef.current = false;
-    setEditingAngle({ pointId, value, turn: "after", sketchPos });
-  }, []);
+    // The line that turns is the one whose far end is free (#629), and it is shown while typing.
+    const corner = sketchCornerAt(profile, pointId);
+    setEditingAngle({ pointId, value, turn: corner ? lockedCornerTurn(corner, "after") : "after", sketchPos });
+  }, [profile]);
   const cancelAngleEdit = useCallback(() => {
     angleEditDoneRef.current = true;
     setEditingAngle(null);
@@ -1259,7 +1269,7 @@ export function SketchWorkspace({
     const degrees = parseMeasurementInput(editingAngle.value);
     const corner = sketchCornerAt(profile, editingAngle.pointId);
     if (corner && Number.isFinite(degrees)) {
-      const updatedPoints = applyCornerAngle(profile.points, corner, degrees, turnOverride ?? editingAngle.turn);
+      const updatedPoints = applyCornerAngle(profile.points, corner, degrees, lockedCornerTurn(corner, turnOverride ?? editingAngle.turn));
       if (updatedPoints !== profile.points) onTransformPoints(updatedPoints, t("sketch.angleUpdated"));
     }
     setEditingAngle(null);
@@ -1308,6 +1318,73 @@ export function SketchWorkspace({
     [gridLayout.majorInterval, gridStep, profile, workspace],
   );
   const reach = sketchPointerReach(workspace, board);
+  // Typed coordinates (#1250): a clicked handle shows where it lies from its own point, a single selected point where it
+  // lies from the sketch's origin. Y counts up the screen, as in the fields of a selection (#1064).
+  const handleFieldPoint = selectedHandle ? pointById.get(selectedHandle.pointId) ?? null : null;
+  const handleFieldOffset = handleFieldPoint && selectedHandle ? handleOffset(displayProfile, handleFieldPoint, selectedHandle.handle) : undefined;
+  const setHandleOffset = (dx: number, dz: number) => {
+    if (!handleFieldPoint || !selectedHandle || handleFieldPoint.locked) return;
+    if (handleFieldOffset && Math.abs(dx - handleFieldOffset.x) < 1e-9 && Math.abs(dz - handleFieldOffset.z) < 1e-9) return;
+    onMoveHandle(selectedHandle.pointId, selectedHandle.handle, handleAtOffset(handleFieldPoint, { x: dx, z: dz }, reach));
+  };
+  const movePointTo = (point: SketchPoint, x: number, z: number) => {
+    if (point.locked) return;
+    const moved = { x: clamp(x, -reach.halfWidth, reach.halfWidth), z: clamp(z, -reach.halfDepth, reach.halfDepth) };
+    if (Math.abs(moved.x - point.x) < 1e-9 && Math.abs(moved.z - point.z) < 1e-9) return;
+    onMovePoint(point.id, moved);
+  };
+  const coordinateFields = (point: SketchPoint | null) => {
+    if (handleFieldPoint && handleFieldOffset) {
+      const { x: dx, z: dz } = handleFieldOffset;
+      return (
+        <>
+          <span className="sketch-point-divider" />
+          <SketchImagePositionField
+            className="sketch-selection-position sketch-handle-position"
+            label={t("sketch.handleX")}
+            title={t("sketch.handlePositionHint")}
+            value={dx}
+            accuracy={workspace.accuracy}
+            disabled={Boolean(handleFieldPoint.locked)}
+            onChange={(x) => setHandleOffset(x, dz)}
+          />
+          <SketchImagePositionField
+            className="sketch-selection-position sketch-handle-position"
+            label={t("sketch.handleY")}
+            title={t("sketch.handlePositionHint")}
+            value={displayY(dz)}
+            accuracy={workspace.accuracy}
+            disabled={Boolean(handleFieldPoint.locked)}
+            onChange={(y) => setHandleOffset(dx, insideZ(y))}
+          />
+        </>
+      );
+    }
+    if (!point) return null;
+    return (
+      <>
+        <span className="sketch-point-divider" />
+        <SketchImagePositionField
+          className="sketch-selection-position sketch-point-position"
+          label={t("sketch.selectionX")}
+          title={t("sketch.pointPositionHint")}
+          value={point.x}
+          accuracy={workspace.accuracy}
+          disabled={Boolean(point.locked)}
+          onChange={(x) => movePointTo(point, x, point.z)}
+        />
+        <SketchImagePositionField
+          className="sketch-selection-position sketch-point-position"
+          label={t("sketch.selectionY")}
+          title={t("sketch.pointPositionHint")}
+          value={displayY(point.z)}
+          accuracy={workspace.accuracy}
+          disabled={Boolean(point.locked)}
+          onChange={(y) => movePointTo(point, point.x, insideZ(y))}
+        />
+      </>
+    );
+  };
   const minZoom = sketchMinZoom(workspace, board, SKETCH_MIN_ZOOM);
   const verticalLines = useMemo(() => {
     const lines: number[] = [];
@@ -1322,14 +1399,15 @@ export function SketchWorkspace({
     return lines;
   }, [gridStep, board.depth]);
 
-  const unsnappedPointFromEvent = (event: { clientX: number; clientY: number }) => {
+  /** `toSketch`, the screen-to-sketch matrix, can be given when many points of one move are taken at once (a pen's coalesced events). */
+  const unsnappedPointFromEvent = (event: { clientX: number; clientY: number }, toSketch?: DOMMatrix | null) => {
     const svg = svgRef.current;
-    const matrix = svg?.getScreenCTM();
+    const matrix = toSketch ?? svg?.getScreenCTM()?.inverse();
     if (!svg || !matrix) return null;
     const screenPoint = svg.createSVGPoint();
     screenPoint.x = event.clientX;
     screenPoint.y = event.clientY;
-    const local = screenPoint.matrixTransform(matrix.inverse());
+    const local = screenPoint.matrixTransform(matrix);
     return { x: local.x, z: local.y };
   };
 
@@ -1464,7 +1542,57 @@ export function SketchWorkspace({
     }
     if (event.button === 2) rightPressRef.current = { x: event.clientX, y: event.clientY };
     if (isSketchPanGesture(event, workspace.mouseScheme)) beginPan(event);
+    else if (tool === "freehand") beginFreehand(event);
     else retargetTouchPress(event);
+  };
+
+  // Freehand (#1280): the stroke starts wherever the pen goes down - on a line, a point or a picture
+  // as well, so a template can be drawn over - and a finger is not moved onto the nearest point.
+  const beginFreehand = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (event.button !== 0 || freehandRef.current || pointerAction) return;
+    const at = unsnappedPointFromEvent(event);
+    if (!at) return;
+    event.preventDefault();
+    event.stopPropagation();
+    capturePointer(svgRef.current, event.pointerId);
+    freehandRef.current = { pointerId: event.pointerId, samples: [at] };
+    freehandLineRef.current?.setAttribute("points", `${at.x},${at.z}`);
+  };
+
+  const extendFreehand = (event: ReactPointerEvent<SVGSVGElement>) => {
+    const stroke = freehandRef.current;
+    if (!stroke || stroke.pointerId !== event.pointerId) return false;
+    // A pen reports many more positions than there are frames; the browser gathers them into one move.
+    const native = event.nativeEvent as PointerEvent;
+    const moves = typeof native.getCoalescedEvents === "function" ? native.getCoalescedEvents() : [];
+    // The matrix once per move, not per coalesced event; the preview line only gets the new points, so a long stroke
+    // does not write all of its points out again at every move.
+    const svg = svgRef.current;
+    const toSketch = svg?.getScreenCTM()?.inverse();
+    const preview = freehandLineRef.current;
+    (moves.length ? moves : [native]).forEach((move) => {
+      const at = unsnappedPointFromEvent(move, toSketch);
+      if (!at) return;
+      stroke.samples.push(at);
+      if (svg && preview) {
+        const point = svg.createSVGPoint();
+        point.x = at.x;
+        point.y = at.z;
+        preview.points.appendItem(point);
+      }
+    });
+    return true;
+  };
+
+  /** Ends the stroke: lifted, it becomes sketch points; cancelled, it is dropped. */
+  const endFreehand = (event: ReactPointerEvent<SVGSVGElement>, keep: boolean) => {
+    const stroke = freehandRef.current;
+    if (!stroke || stroke.pointerId !== event.pointerId) return false;
+    freehandRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    freehandLineRef.current?.setAttribute("points", "");
+    if (keep) onFreehandStroke?.(stroke.samples, screenUnit);
+    return true;
   };
 
   // The context menu event comes with the press on macOS and with the release on Windows, so it cannot tell a click from a pan.
@@ -1507,6 +1635,7 @@ export function SketchWorkspace({
 
   const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
     lastPointerRef.current = { clientX: event.clientX, clientY: event.clientY };
+    if (extendFreehand(event)) return;
     if (pointerAction?.kind === "pan") {
       const matrix = svgRef.current?.getScreenCTM();
       const scaleX = matrix ? Math.max(0.0001, Math.hypot(matrix.a, matrix.b)) : 1;
@@ -2303,10 +2432,14 @@ export function SketchWorkspace({
           onPointerDown={handlePlanePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={(event) => {
+            if (endFreehand(event, true)) return;
             endChainOnRightRelease(event);
             finishPointerAction(event);
           }}
-          onPointerCancel={() => setPointerAction(null)}
+          onPointerCancel={(event) => {
+            endFreehand(event, false);
+            setPointerAction(null);
+          }}
           onPointerLeave={() => {
             lastPointerRef.current = null;
             if (!pointerAction) setHover(null);
@@ -3133,6 +3266,7 @@ export function SketchWorkspace({
             ) : null;
           }) : null}
           {hover && ["line", "arc", "bezier", "smooth", "measure"].includes(tool) ? <circle className="sketch-cursor-point" cx={hover.x} cy={hover.z} r={hoverPointRadius} pointerEvents="none" /> : null}
+          {tool === "freehand" ? <polyline ref={freehandLineRef} className="sketch-freehand-preview" points="" pointerEvents="none" /> : null}
         </svg>
         {notes?.length && onUpdateNote && onRemoveNote ? (
           <SketchNotes
@@ -3247,7 +3381,12 @@ export function SketchWorkspace({
                 }
                 if (event.key === "Tab") {
                   event.preventDefault();
-                  setEditingAngle((prev) => prev ? { ...prev, turn: prev.turn === "after" ? "before" : "after" } : null);
+                  // A line whose far end is locked (#629) cannot turn, so Tab stays on the free one.
+                  setEditingAngle((prev) => {
+                    if (!prev) return null;
+                    const toggled = prev.turn === "after" ? "before" : "after";
+                    return { ...prev, turn: editingCorner ? lockedCornerTurn(editingCorner, toggled) : toggled };
+                  });
                 }
                 if (event.key === "Escape") {
                   event.preventDefault();
@@ -3406,6 +3545,7 @@ export function SketchWorkspace({
                 </>
               ) : null}
               {mirrorButton}
+              {coordinateFields(selectedPoint)}
               <GuideHelpLink section="sketchCurve" className="sketch-corner-help" iconSize={17} />
             </>
           )}
@@ -3547,6 +3687,7 @@ export function SketchWorkspace({
             </button>
           ) : null}
           {mirrorButton}
+          {coordinateFields(null)}
           <GuideHelpLink section="sketchCurve" className="sketch-corner-help" iconSize={17} />
         </div>
       ) : null}

@@ -57,6 +57,7 @@ export const GUIDE_SECTIONS = {
   pattern: { chapter: "select", de: "muster-reihe-und-kreis", en: "patterns-row-and-circle", nl: "patronen-rij-en-cirkel", ru: "massivy-ryad-i-krug", cs: "opakovani-v-rade-a-po-kruznici", sl: "polja-vrsta-in-krog", hu: "ismetles-sor-es-koer", es: "patrones-fila-y-circulo" },
   holePattern: { chapter: "select", de: "lochmuster-auf-einer-flaeche", en: "hole-pattern-on-a-face", nl: "gatenpatroon-op-een-vlak", ru: "massiv-otverstiy-na-grani", cs: "rastr-otvoru-na-plose", sl: "vzorec-lukenj-na-ploskvi", hu: "lyukminta-egy-lapon", es: "patron-de-orificios-en-una-cara" },
   faceTool: { chapter: "select", de: "eine-flaeche-heraus-oder-hineinziehen", en: "pushing-a-face-out-or-in", nl: "een-vlak-naar-buiten-of-naar-binnen-trekken", fr: "tirer-une-face-vers-l-exterieur-ou-l-interieur", ru: "vytyagivanie-grani-naruzhu-ili-vnutr", cs: "vysunuti-plochy-ven-nebo-dovnitr", sl: "vlecenje-ploskve-navzven-ali-navznoter", es: "empujar-una-cara-hacia-fuera-o-hacia-dentro" },
+  alignSpread: { chapter: "select", de: "gleiche-abstaende", en: "equal-gaps", fr: "espacement-egal", es: "espaciado-igual", it: "spaziatura-uguale", nl: "gelijke-tussenruimte", da: "lige-store-mellemrum", pl: "rowne-odstepy", cs: "stejne-mezery", sl: "enaki-razmiki", hu: "egyenlo-koezoek", ru: "ravnye-promezhutki" },
   scaleByPercent: { chapter: "select", de: "um-prozent-skalieren", en: "scaling-by-percent", nl: "schalen-in-procenten", ru: "masshtabirovanie-v-protsentakh", cs: "zmena-velikosti-o-procenta", sl: "povecava-v-odstotkih", hu: "meretezes-szazalekban", es: "escalar-en-porcentaje" },
   selectionProperties: { chapter: "select", de: "mehrere-teile-auf-einmal-aendern", en: "changing-several-parts-at-once", nl: "meerdere-onderdelen-tegelijk-veranderen", ru: "izmenenie-neskolkikh-detaley-srazu", cs: "soucasna-zmena-vice-dilu", sl: "sprememba-vec-delov-naenkrat", hu: "toebb-resz-modositasa-egyszerre", es: "cambiar-varias-piezas-a-la-vez" },
   historyView: { chapter: "select", de: "zurueckschauen-die-verlaufsansicht", en: "looking-back-the-history-view", nl: "terugkijken-de-geschiedenisweergave", ru: "vzglyad-nazad-prosmotr-istorii", cs: "prohlizeni-historie", sl: "pogled-nazaj-pogled-zgodovine", hu: "visszatekintes-az-elozmenynezet", es: "mirar-atras-la-vista-del-historial" },
@@ -83,6 +84,9 @@ export const GUIDE_SECTIONS = {
   flexi: { chapter: "threads", de: "flexi-gelenke", en: "flexi-joints", nl: "flexi-scharnieren", ru: "fleksi-sharniry", cs: "flexi-klouby", sl: "flexi-zgibi", hu: "flexi-csuklok", es: "articulaciones-flexi", fr: "articulations-flexi" },
   knurl: { chapter: "threads", de: "raendelung", en: "knurling", nl: "kartel", ru: "nakatka", cs: "ryhovane-uchopy", sl: "narebricenje", hu: "recezes", es: "moleteado" },
   dovetail: { chapter: "threads", de: "schwalbenschwanz", en: "dovetail", nl: "zwaluwstaart", ru: "lastochkin-khvost", cs: "rybinovy-spoj", sl: "lastovicji-rep", hu: "fecskefark", es: "cola-de-milano" },
+  screwBoss: { chapter: "threads", de: "schraubdom", en: "screw-boss", nl: "schroefpaal", fr: "bossage-a-vis", ru: "bobyshka-pod-vint", cs: "sroubovy-sloupek", sl: "vijacni-steber", da: "skruetap", hu: "csavaroszlop", es: "torreta-para-tornillo", it: "torretta-per-viti", pl: "tulejka-na-wkret", ar: "screw-boss" },
+  snapFit: { chapter: "threads", de: "schnapphaken", en: "snap-fit", nl: "klikhaak", fr: "clip-a-encliqueter", ru: "zashchelka", cs: "zaklapavaci-hacek", sl: "zaskocna-kljukica", da: "snaplas", hu: "pattintos-kampo", es: "clip-de-encaje", it: "gancio-a-scatto", pl: "zatrzask", ar: "snap-fit" },
+  ribs: { chapter: "threads", de: "rippen", en: "ribs", nl: "ribben", fr: "nervures", ru: "rebra", cs: "zebra", sl: "rebra", da: "ribber", hu: "bordak", es: "nervios", it: "nervature", pl: "zebra", ar: "ribs" },
   teardrop: { chapter: "threads", de: "tropfenbohrung", en: "teardrop-hole", nl: "druppelgat", ru: "kaplevidnoe-otverstie", cs: "kapkovity-otvor", sl: "kapljicna-izvrtina", hu: "csepp-alaku-lyuk", es: "orificio-en-lagrima" },
   ports: { chapter: "threads", de: "anschlussoeffnungen", en: "port-openings", nl: "aansluitopeningen", ru: "otverstiya-pod-razemy", cs: "otvory-pro-konektory", sl: "odprtine-za-prikljucke", hu: "csatlakozonyilasok", es: "aberturas-para-conectores", fr: "ouvertures-de-connecteur", it: "aperture-per-connettori", pl: "otwory-na-zlacza", da: "stikabninger", ar: "port-openings" },
   sbcBoard: { chapter: "threads", de: "sbc-platinen", en: "sbc-boards", nl: "sbc-borden", ru: "platy-sbc", cs: "desky-sbc", hu: "sbc-lapok", es: "placas-sbc" },
@@ -205,6 +209,12 @@ export function guideSectionForShape(shape: GuideShape): GuideSection | undefine
       return "knurl";
     case "dovetail":
       return "dovetail";
+    case "screwBoss":
+      return "screwBoss";
+    case "snapFit":
+      return "snapFit";
+    case "rib":
+      return "ribs";
     case "teardrop":
       return "teardrop";
     case "port":
@@ -240,6 +250,9 @@ export function guideChapterForShape(shape: GuideShape): GuideChapter {
     case "hinge":
     case "knurl":
     case "dovetail":
+    case "screwBoss":
+    case "snapFit":
+    case "rib":
     case "teardrop":
     case "port":
     case "counterbore":

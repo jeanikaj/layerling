@@ -4908,6 +4908,19 @@ html[data-simple-mode="on"]:not([data-toolbar-size]) .shape-menu-dropdown:not(.s
   max-height: calc(var(--shape-menu-height) - 46px);
 }
 
+/* Pinned, the 3D editor's Shapes panel lies in the workplane under the inspector (#1283), at the spot it hung
+   from its button (window pixels, divided by the zoom like every length of the panel). */
+.shape-menu-home {
+  display: contents;
+}
+
+.shape-menu-dropdown.shape-menu-under-inspector {
+  position: fixed;
+  z-index: 7;
+  top: calc(var(--shape-menu-home-top) / var(--toolbar-scale));
+  left: calc(var(--shape-menu-home-left) / var(--toolbar-scale));
+}
+
 /* Narrow: only the pictures stay, as in Tinkercad. The name is in each tile's tooltip. */
 .shape-menu-dropdown.shape-menu-icons-only .shape-menu-list {
   grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
@@ -6519,6 +6532,16 @@ html[data-theme="dark"] .sketch-shape-options .unit {
   stroke-width: 3;
 }
 
+/* Freehand (#1280): the line under the pen while it is drawn, before it becomes points. */
+.sketch-freehand-preview {
+  fill: none;
+  stroke: #ce7416;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
 .sketch-preview-line {
   stroke: #ce7416;
   stroke-width: 2;
@@ -6820,6 +6843,11 @@ html[data-theme="dark"] .sketch-shape-options .unit {
 .sketch-selection-position input:disabled {
   cursor: default;
   opacity: 0.52;
+}
+
+/* "Handle X" is two words: they stay on one line next to their field (#1250). */
+.sketch-selection-position > span {
+  white-space: nowrap;
 }
 
 .sketch-corner-dialog {
@@ -8443,6 +8471,121 @@ html[data-theme="dark"] .touch-multi-select {
   border-radius: 2px;
 }
 
+/* Equal gaps: a pill beside the middle dot of each line, turned along it; with Alt it asks for a gap (dashed). */
+.align-spread {
+  position: absolute;
+  width: 26px;
+  height: 16px;
+  padding: 0;
+  border: 2px solid #fcfbf8;
+  border-radius: 999px;
+  background: #312519;
+  color: #fcfbf8;
+  box-shadow: 0 1px 5px rgba(40, 27, 13, 0.32);
+  cursor: pointer;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) rotate(var(--spread-angle, 0deg));
+}
+
+.align-spread::before {
+  position: absolute;
+  inset: -8px;
+  border-radius: 999px;
+  content: "";
+}
+
+.align-spread-icon {
+  display: block;
+  width: 18px;
+  height: 9px;
+  margin: 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.align-spread:hover:not(:disabled),
+.align-spread:focus-visible:not(:disabled) {
+  background: #e17709;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(173, 89, 0, 0.18), 0 1px 5px rgba(40, 27, 13, 0.32);
+}
+
+.align-spread.disabled,
+.align-spread:disabled {
+  background: #b0a498;
+  box-shadow: none;
+  cursor: default;
+  opacity: 0.72;
+}
+
+.align-overlay.size-mode .align-spread:not(:disabled) {
+  border-style: dashed;
+}
+
+.align-gap-field {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--foreground);
+  box-shadow: 0 4px 16px rgba(40, 27, 13, 0.22);
+  font: 13px var(--font-ui);
+  pointer-events: auto;
+  transform: translate(-50%, calc(-100% - 14px));
+  white-space: nowrap;
+}
+
+.align-gap-field label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.align-gap-field input {
+  width: 64px;
+  padding: 3px 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.align-gap-unit {
+  color: var(--muted-strong);
+}
+
+.align-gap-field button[type="submit"] {
+  padding: 3px 10px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.align-gap-field button[type="submit"]:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.align-gap-close {
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--muted-strong);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
 .mirror-overlay {
   position: absolute;
   inset: 0;
@@ -8542,6 +8685,24 @@ html[data-theme="dark"] .touch-multi-select {
 .dimension-label.armed {
   border-color: rgba(166, 86, 0, 0.85);
   box-shadow: 0 0 0 3px rgba(173, 89, 0, 0.22), 0 1px 4px rgba(58, 40, 20, 0.09);
+}
+
+/* Workspace setting "Dimension boxes in axis colours" (#1279): each value box in the colour of its axis,
+   as the size handles: a light tint, a strong edge and dark text, the same in the dark theme so the number stays easy to read. */
+.workplane-wrap.dimension-axis-colors .dimension-label[data-axis],
+.workplane-wrap.dimension-axis-colors .dimension-input[data-axis] {
+  background: var(--dimension-axis-tint);
+  border: 1px solid var(--dimension-axis-edge);
+  color: var(--dimension-axis-text);
+  opacity: 1;
+}
+
+.workplane-wrap.dimension-axis-colors [data-axis="x"] { --dimension-axis-tint: #fde4e4; --dimension-axis-edge: #d6363c; --dimension-axis-text: #6e1418; }
+.workplane-wrap.dimension-axis-colors [data-axis="y"] { --dimension-axis-tint: #dff3e4; --dimension-axis-edge: #2f9a4b; --dimension-axis-text: #144a24; }
+.workplane-wrap.dimension-axis-colors [data-axis="z"] { --dimension-axis-tint: #e0eafc; --dimension-axis-edge: #2f6fe0; --dimension-axis-text: #12357a; }
+
+.workplane-wrap.dimension-axis-colors .dimension-label[data-axis].armed {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dimension-axis-edge) 30%, transparent), 0 1px 4px rgba(58, 40, 20, 0.09);
 }
 
 .dimension-input {
@@ -11696,6 +11857,30 @@ html[data-theme="dark"] .font-picker-option.action {
   color: #756657;
   font-size: 12px;
   font-weight: 700;
+}
+
+.workspace-space-mouse-invert {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.workspace-space-mouse-invert-title {
+  flex-basis: 100%;
+  color: #756657;
+  font-weight: 700;
+}
+
+.workspace-space-mouse-invert label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .workspace-history-setting {

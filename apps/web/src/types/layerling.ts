@@ -19,6 +19,9 @@ export type ShapeKind =
   | "halfSphere"
   | "paraboloid"
   | "curvedCone"
+  | "screwBoss"
+  | "snapFit"
+  | "rib"
   | "torus"
   | "tube"
   | "bentTube"
@@ -137,6 +140,33 @@ export type ShapeCustomization = {
   curvedConeTop?: number;
   /** Curved cone: how far the side bends, -1 inward (a trumpet) to 1 outward (a dome). */
   curvedConeBend?: number;
+  /** Screw boss: what goes into its hole - a heat-set insert, a self-tapping screw, or a hole of one's own. */
+  screwBossFastener?: "insert" | "selfTapping" | "custom";
+  /** Screw boss: the size from its list (M3, #4-40, ST2.9 ...); the hole follows it unless typed in. */
+  screwBossSize?: string;
+  /** Screw boss: the hole's diameter and depth in mm, when typed in. */
+  screwBossHole?: number;
+  screwBossHoleDepth?: number;
+  /** Screw boss: the post's outer diameter in mm (the footprint may be wider for the gussets). */
+  screwBossDiameter?: number;
+  /** Screw boss: how many gussets brace it (0 to 6), how high they reach and how thick they are, in mm. */
+  screwBossGussets?: number;
+  screwBossGussetHeight?: number;
+  screwBossGussetThickness?: number;
+  /** Snap-fit: the hook and its catch together, or one of them. */
+  snapFitPart?: "both" | "hook" | "catch";
+  /** Snap-fit: the arm's thickness, the barb's undercut and the clearance to the catch, in mm. */
+  snapFitThickness?: number;
+  snapFitUndercut?: number;
+  snapFitClearance?: number;
+  /** Snap-fit: the barb's entry angle and the angle of the face that holds, in degrees from the direction it goes in. */
+  snapFitLeadAngle?: number;
+  snapFitRetainAngle?: number;
+  /** Snap-fit: the foot's thickness under the arm in mm (0: no foot). */
+  snapFitFoot?: number;
+  /** Rib: a straight rib or a gusset, and a straight rib's top. */
+  ribStyle?: "straight" | "gusset";
+  ribTop?: "flat" | "round" | "chamfer";
   topWidth?: number;
   topDepth?: number;
   teeth?: number;
@@ -158,6 +188,8 @@ export type ShapeCustomization = {
   threadHead?: ThreadHead;
   threadHand?: ThreadHand;
   threadProfile?: ThreadProfile;
+  /** Tapered 1 in 16 on the diameter, as the pipe thread NPT (#1267); missing means straight. */
+  threadTaper?: boolean;
   threadDiameter?: number;
   threadPitch?: number;
   threadClearance?: number;
@@ -252,6 +284,8 @@ export type ShapeCustomization = {
   gridfinityLargePlate?: boolean;
   /** Gridfinity baseplate: Swallowtail, on a 2.4 mm floor with a pocket for a key under each side without padding (#1061); missing means off. */
   gridfinitySwallowtail?: boolean;
+  /** Gridfinity baseplate with Swallowtail: the clearance of the keys Add keys lays out, in mm on every side; missing means 0.05, at most 0.15; the plate stays as it is (#1061). */
+  gridfinitySwallowtailClearance?: number;
   /** Gridfinity bin: a label shelf along the back wall. */
   gridfinityLabelBack?: boolean;
   /** Gridfinity bin: a label shelf along the front wall. */
@@ -489,6 +523,8 @@ export type WorkplaneWorkspaceSettings = {
   /** The browser asks "Leave site?" when a design is open and the tab is closed or reloaded; off by default (#683 mail). */
   confirmTabClose: boolean;
   dimensionsAlwaysVisible: boolean;
+  /** The value boxes beside a selection take the colour of their axis, red X, green Y, blue Z; off by default (#1279). */
+  dimensionAxisColors: boolean;
   /** A turned body shows its angles about X, Y and Z beside it while it is selected. */
   showRotationAngles: boolean;
   zoomSpeed: number;
@@ -525,7 +561,15 @@ export type AlignHandleStatus = {
   title: string;
   /** The same dot with Alt held: it stretches the parts to the reference instead of moving them (#998). */
   size?: { disabled: boolean; aligned: boolean; title: string };
+  /**
+   * On the middle dot of an axis: the dot beside the line that spreads the parts with equal gaps between them
+   * (alignDistribute.ts). `gapDisabled` and `gapTitle` are for Alt on it, which asks for a gap to type in.
+   */
+  spread?: { disabled: boolean; aligned: boolean; title: string; gapDisabled: boolean; gapTitle: string };
 };
+
+/** Equal gaps on the align dots: null spreads them evenly, a number is the gap typed in, in millimetres. */
+export type AlignSpread = { gap: number | null };
 
 export type SketchPoint = {
   id: string;
@@ -897,6 +941,33 @@ export type WorkplaneShape = {
   curvedConeTop?: number;
   /** Curved cone: how far the side bends, -1 inward (a trumpet) to 1 outward (a dome). */
   curvedConeBend?: number;
+  /** Screw boss: what goes into its hole - a heat-set insert, a self-tapping screw, or a hole of one's own. */
+  screwBossFastener?: "insert" | "selfTapping" | "custom";
+  /** Screw boss: the size from its list (M3, #4-40, ST2.9 ...); the hole follows it unless typed in. */
+  screwBossSize?: string;
+  /** Screw boss: the hole's diameter and depth in mm, when typed in. */
+  screwBossHole?: number;
+  screwBossHoleDepth?: number;
+  /** Screw boss: the post's outer diameter in mm (the footprint may be wider for the gussets). */
+  screwBossDiameter?: number;
+  /** Screw boss: how many gussets brace it (0 to 6), how high they reach and how thick they are, in mm. */
+  screwBossGussets?: number;
+  screwBossGussetHeight?: number;
+  screwBossGussetThickness?: number;
+  /** Snap-fit: the hook and its catch together, or one of them. */
+  snapFitPart?: "both" | "hook" | "catch";
+  /** Snap-fit: the arm's thickness, the barb's undercut and the clearance to the catch, in mm. */
+  snapFitThickness?: number;
+  snapFitUndercut?: number;
+  snapFitClearance?: number;
+  /** Snap-fit: the barb's entry angle and the angle of the face that holds, in degrees from the direction it goes in. */
+  snapFitLeadAngle?: number;
+  snapFitRetainAngle?: number;
+  /** Snap-fit: the foot's thickness under the arm in mm (0: no foot). */
+  snapFitFoot?: number;
+  /** Rib: a straight rib or a gusset, and a straight rib's top. */
+  ribStyle?: "straight" | "gusset";
+  ribTop?: "flat" | "round" | "chamfer";
   topWidth?: number;
   topDepth?: number;
   taperTopWidth?: number;
@@ -953,6 +1024,8 @@ export type WorkplaneShape = {
   threadHead?: ThreadHead;
   threadHand?: ThreadHand;
   threadProfile?: ThreadProfile;
+  /** Tapered 1 in 16 on the diameter, as the pipe thread NPT (#1267); missing means straight. */
+  threadTaper?: boolean;
   threadDiameter?: number;
   threadPitch?: number;
   threadClearance?: number;
@@ -1047,6 +1120,8 @@ export type WorkplaneShape = {
   gridfinityLargePlate?: boolean;
   /** Gridfinity baseplate: Swallowtail, on a 2.4 mm floor with a pocket for a key under each side without padding (#1061); missing means off. */
   gridfinitySwallowtail?: boolean;
+  /** Gridfinity baseplate with Swallowtail: the clearance of the keys Add keys lays out, in mm on every side; missing means 0.05, at most 0.15; the plate stays as it is (#1061). */
+  gridfinitySwallowtailClearance?: number;
   /** Gridfinity bin: a label shelf along the back wall. */
   gridfinityLabelBack?: boolean;
   /** Gridfinity bin: a label shelf along the front wall. */
@@ -1402,6 +1477,11 @@ export type WorkplaneShape = {
    */
   multicolor?: boolean;
   locked?: boolean;
+  /**
+   * Lock shape (#1277): the part still moves, turns and groups with others, but its size, settings,
+   * name and body stay as they are, and a copy keeps the lock. See lib/shapeLock.
+   */
+  shapeLocked?: boolean;
   hidden?: boolean;
   /** Drawn see-through in its own colour, like the usual "Transparent". Display only - a solid stays a solid. */
   transparent?: boolean;
