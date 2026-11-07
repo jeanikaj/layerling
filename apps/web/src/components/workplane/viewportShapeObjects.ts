@@ -9,6 +9,7 @@ import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeome
 import { type ResolvedAppTheme } from "@/lib/appTheme";
 import { createGearGeometry } from "@/lib/gearGeometry";
 import { createHirthGeometry } from "@/lib/hirthGeometry";
+import { createPulleyGeometry } from "@/lib/pulleyGeometry";
 import { createFinishingWasherGeometry } from "@/lib/finishingWasherGeometry";
 import { createStarGeometry } from "@/lib/starGeometry";
 import { createHeartGeometry } from "@/lib/heartGeometry";
@@ -22,12 +23,16 @@ import { createSnapFitGeometry } from "@/lib/snapFit";
 import { createRibGeometry } from "@/lib/rib";
 import { createLoftGeometry } from "@/lib/loftGeometry";
 import { createHingeGeometry } from "@/lib/hingeGeometry";
-import { createGridfinityGeometry } from "@/lib/gridfinityGeometry";
+import { createGridfinityGeometry, gridfinityLabelTextGiven } from "@/lib/gridfinityGeometry";
+import { gridfinityLabelLetters } from "@/lib/gridfinityLabelText";
+import { gridfinityLabelColor, gridfinityLetterGroups } from "@/lib/gridfinityLetterColor";
 import { createKnurlGeometry } from "@/lib/knurlGeometry";
 import { createVaseGeometry, fittedVaseMesh } from "@/lib/vaseShape";
 import { createTeardropGeometry } from "@/lib/teardropGeometry";
 import { createPortGeometry } from "@/lib/portGeometry";
 import { createScrewHoleGeometry } from "@/lib/screwHoleGeometry";
+import { shapeDrillPointAngle, shapeDrillPointLength } from "@/lib/drillPoint";
+import { createPrismGeometry } from "@/lib/prismGeometry";
 import { createHoneycombGeometry } from "@/lib/honeycombGeometry";
 import { createRoundedBoxGeometry } from "@/lib/roundedBoxGeometry";
 import { createBentTubeGeometry, createBentTubeSegmentGeometry } from "@/lib/bentTubeGeometry";
@@ -36,6 +41,7 @@ import { createSpringGeometry } from "@/lib/springGeometry";
 import { textDisplayGeometry } from "@/lib/textFill";
 import { loadedManifoldRuntime, manifoldRevision, requestManifoldRuntime } from "@/lib/manifoldHandle";
 import { buildGroupDisplayMesh } from "@/lib/editorBooleans";
+import { boundsForShapesOfVertices } from "@/lib/editorMeshCore";
 import { customFontRevision } from "@/lib/textFonts";
 import { rulerTicks } from "@/lib/rulerDimensions";
 import { horizontalPlacementWorkplane, placementWorkplaneIsBase, placementWorkplaneQuaternion, type PlacementWorkplane } from "@/lib/placementWorkplane";
@@ -43,8 +49,10 @@ import { groundFootprintForFrame, type SelectionFrame } from "@/lib/liftGeometry
 import { regularPolygonFootprintScale } from "@/lib/regularPolygonFootprint";
 import { roundSideCount } from "@/lib/roundSideCount";
 import { createPyramidGeometry } from "@/lib/pyramidGeometry";
-import { positionsForTwist, twistBandCount } from "@/lib/heightSlices";
+import { bandLevels, positionsForTwist, twistBandCount, twistEdgeLength } from "@/lib/heightSlices";
 import { toCreasedNormals } from "@/lib/creasedNormals";
+import { canPaintShape } from "@/lib/paint";
+import { paintedBodyMesh } from "@/lib/paintMesh";
 import { shapeHasAlongDeform, slopePositions } from "@/lib/slopeAlong";
 import { DEFAULT_EDGE_LINE_COLOR } from "@/lib/workplaneGrid";
 import { deformsAboutOrigin, mirroredAxisCount, mirrorSign, preservesEdgeTreatmentSize, resizedImportedCoordinates, resizedImportedMeshPositions, shapeDepth, shapeExtrudeDeformAt, shapeHasExtrudeDeform, shapeHasShapeDeform, shapeHasTaper, shapeSupportsTaper, shapeTaperDimensions, shapeTaperScaleAt, shapeWidth } from "@/lib/workplaneShapes";
@@ -281,6 +289,10 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     snapFitFoot: shape.snapFitFoot,
     ribStyle: shape.ribStyle,
     ribTop: shape.ribTop,
+    ribFoot: shape.ribFoot,
+    ribThickness: shape.ribThickness,
+    ribFootThickness: shape.ribFootThickness,
+    ribFootShape: shape.ribFootShape,
     topWidth: shape.topWidth,
     topDepth: shape.topDepth,
     taperTopWidth: shape.taperTopWidth,
@@ -303,9 +315,17 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     toothSize: shape.toothSize,
     toothWidth: shape.toothWidth,
     centerHoleSize: shape.centerHoleSize,
+    hirthSteepFlank: shape.hirthSteepFlank,
+    hirthReverse: shape.hirthReverse,
+    pulleyBeltWidth: shape.pulleyBeltWidth,
+    pulleyFlange: shape.pulleyFlange,
+    pulleyFlangeRise: shape.pulleyFlangeRise,
+    pulleyHubHeight: shape.pulleyHubHeight,
+    pulleyHubDiameter: shape.pulleyHubDiameter,
     gearType: shape.gearType,
     gearRim: shape.gearRim,
     helixAngle: shape.helixAngle,
+    bevelHelixAngle: shape.bevelHelixAngle,
     threadRole: shape.threadRole,
     threadHead: shape.threadHead,
     threadHand: shape.threadHand,
@@ -316,6 +336,7 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     threadClearance: shape.threadClearance,
     threadBoltClearance: shape.threadBoltClearance,
     threadAxialClearance: shape.threadAxialClearance,
+    threadStarts: shape.threadStarts,
     threadDepth: shape.threadDepth,
     threadFlankAngle: shape.threadFlankAngle,
     threadQuality: shape.threadQuality,
@@ -395,6 +416,14 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     gridfinityLabelRightOffset: shape.gridfinityLabelRightOffset,
     gridfinityLabelCorner: shape.gridfinityLabelCorner,
     gridfinityLabelCornerSize: shape.gridfinityLabelCornerSize,
+    gridfinityLabelBackText: shape.gridfinityLabelBackText,
+    gridfinityLabelFrontText: shape.gridfinityLabelFrontText,
+    gridfinityLabelLeftText: shape.gridfinityLabelLeftText,
+    gridfinityLabelRightText: shape.gridfinityLabelRightText,
+    gridfinityLabelFont: shape.gridfinityLabelFont,
+    gridfinityLabelTextSize: shape.gridfinityLabelTextSize,
+    // The letters on the shelves are laid out against the mirroring, so they come out of it the right way round (#1308).
+    gridfinityLabelMirror: shape.kind === "gridfinity" && gridfinityLabelTextGiven(shape) ? [shape.mirrorX, shape.mirrorY, shape.mirrorZ] : undefined,
     gridfinityScoopBack: shape.gridfinityScoopBack,
     gridfinityScoopFront: shape.gridfinityScoopFront,
     gridfinityScoopLeft: shape.gridfinityScoopLeft,
@@ -457,6 +486,8 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     screwHoleShaft: shape.screwHoleShaft,
     screwHoleHeadDepth: shape.screwHoleHeadDepth,
     screwHoleAngle: shape.screwHoleAngle,
+    // The drill point as built: a solid, the double countersink and a tapered body keep a flat end (drillPoint.ts).
+    drillPoint: shapeDrillPointAngle(shape),
     portProfile: shape.portProfile,
     // A dovetail cut-out grows by its clearance, so body and socket differ.
     dovetailHole: shape.kind === "dovetail" ? Boolean(shape.hole) : undefined,
@@ -471,13 +502,14 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     bentTubeSegments: shape.bentTubeSegments,
     text: shape.text,
     font: shape.font,
-    // A font of one's own can gain letters (a design's few, then the whole file): draw again then.
-    fontRevision: customFontRevision(shape.font),
+    // A font of one's own can gain letters (a design's few, then the whole file): draw again then; a bin's letters (#1308) by their own font.
+    fontRevision: customFontRevision(shape.kind === "gridfinity" ? shape.gridfinityLabelFont : shape.font),
     textStroke: shape.textStroke,
     textSilhouette: shape.textSilhouette,
     textStretch: shape.textStretch,
     textVertical: shape.textVertical,
     textSpacing: shape.textSpacing,
+    textKerning: shape.textKerning,
     textLetterWidth: shape.textLetterWidth,
     textKeyring: shape.textKeyring,
     textEdge: shape.textEdge,
@@ -544,6 +576,8 @@ export function shapeMaterialSignature(shape: WorkplaneShape): string {
   return JSON.stringify({
     edgeLines: edgeLineStyle.enabled ? edgeLineStyle.color : "",
     color: shape.color,
+    // A bin's letters in a colour of their own (#1308) are drawn in a second material; the mesh stays as it is.
+    letterColor: gridfinityLabelColor(shape),
     hole: shape.hole ? (strongHoles ? "strong" : true) : false,
     transparent: Boolean(shape.transparent),
     multicolor: shape.groupedShapes?.length ? groupShowsPartColors(shape) : undefined,
@@ -571,6 +605,16 @@ export function polygonSidesForShape(shape: WorkplaneShape) {
 }
 
 export function shapeGeometrySignature(shape: WorkplaneShape): string {
+  // A painted body is drawn from its mesh with the paint cut in, in millimetres (paintedBodyGeometry): its strokes,
+  // its size and whether the kernel was there to cut them are part of it too.
+  if (shapeShowsPaint(shape)) {
+    return JSON.stringify({
+      painted: shapeGeometrySignature({ ...shape, paint: undefined }),
+      size: [shapeWidth(shape), shape.height, shapeDepth(shape)],
+      strokes: shapeResourceId(shape.paint),
+      kernel: manifoldRevision(),
+    });
+  }
   const taper = !shapeSupportsTaper(shape.kind) || !shapeHasTaper(shape)
     ? null
     : { ...shapeTaperDimensions(shape), baseWidth: shapeWidth(shape), baseDepth: shapeDepth(shape) };
@@ -624,7 +668,9 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     return JSON.stringify({ kind: "box", taper, deform, size });
   }
   if (shape.kind === "cylinder" || shape.kind === "ellipse") {
-    return JSON.stringify({ kind: shape.kind, sides: polygonSidesForShape(shape), segments: shape.segments, taper, deform, size });
+    // A drilled hole is built at its size (Discussion #621): its tip follows the diameter, not the height.
+    const drillPoint = shapeDrillPointAngle(shape);
+    return JSON.stringify({ kind: shape.kind, sides: polygonSidesForShape(shape), segments: shape.segments, taper, deform, size: drillPoint === undefined ? size : [shapeWidth(shape), shapeDepth(shape), shape.height], drillPoint });
   }
   if (shape.kind === "polygon") {
     return JSON.stringify({ kind: "polygon", sides: shape.sides, segments: shape.segments, taper, deform, size });
@@ -669,6 +715,10 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     snapFitFoot: shape.snapFitFoot,
     ribStyle: shape.ribStyle,
     ribTop: shape.ribTop,
+    ribFoot: shape.ribFoot,
+    ribThickness: shape.ribThickness,
+    ribFootThickness: shape.ribFootThickness,
+    ribFootShape: shape.ribFootShape,
     topWidth: shape.topWidth,
     topDepth: shape.topDepth,
     taperTopWidth: shape.taperTopWidth,
@@ -691,9 +741,17 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     toothSize: shape.toothSize,
     toothWidth: shape.toothWidth,
     centerHoleSize: shape.centerHoleSize,
+    hirthSteepFlank: shape.hirthSteepFlank,
+    hirthReverse: shape.hirthReverse,
+    pulleyBeltWidth: shape.pulleyBeltWidth,
+    pulleyFlange: shape.pulleyFlange,
+    pulleyFlangeRise: shape.pulleyFlangeRise,
+    pulleyHubHeight: shape.pulleyHubHeight,
+    pulleyHubDiameter: shape.pulleyHubDiameter,
     gearType: shape.gearType,
     gearRim: shape.gearRim,
     helixAngle: shape.helixAngle,
+    bevelHelixAngle: shape.bevelHelixAngle,
     threadRole: shape.threadRole,
     threadHead: shape.threadHead,
     threadHand: shape.threadHand,
@@ -704,6 +762,7 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     threadClearance: shape.threadClearance,
     threadBoltClearance: shape.threadBoltClearance,
     threadAxialClearance: shape.threadAxialClearance,
+    threadStarts: shape.threadStarts,
     threadDepth: shape.threadDepth,
     threadFlankAngle: shape.threadFlankAngle,
     threadQuality: shape.threadQuality,
@@ -783,6 +842,16 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     gridfinityLabelRightOffset: shape.gridfinityLabelRightOffset,
     gridfinityLabelCorner: shape.gridfinityLabelCorner,
     gridfinityLabelCornerSize: shape.gridfinityLabelCornerSize,
+    gridfinityLabelBackText: shape.gridfinityLabelBackText,
+    gridfinityLabelFrontText: shape.gridfinityLabelFrontText,
+    gridfinityLabelLeftText: shape.gridfinityLabelLeftText,
+    gridfinityLabelRightText: shape.gridfinityLabelRightText,
+    gridfinityLabelFont: shape.gridfinityLabelFont,
+    gridfinityLabelTextSize: shape.gridfinityLabelTextSize,
+    // The letters on the shelves are laid out against the mirroring, so they come out of it the right way round (#1308).
+    gridfinityLabelMirror: shape.kind === "gridfinity" && gridfinityLabelTextGiven(shape) ? [shape.mirrorX, shape.mirrorY, shape.mirrorZ] : undefined,
+    // The letters' faces are sorted into a group of their own once they have a colour of their own (#1308); which colour is the material's.
+    gridfinityLetterGroups: gridfinityLabelColor(shape) !== undefined,
     gridfinityScoopBack: shape.gridfinityScoopBack,
     gridfinityScoopFront: shape.gridfinityScoopFront,
     gridfinityScoopLeft: shape.gridfinityScoopLeft,
@@ -845,6 +914,8 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     screwHoleShaft: shape.screwHoleShaft,
     screwHoleHeadDepth: shape.screwHoleHeadDepth,
     screwHoleAngle: shape.screwHoleAngle,
+    // The drill point as built: a solid, the double countersink and a tapered body keep a flat end (drillPoint.ts).
+    drillPoint: shapeDrillPointAngle(shape),
     portProfile: shape.portProfile,
     // A dovetail cut-out grows by its clearance, so body and socket differ.
     dovetailHole: shape.kind === "dovetail" ? Boolean(shape.hole) : undefined,
@@ -859,13 +930,14 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     bentTubeSegments: shape.bentTubeSegments,
     text: shape.text,
     font: shape.font,
-    // A font of one's own can gain letters (a design's few, then the whole file): draw again then.
-    fontRevision: customFontRevision(shape.font),
+    // A font of one's own can gain letters (a design's few, then the whole file): draw again then; a bin's letters (#1308) by their own font.
+    fontRevision: customFontRevision(shape.kind === "gridfinity" ? shape.gridfinityLabelFont : shape.font),
     textStroke: shape.textStroke,
     textSilhouette: shape.textSilhouette,
     textStretch: shape.textStretch,
     textVertical: shape.textVertical,
     textSpacing: shape.textSpacing,
+    textKerning: shape.textKerning,
     textLetterWidth: shape.textLetterWidth,
     textKeyring: shape.textKeyring,
     textEdge: shape.textEdge,
@@ -879,6 +951,40 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
   });
 }
 
+
+/** The dimension of a box (its own width, height or depth) that runs along each axis of a frame. */
+export type BoxFrameDimensions = { x: "width" | "height" | "depth"; y: "width" | "height" | "depth"; z: "width" | "height" | "depth" };
+
+/**
+ * For a plain box that stands upright (turned only about its up axis) and three axes that each run along a
+ * different one of the box's own axes, say those of a workplane on one of its side faces: which of the box's own
+ * dimensions runs along each. Null for anything else, where the handles keep the shape's own axes.
+ */
+export function boxDimensionsAlongAxes(
+  shape: WorkplaneShape,
+  axes: { x: PlacementWorkplane["normal"]; y: PlacementWorkplane["normal"]; z: PlacementWorkplane["normal"] },
+): BoxFrameDimensions | null {
+  if (shape.kind !== "box" || shape.importedMesh || shapeHasTaper(shape) || shape.rotationX || shape.rotationZ) return null;
+  const quaternion = quaternionForShape(shape);
+  const own = [
+    { name: "width" as const, vector: new THREE.Vector3(1, 0, 0).applyQuaternion(quaternion) },
+    { name: "height" as const, vector: new THREE.Vector3(0, 1, 0).applyQuaternion(quaternion) },
+    { name: "depth" as const, vector: new THREE.Vector3(0, 0, 1).applyQuaternion(quaternion) },
+  ];
+  const along = (axis: PlacementWorkplane["normal"]) => {
+    const direction = new THREE.Vector3(axis.x, axis.y, axis.z).normalize();
+    return own.find((entry) => Math.abs(entry.vector.dot(direction)) > 0.999)?.name ?? null;
+  };
+  const x = along(axes.x);
+  const y = along(axes.y);
+  const z = along(axes.z);
+  if (!x || !y || !z || new Set([x, y, z]).size !== 3) return null;
+  return { x, y, z };
+}
+
+export function boxDimensionsAlongWorkplane(shape: WorkplaneShape, workplane: PlacementWorkplane): BoxFrameDimensions | null {
+  return boxDimensionsAlongAxes(shape, { x: workplane.xAxis, y: workplane.normal, z: workplane.zAxis });
+}
 
 export function selectionFrameForShapes(
   shapes: WorkplaneShape[],
@@ -901,8 +1007,15 @@ export function selectionFrameForShapes(
   const singleQuaternion = singleShape ? quaternionForShape(singleShape) : null;
   const alongWorkplane = (axis: THREE.Vector3, workplaneAxis: PlacementWorkplane["normal"]) =>
     Math.abs(axis.applyQuaternion(singleQuaternion!).dot(new THREE.Vector3(workplaneAxis.x, workplaneAxis.y, workplaneAxis.z).normalize())) > 0.999;
+  // A plain box on a workplane that stands on one of its side faces (Discussion #1351): the handles follow that
+  // workplane, as in Tinkercad, and write each size to the box's own dimension that runs along their axis.
+  const onSideFace = Boolean(singleShape && workplane && !placementWorkplaneIsBase(workplane))
+    && (() => {
+      const dimensions = boxDimensionsAlongWorkplane(singleShape!, workplane!);
+      return Boolean(dimensions) && dimensions!.y !== "height";
+    })();
   const useWorkplane = Boolean(workplane) && !placementWorkplaneIsBase(workplane!)
-    && (!singleShape || (alongWorkplane(new THREE.Vector3(0, 1, 0), workplane!.normal) && alongWorkplane(new THREE.Vector3(1, 0, 0), workplane!.xAxis)));
+    && (!singleShape || (alongWorkplane(new THREE.Vector3(0, 1, 0), workplane!.normal) && alongWorkplane(new THREE.Vector3(1, 0, 0), workplane!.xAxis)) || onSideFace);
   const quaternion = useWorkplane
     ? placementWorkplaneQuaternion(workplane!)
     : singleShape ? quaternionForShape(singleShape) : new THREE.Quaternion();
@@ -982,7 +1095,8 @@ export function syncShapeObjectDimensions(object: THREE.Group, shape: WorkplaneS
   object.userData.tapeDimensions = [shapeWidth(shape), shape.height, shapeDepth(shape)] satisfies [number, number, number];
   object.userData.tapeTopologyKey = tapeShapeTopologyKey(shape);
   const surface = object.children.find((child): child is THREE.Mesh => child instanceof THREE.Mesh && Boolean(child.userData.shapeSurface));
-  if (!surface) return;
+  // A painted body's mesh is built at its size (paintedBodyGeometry): it is no unit body to stretch.
+  if (!surface || surface.geometry.userData.paintColors) return;
   const width = shapeWidth(shape);
   const depth = shapeDepth(shape);
   let scale: THREE.Vector3 | null = null;
@@ -996,7 +1110,8 @@ export function syncShapeObjectDimensions(object: THREE.Group, shape: WorkplaneS
     );
   } else if (shape.kind === "box" && !(shape.radius && shape.radius > 0)) {
     scale = new THREE.Vector3(width, shape.height, depth);
-  } else if (shape.kind === "cylinder" || shape.kind === "ellipse" || shape.kind === "polygon") {
+  } else if ((shape.kind === "cylinder" && shapeDrillPointLength(shape) === 0) || shape.kind === "ellipse" || shape.kind === "polygon") {
+    // A drilled hole is no unit body (Discussion #621): it was built at its size and is built again when that changes.
     const fit = regularPolygonFootprintScale(width, depth, polygonSidesForShape(shape));
     scale = new THREE.Vector3(fit.x, shape.height, fit.z);
     offsetX = fit.offsetX;
@@ -1072,7 +1187,8 @@ export function syncShapeObjectAppearance(
     const material = sharedShapeMaterial(shape, Boolean(surface.geometry.getAttribute("color")) && !shape.hole);
     const nextMaterial = shape.kind === "box" && shape.imagePlate && !shape.hole
       ? createImagePlateMaterials(shape, material, onTextureReady)
-      : material;
+      : surface.geometry.userData.paintColors ? paintMaterials(shape, material, surface.geometry)
+        : shape.kind === "gridfinity" ? gridfinityMaterials(shape, material, surface.geometry) : material;
     const currentMaterials = Array.isArray(surface.material) ? surface.material : null;
     const sameMaterial = Array.isArray(nextMaterial)
       ? Boolean(currentMaterials && nextMaterial.every((entry, index) => currentMaterials[index] === entry))
@@ -1631,7 +1747,9 @@ export function retainSharedShapeGeometry(mesh: THREE.Mesh, geometry: THREE.Buff
 export function groupChildAppearance(group: WorkplaneShape, child: WorkplaneShape): WorkplaneShape {
   if (group.hole) return { ...child, hole: true, color: "#b8c2cc" };
   // One colour for the whole group, nested groups included.
-  const tinted = groupShowsPartColors(group) ? child : { ...child, color: group.color, multicolor: false };
+  // A part's paint shows where the part stays a body of its own, in a bundle; a group's own paint is the group's (paint.ts).
+  const ownPaint = group.groupOperation === "bundle" ? child.paint : undefined;
+  const tinted = groupShowsPartColors(group) ? { ...child, paint: ownPaint } : { ...child, color: group.color, multicolor: false, gridfinityLabelColor: undefined, paint: undefined };
   if (group.transparent) return { ...tinted, transparent: true };
   return tinted;
 }
@@ -1644,6 +1762,75 @@ export const TRANSPARENT_SOLID_OPACITY = 0.4;
 export function holeOpacity(shape: WorkplaneShape) {
   if (strongHoles) return shape.importedMesh ? 0.6 : 0.72;
   return shape.importedMesh ? 0.34 : 0.52;
+}
+
+/** Whether a body is drawn with its paint (paint.ts): a solid body of its own with strokes; a hole shows none. */
+export function shapeShowsPaint(shape: WorkplaneShape) {
+  return Boolean(shape.paint?.length) && canPaintShape(shape);
+}
+
+/** The body as addMesh and the edge lines take it once its mesh already carries its taper, twist and slope. */
+function shapeWithoutDeform(shape: WorkplaneShape): WorkplaneShape {
+  return {
+    ...shape,
+    taperTopWidth: undefined,
+    taperTopDepth: undefined,
+    taperBottomWidth: undefined,
+    taperBottomDepth: undefined,
+    taperTopScale: undefined,
+    taperBottomScale: undefined,
+    extrudeTwist: undefined,
+    extrudeTopOffsetX: undefined,
+    extrudeTopOffsetZ: undefined,
+    slopeEnd: undefined,
+    narrowEnd: undefined,
+  };
+}
+
+/** A painted body's materials: its own for the faces without paint, then one per colour of the paint, for the groups of paintedBodyGeometry. */
+function paintMaterials(shape: WorkplaneShape, material: THREE.MeshStandardMaterial, geometry: THREE.BufferGeometry) {
+  const colors = geometry.userData.paintColors as string[] | undefined;
+  return colors?.length ? [material, ...colors.map((color) => sharedShapeMaterial({ ...shape, color }))] : material;
+}
+
+/**
+ * A painted body's geometry, in the frame of its object as addMesh sets it: the faces of its painted mesh
+ * (paintMesh.ts) in one group per colour, the body's own colour first, its normals creased at 30° as a
+ * plain body's are smooth round a cylinder and sharp at a box's edges. Null when there is nothing to draw.
+ */
+function paintedBodyGeometry(shape: WorkplaneShape): THREE.BufferGeometry | null {
+  const painted = paintedBodyMesh(shape);
+  if (!painted || painted.faces.length === 0) return null;
+  const colors: string[] = [];
+  painted.colors.forEach((color) => {
+    if (color && !colors.includes(color)) colors.push(color);
+  });
+  const positions = new Float32Array(painted.vertices.length * 3);
+  painted.vertices.forEach(([x, y, z], index) => positions.set([x, y, z], index * 3));
+  const index: number[] = [];
+  const indexed = new THREE.BufferGeometry();
+  indexed.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  [null, ...colors].forEach((color, materialIndex) => {
+    const start = index.length;
+    painted.faces.forEach((face, faceIndex) => {
+      if ((painted.colors[faceIndex] ?? null) === color) index.push(face[0], face[1], face[2]);
+    });
+    if (index.length > start) indexed.addGroup(start, index.length - start, materialIndex);
+  });
+  indexed.setIndex(index);
+  const geometry = toCreasedNormals(indexed, Math.PI / 6);
+  if (geometry !== indexed) indexed.dispose();
+  geometry.computeBoundingBox();
+  geometry.computeBoundingSphere();
+  geometry.userData.paintColors = colors;
+  geometry.userData.cached = true;
+  return geometry;
+}
+
+/** A bin's material, and a second one in its letters' colour when they have one of their own (#1308), for the second group of its mesh, which holds their faces. */
+function gridfinityMaterials(shape: WorkplaneShape, material: THREE.MeshStandardMaterial, geometry: THREE.BufferGeometry) {
+  const letterColor = geometry.groups.length > 1 ? gridfinityLabelColor(shape) : undefined;
+  return letterColor ? [material, sharedShapeMaterial({ ...shape, color: letterColor })] : material;
 }
 
 export function sharedShapeMaterial(shape: WorkplaneShape, vertexColors = false) {
@@ -1828,6 +2015,14 @@ export function createShapeObject(
     // Measured on the real vertices: the box of a turned part's own bounding box is wider than
     // the part, which stretched the content to a smaller size (a bundle shrank, #152).
     const contentBox = new THREE.Box3().setFromObject(content, true);
+    // A hidden part still counts for the group's size, as it does when the group is measured,
+    // exported or aligned (meshForShape): measured without it, the parts left were stretched
+    // to fill the group's box (#1323).
+    const hiddenParts = shape.groupedShapes.filter((child) => child.hidden);
+    if (hiddenParts.length) {
+      const hidden = boundsForShapesOfVertices(hiddenParts);
+      contentBox.union(new THREE.Box3(new THREE.Vector3(hidden.minX, hidden.minY, hidden.minZ), new THREE.Vector3(hidden.maxX, hidden.maxY, hidden.maxZ)));
+    }
     const contentSize = contentBox.getSize(new THREE.Vector3());
     content.scale.set(
       shapeWidth(shape) / Math.max(0.001, contentSize.x),
@@ -1852,6 +2047,21 @@ export function createShapeObject(
   const size = Math.min(width, depth);
   const height = shape.height;
   const geometryCacheKey = shapeGeometrySignature(shape);
+
+  // A painted body (paint.ts) is drawn from its mesh with the paint cut in, already tapered and twisted and in
+  // millimetres: it is not stretched by the object, nor tapered once more by addMesh.
+  if (shapeShowsPaint(shape)) {
+    const painted = sharedShapeGeometry(geometryCacheKey, () => paintedBodyGeometry(shape) ?? new THREE.BufferGeometry());
+    if (painted.getAttribute("position")) {
+      addMesh(group, painted, paintMaterials(shape, material, painted), shapeWithoutDeform(shape));
+      group.traverse((child) => {
+        child.userData.shapeId = shape.id;
+      });
+      setObjectRenderLayer(group, RENDER_LAYER_SHAPES);
+      freezeStaticObjectMatrices(group);
+      return group;
+    }
+  }
 
   switch (shape.kind) {
     case "box":
@@ -1889,6 +2099,13 @@ export function createShapeObject(
       // und wird ueber die Maschenskalierung in den Rahmen gesetzt - so baut
       // ein Zug am Anfasser nicht jedes Mal ein neues Vieleck.
       const sides = polygonSidesForShape(shape);
+      const drillPoint = shape.kind === "cylinder" ? shapeDrillPointLength(shape) : 0;
+      if (drillPoint > 0) {
+        // A cylinder set as a hole may end in a drill point (Discussion #621). The tip follows the diameter, so the
+        // body is built at its size: stretched along the height, the tip would grow with it.
+        addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createPrismGeometry(width, height, depth, sides, shape.segments ?? 1, drillPoint)), material, shape);
+        break;
+      }
       const fit = regularPolygonFootprintScale(width, depth, sides);
       addMesh(
         group,
@@ -1904,7 +2121,7 @@ export function createShapeObject(
     case "counterbore":
     case "countersink":
     case "doubleCountersink":
-      addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createScrewHoleGeometry({ kind: shape.kind as "counterbore" | "countersink" | "doubleCountersink", width, depth, height, screwHoleShaft: shape.screwHoleShaft, screwHoleHeadDepth: shape.screwHoleHeadDepth, screwHoleAngle: shape.screwHoleAngle, sides: roundSideCount(shape.sides, width, depth) })), material, shape);
+      addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createScrewHoleGeometry({ kind: shape.kind as "counterbore" | "countersink" | "doubleCountersink", width, depth, height, screwHoleShaft: shape.screwHoleShaft, screwHoleHeadDepth: shape.screwHoleHeadDepth, screwHoleAngle: shape.screwHoleAngle, drillPointAngle: shapeDrillPointAngle(shape), sides: roundSideCount(shape.sides, width, depth) })), material, shape);
       break;
     case "finishingWasher":
       addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createFinishingWasherGeometry({ width, depth, height, screwHoleShaft: shape.screwHoleShaft, screwHoleHeadDepth: shape.screwHoleHeadDepth, screwHoleAngle: shape.screwHoleAngle, sides: roundSideCount(shape.sides, width, depth) })), material, shape);
@@ -1947,8 +2164,8 @@ export function createShapeObject(
         sides: shape.sides,
       })), material, shape);
       break;
-    case "gridfinity":
-      addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createGridfinityGeometry({
+    case "gridfinity": {
+      const fields = {
         width,
         depth,
         height,
@@ -2004,8 +2221,15 @@ export function createShapeObject(
         gridfinityOpeningCorner: shape.gridfinityOpeningCorner,
         gridfinityOpeningCornerSize: shape.gridfinityOpeningCornerSize,
         gridfinityOutline: shape.gridfinityOutline,
-      })), material, shape);
+      };
+      const geometry = sharedShapeGeometry(geometryCacheKey, () => {
+        const letters = gridfinityLabelLetters({ ...shape, width, depth, height });
+        // Letters in a colour of their own (#1308): their faces come last, as a group drawn in that colour.
+        return gridfinityLetterGroups(createGridfinityGeometry(fields, letters), gridfinityLabelColor(shape) ? letters : []);
+      });
+      addMesh(group, geometry, gridfinityMaterials(shape, material, geometry), shape);
       break;
+    }
     case "loft":
       addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createLoftGeometry({ ...shape, width, depth, height })), material, shape);
       break;
@@ -2121,6 +2345,7 @@ export function createShapeObject(
         gearType: shape.gearType,
         gearRim: shape.gearRim,
         helixAngle: shape.helixAngle,
+        bevelHelixAngle: shape.bevelHelixAngle,
         helixQuality: shape.helixQuality,
         gearProfile: shape.gearProfile,
         gearPressureAngle: shape.gearPressureAngle,
@@ -2129,6 +2354,9 @@ export function createShapeObject(
       break;
     case "hirth":
       addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createHirthGeometry(width, height, depth, shape)), material, shape);
+      break;
+    case "pulley":
+      addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createPulleyGeometry(shape)), material, shape);
       break;
     case "honeycomb":
       addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createHoneycombGeometry({
@@ -2178,6 +2406,7 @@ export function createShapeObject(
         threadClearance: shape.threadClearance,
         threadBoltClearance: shape.threadBoltClearance,
         threadAxialClearance: shape.threadAxialClearance,
+        threadStarts: shape.threadStarts,
         threadDepth: shape.threadDepth,
         threadFlankAngle: shape.threadFlankAngle,
         threadQuality: shape.threadQuality,
@@ -2472,6 +2701,39 @@ export function applyGroupedContentTaper(content: THREE.Group, shape: WorkplaneS
   const centerX = (baseBounds.min.x + baseBounds.max.x) / 2;
   const centerZ = (baseBounds.min.z + baseBounds.max.z) / 2;
   const deformed = shapeHasExtrudeDeform(shape);
+  const deformPoint = (point: THREE.Vector3) => {
+    const normalizedHeight = (point.y - baseBounds.min.y) / height;
+    const widthScale = shapeTaperScaleAt(shape, normalizedHeight, "width");
+    const depthScale = shapeTaperScaleAt(shape, normalizedHeight, "depth");
+    point.x = centerX + (point.x - centerX) * widthScale;
+    point.z = centerZ + (point.z - centerZ) * depthScale;
+    if (deformed) {
+      const deform = shapeExtrudeDeformAt(shape, normalizedHeight);
+      const cos = Math.cos(deform.twistRadians);
+      const sin = Math.sin(deform.twistRadians);
+      const relativeX = point.x - centerX;
+      const relativeZ = point.z - centerZ;
+      point.x = centerX + relativeX * cos - relativeZ * sin + deform.offsetX;
+      point.z = centerZ + relativeX * sin + relativeZ * cos + deform.offsetZ;
+    }
+  };
+  // A twist needs vertices partway up to turn, as on a single body (#184): the parts are cut into
+  // the same bands as the group's mesh (meshForShape). Turned at their ends only, the legs of a
+  // twisted bundle stayed straight bars, the bundle was drawn narrower than it is, and grouped
+  // with plates the plates were stretched to fill its true width (#1419).
+  const twist = deformed ? shape.extrudeTwist ?? 0 : 0;
+  const bands = twistBandCount(twist);
+  const twistBands: GroupedTwistBands | null = bands > 1
+    ? {
+        minY: baseBounds.min.y,
+        maxY: baseBounds.max.y,
+        twist,
+        levels: bandLevels(baseBounds.min.y, baseBounds.max.y, bands),
+        // Lengths across are judged in millimetres: the content is stretched to the group's size.
+        mm: [content.scale.x, content.scale.y, content.scale.z],
+        edgeLength: twistEdgeLength(twist, height * content.scale.y),
+      }
+    : null;
   content.updateMatrixWorld(true);
   const contentWorldInverse = content.matrixWorld.clone().invert();
   content.traverse((object) => {
@@ -2485,32 +2747,34 @@ export function applyGroupedContentTaper(content: THREE.Group, shape: WorkplaneS
     if (object instanceof THREE.Mesh) {
       releaseSharedShapeGeometry(object);
     }
-    const nextGeometry = object.geometry.clone();
-    nextGeometry.userData = {};
-    const position = nextGeometry.getAttribute("position");
-    const point = new THREE.Vector3();
-    for (let index = 0; index < position.count; index += 1) {
-      point.fromBufferAttribute(position, index).applyMatrix4(localToContent);
-      const normalizedHeight = (point.y - baseBounds.min.y) / height;
-      const widthScale = shapeTaperScaleAt(shape, normalizedHeight, "width");
-      const depthScale = shapeTaperScaleAt(shape, normalizedHeight, "depth");
-      point.x = centerX + (point.x - centerX) * widthScale;
-      point.z = centerZ + (point.z - centerZ) * depthScale;
-      if (deformed) {
-        const deform = shapeExtrudeDeformAt(shape, normalizedHeight);
-        const cos = Math.cos(deform.twistRadians);
-        const sin = Math.sin(deform.twistRadians);
-        const relativeX = point.x - centerX;
-        const relativeZ = point.z - centerZ;
-        point.x = centerX + relativeX * cos - relativeZ * sin + deform.offsetX;
-        point.z = centerZ + relativeX * sin + relativeZ * cos + deform.offsetZ;
+    // A picture keeps its texture coordinates and a part-coloured body the colours of its corners,
+    // which the bands do not carry; a fat line is drawn from one template quad. They are turned at
+    // their own vertices as before.
+    const banded = twistBands !== null
+      && !(object.geometry instanceof THREE.InstancedBufferGeometry)
+      && sourcePosition.itemSize === 3
+      && !object.geometry.getAttribute("color")
+      && !(object instanceof THREE.Mesh && object.geometry.getAttribute("uv") && materialHasMap(object.material));
+    let nextGeometry: THREE.BufferGeometry;
+    if (banded && object instanceof THREE.Mesh) {
+      nextGeometry = bandedMeshGeometry(object.geometry, localToContent, contentToLocal, twistBands, deformPoint);
+    } else if (banded && object instanceof THREE.Line) {
+      nextGeometry = bandedLineGeometry(object.geometry, object, localToContent, contentToLocal, twistBands, deformPoint);
+    } else {
+      nextGeometry = object.geometry.clone();
+      nextGeometry.userData = {};
+      const position = nextGeometry.getAttribute("position");
+      const point = new THREE.Vector3();
+      for (let index = 0; index < position.count; index += 1) {
+        point.fromBufferAttribute(position, index).applyMatrix4(localToContent);
+        deformPoint(point);
+        point.applyMatrix4(contentToLocal);
+        position.setXYZ(index, point.x, point.y, point.z);
       }
-      point.applyMatrix4(contentToLocal);
-      position.setXYZ(index, point.x, point.y, point.z);
-    }
-    position.needsUpdate = true;
-    if (object instanceof THREE.Mesh) {
-      nextGeometry.computeVertexNormals();
+      position.needsUpdate = true;
+      if (object instanceof THREE.Mesh) {
+        nextGeometry.computeVertexNormals();
+      }
     }
     nextGeometry.computeBoundingBox();
     nextGeometry.computeBoundingSphere();
@@ -2519,6 +2783,138 @@ export function applyGroupedContentTaper(content: THREE.Group, shape: WorkplaneS
       enableAcceleratedMeshPicking(object, nextGeometry, Boolean(shape.importedMesh));
     }
   });
+}
+
+type GroupedTwistBands = {
+  minY: number;
+  maxY: number;
+  twist: number;
+  levels: number[];
+  mm: [number, number, number];
+  edgeLength: number;
+};
+
+function materialHasMap(material: THREE.Material | THREE.Material[]) {
+  return (Array.isArray(material) ? material : [material]).some((entry) => Boolean((entry as THREE.MeshStandardMaterial).map));
+}
+
+/** A part's mesh cut into the group's twist bands in the group's space, turned there, and handed back in the part's own space. */
+function bandedMeshGeometry(
+  source: THREE.BufferGeometry,
+  localToContent: THREE.Matrix4,
+  contentToLocal: THREE.Matrix4,
+  bands: GroupedTwistBands,
+  deformPoint: (point: THREE.Vector3) => void,
+) {
+  const flat = source.index ? source.toNonIndexed() : source;
+  const position = flat.getAttribute("position");
+  const point = new THREE.Vector3();
+  const inContent = new Float32Array(position.count * 3);
+  for (let index = 0; index < position.count; index += 1) {
+    point.fromBufferAttribute(position, index).applyMatrix4(localToContent);
+    inContent[index * 3] = point.x;
+    inContent[index * 3 + 1] = point.y;
+    inContent[index * 3 + 2] = point.z;
+  }
+  // Each material group is cut on its own, so a part of several colours keeps them.
+  const ranges = flat.groups.length ? flat.groups : [{ start: 0, count: position.count, materialIndex: 0 }];
+  const pieces: Float32Array[] = [];
+  const groups: Array<{ start: number; count: number; materialIndex: number }> = [];
+  let total = 0;
+  ranges.forEach((range) => {
+    const end = Math.min(position.count, range.start + range.count);
+    const piece = positionsForTwist(inContent.subarray(range.start * 3, end * 3), bands.minY, bands.maxY, bands.twist, bands.mm);
+    pieces.push(piece);
+    groups.push({ start: total, count: piece.length / 3, materialIndex: range.materialIndex ?? 0 });
+    total += piece.length / 3;
+  });
+  const keepGroups = flat.groups.length > 0;
+  if (flat !== source) flat.dispose();
+  const positions = new Float32Array(total * 3);
+  let offset = 0;
+  pieces.forEach((piece) => {
+    positions.set(piece, offset);
+    offset += piece.length;
+  });
+  for (let index = 0; index < total; index += 1) {
+    point.set(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
+    deformPoint(point);
+    positions[index * 3] = point.x;
+    positions[index * 3 + 1] = point.y;
+    positions[index * 3 + 2] = point.z;
+  }
+  const turned = new THREE.BufferGeometry();
+  turned.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  if (keepGroups) groups.forEach((group) => turned.addGroup(group.start, group.count, group.materialIndex));
+  // Smooth across the small folds between the bands, sharp at the parts' own edges - judged in the
+  // group's space, where a part drawn as a stretched unit body has its true proportions.
+  const normals = toCreasedNormals(turned, Math.PI / 6);
+  // A mirrored part's corners run the other way round in the group's space.
+  if (localToContent.determinant() < 0) {
+    const normal = normals.getAttribute("normal");
+    for (let index = 0; index < normal.count; index += 1) normal.setXYZ(index, -normal.getX(index), -normal.getY(index), -normal.getZ(index));
+  }
+  normals.applyMatrix4(contentToLocal);
+  // Its sides fold a little at every band: lines drawn from it later (when it is selected) take
+  // only its real edges, as on a twisted body of its own.
+  normals.userData.twistBanded = true;
+  return normals;
+}
+
+/** A part's edge lines cut at the same bands (and as short across) as its mesh, so they follow the turned sides. */
+function bandedLineGeometry(
+  source: THREE.BufferGeometry,
+  line: THREE.Line,
+  localToContent: THREE.Matrix4,
+  contentToLocal: THREE.Matrix4,
+  bands: GroupedTwistBands,
+  deformPoint: (point: THREE.Vector3) => void,
+) {
+  const flat = source.index ? source.toNonIndexed() : source;
+  const position = flat.getAttribute("position");
+  const points: THREE.Vector3[] = [];
+  for (let index = 0; index < position.count; index += 1) points.push(new THREE.Vector3().fromBufferAttribute(position, index).applyMatrix4(localToContent));
+  if (flat !== source) flat.dispose();
+  // The points along a-b where it crosses a band or runs too far across, a and b included.
+  const along = (a: THREE.Vector3, b: THREE.Vector3) => {
+    const cuts = [0, 1];
+    bands.levels.forEach((level) => {
+      if ((a.y - level) * (b.y - level) < 0) cuts.push((level - a.y) / (b.y - a.y));
+    });
+    cuts.sort((left, right) => left - right);
+    const result: THREE.Vector3[] = [a.clone()];
+    for (let index = 1; index < cuts.length; index += 1) {
+      const from = new THREE.Vector3().lerpVectors(a, b, cuts[index - 1]);
+      const to = new THREE.Vector3().lerpVectors(a, b, cuts[index]);
+      const across = Math.hypot((to.x - from.x) * bands.mm[0], (to.z - from.z) * bands.mm[2]);
+      const steps = Math.min(64, Math.max(1, Math.ceil(across / bands.edgeLength)));
+      for (let step = 1; step <= steps; step += 1) result.push(new THREE.Vector3().lerpVectors(from, to, step / steps));
+    }
+    return result;
+  };
+  const out: THREE.Vector3[] = [];
+  if (line instanceof THREE.LineSegments) {
+    for (let index = 0; index + 1 < points.length; index += 2) {
+      const run = along(points[index], points[index + 1]);
+      for (let step = 1; step < run.length; step += 1) out.push(run[step - 1], run[step]);
+    }
+  } else if (points.length) {
+    out.push(points[0]);
+    for (let index = 1; index < points.length; index += 1) out.push(...along(points[index - 1], points[index]).slice(1));
+    // A loop closes itself from its last point back to its first: that stretch is cut too.
+    if (line instanceof THREE.LineLoop && points.length > 2) out.push(...along(points[points.length - 1], points[0]).slice(1, -1));
+  }
+  const positions = new Float32Array(out.length * 3);
+  out.forEach((point, index) => {
+    deformPoint(point);
+    point.applyMatrix4(contentToLocal);
+    positions[index * 3] = point.x;
+    positions[index * 3 + 1] = point.y;
+    positions[index * 3 + 2] = point.z;
+  });
+  const turned = new THREE.BufferGeometry();
+  turned.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  return turned;
 }
 
 export function addMesh(
@@ -2563,7 +2959,7 @@ export function addShapeEdgeDecorations(group: THREE.Group, mesh: THREE.Mesh, pr
   const complexEdges =
     shape.kind === "mesh" ||
     Boolean(shape.importedMesh) ||
-    ["cone", "pyramid", "roof", "roundRoof", "halfSphere", "paraboloid", "curvedCone", "torus", "tube", "ring", "star", "gear", "hirth", "wedge", "polygon", "heart", "crescent", "slot", "dovetail", "screwBoss", "snapFit", "rib", "hinge", "gridfinity", "knurl", "teardrop", "port", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "honeycomb", "loft"].includes(shape.kind);
+    ["cone", "pyramid", "roof", "roundRoof", "halfSphere", "paraboloid", "curvedCone", "torus", "tube", "ring", "star", "gear", "hirth", "pulley", "wedge", "polygon", "heart", "crescent", "slot", "dovetail", "screwBoss", "snapFit", "rib", "hinge", "gridfinity", "knurl", "teardrop", "port", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "honeycomb", "loft"].includes(shape.kind);
   const importedTriangleCount = shape.importedMesh?.triangleCount ?? 0;
   // A vase's relief has an edge at every rib: drawn like a heavy imported mesh, without the lines.
   const skipHeavyImportedEdges = (Boolean(shape.importedMesh) && importedTriangleCount > IMPORTED_SELECTED_EDGE_TRIANGLE_LIMIT)
@@ -2589,7 +2985,8 @@ export function addShapeEdgeDecorations(group: THREE.Group, mesh: THREE.Mesh, pr
       // deshalb nur seine echten Kanten, etwa Deckel- und Bodenrand.
       // A twisted side folds a little at every band (#184): only its real edges get a line, as on a thread.
       // A slope along folds its curved top in short pieces the same way.
-      const twisted = Math.abs(shape.extrudeTwist ?? 0) > 1e-6 || shapeHasAlongDeform(shape);
+      // A part of a twisted group or bundle is cut into the group's bands (applyGroupedContentTaper) and folds the same way.
+      const twisted = Math.abs(shape.extrudeTwist ?? 0) > 1e-6 || shapeHasAlongDeform(shape) || Boolean(prepared.userData.twistBanded);
       const selectedThreshold = shape.importedMesh ? NORMAL_IMPORTED_SELECTION_EDGE_ANGLE : shape.kind === "thread" || twisted || (shape.transparent && !shape.hole) ? 25 : 1;
       // A part-coloured group's surface can carry extra corners for its colour boundaries; its lines follow the plain mesh.
       const edgeSource = (prepared.userData.edgesSource as THREE.BufferGeometry | undefined) ?? prepared;
@@ -2701,17 +3098,24 @@ export function buildPartColoredMeshGeometry(
       object.updateMatrixWorld(true);
       object.traverse((node) => {
         if (!(node instanceof THREE.Mesh) || !node.visible) return;
-        const material = Array.isArray(node.material) ? node.material[0] : node.material;
         const source = node.geometry as THREE.BufferGeometry;
         if (!source.getAttribute("position")) return;
-        const geometry = source.index ? source.toNonIndexed() : source.clone();
-        geometry.applyMatrix4(node.matrixWorld);
-        geometry.computeBoundingBox();
-        computeBoundsTree.call(geometry, { targetLeafSize: 12 });
-        const probe = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
-        probe.raycast = acceleratedRaycast;
-        const color = material instanceof THREE.MeshStandardMaterial ? material.color.clone() : new THREE.Color(part.color);
-        solids.push({ probe, box: geometry.boundingBox ?? new THREE.Box3(), color, partKey: part.id, mirrored: node.matrixWorld.determinant() < 0 });
+        // A bin's letters in a colour of their own (#1308) are the faces of its mesh's second group: each colour's faces
+        // are a surface of their own, so a face of the merged body matches the letters' or the bin's, never both.
+        const ranges = part.kind === "gridfinity" && Array.isArray(node.material) ? source.groups : [null];
+        ranges.forEach((range) => {
+          const material = Array.isArray(node.material) ? node.material[range?.materialIndex ?? 0] : node.material;
+          const geometry = range
+            ? new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(source.getAttribute("position").array.slice(range.start * 3, (range.start + range.count) * 3), 3))
+            : source.index ? source.toNonIndexed() : source.clone();
+          geometry.applyMatrix4(node.matrixWorld);
+          geometry.computeBoundingBox();
+          computeBoundsTree.call(geometry, { targetLeafSize: 12 });
+          const probe = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+          probe.raycast = acceleratedRaycast;
+          const color = material instanceof THREE.MeshStandardMaterial ? material.color.clone() : new THREE.Color(part.color);
+          solids.push({ probe, box: geometry.boundingBox ?? new THREE.Box3(), color, partKey: part.id, mirrored: node.matrixWorld.determinant() < 0 });
+        });
       });
       disposeObject(object);
     });
@@ -3044,7 +3448,8 @@ export function lowestY(positions: ArrayLike<number>) {
 }
 
 export function getEdgesGeometry(shape: WorkplaneShape, geometry: THREE.BufferGeometry, threshold: number) {
-  const importedCache = shape.importedMesh && !preservesEdgeTreatmentSize(shape) && !shapeHasShapeDeform(shape)
+  // A painted body is drawn from a mesh of its own, not the import's (paintedBodyGeometry): its edges are worked out from it.
+  const importedCache = shape.importedMesh && !geometry.userData.paintColors && !preservesEdgeTreatmentSize(shape) && !shapeHasShapeDeform(shape)
     ? getImportedMeshCache(shape.importedMesh).edges
     : null;
   let cache = importedCache ?? sharedEdgesGeometryCache.get(geometry);

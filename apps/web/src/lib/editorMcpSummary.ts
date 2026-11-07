@@ -1,16 +1,18 @@
 
+import { paintColors } from "@/lib/paint";
 import { loftMeasures } from "@/lib/loftGeometry";
 import { roundSideCount } from "@/lib/roundSideCount";
 import { customFontList } from "@/lib/textFonts";
 import { isCustomFontId } from "@/lib/customFonts";
 import { shapeDepth, shapeWidth } from "@/lib/workplaneShapes";
+import { offersGroupResize } from "@/lib/groupScale";
 import { shapePivotWorld, type PivotPoint } from "@/lib/rotationPivot";
 import { MCP_SHAPE_SETTING_KEYS, mcpThreadSizeName } from "@/lib/mcpShapeSettings";
 import { DEFAULT_SKETCH_STROKE, normalizeSketchStroke } from "@/lib/sketchStroke";
 import { surfaceTextureEntry } from "@/lib/surfaceTextureShape";
 import { type LayerlingMcpShapeSummary } from "@/lib/layerlingMcpProtocol";
 import { vaseSettingsChanges } from "@/lib/vaseSettings";
-import { gridfinityOutlinePoints } from "@/lib/gridfinityGeometry";
+import { GRIDFINITY_LABEL_FONTS, gridfinityOutlinePoints } from "@/lib/gridfinityGeometry";
 import type { ShapeKind, SketchProfile, WorkplaneShape } from "@/types/layerling";
 
 export function debugShapeSummary(shape: WorkplaneShape): Record<string, unknown> {
@@ -154,6 +156,8 @@ export function mcpShapeSummary(shape: WorkplaneShape): LayerlingMcpShapeSummary
     edgeTreatments: shape.edgeTreatments ?? [],
     settings: mcpShapeSettings(shape),
     groupedCount: shape.groupedShapes?.length ?? 0,
+    // What a group does with its parts when it is resized (Discussion #526).
+    ...(offersGroupResize(shape) ? { groupResize: shape.groupResize ?? "stretch" } : {}),
     importedTriangles: shape.importedMesh?.triangleCount ?? 0,
     cadDisplayEdgeCount: shape.cadDisplayEdges?.length ?? null,
     sketchPointCount: shape.sketchProfile?.points.length ?? 0,
@@ -162,7 +166,7 @@ export function mcpShapeSummary(shape: WorkplaneShape): LayerlingMcpShapeSummary
       ? { sketchStroke: shape.sketchProfile.stroke ?? null, silhouette: Boolean(shape.sketchProfile.silhouette), sketchInset: shape.sketchProfile.inset ?? null }
       : {}),
     // A text's fill (#215) reads like a sketch body's: its stroke, and whether the counters are left out.
-    ...(shape.kind === "text" ? { textStroke: shape.textStroke ?? null, textSilhouette: Boolean(shape.textSilhouette), textStretch: Boolean(shape.textStretch), textVertical: Boolean(shape.textVertical), textSpacing: shape.textSpacing ?? 0, textLetterWidth: shape.textLetterWidth ?? 100, textEdge: shape.textEdge ?? null } : {}),
+    ...(shape.kind === "text" ? { textStroke: shape.textStroke ?? null, textSilhouette: Boolean(shape.textSilhouette), textStretch: Boolean(shape.textStretch), textVertical: Boolean(shape.textVertical), textSpacing: shape.textSpacing ?? 0, textKerning: Boolean(shape.textKerning), textLetterWidth: shape.textLetterWidth ?? 100, textEdge: shape.textEdge ?? null } : {}),
     // A name tag's key ring hole (#215), on the layers it goes through; the bottom one carries the ear.
     ...(shape.kind === "text" && shape.textKeyring ? { textKeyring: shape.textKeyring } : {}),
     ...(shape.layeredText ? { layeredText: true } : {}),
@@ -173,6 +177,8 @@ export function mcpShapeSummary(shape: WorkplaneShape): LayerlingMcpShapeSummary
     // A surface texture: its settings, the masks as a count, and whether the body under it is kept to change or remove it.
     ...(shape.surfaceTexture ? { surfaceTexture: { ...shape.surfaceTexture, masks: shape.surfaceTexture.masks.length, changeable: Boolean(surfaceTextureEntry(shape)) } } : {}),
     ...(shape.surfaceTextureLayers?.length ? { surfaceTextureLayers: shape.surfaceTextureLayers.map((layer) => ({ pattern: layer.pattern, faces: layer.faces.length })) } : {}),
+    // Paint (paint.ts): how many strokes the body carries and the colours they show.
+    ...(shape.paint?.length ? { paint: { strokes: shape.paint.length, colors: paintColors(shape) } } : {}),
     children: shape.groupedShapes?.map(mcpShapeSummary),
   };
 }
@@ -208,6 +214,16 @@ export function mcpTextFont(value: string) {
   if (isCustomFontId(value)) return value;
   const wanted = value.trim().toLowerCase();
   return customFontList().find((font) => font.name.toLowerCase() === wanted)?.id ?? null;
+}
+
+/**
+ * The font an MCP command names for a Gridfinity bin's letters (#1308): a built-in one, or a font of one's own by its name
+ * or id. The shape defaults would drop any other without a word, so it is refused here.
+ */
+export function mcpGridfinityLabelFont(value: unknown) {
+  const font = typeof value !== "string" ? null : GRIDFINITY_LABEL_FONTS.includes(value) ? value : mcpTextFont(value);
+  if (!font) throw new Error(`gridfinityLabelFont must be one of ${GRIDFINITY_LABEL_FONTS.join(", ")}, or a font of one's own by its name or id (layerling_list_fonts)`);
+  return font;
 }
 
 /** The transition's values as the body shows them, under the names a command sets them by. */

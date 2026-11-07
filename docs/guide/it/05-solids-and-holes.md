@@ -39,6 +39,17 @@ Anche un intero gruppo può essere solido o foro. Si applica una regola semplice
 - Se il gruppo contiene solo solidi (o solo fori), puoi cambiare lo stato dell’intero gruppo e tutte le sue parti lo seguono.
 - Se contiene sia solidi sia fori, come un cubo con un foro passante, ogni parte mantiene il proprio stato. L’intero gruppo diventa uno strumento di sottrazione, ma il foro resta un foro.
 
+### Ridimensionare un gruppo: mantenere fori e parti piccole
+
+Quando un gruppo diventa più lungo, più largo o più alto, le sue parti si allungano con lui come se fossero disegnate sulla gomma: i fori rotondi di una piastra diventano ovali e si spostano verso l'interno. Per lasciarli come sono, scegli {{ui:inspector.groupResizeKeepParts}} in {{ui:inspector.groupResize}} nelle impostazioni del gruppo; {{ui:inspector.groupResizeStretch}} è ciò che fa ogni gruppo finché non lo cambi. Da quel momento, ogni volta che il gruppo cambia dimensione - con le maniglie, nei campi delle misure o con {{ui:scalePercent.title}} - viene ricostruito dalle sue parti secondo un'unica regola, direzione per direzione:
+
+- Una parte che attraversa quasi tutto il gruppo, nove decimi o più, cresce o si riduce con esso e mantiene la distanza da entrambi i lati: la piastra stessa, una parete o l'interno di una scatola, le cui pareti restano spesse come prima.
+- Ogni altra parte mantiene la propria dimensione e la distanza dal lato più vicino. Una parte al centro resta al centro.
+
+Una piastra con un foro a 5 mm da ogni angolo e un'asola al centro, allungata di 40 mm, mantiene quindi i fori rotondi e a 5 mm dagli angoli, e l'asola al centro. Dietro non c'è alcun risolutore di vincoli e non c'è niente da impostare parte per parte: la stessa regola vale per tutte le parti, così sai in anticipo cosa succederà. Una parte ruotata conta con il riquadro che occupa nel gruppo e resta ruotata; un gruppo dentro il gruppo conta come una sola parte. Mentre trascini una maniglia, il gruppo si allunga tutto intero; quando la rilasci, viene ricostruito, nello stesso passo di annullamento. Se il gruppo diventa più piccolo di quanto serve a una parte con la sua distanza, quella parte si riduce con esso come prima, e un messaggio lo segnala. Un gruppo specchiato, rastremato o ritorto, o con raccordi, smussi o una texture propri, allunga sempre tutto. Scelta per un gruppo già allungato, l'impostazione ridispone subito le sue parti.
+
+![Una piastra con un foro a 5 mm da ogni angolo e un'asola al centro, allungata di 40 mm con «Mantieni fori e parti piccole»: i fori sono ancora rotondi e a 5 mm dagli angoli, l'asola è ancora al centro.](shot:group-keep-parts)
+
 ## Creare un insieme
 
 A volte vuoi tenere insieme più parti senza fonderle, per esempio un logo bianco su una piastra nera per una stampa multicolore. A questo serve {{ui:editor.tool.bundle}} ([[Ctrl]]+[[B]]), come in Tinkercad. Un insieme si sposta, ruota e ridimensiona come una forma, ma le sue parti non vengono unite:
@@ -94,6 +105,14 @@ Attenzione: ricostruendo il gruppo si perdono i raccordi e gli smussi applicati 
 - I due cursori di rotazione sottostanti inclinano il piano attorno agli altri due assi, fino a 180° in entrambe le direzioni, per eseguire un taglio obliquo. Puoi combinarli.
 
 {{ui:split.apply}} o [[Enter]] esegue il taglio; [[Esc]] lo annulla. Durante la scelta di una faccia, il primo [[Esc]] interrompe solo quella selezione. Ogni oggetto attraversato dal piano diventa due corpi chiusi, nominati in base al lato, per esempio “Scatola (Z+)” e “Scatola (Z-)”; gli oggetti non raggiunti restano invariati. Un foro diventa due fori e un corpo svuotato conserva la cavità interna. Le due metà restano nella posizione originale; per stamparle, appoggiale sulla faccia appena tagliata con {{ui:editor.tool.layFlat}}.
+
+I {{ui:split.connectors}} riallineano le metà, come fanno gli strumenti di taglio di PrusaSlicer, OrcaSlicer e Bambu Studio. Con {{ui:split.connectors.none}}, l'impostazione predefinita, la divisione avviene come descritto sopra. {{ui:split.connectors.dowels}} fa un foro in ciascuna metà e spine separate che entrano in entrambe: le spine arrivano come terzo corpo, in piedi accanto alle metà sul loro fondo, da stampare con esse – in piedi escono rotonde negli strati come i loro fori, ed è proprio ciò che misura la prova di accoppiamento. {{ui:split.connectors.plugs}} mette perni rotondi sulla metà il cui nome finisce con un meno, con i fori per loro nell'altra metà. I connettori entrano perpendicolari al piano, comunque sia ruotato, ciascuno con il suo diametro e 1,2 mm di materiale fino a ogni bordo della faccia di taglio, e due di loro al doppio di distanza tra loro. Ogni pezzo separato della faccia di taglio riceve i propri, distribuiti in modo uniforme: {{ui:split.connectorCount}} dice quanti, e 0 lo lascia alle dimensioni del pezzo, almeno due. Un pezzo troppo piccolo per uno non ne riceve nessuno, e un connettore viene omesso dove una metà è più sottile della profondità del suo foro; il pannello lo dice prima della divisione, e anelli bianchi sul piano mostrano dove andranno. Se non ne entra nessuno, le parti vengono divise senza e la barra di stato lo segnala.
+
+- {{ui:split.connectorDiameter}} è quello delle spine e dei perni, all'inizio 5 mm.
+- {{ui:split.connectorDepth}} è quanto ogni foro entra nella sua metà. Una spina è lunga il doppio meno 0,6 mm e un perno 0,3 mm meno del suo foro, così non poggiano mai sul fondo di un foro e le metà si chiudono del tutto. Spine e perni hanno un piccolo smusso alle estremità, e ogni foro uno all'imbocco, così un primo strato schiacciato non lo restringe.
+- {{ui:split.connectorClearance}} è lo spazio tra una spina o un perno e il suo foro. Una volta misurato il gioco della tua stampante con la prova di accoppiamento (nel capitolo sulla stampa), parte da lì, altrimenti da 0,2 mm.
+
+Gli oggetti foro si dividono senza connettori.
 
 Le metà sono mesh semplici: impostazioni come il numero di lati di un cilindro o le caratteristiche di un testo vengono perse, quindi regolale prima di dividere. [[Ctrl]]+[[Z]] ripristina l’originale in un solo passaggio. Gli oggetti bloccati o nascosti non possono essere divisi.
 

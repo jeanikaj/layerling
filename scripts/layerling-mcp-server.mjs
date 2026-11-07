@@ -124,12 +124,20 @@ async function callTool(name, args) {
       return bridgeCommand("sweep_sketch", args, 60000);
     case "layerling_push_face":
       return bridgeCommand("push_face", args, 60000);
+    case "layerling_paint":
+      return bridgeCommand("paint_object", args, 120000);
+    case "layerling_support_rib":
+      return bridgeCommand("support_rib", args, 60000);
     case "layerling_mate_faces":
       return bridgeCommand("mate_faces", args, 30000);
     case "layerling_open_group":
       return bridgeCommand("open_group", args);
     case "layerling_close_group":
       return bridgeCommand("close_group", args, 45000);
+    case "layerling_add_to_group":
+      return bridgeCommand("add_to_group", args, 45000);
+    case "layerling_take_out_of_group":
+      return bridgeCommand("take_out_of_group", args, 45000);
     case "layerling_group_objects":
       return bridgeCommand("group_objects", args, 30000);
     case "layerling_intersect_objects":
@@ -216,6 +224,10 @@ async function callTool(name, args) {
       return bridgeCommand("estimate_print", args, 30000);
     case "layerling_check_clearance":
       return bridgeCommand("check_clearance", args, 180000);
+    case "layerling_printer_play":
+      return bridgeCommand("printer_play", args, 60000);
+    case "layerling_check_print":
+      return bridgeCommand("check_print", args, 180000);
     case "layerling_add_reference_points":
       return bridgeCommand("add_reference_points", args);
     case "layerling_list_reference_points":
@@ -254,6 +266,8 @@ async function callTool(name, args) {
       return bridgeCommand("measure_angle", args, 30000);
     case "layerling_saved_view":
       return bridgeCommand("saved_view", args);
+    case "layerling_build_plates":
+      return bridgeCommand("build_plates", args);
     case "layerling_export_section_svg":
       return bridgeCommand("export_section_svg", args);
     case "layerling_sketch_from_section":

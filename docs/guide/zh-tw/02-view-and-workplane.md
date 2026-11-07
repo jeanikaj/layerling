@@ -45,7 +45,7 @@ summary: 在場景中移動、正對著觀察，以及把新形狀放到任何�
 - {{ui:camera.zoomIn}} 與 {{ui:camera.zoomOut}} 逐步縮放，[[+]] 與 [[−]] 鍵也是如此。
 - {{ui:camera.orthographic}} 切換到平面檢視，平行邊會保持平行。對於量測與對齊邊，這通常比透視檢視更順手。[[O]] 可來回切換，再點一次也會返回。
 - {{ui:camera.secondView}} 在獨立的視窗中開啟設計的第二檢視，詳見下文。再點一次將其關閉。
-- {{ui:camera.showScrollbars}} 會在視圖底部和右側邊緣各顯示一條捲動軸。拖曳捲動軸可平順地移動視圖，按一下兩端的箭頭可小幅移動（按住會持續移動），按一下滑塊旁邊則移動幾乎整個視圖。視圖不會旋轉，而且與方向鍵不同，選取零件時捲動軸照樣可用——在近處處理小細節時很方便。再按一下即可隱藏；此瀏覽器會記住你的選擇。
+- {{ui:camera.showScrollbars}} 會在視圖底部和右側邊緣各顯示一條捲動軸。拖曳捲動軸可平順地移動視圖，按一下兩端的箭頭可小幅移動（按住會持續移動），按一下滑塊旁邊則移動幾乎整個視圖。視圖不會旋轉，而且與方向鍵不同，選取零件時捲動軸照樣可用——在近處處理小細節時很方便。再按一下即可隱藏；設定中的 {{ui:workspace.startWithScrollbars}} 決定設計開啟時是否顯示它們。此瀏覽器也會記住這個選擇。
 - {{ui:camera.hideWorkplane}}（網格上方的眼睛）會連同網格一起隱藏平台，讓你從下方查看設計的底面。改變的只有檢視：新形狀仍會落在工作平面上。再點一次就會重新顯示。
 - {{ui:camera.placeWorkplane}}、捲尺與角尺是各自的工具，下文以及[量測與備註](chapter:measuring-and-notes)中會介紹。
 
@@ -93,6 +93,19 @@ X 與 [[Esc]] 會關閉視窗；若正在量測，[[Esc]] 會先結束量測。�
 
 要正對工作平面查看，按 [[P]] 或點擊視圖列中 {{ui:camera.placeWorkplane}} 旁邊的 {{ui:camera.lookOntoWorkplane}}。視圖會轉到正對平面的方向，從新形狀生長的那一側看過去，平面原點位於中間。在底板上，這就是俯視圖。
 
+## 列印板
+
+當一個設計的內容超出一個列印板所能列印的範圍時，例如一個盒子連同蓋子和內襯，它可以有多個列印板。按一下 {{ui:editor.group.arrange}} 群組中的 {{ui:editor.tool.buildPlates}}，或在物體的右鍵選單中選擇 {{ui:plates.moveTo}}。檢視底部會出現一列，每個列印板一個按鈕；按鈕上的數字表示該列印板上有多少個物體。
+
+- 每個列印板與工作平面一樣大，列印板並排排列在第一個列印板的右側，相距 20 公釐。物體屬於其底面中心所在的列印板，因此把它拖到另一邊就會放到另一個列印板上。一個設計最多有 12 個列印板。
+- 在列中按一下列印板會顯示它，之後新形狀會放在它上面。{{ui:plates.showAll}} 顯示全部。按兩下列印板或使用 {{ui:plates.rename}} 可以給它取一個名字，例如「蓋子」，名字會寫在列印板上。
+- {{ui:plates.moveLeft}} 和 {{ui:plates.moveRight}} 改變順序，物體隨其列印板一起移動。{{ui:plates.remove}} 移除目前的列印板；其上的物體會移到第一個列印板的相同位置。
+- {{ui:plates.arrange}} 將所選物體（或全部物體）逐行排列到列印板上，先放最大的，間距 5 公釐，並在需要時新增列印板。比列印板大的物體會留在原處。
+- 選擇印表機後，每個物體都按自己的列印板檢查，列印高度從該列印板上最低的物體算起。有物體放不下的列印板，其數字顯示為紅色。
+- 在屬性中，X 從物體所在列印板的中心算起。
+
+匯出視窗隨後提供 {{ui:export.plates}}：所有列印板在一個檔案中，像設計中一樣並排；每個列印板一個檔案，打包成 ZIP（STL、3MF 和 OBJ）；或單一列印板，放到第一個列印板的位置。切片軟體會把每個檔案當作一個列印板開啟，所以要依序列印各個列印板，請使用按列印板分開的檔案。在列印板之間移動物體和分配物體可以復原；新增、命名、排序和移除列印板會隨設計儲存，但不能復原。
+
 ## 網格與吸附
 
 網格顯示平台的大小。右下角是**吸附步距**：移動與縮放會依這個步距吸附，例如 1 mm。精細作業時調小，粗略擺放時調大。功能區中的 {{ui:editor.tool.snapToGrid}} 會在事後將選取的形狀移到最近的網格交叉點。移動時，形狀也會吸附到其他形狀，參見[選取與排列](chapter:select-and-arrange)。
@@ -102,6 +115,8 @@ X 與 [[Esc]] 會關閉視窗；若正在量測，[[Esc]] 會先結束量測。�
 ### 設定視窗
 
 標題列中的齒輪（{{ui:editor.workspaceSettings}}）會開啟設定。左側有五個區域：{{ui:workspace.appearance}}、{{ui:workspace.measurement}}、{{ui:workspace.workplane}}、{{ui:workspace.shapeDefaults}} 與 {{ui:workspace.history}}。變更會立即生效。底部的 {{ui:workspace.makeDefault}} 會將目前設定儲存為預設值，讓新設計從這些設定開始。開啟的檔案會帶著它自己的設定；旁邊的 {{ui:workspace.useMyDefault}} 會把你儲存的顏色、網格等套用到開啟的設計上，同時保留它的單位。如果你的預設設定裡有印表機，這台印表機連同它的平台尺寸也會一起帶過來；沒有的話，設計保留原有的平台與印表機。右上角的 {{ui:workspace.close}} 則關閉視窗。本節會逐一說明這些設定。
+
+{{ui:workspace.exportSettings}} 把視窗的設定儲存成檔案（layerling-settings-<日期>.json）：顏色、格線、陰影、相機和形狀預設值，以及主題、工具列大小、檢視立方體的角落、形狀顏色和每台印表機的間隙。在另一台電腦上或瀏覽器資料遺失後，{{ui:workspace.importSettings}} 會再次讀取該檔案：它成為新設計的預設值，並像 {{ui:workspace.useMyDefault}} 一樣套用到已開啟的設計。你在鍵盤快速鍵中設定的自訂按鍵也會一起儲存。
 
 ### 外觀：主題、工具列與視圖立方體
 
@@ -163,6 +178,8 @@ X 與 [[Esc]] 會關閉視窗；若正在量測，[[Esc]] 會先結束量測。�
 
 {{ui:workspace.startInPerspective}}：編輯器接著會以透視檢視開啟，而不是平面檢視。
 
+{{ui:workspace.startWithScrollbars}}：設計開啟時即顯示視圖的捲動軸。此設定會隨設計一起儲存，也會隨 {{ui:workspace.makeDefault}} 儲存。
+
 {{ui:workspace.zoomSpeed}} 是一個從慢到快的滑桿：滾輪與觸控式軌跡板的縮放速度；縮放按鈕與按鍵仍維持自己的小步距。{{ui:workspace.cameraInertia}}：放開滑鼠後，檢視會繼續轉一下子並平緩減速。關閉後它會立刻停住，與 Tinkercad 和 Fusion 360 相同。
 
 {{ui:workspace.overhangAngle}} 是在可見度選單中開啟「顯示懸垂」時，面被視為懸垂的起始角度：這些面會以紅白斜線標示。30° 偏保守，70° 則仰賴良好的列印冷卻；45° 是常用的起點。顯示時，視圖下方的一行會寫出最陡的懸垂，以及有多少 cm² 需要支撐。
@@ -177,9 +194,13 @@ X 與 [[Esc]] 會關閉視窗；若正在量測，[[Esc]] 會先結束量測。�
 
 在 {{ui:workspace.customSnapGrids}} 下可以新增自己的吸附步距：一個名稱與一個以公釐為單位的大小，例如「Pin pitch 2.54 mm」代表 DIP 晶片、排針與洞洞板孔的間距，或用 19.05 mm 的「MX Key Unit」代表鍵盤按鍵的間距。吸附步距選單接著會提供該尺寸的整份、一半與四分之一（1 ×、½ × 與 ¼ ×），因此形狀可以按一個間距、半個間距或四分之一個間距移動。如果你只想要該尺寸本身，取消勾選旁邊的 {{ui:workspace.customSnapGridParts}}；選單就只會有這一個步距。自訂步距會隨設計儲存，也會跟著 {{ui:workspace.makeDefault}} 一起儲存。
 
+{{ui:workspace.startWithCornerRuler}}：此瀏覽器中的每個新設計都會在原點自帶一把角尺，見 [量測與備註](chapter:measuring-and-notes)。既有的設計保持不變；你從某個設計中移除的角尺也不會再出現。
+
 ### 工作平面：平台與印表機
 
 {{ui:workspace.printer}} 會將工作平面調整為印表機的列印平台大小，並標出超出範圍的實體，參見[列印](chapter:printing)。{{ui:workspace.showPlateLabels}} 會在平台上寫出設計名稱；選擇印表機後，還會寫上印表機名稱與建構體積。
+
+{{ui:workspace.printerPlay}}是在你的印表機上，列印出的銷釘要能在列印出的孔中轉動所需的每側餘量。{{ui:workspace.fitTestMake}}會把用來測量它的配合測試件放到平台上；之後新的蓋子、燕尾、卡扣、螺帽和間隙檢查都以它為起點，見[列印](chapter:printing)。它保存在這個瀏覽器中，而不是設計裡。
 
 {{ui:workspace.size}} 可為平台設定自訂尺寸，使用 {{ui:workspace.width}} 與 {{ui:workspace.length}}，單位為公釐或你選擇的單位。網格一律穿過原點，所以無論平台多大，較粗的線都會位於座標軸上。
 

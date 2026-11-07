@@ -1,6 +1,7 @@
 import type { ThreadProfile, WorkplaneShape } from "@/types/layerling";
 import { isThreadProfile } from "@/lib/threadProfiles";
-import { GRIDFINITY_PADDING_KEYS, gridfinityOutlineFit, gridfinityOutlineLimit, gridfinityOutlineNeedsLargePlate, gridfinityOutlineRemovalPatch, gridfinityPaddingPatch, gridfinityPlateToWorld, gridfinityShapePatch, normalizeGridfinityOutline, normalizeGridfinityType, type GridfinityWall } from "@/lib/gridfinityGeometry";
+import { normalizeHexColor } from "@/lib/coloredImport";
+import { GRIDFINITY_PADDING_KEYS, gridfinityLabelTextPatch, gridfinityListPatch, gridfinityOutlineFit, gridfinityOutlineLimit, gridfinityOutlineNeedsLargePlate, gridfinityOutlineRemovalPatch, gridfinityPaddingPatch, gridfinityPlateToWorld, gridfinityShapePatch, normalizeGridfinityOutline, normalizeGridfinityType, type GridfinityWall } from "@/lib/gridfinityGeometry";
 import { normalizeThreadProfile, THREAD_SIZES, threadSettings, threadSizeById, threadSizeFor, threadSizeSettings, threadStandardSize } from "@/lib/threadGeometry";
 
 /**
@@ -25,12 +26,12 @@ import { normalizeThreadProfile, THREAD_SIZES, threadSettings, threadSizeById, t
 export const MCP_SHAPE_SETTING_KEYS = [
   "steps", "sides", "bevel", "segments",
   "topRadius", "baseRadius", "curvedConeTop", "curvedConeBend", "topWidth", "topDepth",
-  "screwBossFastener", "screwBossSize", "screwBossHole", "screwBossHoleDepth", "screwBossDiameter", "screwBossGussets", "screwBossGussetHeight", "screwBossGussetThickness", "snapFitPart", "snapFitThickness", "snapFitUndercut", "snapFitClearance", "snapFitLeadAngle", "snapFitRetainAngle", "snapFitFoot", "ribStyle", "ribTop",
+  "screwBossFastener", "screwBossSize", "screwBossHole", "screwBossHoleDepth", "screwBossDiameter", "screwBossGussets", "screwBossGussetHeight", "screwBossGussetThickness", "snapFitPart", "snapFitThickness", "snapFitUndercut", "snapFitClearance", "snapFitLeadAngle", "snapFitRetainAngle", "snapFitFoot", "ribStyle", "ribTop", "ribFoot", "ribThickness", "ribFootThickness", "ribFootShape",
   "taperTopWidth", "taperTopDepth", "taperBottomWidth", "taperBottomDepth",
   "extrudeTwist", "extrudeTopOffsetX", "extrudeTopOffsetZ", "slopeEnd", "slopeSide", "slopeCurve", "narrowEnd", "narrowSide", "narrowCurve", "narrowStart",
-  "teeth", "toothSize", "toothWidth", "centerHoleSize", "gearType", "helixAngle", "helixQuality", "gearProfile", "gearPressureAngle", "gearBacklash", "gearRim",
+  "teeth", "toothSize", "toothWidth", "centerHoleSize", "hirthSteepFlank", "hirthReverse", "pulleyBeltWidth", "pulleyFlange", "pulleyFlangeRise", "pulleyHubHeight", "pulleyHubDiameter", "gearType", "helixAngle", "bevelHelixAngle", "helixQuality", "gearProfile", "gearPressureAngle", "gearBacklash", "gearRim",
   "threadRole", "threadHead", "threadHand", "threadProfile", "threadTaper", "threadDiameter", "threadPitch",
-  "threadClearance", "threadBoltClearance", "threadAxialClearance", "threadDepth", "threadFlankAngle", "threadQuality", "threadHeadHeight", "threadChamfer", "threadChamferBottom",
+  "threadClearance", "threadBoltClearance", "threadAxialClearance", "threadStarts", "threadDepth", "threadFlankAngle", "threadQuality", "threadHeadHeight", "threadChamfer", "threadChamferBottom",
   "threadHeadChamfer", "threadHeadDiameter", "threadDrive", "threadDriveSize", "threadDriveDepth", "threadCollarHeight", "threadCollarDiameter",
   "springTurns", "springWire", "springQuality", "springHand", "springForm", "springPattern", "springEnds",
   "starPoints", "starInnerSize", "starOuterFillet", "starInnerFillet", "starQuality",
@@ -39,12 +40,13 @@ export const MCP_SHAPE_SETTING_KEYS = [
   "tubeBoreHole", "hingeKnuckles", "hingeKnuckleWidth", "hingeStyle", "hingeConeSize", "hingePinDiameter", "hingeLeafThickness", "hingeClearance", "hingePinless", "hingeAngle", "hingeScrewHoles", "hingeScrewDiameter", "hingeScrewSpacing", "hingeScrewAcross", "hingeScrewCountersink", "hingeCornerRadius", "hingeLeafStyle", "hingeScrewHead", "hingeNutWidth",
   "gridfinityType", "gridfinityLip", "gridfinityMagnets", "gridfinityHalfGrid", "gridfinityLargePlate", "gridfinitySwallowtail", "gridfinitySwallowtailClearance",
   "gridfinityLabelBack", "gridfinityLabelFront", "gridfinityLabelLeft", "gridfinityLabelRight", "gridfinityLabelBackWidth", "gridfinityLabelBackLength", "gridfinityLabelBackOffset", "gridfinityLabelFrontWidth", "gridfinityLabelFrontLength", "gridfinityLabelFrontOffset", "gridfinityLabelLeftWidth", "gridfinityLabelLeftLength", "gridfinityLabelLeftOffset", "gridfinityLabelRightWidth", "gridfinityLabelRightLength", "gridfinityLabelRightOffset", "gridfinityLabelCorner", "gridfinityLabelCornerSize",
+  "gridfinityLabelBackText", "gridfinityLabelFrontText", "gridfinityLabelLeftText", "gridfinityLabelRightText", "gridfinityLabelFont", "gridfinityLabelColor", "gridfinityLabelTextSize",
   "gridfinityScoopBack", "gridfinityScoopFront", "gridfinityScoopLeft", "gridfinityScoopRight", "gridfinityScoopRadius", "gridfinityFloorHeight", "gridfinityOpenBack", "gridfinityOpenFront", "gridfinityOpenLeft", "gridfinityOpenRight", "gridfinityLipChamfer", "gridfinityWallThickness", "gridfinityPaddingBack", "gridfinityPaddingFront", "gridfinityPaddingLeft", "gridfinityPaddingRight", "gridfinityCornerRadius", "gridfinityBinCornerRadius",
   "gridfinityCompartmentsX", "gridfinityCompartmentsZ", "gridfinityDividerThickness", "gridfinityDividerPositionsX", "gridfinityDividerPositionsZ", "gridfinityCompartmentLabels", "gridfinityOpenings", "gridfinityOpeningCorner", "gridfinityOpeningCornerSize", "gridfinityOutline",
   "knurlPattern", "knurlCount", "knurlDepth", "knurlAngle", "knurlChamfer",
   "dovetailNeckWidth", "dovetailClearance",
   "loftBottomOutline", "loftTopOutline", "loftBottomWidth", "loftBottomDepth", "loftTopWidth", "loftTopDepth", "loftBottomCorner", "loftTopCorner", "loftBottomSides", "loftTopSides", "loftOffsetX", "loftOffsetZ", "loftWall", "loftTwist", "loftTiltX", "loftTiltZ", "loftSmooth", "loftSegments", "loftSections", "loftThrough", "slotEndRatio", "torusTubeRatio",
-  "screwHoleShaft", "screwHoleHeadDepth", "screwHoleAngle", "portProfile", "portClearance",
+  "screwHoleShaft", "screwHoleHeadDepth", "screwHoleAngle", "drillPointAngle", "portProfile", "portClearance",
   "cornerFillet", "topBottomFillet", "roundedBoxQuality",
   "bentTubeProfile", "bentTubeInnerProfile", "bentTubeSize", "bentTubeWall", "bentTubeQuality", "bentTubeSegments",
   "vase",
@@ -91,6 +93,8 @@ export function mcpThreadSizeParams(params: Record<string, unknown>, currentProf
     // the call sets it.
     ...(params.threadTaper === undefined && size.taper ? { threadTaper: true } : {}),
     ...(params.threadTaper === undefined && !size.taper && currentTaper ? { threadTaper: false } : {}),
+    // A standard size is one thread (#1348), as in the size menu - unless the call sets the starts.
+    ...(params.threadStarts === undefined ? { threadStarts: undefined } : {}),
   };
 }
 
@@ -151,6 +155,25 @@ export function mcpGridfinityOutlinePatch(shape: WorkplaneShape, params: Record<
   }
   const place = gridfinityPlateToWorld(fit.centre, shape);
   return { ...fit.patch, x: place.x, z: place.z };
+}
+
+/**
+ * What create_shape and update_object write for a Gridfinity part's own lists and texts: the dividers, the compartment
+ * labels and the openings as gridfinityListPatch keeps them, and the shelves' texts (#1308), which belong to
+ * one bin and so do not come through the shape defaults. The letters' colour comes through the defaults too, which drop
+ * a value that is no colour, so every value is checked and written here, an empty one as the bin's colour, and one that
+ * is no colour refused rather than dropped without a word.
+ */
+export function mcpGridfinityPatch(params: Record<string, unknown>) {
+  return { ...gridfinityListPatch(mcpGridfinityListParams(params)), ...gridfinityLabelTextPatch(params), ...mcpGridfinityLabelColorPatch(params.gridfinityLabelColor) };
+}
+
+function mcpGridfinityLabelColorPatch(value: unknown): Partial<Pick<WorkplaneShape, "gridfinityLabelColor">> {
+  if (value === undefined) return {};
+  if (value === "") return { gridfinityLabelColor: undefined };
+  const color = typeof value === "string" ? normalizeHexColor(value) : undefined;
+  if (!color) throw new Error("gridfinityLabelColor must be a hex colour, for example #d41721, or an empty string for the bin's own colour");
+  return { gridfinityLabelColor: color };
 }
 
 /**

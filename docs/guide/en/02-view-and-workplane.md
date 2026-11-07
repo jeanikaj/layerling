@@ -45,7 +45,7 @@ At the left edge is a narrow bar. From the top:
 - {{ui:camera.zoomIn}} and {{ui:camera.zoomOut}} zoom step by step, as do the keys [[+]] and [[−]].
 - {{ui:camera.orthographic}} switches to a flat view in which parallel edges stay parallel. For measuring and lining up edges that is often more comfortable than the perspective view. [[O]] switches back and forth, and a second click returns.
 - {{ui:camera.secondView}} opens a second view of the design in a window of its own, described below. A second click closes it.
-- {{ui:camera.showScrollbars}} puts a scrollbar along the bottom of the view and one down its right edge. Drag a bar to slide the view smoothly, click an arrow at its end to move it a little (hold it to keep going), or click beside the bar to move by most of the view. Nothing turns, and unlike the arrow keys the bars work while a part is selected - handy close up on small details. A second click hides them; this browser remembers the choice.
+- {{ui:camera.showScrollbars}} puts a scrollbar along the bottom of the view and one down its right edge. Drag a bar to slide the view smoothly, click an arrow at its end to move it a little (hold it to keep going), or click beside the bar to move by most of the view. Nothing turns, and unlike the arrow keys the bars work while a part is selected - handy close up on small details. A second click hides them; {{ui:workspace.startWithScrollbars}} in the settings decides whether a design opens with them. This browser also remembers the switch.
 - {{ui:camera.hideWorkplane}} (the eye over a grid) hides the plate with its grid, so you can look at the underside of a design from below. Only the view changes: new shapes still land on the workplane. A second click shows it again.
 - {{ui:camera.placeWorkplane}}, the tape measure and the framing square are tools of their own, covered below and in [Measuring and notes](chapter:measuring-and-notes).
 
@@ -91,9 +91,22 @@ On a face the origin of the workplane otherwise snaps to the grid. Click close t
 
 A click beside the plate or [[Esc]] returns the workplane to the base plate. Quicker still is {{ui:camera.resetWorkplane}}: the button with the downward arrow sits in the view bar below the eye while the workplane lies on a face. [[Shift]]+[[W]] puts it directly on the currently selected face. [[Alt]]+[[W]] puts it back on the base plate at any time, whether something is selected or not. If you hold [[Shift]] while clicking, the plane points the other way.
 
-While a workplane sits on a face, an eye appears next to {{ui:camera.placeWorkplane}}. It hides the workplane without dropping it, for a clear look at the design: new shapes still land on that face, and rotating still turns about it. A click on the eye shows it again, and so does setting a new workplane.
+While a workplane sits on a face, an eye appears next to {{ui:camera.placeWorkplane}}. It hides the workplane without dropping it, for a clear look at the design: new shapes still land on that face, and rotating still turns about it. A click on the eye shows it again, and so does setting a new workplane. A box's size handles follow a workplane that stands on one of its sides too: the corner and edge handles lie on that face, and each one changes the box's own width, length or height that runs along it. The handle in the middle of the face changes the size across it.
 
 To look straight at the workplane, press [[P]] or click {{ui:camera.lookOntoWorkplane}} next to {{ui:camera.placeWorkplane}} in the view bar. The view turns until you see the workplane square, from the side new shapes grow towards, with its origin in the middle. On the base plate that is the view from above.
+
+## Build plates
+
+When a design holds more than one plate can print, a box with its lid and inserts for example, it can have several build plates. Click {{ui:editor.tool.buildPlates}} in the {{ui:editor.group.arrange}} group, or choose {{ui:plates.moveTo}} in the menu of a right click on a body. A bar appears at the foot of the view with one button per plate; the number on it says how many bodies stand on the plate.
+
+- Every plate is as large as the workplane, and the plates lie side by side to the right of the first one, 20 mm apart. A body belongs to the plate the middle of its footprint stands on, so dragging it across puts it on the other plate. A design holds up to 12 plates.
+- A click on a plate in the bar looks at it, and new shapes then land on it. {{ui:plates.showAll}} looks at all of them. A double click on a plate, or {{ui:plates.rename}}, gives it a name such as "Lid", which is written on the plate.
+- {{ui:plates.moveLeft}} and {{ui:plates.moveRight}} change the order, the bodies moving with their plate. {{ui:plates.remove}} takes the active plate away; its bodies go onto the first plate at the same spot.
+- {{ui:plates.arrange}} lays the selected bodies, or all of them, out row by row on the plates, the largest first, 5 mm apart, and adds plates while they are needed. A body larger than a plate stays where it is.
+- With a printer chosen, every body is checked against its own plate, and the build height counts from the lowest body on that plate. A plate with a body that does not fit shows its number in red.
+- In the properties, X counts from the middle of the body's own plate.
+
+The export window then offers {{ui:export.plates}}: all plates in one file, side by side as in the design; one file per plate, packed in a ZIP (STL, 3MF and OBJ); or a single plate, set where the first plate is. A slicer opens every file as one plate, so to print the plates one after another, take the files per plate. Moving bodies between plates and arranging them can be undone; adding, naming, ordering and removing plates is kept with the design but not undone.
 
 ## Grid and snapping
 
@@ -104,6 +117,8 @@ The grid shows the size of the plate. At the bottom right is the **snap step**: 
 ### The settings window
 
 The cogwheel in the title row ({{ui:editor.workspaceSettings}}) opens the settings. On the left are five areas: {{ui:workspace.appearance}}, {{ui:workspace.measurement}}, {{ui:workspace.workplane}}, {{ui:workspace.shapeDefaults}} and {{ui:workspace.history}}. A change counts at once. {{ui:workspace.makeDefault}} at the bottom saves the current settings as the default, so that a new design starts with them. A file you open brings its own settings; {{ui:workspace.useMyDefault}} next to it puts your saved colours, grid and the rest on the open design, keeping its units. If your default has a printer, that printer comes along with its plate size; without one the design keeps its plate and printer. {{ui:workspace.close}} at the top right closes the window. This part goes through the settings one by one.
+
+{{ui:workspace.exportSettings}} next to it saves the settings of the window in a file (layerling-settings-<date>.json): the colours, grid, shadows, camera and shape defaults, together with the theme, toolbar size, view cube corner, shape colours and the play of each printer. On another computer, or after the browser lost its data, {{ui:workspace.importSettings}} reads the file again: it becomes your default for new designs and goes onto the open design like {{ui:workspace.useMyDefault}}. Your own keys from the keyboard shortcuts go along too.
 
 ### Appearance: theme, toolbar and view cube
 
@@ -163,6 +178,8 @@ The sketch view has its own colours: {{ui:workspace.sketchBackground}} for the w
 
 {{ui:workspace.startInPerspective}}: the editor then opens in the perspective view, not in the flat one.
 
+{{ui:workspace.startWithScrollbars}}: a design then opens with the view's scrollbars shown. It is saved with the design and with {{ui:workspace.makeDefault}}.
+
 {{ui:workspace.startView}} sets the angle a new design opens in and {{ui:camera.home}} goes back to. Turn and zoom the view the way you like it, then click {{ui:workspace.startViewUseCurrent}}; {{ui:workspace.startViewStandard}} brings back the usual view from the front right. It holds for every design in this browser. A design you open again still opens the way you left it.
 
 {{ui:workspace.zoomSpeed}} is a slider from slow to fast: how fast the wheel and the trackpad zoom; the zoom buttons and keys keep their own small steps. {{ui:workspace.cameraInertia}}: after you let go of the mouse the view turns on for a moment and slows down gently. Switched off, it stops at once, as in Tinkercad and Fusion 360.
@@ -179,9 +196,13 @@ Under {{ui:workspace.measurement}} in the settings you set the {{ui:workspace.un
 
 Under {{ui:workspace.customSnapGrids}} in the same place you add snap steps of your own: a name and a size in millimetres, for example "Pin pitch 2.54 mm" for the spacing of DIP chips, pin headers and perfboard holes, or "MX Key Unit" with 19.05 mm for the spacing of keyboard keys. The snap step menu then offers that measure whole, halved and quartered (1 ×, ½ × and ¼ ×), so shapes can be moved by one pitch, half a pitch or a quarter pitch. If you want just the measure itself, untick {{ui:workspace.customSnapGridParts}} beside it; the menu then has only that one step. Custom steps are kept with the design and go along with {{ui:workspace.makeDefault}}.
 
+{{ui:workspace.startWithCornerRuler}}: every new design in this browser then starts with a framing square at the origin, see [Measuring and notes](chapter:measuring-and-notes). Designs you already have stay as they are, and a square you remove from a design stays removed.
+
 ### Workplane: plate and printer
 
 {{ui:workspace.printer}} sizes the workplane to the build plate of your printer and flags bodies that reach past it, see [Printing](chapter:printing). {{ui:workspace.showPlateLabels}} writes the design's name on the plate, and the printer's name and build volume when a printer is chosen.
+
+{{ui:workspace.printerPlay}} is the room per side a printed pin needs to turn in a printed hole on your printer. {{ui:workspace.fitTestMake}} puts the fit test that measures it on the plate, and new lids, dovetails, snap-fits, nuts and the clearance check then start from it, see [Printing](chapter:printing). It is kept in this browser, not in the design.
 
 {{ui:workspace.size}} gives the plate a size of your own, with {{ui:workspace.width}} and {{ui:workspace.length}} in millimetres or the unit you chose. The grid always runs through the origin, so the stronger lines lie on the axes whatever the plate measures.
 

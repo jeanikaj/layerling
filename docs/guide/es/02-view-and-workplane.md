@@ -45,7 +45,7 @@ En el borde izquierdo hay una barra estrecha. De arriba abajo:
 - {{ui:camera.zoomIn}} y {{ui:camera.zoomOut}} hacen zoom paso a paso, igual que las teclas [[+]] y [[−]].
 - {{ui:camera.orthographic}} cambia a una vista plana en la que las aristas paralelas siguen siendo paralelas. Para medir y alinear aristas suele ser más cómoda que la vista en perspectiva. [[O]] alterna entre las dos, y un segundo clic vuelve a la de antes.
 - {{ui:camera.secondView}} abre una segunda vista del diseño en una ventana propia, descrita más abajo. Un segundo clic la cierra.
-- {{ui:camera.showScrollbars}} pone una barra de desplazamiento en la parte inferior de la vista y otra a lo largo de su borde derecho. Arrastra una barra para desplazar la vista con suavidad, haz clic en una flecha de su extremo para moverla un poco (mantenla pulsada para seguir), o haz clic junto a la barra para avanzar casi una vista entera. Nada gira y, a diferencia de las teclas de flecha, las barras funcionan con una pieza seleccionada: útil de cerca, en detalles pequeños. Un segundo clic las oculta; este navegador recuerda la elección.
+- {{ui:camera.showScrollbars}} pone una barra de desplazamiento en la parte inferior de la vista y otra a lo largo de su borde derecho. Arrastra una barra para desplazar la vista con suavidad, haz clic en una flecha de su extremo para moverla un poco (mantenla pulsada para seguir), o haz clic junto a la barra para avanzar casi una vista entera. Nada gira y, a diferencia de las teclas de flecha, las barras funcionan con una pieza seleccionada: útil de cerca, en detalles pequeños. Un segundo clic las oculta; {{ui:workspace.startWithScrollbars}} en los ajustes decide si un diseño se abre con ellas. Este navegador también recuerda la elección.
 - {{ui:camera.hideWorkplane}} (el ojo sobre una cuadrícula) oculta la placa con su cuadrícula, para que puedas mirar desde abajo la parte inferior de un diseño. Solo cambia la vista: las formas nuevas siguen apareciendo en el plano de trabajo. Un segundo clic vuelve a mostrarla.
 - {{ui:camera.placeWorkplane}}, la cinta métrica y la escuadra son herramientas aparte; se explican más abajo y en [Medidas y notas](chapter:measuring-and-notes).
 
@@ -95,6 +95,19 @@ Mientras hay un plano de trabajo sobre una cara, aparece un ojo junto a {{ui:cam
 
 Para mirar el plano de trabajo de frente, pulsa [[P]] o haz clic en {{ui:camera.lookOntoWorkplane}} junto a {{ui:camera.placeWorkplane}} en la barra de vista. La vista gira hasta que ves el plano de frente, desde el lado hacia el que crecen las formas nuevas, con su origen en el centro. Sobre la placa base es la vista desde arriba.
 
+## Placas de impresión
+
+Cuando un diseño contiene más de lo que cabe en una placa, por ejemplo una caja con su tapa y sus insertos, puede tener varias placas de impresión. Haz clic en {{ui:editor.tool.buildPlates}} en el grupo {{ui:editor.group.arrange}}, o elige {{ui:plates.moveTo}} en el menú del clic derecho sobre un cuerpo. Al pie de la vista aparece una barra con un botón por placa; el número indica cuántos cuerpos hay en ella.
+
+- Cada placa es tan grande como el plano de trabajo, y las placas están una junto a otra a la derecha de la primera, a 20 mm. Un cuerpo pertenece a la placa en la que está el centro de su base, así que al arrastrarlo al otro lado pasa a la otra placa. Un diseño tiene hasta 12 placas.
+- Un clic en una placa de la barra la muestra, y las formas nuevas aparecen entonces en ella. {{ui:plates.showAll}} las muestra todas. Un doble clic en una placa, o {{ui:plates.rename}}, le da un nombre como «Tapa», que aparece escrito en la placa.
+- {{ui:plates.moveLeft}} y {{ui:plates.moveRight}} cambian el orden, y los cuerpos van con su placa. {{ui:plates.remove}} quita la placa activa; sus cuerpos pasan a la primera placa en el mismo sitio.
+- {{ui:plates.arrange}} coloca los cuerpos seleccionados, o todos, fila a fila en las placas, los más grandes primero, a 5 mm, y añade placas mientras hagan falta. Un cuerpo más grande que una placa se queda donde está.
+- Con una impresora elegida, cada cuerpo se comprueba con su propia placa, y la altura de impresión cuenta desde el cuerpo más bajo de esa placa. Una placa con un cuerpo que no cabe muestra su número en rojo.
+- En las propiedades, X cuenta desde el centro de la placa del propio cuerpo.
+
+La ventana de exportación ofrece entonces {{ui:export.plates}}: todas las placas en un archivo, una junto a otra como en el diseño; un archivo por placa, reunidos en un ZIP (STL, 3MF y OBJ); o una sola placa, colocada donde está la primera. Un laminador abre cada archivo como una sola placa, así que para imprimir las placas una tras otra conviene usar los archivos por placa. Mover cuerpos entre placas y repartirlos se puede deshacer; añadir, nombrar, ordenar y quitar placas se guarda con el diseño, pero no se deshace.
+
 ## Cuadrícula y ajuste
 
 La cuadrícula muestra el tamaño de la placa. Abajo a la derecha está el **paso de ajuste**: al mover y al cambiar el tamaño, las formas avanzan a saltos de ese tamaño, por ejemplo de 1 mm. Hazlo más pequeño para el trabajo fino y más grande para colocar a grandes rasgos. {{ui:editor.tool.snapToGrid}}, en la cinta, lleva después las formas seleccionadas al cruce de la cuadrícula más cercano. Al moverlas, las formas también se ajustan a otras formas: consulta [Seleccionar y organizar](chapter:select-and-arrange). Sin ratón: de [[Alt]]+[[1]] a [[Alt]]+[[0]] eligen la opción correspondiente del menú ([[Alt]]+[[1]] desactiva el ajuste), y [[,]] y [[.]] hacen el paso un tamaño más fino o más grueso. También funciona en un boceto.
@@ -104,6 +117,8 @@ La cuadrícula muestra el tamaño de la placa. Abajo a la derecha está el **pas
 ### La ventana de ajustes
 
 La rueda dentada de la fila del título ({{ui:editor.workspaceSettings}}) abre los ajustes. A la izquierda hay cinco apartados: {{ui:workspace.appearance}}, {{ui:workspace.measurement}}, {{ui:workspace.workplane}}, {{ui:workspace.shapeDefaults}} y {{ui:workspace.history}}. Los cambios se aplican al momento. {{ui:workspace.makeDefault}}, abajo, guarda los ajustes actuales como predeterminados, para que los diseños nuevos empiecen con ellos. Un archivo que abres trae sus propios ajustes; {{ui:workspace.useMyDefault}}, al lado, aplica al diseño abierto tus colores guardados, la cuadrícula y lo demás, y conserva sus unidades. Si tus ajustes por defecto incluyen una impresora, esa impresora viene con el tamaño de su placa; si no, el diseño conserva su placa y su impresora. {{ui:workspace.close}}, arriba a la derecha, cierra la ventana. Esta parte repasa los ajustes uno por uno.
+
+{{ui:workspace.exportSettings}} guarda los ajustes de la ventana en un archivo (layerling-settings-<fecha>.json): los colores, la cuadrícula, las sombras, la cámara y los valores de las formas, junto con el tema, el tamaño de la barra de herramientas, la esquina del cubo de vista, los colores de las formas y el juego de cada impresora. En otro ordenador, o tras perder los datos del navegador, {{ui:workspace.importSettings}} vuelve a leer el archivo: pasa a ser tu valor predeterminado para los diseños nuevos y se aplica al diseño abierto como {{ui:workspace.useMyDefault}}. Tus propias teclas de los atajos de teclado van también.
 
 ### Aspecto: tema, barra de herramientas y cubo de vista
 
@@ -163,6 +178,8 @@ La vista de boceto tiene sus propios colores: {{ui:workspace.sketchBackground}} 
 
 {{ui:workspace.startInPerspective}}: el editor se abre entonces en la vista en perspectiva, no en la plana.
 
+{{ui:workspace.startWithScrollbars}}: un diseño se abre entonces con las barras de desplazamiento de la vista. Se guarda con el diseño y con {{ui:workspace.makeDefault}}.
+
 {{ui:workspace.startView}} fija el ángulo en que se abre un diseño nuevo y al que vuelve {{ui:camera.home}}. Gira la vista y haz zoom hasta que te guste, y haz clic en {{ui:workspace.startViewUseCurrent}}; {{ui:workspace.startViewStandard}} recupera la vista habitual, desde delante a la derecha. Vale para todos los diseños de este navegador. Un diseño que vuelves a abrir se sigue abriendo tal como lo dejaste.
 
 {{ui:workspace.zoomSpeed}} es un control deslizante que va de lento a rápido: la rapidez con que hacen zoom la rueda y el panel táctil; los botones y las teclas de zoom mantienen sus propios pasos pequeños. {{ui:workspace.cameraInertia}}: después de soltar el ratón, la vista sigue girando un momento y frena con suavidad. Si lo desactivas, se para en seco, como en Tinkercad y Fusion 360.
@@ -179,9 +196,13 @@ En {{ui:workspace.measurement}}, dentro de los ajustes, eliges las {{ui:workspac
 
 En {{ui:workspace.customSnapGrids}}, en ese mismo sitio, añades pasos de ajuste propios: un nombre y un tamaño en milímetros, por ejemplo «Paso de pines 2,54 mm» para la separación de los chips DIP, las tiras de pines y los orificios de las placas perforadas, o «MX Key Unit» con 19,05 mm para la separación de las teclas de un teclado. El menú del paso de ajuste ofrece entonces esa medida entera, a la mitad y a un cuarto (1 ×, ½ × y ¼ ×), para que puedas mover formas un paso entero, medio paso o un cuarto de paso. Si solo quieres la medida tal cual, desmarca {{ui:workspace.customSnapGridParts}}, al lado; el menú tendrá entonces solo ese paso. Los pasos propios se guardan con el diseño y se incluyen al usar {{ui:workspace.makeDefault}}.
 
+{{ui:workspace.startWithCornerRuler}}: cada diseño nuevo de este navegador empieza entonces con una escuadra en el origen, consulta [Medidas y notas](chapter:measuring-and-notes). Los diseños que ya tienes se quedan como están, y una escuadra que quitas de un diseño no vuelve.
+
 ### Plano de trabajo: placa e impresora
 
 {{ui:workspace.printer}} adapta el plano de trabajo a la cama de tu impresora y señala los cuerpos que se salen de ella; consulta [Impresión](chapter:printing). {{ui:workspace.showPlateLabels}} escribe en la placa el nombre del diseño y, si has elegido una impresora, su nombre y su volumen de impresión.
+
+{{ui:workspace.printerPlay}} es la holgura por lado que necesita un pasador impreso para girar en un agujero impreso en tu impresora. {{ui:workspace.fitTestMake}} pone en la cama la prueba de ajuste que la mide; las nuevas tapas, colas de milano, clips, tuercas y la comprobación de holguras empiezan entonces con ella, consulta [Impresión](chapter:printing). Se guarda en este navegador, no en el diseño.
 
 {{ui:workspace.size}} da a la placa un tamaño propio, con {{ui:workspace.width}} y {{ui:workspace.length}} en milímetros o en la unidad que hayas elegido. La cuadrícula siempre pasa por el origen, así que las líneas más marcadas caen sobre los ejes, mida lo que mida la placa.
 

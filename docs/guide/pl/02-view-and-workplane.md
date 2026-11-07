@@ -46,7 +46,7 @@ Przy lewej krawędzi jest wąski pasek. Od góry:
 - {{ui:camera.zoomIn}} i {{ui:camera.zoomOut}} przybliżają krok po kroku, podobnie jak klawisze [[+]] i [[−]].
 - {{ui:camera.orthographic}} przełącza na płaski widok, w którym równoległe krawędzie zostają równoległe. Do mierzenia i wyrównywania krawędzi bywa wygodniejszy od widoku perspektywicznego. [[O]] przełącza w obie strony, a drugie kliknięcie przywraca poprzedni widok.
 - {{ui:camera.secondView}} otwiera drugi widok projektu we własnym oknie, opisanym niżej. Drugie kliknięcie je zamyka.
-- {{ui:camera.showScrollbars}} pokazuje pasek przewijania u dołu widoku i drugi wzdłuż jego prawej krawędzi. Przeciągnij pasek, aby płynnie przesuwać widok, kliknij strzałkę na jego końcu, aby przesunąć go odrobinę (przytrzymaj, aby przesuwać dalej), albo kliknij obok paska, aby przesunąć o prawie cały widok. Nic się nie obraca, a w przeciwieństwie do klawiszy strzałek paski działają także przy zaznaczonej części - przydatne z bliska przy drobnych szczegółach. Drugie kliknięcie je ukrywa; ta przeglądarka zapamiętuje wybór.
+- {{ui:camera.showScrollbars}} pokazuje pasek przewijania u dołu widoku i drugi wzdłuż jego prawej krawędzi. Przeciągnij pasek, aby płynnie przesuwać widok, kliknij strzałkę na jego końcu, aby przesunąć go odrobinę (przytrzymaj, aby przesuwać dalej), albo kliknij obok paska, aby przesunąć o prawie cały widok. Nic się nie obraca, a w przeciwieństwie do klawiszy strzałek paski działają także przy zaznaczonej części - przydatne z bliska przy drobnych szczegółach. Drugie kliknięcie je ukrywa; to, czy projekt otwiera się z nimi, decyduje {{ui:workspace.startWithScrollbars}} w ustawieniach. Ta przeglądarka dodatkowo zapamiętuje wybór.
 - {{ui:camera.hideWorkplane}} (oko nad siatką) ukrywa płytę z siatką, żeby obejrzeć projekt od spodu. Zmienia się tylko widok: nowe kształty dalej trafiają na płaszczyznę roboczą. Drugie kliknięcie pokazuje ją z powrotem.
 - {{ui:camera.placeWorkplane}}, narzędzie Zmierz i kątownik to osobne narzędzia, opisane niżej i w rozdziale [Pomiary i notatki](chapter:measuring-and-notes).
 
@@ -92,9 +92,22 @@ Na ścianie początek płaszczyzny roboczej przyciąga się zwykle do siatki. Kl
 
 Kliknięcie obok płyty albo [[Esc]] przywraca płaszczyznę roboczą na płytę bazową. Jeszcze szybciej działa {{ui:camera.resetWorkplane}}: przycisk ze strzałką w dół na pasku widoku pod okiem, widoczny, dopóki płaszczyzna robocza leży na ścianie. [[Shift]]+[[W]] kładzie ją od razu na zaznaczonej ścianie. [[Alt]]+[[W]] w każdej chwili przywraca ją na płytę bazową, niezależnie od tego, czy coś jest zaznaczone. Jeśli podczas klikania przytrzymasz [[Shift]], płaszczyzna będzie zwrócona w przeciwną stronę.
 
-Dopóki płaszczyzna robocza leży na ścianie, obok {{ui:camera.placeWorkplane}} pojawia się oko. Ukrywa ono płaszczyznę roboczą, nie zdejmując jej, żeby projekt był lepiej widoczny: nowe kształty dalej trafiają na tę ścianę, a obracanie dalej odbywa się wokół niej. Kliknięcie oka pokazuje ją z powrotem, podobnie jak położenie nowej płaszczyzny roboczej.
+Dopóki płaszczyzna robocza leży na ścianie, obok {{ui:camera.placeWorkplane}} pojawia się oko. Ukrywa ono płaszczyznę roboczą, nie zdejmując jej, żeby projekt był lepiej widoczny: nowe kształty dalej trafiają na tę ścianę, a obracanie dalej odbywa się wokół niej. Kliknięcie oka pokazuje ją z powrotem, podobnie jak położenie nowej płaszczyzny roboczej. Uchwyty rozmiaru prostopadłościanu też podążają za płaszczyzną roboczą, która stoi na jednym z jego boków: uchwyty narożne i krawędziowe leżą na tej ścianie, a każdy zmienia tę szerokość, długość albo wysokość prostopadłościanu, która biegnie wzdłuż niego. Uchwyt na środku ściany zmienia wymiar w poprzek niej.
 
 Aby spojrzeć prostopadle na płaszczyznę roboczą, naciśnij [[P]] albo kliknij {{ui:camera.lookOntoWorkplane}} obok {{ui:camera.placeWorkplane}} na pasku widoku. Widok obraca się, aż zobaczysz płaszczyznę na wprost, od strony, w którą rosną nowe kształty, z jej początkiem pośrodku. Na płycie bazowej to widok z góry.
+
+## Stoły robocze
+
+Gdy projekt zawiera więcej, niż zmieści jeden stół, na przykład pudełko z pokrywką i wkładkami, może mieć kilka stołów roboczych. Kliknij {{ui:editor.tool.buildPlates}} w grupie {{ui:editor.group.arrange}} albo wybierz {{ui:plates.moveTo}} w menu prawego kliknięcia na bryłę. U dołu widoku pojawia się pasek z jednym przyciskiem na stół; liczba na nim mówi, ile brył stoi na stole.
+
+- Każdy stół jest tak duży jak płaszczyzna robocza, a stoły leżą obok siebie na prawo od pierwszego, 20 mm od siebie. Bryła należy do stołu, na którym stoi środek jej podstawy, więc po przeciągnięciu na drugą stronę trafia na inny stół. Projekt ma do 12 stołów.
+- Kliknięcie stołu na pasku pokazuje go, a nowe kształty trafiają potem na niego. {{ui:plates.showAll}} pokazuje wszystkie. Dwukrotne kliknięcie stołu lub {{ui:plates.rename}} nadaje mu nazwę, np. „Pokrywka”, która jest napisana na stole.
+- {{ui:plates.moveLeft}} i {{ui:plates.moveRight}} zmieniają kolejność, a bryły przesuwają się ze swoim stołem. {{ui:plates.remove}} usuwa aktywny stół; jego bryły trafiają na pierwszy stół w to samo miejsce.
+- {{ui:plates.arrange}} układa zaznaczone bryły, albo wszystkie, rząd po rzędzie na stołach, największe najpierw, 5 mm od siebie, i dodaje stoły, dopóki są potrzebne. Bryła większa niż stół zostaje na miejscu.
+- Przy wybranej drukarce każda bryła jest sprawdzana względem własnego stołu, a wysokość druku liczy się od najniższej bryły na tym stole. Stół z bryłą, która się nie mieści, pokazuje swoją liczbę na czerwono.
+- We właściwościach X liczy się od środka własnego stołu bryły.
+
+Okno eksportu oferuje wtedy {{ui:export.plates}}: wszystkie stoły w jednym pliku, obok siebie jak w projekcie; jeden plik na stół, spakowane w ZIP (STL, 3MF i OBJ); albo pojedynczy stół, ustawiony w miejscu pierwszego. Slicer otwiera każdy plik jako jeden stół, więc aby drukować stoły po kolei, użyj plików na stół. Przenoszenie brył między stołami i ich rozkładanie można cofnąć; dodawanie, nazywanie, porządkowanie i usuwanie stołów zapisuje się z projektem, ale się nie cofa.
 
 ## Siatka i przyciąganie
 
@@ -106,15 +119,17 @@ Siatka pokazuje rozmiar płyty. W prawym dolnym rogu jest **krok przyciągania**
 
 Koło zębate w wierszu tytułu ({{ui:editor.workspaceSettings}}) otwiera ustawienia. Po lewej jest pięć sekcji: {{ui:workspace.appearance}}, {{ui:workspace.measurement}}, {{ui:workspace.workplane}}, {{ui:workspace.shapeDefaults}} i {{ui:workspace.history}}. Każda zmiana działa od razu. {{ui:workspace.makeDefault}} na dole zapisuje bieżące ustawienia jako domyślne, żeby nowy projekt z nimi zaczynał. Otwierany plik przynosi własne ustawienia, a {{ui:workspace.useMyDefault}} obok nakłada na otwarty projekt Twoje zapisane kolory, siatkę i resztę, zachowując jego jednostki. Jeśli Twoje ustawienia domyślne mają drukarkę, przychodzi ona razem z rozmiarem swojego stołu, a bez niej projekt zachowuje swoją płytę i drukarkę. {{ui:workspace.close}} w prawym górnym rogu zamyka okno. Ta część omawia ustawienia po kolei.
 
+{{ui:workspace.exportSettings}} zapisuje ustawienia okna w pliku (layerling-settings-<data>.json): kolory, siatkę, cienie, kamerę i domyślne wartości kształtów, razem z motywem, rozmiarem paska narzędzi, rogiem kostki widoku, kolorami kształtów i luzem każdej drukarki. Na innym komputerze lub po utracie danych przeglądarki {{ui:workspace.importSettings}} wczytuje plik ponownie: staje się Twoją wartością domyślną dla nowych projektów i jest nakładany na otwarty projekt jak {{ui:workspace.useMyDefault}}. Twoje własne klawisze ze skrótów klawiszowych też trafiają do pliku.
+
 ### Wygląd: motyw, pasek narzędzi i kostka widoku
 
 {{ui:workspace.theme}} ustawia kolory całego programu: {{ui:workspace.themeSystem}} podąża za komputerem, pozostałe to {{ui:workspace.themeLight}}, {{ui:workspace.themeDark}} i {{ui:workspace.themeGraphite}}. Możesz go też zmienić w prawym górnym rogu edytora.
 
 {{ui:workspace.toolbarSize}} zmniejsza lub powiększa przyciski wstążki na górze, jej menu kształtów, pasek widoku po lewej i panel właściwości po prawej: {{ui:workspace.toolbarSizeSmall}}, {{ui:workspace.toolbarSizeMedium}} (jak zawsze) albo {{ui:workspace.toolbarSizeLarge}}. Mały zostawia na laptopie więcej miejsca na płaszczyznę roboczą, duży łatwiej trafić na dużym ekranie albo palcem. Przy dużych przyciskach grupy wstążki przechodzą do drugiego rzędu, gdy okno jest dla nich za wąskie. Rozmiar zapamiętuje ta przeglądarka i obowiązuje on w każdym projekcie.
 
-{{ui:workspace.viewCubePosition}} przenosi kostkę widoku w inny róg obszaru roboczego: {{ui:workspace.viewCubePositionTopLeft}} (jak zawsze), {{ui:workspace.viewCubePositionTopRight}}, {{ui:workspace.viewCubePositionBottomLeft}} albo {{ui:workspace.viewCubePositionBottomRight}}. W każdym rogu poza lewym górnym pasek widoku przesuwa się w górę, na miejsce zwolnione przez kostkę. W prawym dolnym rogu kostka stoi tuż nad przełącznikiem {{ui:inspector.snapGrid}}. Dopóki po prawej są otwarte właściwości kształtu, kostka po prawej stronie odsuwa się na lewo od nich. Róg zapamiętuje ta przeglądarka i obowiązuje on w każdym projekcie. W wąskim oknie, na przykład na telefonie, ustawienie jest ukryte, a kostka zostaje w lewym górnym rogu.
-
 {{ui:workspace.shapeColors}} pokazuje na obrazkach biblioteki kształtów kolor, z jakim startuje nowy kształt (kolor jego rodzaju albo ten, który zapisałeś przyciskiem {{ui:inspector.saveDefaults}}). Wyłącz to, jeśli wolisz szare obrazki. Przeglądarka zapamiętuje ten wybór.
+
+{{ui:workspace.viewCubePosition}} przenosi kostkę widoku w inny róg obszaru roboczego: {{ui:workspace.viewCubePositionTopLeft}} (jak zawsze), {{ui:workspace.viewCubePositionTopRight}}, {{ui:workspace.viewCubePositionBottomLeft}} albo {{ui:workspace.viewCubePositionBottomRight}}. W każdym rogu poza lewym górnym pasek widoku przesuwa się w górę, na miejsce zwolnione przez kostkę. W prawym dolnym rogu kostka stoi tuż nad przełącznikiem {{ui:inspector.snapGrid}}. Dopóki po prawej są otwarte właściwości kształtu, kostka po prawej stronie odsuwa się na lewo od nich. Róg zapamiętuje ta przeglądarka i obowiązuje on w każdym projekcie. W wąskim oknie, na przykład na telefonie, ustawienie jest ukryte, a kostka zostaje w lewym górnym rogu.
 
 ### Wygląd: tryb szybki
 
@@ -164,6 +179,8 @@ Widok szkicu ma własne kolory: {{ui:workspace.sketchBackground}} dla okna wokó
 
 {{ui:workspace.startInPerspective}}: edytor otwiera się wtedy w widoku perspektywicznym, a nie płaskim.
 
+{{ui:workspace.startWithScrollbars}}: projekt otwiera się wtedy z paskami przewijania widoku. Ustawienie zapisuje się z projektem i przez {{ui:workspace.makeDefault}}.
+
 {{ui:workspace.startView}} ustawia kąt, pod jakim otwiera się nowy projekt i do którego wraca {{ui:camera.home}}. Obróć i przybliż widok tak, jak lubisz, a potem kliknij {{ui:workspace.startViewUseCurrent}}. {{ui:workspace.startViewStandard}} przywraca zwykły widok z prawego przodu. Obowiązuje dla każdego projektu w tej przeglądarce. Projekt otwierany ponownie nadal otwiera się tak, jak go zostawiłeś.
 
 {{ui:workspace.zoomSpeed}} to suwak od wolno do szybko: jak szybko przybliżają kółko i touchpad. Przyciski i klawisze przybliżania zachowują własne małe kroki. {{ui:workspace.cameraInertia}}: gdy puścisz mysz, widok obraca się jeszcze przez chwilę i łagodnie zwalnia. Po wyłączeniu zatrzymuje się od razu, jak w Tinkercadzie i Fusion 360.
@@ -180,9 +197,13 @@ W sekcji {{ui:workspace.measurement}} w ustawieniach wybierasz {{ui:workspace.un
 
 W {{ui:workspace.customSnapGrids}} w tym samym miejscu dodajesz własne kroki przyciągania: nazwę i rozmiar w milimetrach, na przykład „Raster 2,54 mm” dla rozstawu wyprowadzeń układów DIP, listew goldpin i otworów płytek uniwersalnych albo „MX Key Unit” z 19,05 mm dla rozstawu klawiszy klawiatury. Menu kroku przyciągania oferuje wtedy tę miarę w całości, w połowie i w ćwiartce (1 ×, ½ × i ¼ ×), więc kształty da się przesuwać o cały raster, pół albo ćwierć rastra. Jeśli chcesz tylko samą miarę, odznacz obok {{ui:workspace.customSnapGridParts}}, a menu będzie miało tylko ten jeden krok. Własne kroki zapisują się z projektem i przechodzą dalej przez {{ui:workspace.makeDefault}}.
 
+{{ui:workspace.startWithCornerRuler}}: każdy nowy projekt w tej przeglądarce zaczyna się wtedy z kątownikiem w początku układu, zobacz [Pomiary i notatki](chapter:measuring-and-notes). Istniejące projekty pozostają bez zmian, a kątownik, który usuniesz z projektu, już nie wraca.
+
 ### Płaszczyzna robocza: płyta i drukarka
 
 {{ui:workspace.printer}} dopasowuje płaszczyznę roboczą do stołu Twojej drukarki i oznacza bryły, które poza niego wystają, zobacz [Drukowanie](chapter:printing). {{ui:workspace.showPlateLabels}} wypisuje na płycie nazwę projektu, a gdy wybrana jest drukarka, także jej nazwę i przestrzeń roboczą.
+
+{{ui:workspace.printerPlay}} to miejsce na stronę, którego wydrukowany sworzeń potrzebuje, by obracać się w wydrukowanym otworze na twojej drukarce. {{ui:workspace.fitTestMake}} kładzie na stole test pasowania, który go mierzy; nowe pokrywki, jaskółcze ogony, zatrzaski, nakrętki i sprawdzanie luzów zaczynają wtedy od niego, zobacz [Drukowanie](chapter:printing). Jest przechowywany w tej przeglądarce, nie w projekcie.
 
 {{ui:workspace.size}} nadaje płycie własny rozmiar, z {{ui:workspace.width}} i {{ui:workspace.length}} w milimetrach albo w wybranej jednostce. Siatka zawsze przechodzi przez początek układu, więc mocniejsze linie leżą na osiach niezależnie od wymiarów płyty.
 

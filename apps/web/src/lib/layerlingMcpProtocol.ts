@@ -1,4 +1,4 @@
-import type { GridSize, ShapeKind, WorkplaneWorkspaceSettings } from "@/types/layerling";
+import type { GridSize, GroupResizeMode, ShapeKind, WorkplaneWorkspaceSettings } from "@/types/layerling";
 
 export const LAYERLING_MCP_ROUTE = "/api/layerling-mcp";
 export const LAYERLING_MCP_STALE_MS = 15_000;
@@ -42,6 +42,8 @@ export type LayerlingMcpShapeSummary = {
   };
   /** The body's own pivot, if it has one, in workplane coordinates. */
   rotationPivot: { x: number; z: number; elevation: number } | null;
+  /** The build plate the object stands on, counted from 1; only while the design has several (Discussion #456). */
+  plate?: number;
   edgeTreatments: unknown[];
   /**
    * Was diese Form ausmacht, ueber die Masse hinaus: Seitenzahl, Gewindegroesse,
@@ -49,6 +51,8 @@ export type LayerlingMcpShapeSummary = {
    */
   settings?: Record<string, string | number | boolean>;
   groupedCount: number;
+  /** Groups and bundles: what the group does with its parts when it is resized (Discussion #526). */
+  groupResize?: GroupResizeMode;
   importedTriangles: number;
   cadDisplayEdgeCount: number | null;
   sketchPointCount: number;
@@ -104,10 +108,14 @@ export type LayerlingMcpCommandName =
   | "perforate_face"
   | "sweep_sketch"
   | "push_face"
+  | "paint_object"
+  | "support_rib"
   | "scale_objects"
   | "mate_faces"
   | "open_group"
   | "close_group"
+  | "add_to_group"
+  | "take_out_of_group"
   | "group_objects"
   | "ungroup_objects"
   | "intersect_objects"
@@ -141,6 +149,8 @@ export type LayerlingMcpCommandName =
   | "inspect_errors"
   | "estimate_print"
   | "check_clearance"
+  | "printer_play"
+  | "check_print"
   | "add_reference_points"
   | "list_reference_points"
   | "remove_reference_points"
@@ -163,6 +173,7 @@ export type LayerlingMcpCommandName =
   | "clear_history"
   | "show_workplane"
   | "saved_view"
+  | "build_plates"
   | "measurements"
   | "measure_angle"
   | "export_section_svg"

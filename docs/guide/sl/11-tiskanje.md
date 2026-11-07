@@ -46,11 +46,46 @@ V meniju ob očesu ({{ui:editor.group.visibility}}) **Pokaži previse** vklopi p
 
 Kako strmo zmore tvoj tiskalnik, nastaviš v nastavitvah pod {{ui:workspace.appearance}}: od 30° (previdno) do 70° (za tiskalnike z dobrim hlajenjem dela). Ploskev, ki leži na drugem telesu, se vseeno označi – layerling vidi samo ploskev samo.
 
+## Podporna rebra za poševen del
+
+Del, ki ga tiskaš poševno na robu, na primer pod 45°, pogosto ne potrebuje podpor: njegove ploskve so dovolj strme. Stoji pa na tankem robu in se lahko prevrne. {{ui:supportRib.title}} ga drži: pod njegovo spodnjo ploskvijo z majhno režo stoji tanko rebro na ovalni nogi, drobni mostički pa del pridržijo. Del najprej obrni na rob in naj stoji na podlagi.
+
+1. Izberi del in klikni {{ui:supportRib.title}} v skupini {{ui:editor.group.modify}} na traku, desno klikni del ali ga poišči s [[Ctrl]]+[[K]].
+2. Klikni spodnjo ploskev tam, kjer naj stoji rebro. Ploskev mora gledati navzdol, biti nagnjena med 15° in 75° in segati do podlage; rebro gre od tvojega klika naravnost navzdol po ploskvi.
+3. Nastavi {{ui:supportRib.nozzle}}, {{ui:supportRib.layerHeight}} in {{ui:supportRib.firstLayer}} kot v svojem rezalniku. Rebro je debelo dve progi šobe, reža do dela pol proge; vsak mostiček je širok eno progo in visok natanko eno plast ter leži na plasti tiska, da ga rezalnik natisne kot eno tanko progo, ki se čisto odlomi. {{ui:supportRib.height}} pove, kako visoko rebro seže po ploskvi (na začetku do polovice), {{ui:supportRib.bridgeSpacing}} pa, kako narazen so mostički, v celih plasteh.
+4. Pod {{ui:supportRib.more}} lahko ročno nastaviš debelino, režo, širino mostičkov in debelino noge (do takrat sledijo šobi in plastem), pa tudi širino noge in zaobljenji pri nogi in zgoraj.
+5. {{ui:supportRib.apply}} doda rebro. Z {{ui:supportRib.bundle}} (na začetku vklopljeno) sta rebro in del v svežnju: premikata se skupaj in gresta v rezalnik kot dve telesi drug ob drugem, pri tisku povezani z mostički.
+
+Rebro je mrežno telo: če ga želiš spremeniti, ga izbriši in ustvari znova. Vsak klik ustvari eno rebro; za več klikni {{ui:supportRib.repick}} ali ga ponovi z {{ui:editor.tool.array}}. Rebro nikjer ne sme teči v del, del pa mora stati na podlagi - sicer okno pove, zakaj ne gre. Nastavitve si ta brskalnik zapomni za naslednje rebro.
+
 ## Debelina stene, zračnost in posnetja
 
 - Stene naj bodo široke vsaj dve tiskalni poti, pri šobi 0,4 mm torej 0,8 mm. Trdni deli potrebujejo 1,2 do 2 mm.
 - Kjer se dva dela prilegata, potrebuješ zračnost: običajno 0,2 do 0,4 mm, odvisno od tiskalnika. Zgradi majhen preizkusni par, preden natisneš velik del.
 - Spodnji rob, ki leži na plošči, mnogi rahlo posnamejo. To prepreči, da bi se prva plast razlezla (»slonja noga«).
+
+## Zračnost tvojega tiskalnika: preizkus ujemanja
+
+Vsak tiskalnik natisne luknje malo manjše in zatiče malo debelejše, kot so narisani, vsak za svojo mero. Zračnost, ki jo potrebujeta dva natisnjena dela, je zato sprva ugibanje. Raje jo enkrat izmeri: v nastavitvah pod {{ui:workspace.workplane}} gumb {{ui:workspace.fitTestMake}} položi preizkus ujemanja na ploščo. To je ploščica 60 × 20 × 4 mm s sedmimi luknjami za en zatič 5 mm, vsaka narisana kot 5 mm in dvakrat 0,05, 0,10, 0,15, 0,20, 0,25, 0,30 ali 0,40 mm, ob njej pa je izbočena vrednost, in še sam zatič 5 mm, ki stoji ob ploščici in ima zgoraj majhno posnetje. Sestavljen je iz navadnih oblik, zato se natisne skupaj z ostalim na plošči, brez podpor.
+
+Natisni ga, kot leži, nato potiskaj zatič s posnetim koncem naprej v luknje, od najožje naprej. **Najožja luknja, v kateri se zatič še vrti,** pove zračnost tvojega tiskalnika. Vpiši njeno številko pod {{ui:workspace.printerPlay}} ali jo klikni med vrednostmi pod poljem. Zračnost velja na stran, v milimetrih, in brskalnik jo hrani za vse projekte; prazno polje pomeni, da ni izmerjena.
+Z več tiskalniki najprej pod {{ui:workspace.printer}} izberi tistega, na katerem tiskaš: vsak tiskalnik ima svojo zračnost, nove uporabe pa začnejo z zračnostjo tiskalnika, ki je nastavljen za model. Tiskalnik brez svoje zračnosti uporabi zračnost, nastavljeno, ko ni bil izbran noben tiskalnik.
+
+Od takrat nove uporabe začnejo z zračnostjo namesto z vgrajeno vrednostjo: {{ui:lid.gap}} in {{ui:lid.hingePinPlay}} v orodju {{ui:editor.tool.lid}}, zračnost novih oblik {{ui:shape.dovetail}} in {{ui:shape.snapFit}}, {{ui:prop.clearance}} nove matice ali navojne luknje – dvojna zračnost, saj je to prostor čez ves premer – in {{ui:clearance.threshold}} pri {{ui:editor.tool.clearance}}. Prav tako {{ui:split.connectorClearance}} moznikov in čepov pri {{ui:editor.tool.split}}. Dokler tako polje še ima to vrednost, »{{ui:printerPlay.fromFitTest}}« ob njem pove, od kod je številka. Tečaj, natisnjen v enem kosu, in zgibi orodja {{ui:editor.tool.flexi}} obdržijo svojih 0,4 mm: ko so natisnjeni v enem kosu, morajo njihove reže ostati odprte tudi med plastmi, tega pa zatič, natisnjen posebej, ne izmeri. Prostor za vtis magneta ali ključa Gridfinity in prostor za kupljeno vtičnico ali ploščo prav tako obdržita svoje vrednosti. Telesa, ki so že v projektu, se nikoli ne spremenijo, in tudi projekt, ki ga odpreš, ne.
+
+## Preverjanje tiska
+
+{{ui:editor.tool.printCheck}} ob {{ui:editor.tool.clearance}} v skupini {{ui:editor.group.combine}} pregleda izbrane predmete ali vse vidne, če ni nič izbrano, in v enem oknu pove, kaj bi šlo pri tiskanju narobe. Vsaka od petih vrstic je zelena, če ni našla ničesar, in oranžna s tem, kaj in kje, če je:
+
+- **{{ui:printCheck.thin.title}}**: mesta, tanjša od dveh linij šobe - 0,8 mm pri šobi 0,4 mm. Slicer tako steno izpusti ali jo natisne kot eno šibko linijo. Na vrhu okna pri {{ui:printCheck.nozzle}} izberite svojo šobo (0,2 do 0,8 z enim klikom, katero koli drugo v polju). Tanka mesta se na telesih pobarvajo rdeče s svetlo mrežo, vrstica pa navede najtanjše mesto in koliko površine je pretanke. Mesta pod 1 mm² in ostri robovi, na primer rob klina, se ne štejejo.
+- **{{ui:printCheck.floating.title}}**: telo ali ločen del telesa, ki se ne dotika ne plošče ne drugega dela (do 0,05 mm natančno). Tiskal bi se v zraku. Del, ki leži na stoječem delu, je v redu.
+- **{{ui:printCheck.contact.title}}**: del na plošči, katerega prva plast je za njegovo višino zelo majhna, na primer krogla ali stožec na konici. Med tiskanjem se lahko odlepi. Opozorilo se pokaže pod 0,5 mm² naležne površine, izmerjene 0,1 mm nad ploščo, na vsak milimeter višine: krogla je vedno pod tem, kocka z 10 mm ima 10.
+- **{{ui:printCheck.overhang.title}}**: iste številke kot pri **Pokaži previse**, s kotom, ki je nastavljen tam.
+- **{{ui:printCheck.openMesh.title}}**: uvožena mreža z odprtimi robovi ali z robovi, ki si jih delijo tri ali več ploskev. Slicer mora pri taki mreži ugibati, kje je notranjost.
+
+![Pladenj, katerega desna stena je debela le 0,6 mm: Preveri tisk jo pobarva rdeče in jo navede v oknu.](shot:print-check)
+
+{{ui:printCheck.show}} v vrstici pripelje kamero tja; izbere lebdeče dele, dele z majhnim stikom in odprte mreže, pri previsih pa vklopi **Pokaži previse**. Telesa, ki se prekrivajo, se preverijo združena, kot jih združi slicer. Če model spremenite, medtem ko je okno odprto, se pokaže {{ui:printCheck.stale}}; kliknite to ali {{ui:printCheck.checkAgain}}. [[Esc]] zapre okno. Na modelu se nič ne spremeni. UI naredi isto preverjanje z `layerling_check_print`.
 
 ## Ko gre zares
 

@@ -24,9 +24,7 @@ Hvor hurtigt musehjulet zoomer sættes med {{ui:workspace.zoomSpeed}} i indstill
 
 **3D-mus.** En SpaceMouse eller en anden 3D-mus drejer, flytter og zoomer i 3D-visningen: skub kuppelen væk for at zoome ind, glide den for at flytte visningen, vip den for at vippe visningen, og drej den for at dreje visningen rundt. I indstillingerne, under {{ui:workspace.appearance}}, klikker du på {{ui:workspace.spaceMouseConnect}} og vælger enheden i det vindue, browseren åbner; den husker valget, så det skal bare gøres én gang. Det virker i Chrome og Edge, som kan nå sådanne enheder; Firefox og Safari kan ikke. Føles en retning forkert, så sæt kryds ved den under knappen: flyt til siderne, flyt op og ned, zoom, vip eller drej.
 
-På en tablet eller telefon zoomer to fingre (spred og knib) og flytter visningen (glid sammen). Én finger arbejder på designet, ligesom venstre museknap. For at dreje med én finger, slå {{ui:camera.touchRotate}} til i visningsbjælken. Den kontakt vises kun på enheder med en berøringsskærm.
-
-Én finger på tom plads drejer visningen, og et tryk dér rydder markeringen.
+På en tablet eller telefon zoomer to fingre (spred og knib) og flytter visningen (glid sammen). Én finger på tom plads drejer visningen, og et tryk dér rydder markeringen; på en form eller et håndtag arbejder den på designet, ligesom venstre museknap. For at dreje med én finger, slå {{ui:camera.touchRotate}} til i visningsbjælken. Den kontakt vises kun på enheder med en berøringsskærm.
 
 En tegneplade med en pen opfører sig som en mus: spidsen er venstre knap, sideknappen på pennen er højre knap, til at dreje visningen og til menuen. Pladens genvejstaster kan sættes i dens driver til layerlings [tastaturgenveje](chapter:shortcuts).
 
@@ -49,7 +47,7 @@ Ved venstre kant er en smal bjælke. Fra toppen:
 - {{ui:camera.zoomIn}} og {{ui:camera.zoomOut}} zoomer skridt for skridt, ligesom tasterne [[+]] og [[−]].
 - {{ui:camera.orthographic}} skifter til en flad visning hvor parallelle kanter forbliver parallelle. Til måling og justering af kanter er det ofte mere behageligt end perspektivvisningen. [[O]] skifter frem og tilbage, og endnu et klik vender tilbage.
 - {{ui:camera.secondView}} åbner en anden visning af designet i sit eget vindue, beskrevet nedenfor. Et klik mere lukker det.
-- {{ui:camera.showScrollbars}} viser et rullepanel langs bunden af visningen og et langs dens højre kant. Træk i et panel for at skubbe visningen jævnt, klik på en pil i enden for at flytte den en smule (hold for at fortsætte), eller klik ved siden af panelet for at flytte næsten en hel visning. Intet drejer, og i modsætning til piletasterne virker panelerne også, mens en del er valgt - praktisk tæt på små detaljer. Et klik mere skjuler dem; denne browser husker valget.
+- {{ui:camera.showScrollbars}} viser et rullepanel langs bunden af visningen og et langs dens højre kant. Træk i et panel for at skubbe visningen jævnt, klik på en pil i enden for at flytte den en smule (hold for at fortsætte), eller klik ved siden af panelet for at flytte næsten en hel visning. Intet drejer, og i modsætning til piletasterne virker panelerne også, mens en del er valgt - praktisk tæt på små detaljer. Et klik mere skjuler dem; {{ui:workspace.startWithScrollbars}} i indstillingerne afgør, om et design åbner med dem. Denne browser husker desuden valget.
 - {{ui:camera.hideWorkplane}} (øjet over et gitter) skjuler pladen med sit gitter, så du kan se undersiden af et design nedefra. Kun visningen ændres: nye former lander stadig på arbejdsplanet. Endnu et klik viser den igen.
 - {{ui:camera.placeWorkplane}}, målebåndet og vinkelmåleren er deres egne værktøjer, dækket nedenfor og i [Måling og noter](chapter:measuring-and-notes).
 
@@ -96,9 +94,22 @@ På en flade snapper arbejdsplanets nulpunkt ellers til gitteret. Klik tæt på 
 
 Et klik ved siden af pladen eller [[Esc]] returnerer arbejdsplanet til grundpladen. Hurtigere er {{ui:camera.resetWorkplane}}: knappen med pilen nedad sidder i visningsbjælken under øjet mens arbejdsplanet ligger på en flade. [[Shift]]+[[W]] lægger det direkte på den aktuelt valgte flade. [[Alt]]+[[W]] lægger det altid tilbage på grundpladen, uanset om noget er valgt. Holder du [[Shift]] mens du klikker, peger planet den anden vej.
 
-Mens et arbejdsplan ligger på en flade, dukker et øje op ved siden af {{ui:camera.placeWorkplane}}. Det skjuler arbejdsplanet uden at droppe det, for et klart blik på designet: nye former lander stadig på den flade, og rotation drejer stadig omkring det. Et klik på øjet viser det igen, og det samme gør et nyt arbejdsplan.
+Mens et arbejdsplan ligger på en flade, dukker et øje op ved siden af {{ui:camera.placeWorkplane}}. Det skjuler arbejdsplanet uden at droppe det, for et klart blik på designet: nye former lander stadig på den flade, og rotation drejer stadig omkring det. Et klik på øjet viser det igen, og det samme gør et nyt arbejdsplan. En kasses størrelseshåndtag følger også et arbejdsplan, der står på en af dens sider: hjørne- og sidehåndtagene ligger på den flade, og hvert af dem ændrer det mål af kassen, der løber langs det. Håndtaget midt på fladen ændrer målet på tværs.
 
 Vil du se lige ind på arbejdsplanet, så tryk [[P]] eller klik på {{ui:camera.lookOntoWorkplane}} ved siden af {{ui:camera.placeWorkplane}} i visningslinjen. Visningen drejer, til du ser planet lige forfra, fra den side nye former vokser mod, med dets nulpunkt i midten. På grundpladen er det visningen ovenfra.
+
+## Byggeplader
+
+Når et design rummer mere, end én plade kan printe, for eksempel en æske med låg og indsatser, kan det få flere byggeplader. Klik på {{ui:editor.tool.buildPlates}} i gruppen {{ui:editor.group.arrange}}, eller vælg {{ui:plates.moveTo}} i menuen ved et højreklik på et legeme. Nederst i visningen kommer en linje med én knap pr. plade; tallet på den siger, hvor mange legemer der står på pladen.
+
+- Hver plade er lige så stor som arbejdsfladen, og pladerne ligger side om side til højre for den første, 20 mm fra hinanden. Et legeme hører til den plade, midten af dets grundflade står på, så trækker man det over, står det på den anden plade. Et design har op til 12 plader.
+- Et klik på en plade i linjen viser den, og nye former lander så på den. {{ui:plates.showAll}} viser dem alle. Et dobbeltklik på en plade eller {{ui:plates.rename}} giver den et navn som "Låg", der står skrevet på pladen.
+- {{ui:plates.moveLeft}} og {{ui:plates.moveRight}} ændrer rækkefølgen, og legemerne følger med deres plade. {{ui:plates.remove}} fjerner den aktive plade; dens legemer kommer på den første plade samme sted.
+- {{ui:plates.arrange}} lægger de markerede legemer, eller alle, ud række for række på pladerne, de største først, 5 mm fra hinanden, og tilføjer plader, så længe der er brug for dem. Et legeme, der er større end en plade, bliver stående.
+- Med en valgt printer kontrolleres hvert legeme mod sin egen plade, og byggehøjden regnes fra det laveste legeme på den plade. En plade med et legeme, der ikke passer, viser sit tal med rødt.
+- I egenskaberne regnes X fra midten af legemets egen plade.
+
+Eksportvinduet tilbyder så {{ui:export.plates}}: alle plader i én fil, side om side som i designet; én fil pr. plade, samlet i en ZIP (STL, 3MF og OBJ); eller en enkelt plade, sat hvor den første plade er. En slicer åbner hver fil som én plade, så vil man printe pladerne efter hinanden, tager man filerne pr. plade. At flytte legemer mellem plader og fordele dem kan fortrydes; at tilføje, navngive, ordne og fjerne plader gemmes med designet, men fortrydes ikke.
 
 ## Gitter og snap
 
@@ -108,6 +119,8 @@ Gitteret viser pladens størrelse. Nederst til højre er **snap-trinnet**: flytn
 ### Indstillingsvinduet
 
 Tandhjulet i titellinjen ({{ui:editor.workspaceSettings}}) åbner indstillingerne. Til venstre er fem områder: {{ui:workspace.appearance}}, {{ui:workspace.measurement}}, {{ui:workspace.workplane}}, {{ui:workspace.shapeDefaults}} og {{ui:workspace.history}}. En ændring gælder med det samme. {{ui:workspace.makeDefault}} nederst gemmer de aktuelle indstillinger som standard, så et nyt design starter med dem. En fil du åbner bringer sine egne indstillinger med; {{ui:workspace.useMyDefault}} ved siden af den lægger dine gemte farver, dit gitter og resten på det åbne design, mens enhederne bliver som de er. Står der en printer i din standard, kommer den med sin pladestørrelse; ellers beholder designet sin plade og sin printer. {{ui:workspace.close}} øverst til højre lukker vinduet. Det her gennemgår indstillingerne én for én.
+
+{{ui:workspace.exportSettings}} gemmer vinduets indstillinger i en fil (layerling-settings-<dato>.json): farver, gitter, skygger, kamera og standardværdier for former sammen med tema, værktøjslinjens størrelse, visningskubens hjørne, formfarver og hver printers slør. På en anden computer eller efter datatab i browseren læser {{ui:workspace.importSettings}} filen igen: den bliver din standard for nye designs og lægges på det åbne design som {{ui:workspace.useMyDefault}}. Dine egne taster fra tastaturgenvejene kommer også med.
 
 ### Udseende: tema, værktøjsbjælke og visningskube
 
@@ -151,7 +164,7 @@ Skitsevisningen har sine egne farver: {{ui:workspace.sketchBackground}} for vind
 
 ### Udseende: mål på arbejdsplanet
 
-{{ui:workspace.showMoveDimensions}} viser hvor meget du flytter, mens du drager, {{ui:workspace.showOriginDimensions}} afstandene fra markeringen til pladens nulpunkt, også når flere legemer er valgt. Med {{ui:workspace.dimensionsAlwaysVisible}} forbliver målene synlige hele tiden, og ikke kun mens du drager. Mens en vendt legeme er valgt, vises dens vinkler under den på arbejdsplanet; {{ui:workspace.showRotationAngles}} slår det fra. Mere i [Måling og noter](chapter:measuring-and-notes).
+{{ui:workspace.showMoveDimensions}} viser hvor meget du flytter, mens du drager eller med piletasterne, {{ui:workspace.showOriginDimensions}} afstandene fra markeringen til pladens nulpunkt, også når flere legemer er valgt. Med {{ui:workspace.dimensionsAlwaysVisible}} forbliver målene synlige hele tiden, og ikke kun mens du drager. Mens en vendt legeme er valgt, vises dens vinkler under den på arbejdsplanet; {{ui:workspace.showRotationAngles}} slår det fra. Mere i [Måling og noter](chapter:measuring-and-notes).
 
 ### Udseende: markering og flytning
 
@@ -166,6 +179,8 @@ Skitsevisningen har sine egne farver: {{ui:workspace.sketchBackground}} for vind
 ### Udseende: visningen
 
 {{ui:workspace.startInPerspective}}: editoren åbner så i perspektivvisning, ikke i den flade.
+
+{{ui:workspace.startWithScrollbars}}: et design åbner så med visningens rullepaneler. Indstillingen gemmes med designet og med {{ui:workspace.makeDefault}}.
 
 {{ui:workspace.startView}} bestemmer den vinkel, et nyt design åbner i, og som {{ui:camera.home}} vender tilbage til. Drej og zoom visningen, som du kan lide den, og klik så {{ui:workspace.startViewUseCurrent}}; {{ui:workspace.startViewStandard}} giver den sædvanlige visning forfra til højre igen. Det gælder alle designs i denne browser. Et design, du åbner igen, åbner stadig, som du forlod det.
 
@@ -183,9 +198,13 @@ Under {{ui:workspace.measurement}} i indstillingerne sætter du {{ui:workspace.u
 
 Under {{ui:workspace.customSnapGrids}} samme sted tilføjer du dine egne snap-trin: et navn og en størrelse i millimeter, for eksempel "Pin pitch 2,54 mm" for afstanden mellem DIP-chips, pin headers og perfboard-huller, eller "MX Key Unit" med 19,05 mm for afstanden mellem tastaturtaster. Snap-trinsmenuen tilbyder så det mål helt, halvt og kvart (1 ×, ½ × og ¼ ×), så former kan flyttes med en pitch, en halv pitch eller en kvart pitch. Vil du kun have målet selv, fjerner du flueben ved {{ui:workspace.customSnapGridParts}} ved siden af det; menuen har så kun det ene trin. Brugerdefinerede trin gemmes med designet og følger med {{ui:workspace.makeDefault}}.
 
+{{ui:workspace.startWithCornerRuler}}: hvert nyt design i denne browser starter så med en vinkelmåler i nulpunktet, se [Måling og noter](chapter:measuring-and-notes). Designs, du allerede har, forbliver som de er, og en vinkelmåler, du fjerner fra et design, forbliver væk.
+
 ### Arbejdsplan: plade og printer
 
 {{ui:workspace.printer}} tilpasser arbejdsplanet til din printers byggeplade og markerer legemer der rækker ud over den, se [Printning](chapter:printing). {{ui:workspace.showPlateLabels}} skriver designets navn på pladen, og printerens navn og byggevolumen når der er valgt en printer.
+
+{{ui:workspace.printerPlay}} er den plads pr. side, en printet stift har brug for for at dreje i et printet hul på din printer. {{ui:workspace.fitTestMake}} lægger pasprøven, der måler det, på pladen; nye låg, svalehaler, snaplåse, møtrikker og tjek af spillerum starter så med det, se [Printning](chapter:printing). Det gemmes i denne browser, ikke i designet.
 
 {{ui:workspace.size}} giver pladen en størrelse af din egen, med {{ui:workspace.width}} og {{ui:workspace.length}} i millimeter eller den enhed du valgte. Gitteret løber altid gennem nulpunktet, så de stærkere linjer ligger på akserne uanset pladens mål.
 

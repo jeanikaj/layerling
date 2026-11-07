@@ -39,6 +39,17 @@ Cała grupa też może być bryłą albo otworem. Obowiązuje prosta zasada:
 - Jeśli grupa składa się tylko z brył (albo tylko z otworów), przełączasz ją w całości, a jej części idą za nią.
 - Jeśli zawiera jedno i drugie, na przykład sześcian z otworem, każda część zachowuje własny stan. Cała grupa staje się wtedy narzędziem, ale otwór zostaje otworem.
 
+### Zmiana rozmiaru grupy: otwory i małe części zostają
+
+Gdy grupa staje się dłuższa, szersza albo wyższa, jej części rozciągają się razem z nią, jakby były narysowane na gumie: okrągłe otwory w płycie stają się owalne i przesuwają się do środka. Aby zostały takie, jakie są, wybierz w ustawieniach grupy w polu {{ui:inspector.groupResize}} opcję {{ui:inspector.groupResizeKeepParts}}; bez tego wyboru obowiązuje {{ui:inspector.groupResizeStretch}}, jak dotąd w każdej grupie. Od tej chwili przy każdej zmianie rozmiaru - uchwytami, w polach wymiarów albo przez {{ui:scalePercent.title}} - grupa jest budowana od nowa ze swoich części według jednej reguły, osobno dla każdego kierunku:
+
+- Część, która sięga prawie przez całą grupę, na dziewięć dziesiątych lub więcej, rośnie albo maleje razem z nią i zachowuje odległość od obu boków: sama płyta, ścianka albo wnętrze pudełka, którego ścianki zostają tak samo grube.
+- Każda inna część zachowuje swój rozmiar i odległość od bliższego boku. Część pośrodku zostaje pośrodku.
+
+Płyta z otworem 5 mm od każdego narożnika i rowkiem pośrodku, wydłużona o 40 mm, zachowuje więc okrągłe otwory 5 mm od narożników i rowek pośrodku. Nie stoi za tym żaden solver więzów i niczego nie ustawiasz część po części: ta sama reguła obowiązuje wszystkie części, więc z góry wiesz, co się stanie. Obrócona część liczy się z prostopadłościanem, który zajmuje w grupie, i pozostaje obrócona; grupa wewnątrz grupy liczy się jako jedna część. Gdy ciągniesz uchwyt, grupa rozciąga się w całości; gdy go puścisz, jest budowana od nowa, w tym samym kroku cofania. Jeśli grupa stanie się mniejsza, niż część potrzebuje razem ze swoją odległością, ta część jak dotąd zmniejsza się razem z nią, a komunikat o tym informuje. Grupa odbita lustrzanie, zwężana lub skręcona oraz grupa z własnymi zaokrągleniami, fazowaniami lub teksturą zawsze rozciąga wszystko. Wybrane dla grupy, która jest już rozciągnięta, ustawienie od razu rozmieszcza jej części na nowo.
+
+![Płyta z otworem 5 mm od każdego narożnika i rowkiem pośrodku, wydłużona o 40 mm z opcją „Zachowaj otwory i małe części”: otwory są nadal okrągłe i 5 mm od narożników, rowek nadal pośrodku.](shot:group-keep-parts)
+
 ## Zestaw
 
 Czasem części mają tylko trzymać się razem, nie stając się jednym, na przykład białe logo na czarnej płytce do druku wielokolorowego. Do tego służy {{ui:editor.tool.bundle}} ([[Ctrl]]+[[B]]), jak w Tinkercadzie. Zestaw przesuwa się, obraca i zmienia rozmiar jak kształt, ale nic się nie scala:
@@ -73,7 +84,7 @@ Aby wyciąć zarys jednej bryły na wylot przez drugą, zaznacz najpierw stempel
 
 ## Edycja grupy
 
-Jeśli otwór wyszedł za mały, nie musisz rozwiązywać grupy i budować jej od nowa. Zaznacz grupę i kliknij {{ui:group.edit}} w jej ustawieniach, ikonę folderu na liście obiektów albo naciśnij [[E]]. Dwukrotne kliknięcie grupy robi to samo, jak w Tinkercadzie, także na zestawie. Jeśli wolisz tego uniknąć, wyłącz w ustawieniach {{ui:workspace.doubleClickOpensGroup}}. Część zaczyna się przesuwać dopiero wtedy, gdy wskaźnik przesunie się o kilka pikseli, więc drżące kliknięcie albo dwuklik jej nie poruszy. Części leżą teraz osobno i zmieniasz je każdym narzędziem: powiększasz otwór, przesuwasz bryłę, dodajesz otwór.
+Jeśli otwór wyszedł za mały, nie musisz rozwiązywać grupy i budować jej od nowa. Zaznacz grupę i kliknij {{ui:group.edit}} w jej ustawieniach, ikonę folderu na liście obiektów albo naciśnij [[E]]. Na liście obiektów możesz też rozwinąć grupę jej strzałką i kliknąć jedną z jej części: grupa otwiera się z tą częścią zaznaczoną. Dwukrotne kliknięcie grupy robi to samo, jak w Tinkercadzie, także na zestawie. Jeśli wolisz tego uniknąć, wyłącz w ustawieniach {{ui:workspace.doubleClickOpensGroup}}. Część zaczyna się przesuwać dopiero wtedy, gdy wskaźnik przesunie się o kilka pikseli, więc drżące kliknięcie albo dwuklik jej nie poruszy. Części leżą teraz osobno i zmieniasz je każdym narzędziem: powiększasz otwór, przesuwasz bryłę, dodajesz otwór.
 
 ![Grupa w trakcie edycji: pasek na dole zawiera Anuluj i Gotowe, a lista obiektów pokazuje części.](shot:open-group)
 
@@ -96,6 +107,14 @@ Uwaga: zaokrąglenia i fazki nałożone na **całą** grupę przepadają przy od
 - Dwa suwaki obrotu poniżej obracają płaszczyznę wokół pozostałych dwóch osi, do 180° w każdą stronę, do cięcia pod kątem. Można je łączyć.
 
 {{ui:split.apply}} albo [[Enter]] wykonuje cięcie, [[Esc]] anuluje (podczas wybierania ściany pierwsze [[Esc]] tylko przerywa wybieranie). Każdy obiekt, który przecina płaszczyzna, staje się dwiema zamkniętymi bryłami, nazwanymi według swojej strony, na przykład „Prostopadłościan (Z+)” i „Prostopadłościan (Z-)”. Obiekty, których nie przecina, zostają bez zmian. Otwór staje się dwoma otworami, a wydrążona bryła zachowuje swoją wnękę. Obie połowy zostają tam, gdzie były. Do druku połóż każdą na ścianie cięcia przez {{ui:editor.tool.layFlat}}.
+
+{{ui:split.connectors}} znów ustawiają połówki, tak jak robią to narzędzia cięcia w PrusaSlicerze, OrcaSlicerze i Bambu Studio. Przy {{ui:split.connectors.none}}, ustawieniu domyślnym, podział przebiega jak opisano wyżej. {{ui:split.connectors.dowels}} robią otwór w każdej połówce i luźne kołki, które wchodzą w obie: kołki pojawiają się jako trzecia bryła, stojąca obok połówek na ich podstawie, do druku razem z nimi: na stojąco wychodzą w warstwach okrągłe jak ich otwory, a właśnie to mierzy test pasowania. {{ui:split.connectors.plugs}} stawiają okrągłe czopy na połówce, której nazwa kończy się minusem, a otwory na nie robią w drugiej połówce. Łączniki wchodzą prostopadle do płaszczyzny, jakkolwiek jest obrócona, każdy ze swoją średnicą i 1,2 mm materiału do każdej krawędzi powierzchni cięcia, a dwa z nich dwa razy dalej od siebie. Każdy osobny kawałek powierzchni cięcia dostaje własne, równo rozłożone: {{ui:split.connectorCount}} mówi ile, a 0 zostawia to wielkości kawałka, co najmniej dwa. Kawałek za mały nawet na jeden nie dostaje żadnego, a łącznik jest pomijany tam, gdzie połówka jest cieńsza, niż głęboki jest jego otwór; panel mówi o tym przed podziałem, a białe pierścienie na płaszczyźnie pokazują, gdzie trafią. Jeśli nie mieści się żaden, części są dzielone bez nich, a pasek stanu o tym informuje.
+
+- {{ui:split.connectorDiameter}} to średnica kołków i czopów, na początek 5 mm.
+- {{ui:split.connectorDepth}} to, jak głęboko każdy otwór wchodzi w swoją połówkę. Kołek ma dwa razy tyle minus 0,6 mm długości, a czop jest o 0,3 mm krótszy od swojego otworu, żeby nigdy nie stały na dnie otworu i połówki domykały się całkiem. Kołki i czopy mają na końcach małą fazkę, a każdy otwór jedną u wlotu, żeby rozlana pierwsza warstwa go nie zwężała.
+- {{ui:split.connectorClearance}} to miejsce między kołkiem lub czopem a jego otworem. Gdy zmierzysz luz swojej drukarki testem pasowania (w rozdziale o drukowaniu), zaczyna się od niego, w przeciwnym razie od 0,2 mm.
+
+Obiekty-otwory dzieli się bez łączników.
 
 Połowy są zwykłymi siatkami: ustawienia takie jak liczba boków walca albo napis tekstu znikają, więc ustaw je wcześniej. [[Ctrl]]+[[Z]] przywraca oryginał jednym krokiem. Zablokowanych i ukrytych obiektów nie da się podzielić.
 

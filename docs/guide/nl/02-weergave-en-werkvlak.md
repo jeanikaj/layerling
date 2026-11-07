@@ -43,7 +43,7 @@ Aan de linkerrand staat een smalle balk. Van boven naar beneden:
 - {{ui:camera.zoomIn}} en {{ui:camera.zoomOut}} zoomen stap voor stap, net als de toetsen [[+]] en [[−]].
 - {{ui:camera.orthographic}} schakelt naar een platte weergave waarin evenwijdige randen evenwijdig blijven. Voor meten en randen uitlijnen is dat vaak prettiger dan de perspectiefweergave. [[O]] schakelt heen en weer, en een tweede klik zet het terug.
 - {{ui:camera.secondView}} opent een tweede weergave van het ontwerp in een eigen venster, zie hieronder. Een tweede klik sluit het.
-- {{ui:camera.showScrollbars}} zet een schuifbalk onderaan de weergave en een langs de rechterrand. Sleep een balk om de weergave vloeiend te verschuiven, klik op een pijl aan het eind om een klein stukje te schuiven (ingedrukt houden gaat door), of klik naast de balk om bijna een hele weergave verder te gaan. Er draait niets, en anders dan de pijltoetsen werken de balken ook terwijl een onderdeel geselecteerd is - handig van dichtbij bij kleine details. Een tweede klik verbergt ze; deze browser onthoudt de keuze.
+- {{ui:camera.showScrollbars}} zet een schuifbalk onderaan de weergave en een langs de rechterrand. Sleep een balk om de weergave vloeiend te verschuiven, klik op een pijl aan het eind om een klein stukje te schuiven (ingedrukt houden gaat door), of klik naast de balk om bijna een hele weergave verder te gaan. Er draait niets, en anders dan de pijltoetsen werken de balken ook terwijl een onderdeel geselecteerd is - handig van dichtbij bij kleine details. Een tweede klik verbergt ze; {{ui:workspace.startWithScrollbars}} in de instellingen bepaalt of een ontwerp ermee opent. Deze browser onthoudt de keuze bovendien.
 - {{ui:camera.hideWorkplane}} (het oog boven een raster) verbergt de plaat met het raster, zodat je een ontwerp van onderen kunt bekijken. Alleen de weergave verandert: nieuwe vormen komen nog steeds op het werkvlak terecht. Een tweede klik toont de plaat weer.
 - {{ui:camera.placeWorkplane}}, het meetlint en de winkelhaak zijn gereedschappen op zich, die hieronder en in [Meten en notities](chapter:meten-en-notities) aan bod komen.
 
@@ -95,6 +95,19 @@ Zolang een werkvlak op een vlak ligt, verschijnt er een oog naast {{ui:camera.pl
 
 Om recht op het werkvlak te kijken, druk je op [[P]] of klik je in de weergavebalk naast {{ui:camera.placeWorkplane}} op {{ui:camera.lookOntoWorkplane}}. De weergave draait tot je het vlak recht van voren ziet, vanaf de kant waar nieuwe vormen naartoe groeien, met de oorsprong in het midden. Op de basisplaat is dat het bovenaanzicht.
 
+## Bouwplaten
+
+Als een ontwerp meer bevat dan één plaat kan printen, bijvoorbeeld een doos met deksel en inzetstukken, kan het meerdere bouwplaten krijgen. Klik op {{ui:editor.tool.buildPlates}} in de groep {{ui:editor.group.arrange}}, of kies {{ui:plates.moveTo}} in het menu van een rechtsklik op een lichaam. Onderaan de weergave verschijnt een balk met één knop per plaat; het getal erop zegt hoeveel lichamen op de plaat staan.
+
+- Elke plaat is zo groot als het werkvlak, en de platen liggen naast elkaar rechts van de eerste, 20 mm uit elkaar. Een lichaam hoort bij de plaat waarop het midden van zijn voetafdruk staat; sleep je het naar de overkant, dan staat het op de andere plaat. Een ontwerp heeft tot 12 platen.
+- Een klik op een plaat in de balk toont die, en nieuwe vormen komen er dan op. {{ui:plates.showAll}} toont ze allemaal. Een dubbelklik op een plaat, of {{ui:plates.rename}}, geeft haar een naam zoals "Deksel", die op de plaat staat.
+- {{ui:plates.moveLeft}} en {{ui:plates.moveRight}} veranderen de volgorde, de lichamen gaan mee met hun plaat. {{ui:plates.remove}} haalt de actieve plaat weg; haar lichamen komen op dezelfde plek op de eerste plaat.
+- {{ui:plates.arrange}} legt de geselecteerde lichamen, of alle, rij voor rij op de platen, de grootste eerst, 5 mm uit elkaar, en voegt platen toe zolang die nodig zijn. Een lichaam dat groter is dan een plaat blijft staan.
+- Met een gekozen printer wordt elk lichaam tegen zijn eigen plaat gecontroleerd, en de bouwhoogte telt vanaf het laagste lichaam op die plaat. Een plaat met een lichaam dat niet past, toont haar getal in rood.
+- In de eigenschappen telt X vanaf het midden van de eigen plaat van het lichaam.
+
+Het exportvenster biedt dan {{ui:export.plates}}: alle platen in één bestand, naast elkaar zoals in het ontwerp; één bestand per plaat, samen in een ZIP (STL, 3MF en OBJ); of één enkele plaat, gezet waar de eerste plaat ligt. Een slicer opent elk bestand als één plaat; wie de platen na elkaar print, neemt dus de bestanden per plaat. Lichamen tussen platen verplaatsen en verdelen kun je ongedaan maken; platen toevoegen, benoemen, ordenen en verwijderen wordt met het ontwerp bewaard, maar niet ongedaan gemaakt.
+
 ## Raster en vastklikken
 
 Het raster toont de grootte van de plaat. Rechtsonder staat de **snapstap**: verplaatsen en schalen klikken vast in stappen van die grootte, bijvoorbeeld 1 mm. Maak hem kleiner voor fijn werk en groter voor grof schikken. {{ui:editor.tool.snapToGrid}} in het lint verplaatst de geselecteerde vormen achteraf naar het dichtstbijzijnde rasterkruispunt. Tijdens het verplaatsen klikken vormen ook vast aan andere vormen, zie [Selecteren en schikken](chapter:selecteren-en-schikken). Zonder muis: [[Alt]]+[[1]] tot [[Alt]]+[[0]] kiezen het item met dat nummer in het menu ([[Alt]]+[[1]] zet vastklikken uit), en [[,]] en [[.]] maken de stap een maat fijner of grover. Dat werkt ook in een schets.
@@ -104,6 +117,8 @@ Het raster toont de grootte van de plaat. Rechtsonder staat de **snapstap**: ver
 ### Het instellingenvenster
 
 Het tandwiel in de titelregel ({{ui:editor.workspaceSettings}}) opent de instellingen. Links staan vijf onderdelen: {{ui:workspace.appearance}}, {{ui:workspace.measurement}}, {{ui:workspace.workplane}}, {{ui:workspace.shapeDefaults}} en {{ui:workspace.history}}. Een wijziging telt meteen. {{ui:workspace.makeDefault}} onderaan bewaart de huidige instellingen als standaard, zodat een nieuw ontwerp ermee begint. Een bestand dat je opent, brengt zijn eigen instellingen mee; {{ui:workspace.useMyDefault}} ernaast zet je bewaarde kleuren, raster en de rest op het geopende ontwerp en houdt daarbij zijn eenheden. Heeft je standaard een printer, dan komt die printer mee met zijn plaatgrootte; zonder printer houdt het ontwerp zijn plaat en printer. {{ui:workspace.close}} rechtsboven sluit het venster. Dit deel loopt de instellingen een voor een door.
+
+{{ui:workspace.exportSettings}} bewaart de instellingen van het venster in een bestand (layerling-settings-<datum>.json): de kleuren, het raster, de schaduwen, de camera en de standaardwaarden van vormen, samen met het thema, de grootte van de werkbalk, de hoek van de weergavekubus, de vormkleuren en de speling van elke printer. Op een andere computer, of na gegevensverlies van de browser, leest {{ui:workspace.importSettings}} het bestand weer in: het wordt je standaard voor nieuwe ontwerpen en komt op het geopende ontwerp, zoals bij {{ui:workspace.useMyDefault}}. Je eigen toetsen uit de sneltoetsen gaan mee.
 
 ### Weergave: thema, werkbalk en kubus
 
@@ -163,6 +178,8 @@ De schetsweergave heeft eigen kleuren: {{ui:workspace.sketchBackground}} voor he
 
 {{ui:workspace.startInPerspective}}: de editor opent dan in het perspectiefaanzicht, niet in het vlakke.
 
+{{ui:workspace.startWithScrollbars}}: een ontwerp opent dan met de schuifbalken van de weergave. De instelling wordt met het ontwerp en met {{ui:workspace.makeDefault}} bewaard.
+
 {{ui:workspace.startView}} bepaalt de hoek waarin een nieuw ontwerp opent en waarnaar {{ui:camera.home}} teruggaat. Draai en zoom de weergave zoals je hem graag hebt en klik dan op {{ui:workspace.startViewUseCurrent}}; {{ui:workspace.startViewStandard}} brengt het gewone aanzicht van rechtsvoor terug. Het geldt voor elk ontwerp in deze browser. Een ontwerp dat je opnieuw opent, opent nog steeds zoals je het achterliet.
 
 {{ui:workspace.zoomSpeed}} is een schuifregelaar van langzaam naar snel: hoe snel het wieltje en het trackpad zoomen; de zoomknoppen en -toetsen houden hun eigen kleine stappen. {{ui:workspace.cameraInertia}}: als je de muis loslaat, draait de weergave nog even door en remt zacht af. Uitgeschakeld stopt hij meteen, zoals in Tinkercad en Fusion 360.
@@ -179,9 +196,13 @@ Onder {{ui:workspace.measurement}} in de instellingen stel je de {{ui:workspace.
 
 Onder {{ui:workspace.customSnapGrids}} op dezelfde plek voeg je eigen snapstappen toe: een naam en een grootte in millimeters, bijvoorbeeld "Pinafstand 2,54 mm" voor de steek van DIP-chips, pinheaders en gaatjesprint, of "MX Key Unit" met 19,05 mm voor de afstand tussen toetsenbordtoetsen. Het snapstapmenu biedt die maat dan heel, gehalveerd en in vieren (1 ×, ½ × en ¼ ×), zodat je vormen een hele, halve of kwart steek kunt verplaatsen. Wil je alleen de maat zelf, haal dan het vinkje bij {{ui:workspace.customSnapGridParts}} ernaast weg; het menu heeft dan alleen die ene stap. Eigen stappen worden bij het ontwerp bewaard en gaan mee met {{ui:workspace.makeDefault}}. Wil je alleen de maat zelf, vink dan {{ui:workspace.customSnapGridParts}} ernaast uit; het menu heeft dan alleen die ene stap.
 
+{{ui:workspace.startWithCornerRuler}}: elk nieuw ontwerp in deze browser begint dan met een winkelhaak in de oorsprong, zie [Meten en notities](chapter:meten-en-notities). Ontwerpen die je al hebt blijven zoals ze zijn, en een winkelhaak die je uit een ontwerp verwijdert, blijft weg.
+
 ### Werkvlak: plaat en printer
 
 {{ui:workspace.printer}} maakt het werkvlak zo groot als de bouwplaat van je printer en markeert lichamen die erbuiten steken, zie [Printen](chapter:printen). {{ui:workspace.showPlateLabels}} schrijft de naam van het ontwerp op de plaat, en de naam en het bouwvolume van de printer als er een printer gekozen is.
+
+{{ui:workspace.printerPlay}} is de ruimte per kant die een geprinte pen nodig heeft om in een geprint gat van je printer te draaien. {{ui:workspace.fitTestMake}} legt de pastest die hem meet op de plaat; nieuwe deksels, zwaluwstaarten, klikhaken, moeren en de spelingcontrole beginnen er dan mee, zie [Printen](chapter:printen). Hij blijft in deze browser, niet in het ontwerp.
 
 {{ui:workspace.size}} geeft de plaat een eigen grootte, met {{ui:workspace.width}} en {{ui:workspace.length}} in millimeters of de eenheid die je koos. Het raster loopt altijd door de oorsprong, zodat de sterkere lijnen op de assen liggen, hoe groot de plaat ook is.
 

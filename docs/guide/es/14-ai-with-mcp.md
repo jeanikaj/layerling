@@ -98,12 +98,16 @@ La IA trabaja con las mismas funciones que tú, por el mismo camino que sigues c
 | `layerling_scale_objects` | escala objetos en un porcentaje, juntos o cada uno en su sitio |
 | `layerling_lay_flat` | apoya un objeto sobre la placa por una de sus caras |
 | `layerling_place_on_face` | posa objetos sobre una cara de otro, aunque esté inclinada, como la tecla C |
-| `layerling_perforate_face` | corta un patrón de orificios en una cara plana; los orificios se quedan como orificios agrupados con el cuerpo |
+| `layerling_perforate_face` | corta un patrón de orificios en una cara plana o alrededor de la pared de un cilindro, un tubo o un taladro; los orificios se quedan como orificios agrupados con el cuerpo |
 | `layerling_sweep_sketch` | hace un barrido de una sección rectangular o redonda a lo largo de una trayectoria de puntos, como un único cuerpo exacto; una trayectoria cerrada da un anillo |
 | `layerling_push_face` | empuja hacia fuera una cara plana o abre un hueco en ella, con un desfase hacia dentro desde la arista y un radio de esquina; la parte nueva es un cuerpo de boceto agrupado con el cuerpo, o un cuerpo independiente con `separate` |
+| `layerling_paint` | pinta partes de un cuerpo en colores propios para imprimir en varios colores (Pintar): rellenar una cara hasta sus aristas vivas, una mancha redonda o un lazo trazado en una vista plana; borrar, quitar todo; se guarda con el cuerpo y se escribe en un 3MF como caras pintadas |
+| `layerling_support_rib` | pone un nervio de soporte fino bajo la cara inferior de una pieza impresa inclinada sobre una arista, con puentes de una capa de alto (Nervio de soporte) |
 | `layerling_mate_faces` | lleva una cara de un objeto contra una cara de otro, cara contra cara o a ras, o pone dos caras redondas en un mismo eje |
 | `layerling_open_group` | abre un grupo para poder cambiar sus piezas una a una, también un grupo dentro de otro abierto |
 | `layerling_close_group` | lo vuelve a cerrar («Listo») o cancela |
+| `layerling_add_to_group` | mete objetos sueltos en un grupo sin abrirlo |
+| `layerling_take_out_of_group` | saca una pieza de un grupo sin abrirlo |
 | `layerling_group_objects` | agrupa objetos |
 | `layerling_ungroup_objects` | desagrupa grupos |
 | `layerling_boolean_cut` | corta sólidos con orificios |
@@ -137,6 +141,8 @@ La IA trabaja con las mismas funciones que tú, por el mismo camino que sigues c
 | `layerling_show_overhangs` | activa o desactiva el rayado de voladizos, fija el ángulo e indica para cada cuerpo la superficie que necesitaría soportes |
 | `layerling_estimate_print` | calcula el volumen, el peso y el filamento de la selección o del diseño entero: para un cuerpo macizo y, como estimación aproximada, con paredes y relleno, igual que la ventana de exportación |
 | `layerling_check_clearance` | comprueba antes de imprimir qué piezas se solapan, se tocan o quedan más cerca que una holgura mínima, también las piezas separadas de un mismo objeto |
+| `layerling_printer_play` | lee, fija o borra la holgura de la impresora ({{ui:workspace.printerPlay}} en los ajustes) y coloca la prueba de ajuste que la mide |
+| `layerling_check_print` | comprueba antes de imprimir qué saldría mal: paredes demasiado finas para la boquilla, piezas flotantes, poco contacto con la placa, voladizos y mallas abiertas |
 | `layerling_add_reference_points` | marca puntos de referencia (en el centro, las esquinas o los puntos medios de las aristas de los objetos, o en posiciones exactas) a los que se ajustan las formas |
 | `layerling_list_reference_points` | lista los puntos de referencia con sus id y posiciones |
 | `layerling_remove_reference_points` | elimina puntos de referencia por id, o todos |
@@ -156,9 +162,10 @@ La IA trabaja con las mismas funciones que tú, por el mismo camino que sigues c
 | `layerling_delete_custom_shape` | elimina una forma personalizada; los cuerpos ya insertados se quedan |
 | `layerling_show_workplane` | oculta y muestra la placa con su cuadrícula, por ejemplo para una captura de la parte de abajo (solo la vista) |
 | `layerling_set_section_view` | abre la vista en corte por un plano para mirar dentro (solo la vista: no se corta nada) |
-| `layerling_measurements` | muestra u oculta las mediciones de la cinta métrica y las lista con sus longitudes, y oculta o muestra las medidas alrededor de la selección como [[Q]] |
+| `layerling_measurements` | muestra u oculta las mediciones de la cinta métrica y las lista con sus longitudes, y oculta o muestra las medidas alrededor de la selección como [[Q]], y escribe una longitud para una de ellas, que mueve el cuerpo de su extremo como un clic en su número |
 | `layerling_measure_angle` | mide un ángulo como el transportador: en el vértice de tres puntos o entre dos caras planas, y lo muestra en la vista |
 | `layerling_saved_view` | guarda la vista actual en la tecla 7, 8, 9 o 0 y vuelve a ella, como Mayús+tecla y la tecla (solo la vista); también fija la vista de arranque de los diseños nuevos |
+| `layerling_build_plates` | lista, añade, nombra, ordena y quita las placas de impresión, mueve objetos a una placa y los reparte en las placas, como la barra de placas |
 | `layerling_clear_history` | elimina para siempre todos los pasos de deshacer, como el botón «Eliminar historial» de la vista del historial; necesita `confirm: true` |
 | `layerling_set_history_view` | consulta un estado anterior del proyecto, como la vista del historial (el diseño real no se toca; las herramientas que cambian algo esperan a que se cierre) |
 | `layerling_restore_from_history` | trae al diseño, como copias, objetos de un estado anterior (también piezas dentro de grupos), igual que «Traer al diseño» en la vista del historial; es un solo paso, que deshacer revierte |

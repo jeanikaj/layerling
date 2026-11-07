@@ -39,6 +39,17 @@ I celý sloučený tvar může být plným tělesem nebo výřezem. Platí jedno
 - Obsahuje-li pouze plná tělesa nebo pouze výřezy, změna se provede u celku i všech jeho částí.
 - Obsahuje-li obojí, například kvádr s otvorem, každá část si zachová svůj režim. Celek se změní na odečítací nástroj, ale jeho otvor zůstane otvorem.
 
+### Změna velikosti sloučení: výřezy a malé díly zůstanou
+
+Když sloučení prodloužíte, rozšíříte nebo zvýšíte, jeho díly se roztáhnou s ním, jako by byly nakreslené na gumě: kulaté otvory v desce se změní v ovály a posunou se dovnitř. Aby zůstaly takové, jaké jsou, zvolte v nastavení sloučení u {{ui:inspector.groupResize}} možnost {{ui:inspector.groupResizeKeepParts}}; bez této volby platí {{ui:inspector.groupResizeStretch}}, jako dosud u každého sloučení. Od té chvíle se sloučení při každé změně velikosti - úchyty, v polích rozměrů nebo pomocí {{ui:scalePercent.title}} - znovu sestaví ze svých dílů podle jediného pravidla, pro každý směr zvlášť:
+
+- Díl, který sahá téměř přes celé sloučení, z devíti desetin nebo víc, roste nebo se zmenšuje s ním a drží si vzdálenost k oběma stranám: samotná deska, stěna nebo vnitřek krabičky, jejíž stěny zůstanou stejně silné.
+- Každý jiný díl si zachová vlastní velikost i vzdálenost k bližší straně. Díl uprostřed zůstane uprostřed.
+
+Deska s otvorem 5 mm od každého rohu a drážkou uprostřed, prodloužená o 40 mm, si tedy zachová kulaté otvory 5 mm od rohů a drážku uprostřed. Nestojí za tím žádný řešič vazeb a nic nenastavujete díl po dílu: pro všechny díly platí stejné pravidlo, takže předem víte, co se stane. Otočený díl se počítá podle kvádru, který ve sloučení zabírá, a zůstane otočený; sloučení uvnitř sloučení se počítá jako jeden díl. Zatímco táhnete úchytem, sloučení se roztahuje jako celek; jakmile pustíte, sestaví se znovu, v tomtéž kroku zpět. Zmenšíte-li sloučení pod to, co díl se svou vzdáleností potřebuje, zmenší se tento díl s ním jako dřív a zpráva vás na to upozorní. Zrcadlené, zúžené nebo zkroucené sloučení a sloučení s vlastním zaoblením, zkosením nebo texturou roztáhne vždy vše. Zvolíte-li toto nastavení u sloučení, které už je roztažené, jeho díly se hned rozmístí znovu.
+
+![Deska s otvorem 5 mm od každého rohu a drážkou uprostřed, prodloužená o 40 mm s volbou „Zachovat výřezy a malé díly“: otvory jsou stále kulaté a 5 mm od rohů, drážka je stále uprostřed.](shot:group-keep-parts)
+
 ## Seskupení
 
 Někdy mají díly jen držet pohromadě, aniž by se spojila jejich geometrie. Příkladem je bílé logo na černé destičce pro vícebarevný tisk. K tomu slouží {{ui:editor.tool.bundle}} ([[Ctrl]]+[[B]]), podobně jako v Tinkercadu. Skupina se přesouvá, otáčí a mění velikost jako jeden tvar, ale její části se neslučují:
@@ -92,6 +103,14 @@ Upozornění: zkosení a zaoblení provedená na **celém** sloučeném tělese 
 - Dva posuvníky natočení umožňují otáčet rovinou kolem zbývajících os až o 180° na obě strany. Natočení lze kombinovat.
 
 {{ui:split.apply}} nebo [[Enter]] provede řez, [[Esc]] jej zruší. Při vybírání plochy první [[Esc]] ukončí pouze toto vybírání. Každý protnutý objekt se rozdělí na dvě uzavřená tělesa pojmenovaná podle strany, například „Kvádr (Z+)“ a „Kvádr (Z-)“. Neprotnuté objekty se nezmění. Výřez se rozdělí na dva výřezy a duté těleso si zachová dutinu. Obě poloviny zůstanou na původním místě. Pro tisk je položte řeznou plochou na podložku pomocí {{ui:editor.tool.layFlat}}.
+
+{{ui:split.connectors}} znovu vyrovnají poloviny, jak to dělají nástroje pro řez v PrusaSliceru, OrcaSliceru a Bambu Studiu. S volbou {{ui:split.connectors.none}}, výchozí, se dělí, jak je popsáno výše. {{ui:split.connectors.dowels}} udělají otvor v každé polovině a volné kolíky, které zapadnou do obou: kolíky přibudou jako třetí těleso, stojící vedle polovin na jejich spodku, a tisknou se s nimi – ve stoje vycházejí ve vrstvách kulaté jako jejich otvory, a právě to měří test vůle. {{ui:split.connectors.plugs}} postaví kulaté čepy na polovinu, jejíž název končí mínusem, a otvory pro ně udělají v druhé polovině. Spojovací prvky vedou kolmo k rovině, ať je natočená jakkoli, každý se svým průměrem a 1,2 mm materiálu ke každému okraji plochy řezu a dva od sebe dvakrát tak daleko. Každý samostatný kus plochy řezu dostane vlastní, rovnoměrně po něm rozložené: {{ui:split.connectorCount}} udává kolik a 0 to nechá na velikosti kusu, nejméně dva. Kus, který je i pro jeden příliš malý, nedostane žádný, a spojovací prvek se vynechá tam, kde je polovina tenčí, než je jeho otvor hluboký; panel to řekne ještě před rozdělením a bílé kroužky na rovině ukazují, kam přijdou. Pokud se nevejde žádný, díly se rozdělí bez nich a stavový řádek to oznámí.
+
+- {{ui:split.connectorDiameter}} je průměr kolíků a čepů, zpočátku 5 mm.
+- {{ui:split.connectorDepth}} je, jak hluboko jde každý otvor do své poloviny. Kolík je dvakrát tak dlouhý bez 0,6 mm a čep o 0,3 mm kratší než jeho otvor, aby nikdy nestály na dně otvoru a poloviny se úplně dovřely. Kolíky a čepy mají na koncích malé sražení a každý otvor jedno u svého ústí, aby ho rozteklá první vrstva nezúžila.
+- {{ui:split.connectorClearance}} je místo mezi kolíkem nebo čepem a jeho otvorem. Jakmile změříte vůli své tiskárny testem vůle (v kapitole o tisku), začíná od ní, jinak od 0,2 mm.
+
+Výřezy se rozdělují bez spojovacích prvků.
 
 Poloviny jsou běžné polygonové sítě. Parametry původního tvaru, například počet stran válce nebo text nápisu, už nemají; nastavte je před rozdělením. [[Ctrl]]+[[Z]] obnoví originál jediným krokem. Zamčené a skryté objekty nelze rozdělit.
 

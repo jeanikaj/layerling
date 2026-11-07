@@ -45,7 +45,7 @@ summary: 在场景中移动、正对着观察，以及把新形状放到任意�
 - {{ui:camera.zoomIn}} 和 {{ui:camera.zoomOut}} 按步缩放，[[+]] 和 [[−]] 键也是如此。
 - {{ui:camera.orthographic}} 切换到平面视图，平行边保持平行。对于测量和对齐边，这通常比透视视图更舒服。[[O]] 来回切换，再点一次也会返回。
 - {{ui:camera.secondView}} 在单独的窗口中打开设计的第二视图，详见下文。再点一次将其关闭。
-- {{ui:camera.showScrollbars}} 会在视图底部和右边缘各显示一条滚动条。拖动滚动条可平滑地移动视图，点击两端的箭头可小幅移动（按住会持续移动），点击滑块旁边则移动几乎整个视图。视图不会旋转，而且与方向键不同，选中零件时滚动条照样可用——在近处处理小细节时很方便。再次点击可隐藏它们；此浏览器会记住你的选择。
+- {{ui:camera.showScrollbars}} 会在视图底部和右边缘各显示一条滚动条。拖动滚动条可平滑地移动视图，点击两端的箭头可小幅移动（按住会持续移动），点击滑块旁边则移动几乎整个视图。视图不会旋转，而且与方向键不同，选中零件时滚动条照样可用——在近处处理小细节时很方便。再次点击可隐藏它们；设置中的 {{ui:workspace.startWithScrollbars}} 决定设计打开时是否显示它们。此浏览器也会记住这一选择。
 - {{ui:camera.hideWorkplane}}（网格上方的眼睛）连同网格一起隐藏平台，让你可以从下方查看设计的底面。改变的只是视图：新形状仍然落在工作平面上。再点一次会重新显示。
 - {{ui:camera.placeWorkplane}}、卷尺和直角尺是各自的工具，下文以及[测量与注释](chapter:measuring-and-notes)中会介绍。
 
@@ -93,6 +93,19 @@ X 和 [[Esc]] 会关闭窗口；如果正在测量，[[Esc]] 会先结束测量�
 
 要正对工作平面查看，按 [[P]] 或点击视图栏中 {{ui:camera.placeWorkplane}} 旁边的 {{ui:camera.lookOntoWorkplane}}。视图会转到正对平面的方向，从新形状生长的那一侧看过去，平面原点位于中间。在底板上，这就是俯视图。
 
+## 打印板
+
+当一个设计的内容超出一个打印板所能打印的范围时，例如一个盒子连同盖子和内衬，它可以有多个打印板。点击 {{ui:editor.group.arrange}} 组中的 {{ui:editor.tool.buildPlates}}，或在物体的右键菜单中选择 {{ui:plates.moveTo}}。视图底部会出现一个栏，每个打印板一个按钮；按钮上的数字表示该打印板上有多少个物体。
+
+- 每个打印板与工作平面一样大，打印板并排排列在第一个打印板的右侧，相距 20 毫米。物体属于其底面中心所在的打印板，因此把它拖到另一边就会放到另一个打印板上。一个设计最多有 12 个打印板。
+- 在栏中点击一个打印板会显示它，之后新形状会放在它上面。{{ui:plates.showAll}} 显示全部。双击打印板或使用 {{ui:plates.rename}} 可以给它起一个名字，例如“盖子”，名字会写在打印板上。
+- {{ui:plates.moveLeft}} 和 {{ui:plates.moveRight}} 改变顺序，物体随其打印板一起移动。{{ui:plates.remove}} 删除当前打印板；其上的物体会移到第一个打印板的相同位置。
+- {{ui:plates.arrange}} 将所选物体（或全部物体）逐行排列到打印板上，先放最大的，间距 5 毫米，并在需要时添加打印板。比打印板大的物体会留在原处。
+- 选择打印机后，每个物体都按自己的打印板检查，打印高度从该打印板上最低的物体算起。有物体放不下的打印板，其数字显示为红色。
+- 在属性中，X 从物体所在打印板的中心算起。
+
+导出窗口随后提供 {{ui:export.plates}}：所有打印板在一个文件中，像设计中一样并排；每个打印板一个文件，打包成 ZIP（STL、3MF 和 OBJ）；或单个打印板，放到第一个打印板的位置。切片软件会把每个文件作为一个打印板打开，所以要依次打印各个打印板，请使用按打印板分开的文件。在打印板之间移动物体和分布物体可以撤销；添加、命名、排序和删除打印板会随设计保存，但不能撤销。
+
 ## 网格与吸附
 
 网格显示平台的大小。右下角是**吸附步距**：移动和缩放按这个步距吸附，例如 1 mm。精细作业时调小，粗略摆放时调大。功能区中的 {{ui:editor.tool.snapToGrid}} 会在之后把选中的形状移到最近的网格交叉点。移动时，形状还会吸附到其他形状，见[选择与排列](chapter:select-and-arrange)。
@@ -102,6 +115,8 @@ X 和 [[Esc]] 会关闭窗口；如果正在测量，[[Esc]] 会先结束测量�
 ### 设置窗口
 
 标题行中的齿轮（{{ui:editor.workspaceSettings}}）打开设置。左侧有五个区域：{{ui:workspace.appearance}}、{{ui:workspace.measurement}}、{{ui:workspace.workplane}}、{{ui:workspace.shapeDefaults}} 和 {{ui:workspace.history}}。改动立即生效。底部的 {{ui:workspace.makeDefault}} 把当前设置保存为默认值，让新设计从这些设置开始。打开的文件会带着它自己的设置；旁边的 {{ui:workspace.useMyDefault}} 会把你保存的颜色、网格等应用到打开的设计上，同时保留它的单位。如果你的默认设置里有打印机，这台打印机连同它的平台尺寸也会一起带过来；没有的话，设计保留原有的平台和打印机。右上角的 {{ui:workspace.close}} 关闭窗口。本节逐项介绍这些设置。
+
+{{ui:workspace.exportSettings}} 把窗口的设置保存为文件（layerling-settings-<日期>.json）：颜色、网格、阴影、相机和形状默认值，以及主题、工具栏大小、视图立方体的角落、形状颜色和每台打印机的间隙。在另一台电脑上或浏览器数据丢失后，{{ui:workspace.importSettings}} 会再次读取该文件：它成为新设计的默认值，并像 {{ui:workspace.useMyDefault}} 一样应用到已打开的设计。你在键盘快捷键中设定的自定义按键也会一起保存。
 
 ### 外观：主题、工具栏与视图立方体
 
@@ -163,6 +178,8 @@ X 和 [[Esc]] 会关闭窗口；如果正在测量，[[Esc]] 会先结束测量�
 
 {{ui:workspace.startInPerspective}}：编辑器随即以透视视图打开，而不是平面视图。
 
+{{ui:workspace.startWithScrollbars}}：设计打开时即显示视图的滚动条。此设置随设计一起保存，也会随 {{ui:workspace.makeDefault}} 保存。
+
 {{ui:workspace.zoomSpeed}} 是一个从慢到快的滑块：滚轮和触控板缩放的速度；缩放按钮和按键仍保持自己的小步距。{{ui:workspace.cameraInertia}}：松开鼠标后，视图会继续转一小会儿并平缓减速。关闭后它会立刻停住，与 Tinkercad 和 Fusion 360 相同。
 
 {{ui:workspace.overhangAngle}} 是在可见性菜单中打开“显示悬垂”时，一个面被视为悬垂的起始角度：这些面会以红白斜线标示。30° 偏保守，70° 依赖良好的打印冷却；45° 是常用的起点。显示时，视图下方的一行会写出最陡的悬垂，以及有多少 cm² 需要支撑。
@@ -177,9 +194,13 @@ X 和 [[Esc]] 会关闭窗口；如果正在测量，[[Esc]] 会先结束测量�
 
 在同一处的 {{ui:workspace.customSnapGrids}} 下，可以添加自己的吸附步距：一个名称和一个以毫米为单位的大小，例如用“Pin pitch 2.54 mm”表示 DIP 芯片、排针和洞洞板孔的间距，或用 19.05 mm 的“MX Key Unit”表示键盘按键的间距。吸附步距菜单随后会提供该尺寸的整份、一半和四分之一（1 ×、½ × 和 ¼ ×），因此形状可以按一个间距、半个间距或四分之一个间距移动。如果你只想要该尺寸本身，取消勾选旁边的 {{ui:workspace.customSnapGridParts}}；菜单就只剩这一个步距。自定义步距随设计保存，也会随 {{ui:workspace.makeDefault}} 一起保存。
 
+{{ui:workspace.startWithCornerRuler}}：此浏览器中的每个新设计都会在原点自带一把直角尺，见 [测量与备注](chapter:measuring-and-notes)。已有的设计保持不变；你从某个设计中移除的直角尺也不会再出现。
+
 ### 工作平面：平台与打印机
 
 {{ui:workspace.printer}} 把工作平面调整为打印机的打印床大小，并标出超出边界的实体，见[打印](chapter:printing)。{{ui:workspace.showPlateLabels}} 在平台上写设计的名称，选择打印机后还会写上打印机名称和成型体积。
+
+{{ui:workspace.printerPlay}}是在你的打印机上，打印出的销钉要能在打印出的孔中转动所需的每侧余量。{{ui:workspace.fitTestMake}}会把用来测量它的配合测试件放到平台上；之后新的盖子、燕尾、卡扣、螺母和间隙检查都以它为起点，见[打印](chapter:printing)。它保存在这个浏览器中，而不是设计里。
 
 {{ui:workspace.size}} 给平台设定自定义尺寸，用 {{ui:workspace.width}} 和 {{ui:workspace.length}}，单位为毫米或你选择的单位。网格始终穿过原点，所以无论平台多大，较粗的线都位于坐标轴上。
 

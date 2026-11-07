@@ -328,6 +328,20 @@ export function ToolbarFaceToolIcon(props: IconProps) {
   );
 }
 
+/** A part standing tilted on one edge, a thin triangle under its lower face with two small bridges (#1385). */
+export function ToolbarSupportRibIcon(props: IconProps) {
+  return (
+    <ToolbarVectorIcon {...props}>
+      <path d="M4 42h40" />
+      <path d="M8 40 22 26l12 12-14 14Z" transform="translate(-4 -12)" {...SOLID} />
+      <path d="M8 40 22 26l12 12-14 14Z" transform="translate(-4 -12)" />
+      <path d="M22 41 38 25v16Z" {...SOLID} />
+      <path d="M22 41 38 25v16Z" />
+      <path d="M26 32h3M31 27h3" />
+    </ToolbarVectorIcon>
+  );
+}
+
 /** A dashed line with a dot at each end: a construction line in a sketch (#229). */
 export function ToolbarConstructionLineIcon(props: IconProps) {
   return (
@@ -473,6 +487,20 @@ export function ToolbarSurfaceTextureIcon(props: IconProps) {
   );
 }
 
+/** A block with a round patch of paint on its face and a brush over it: parts of a body painted in a colour of their own. */
+export function ToolbarPaintIcon(props: IconProps) {
+  return (
+    <ToolbarVectorIcon {...props}>
+      <path d="M5 20h28v22H5Z" {...SOLID} />
+      <path d="M5 20h28v22H5Z" />
+      <circle cx="16" cy="31" r="6" fill="currentColor" stroke="none" opacity="0.55" />
+      <path d="M43 5 33 15" strokeWidth="3.2" />
+      <path d="m31 14 3 3" strokeWidth="2.4" />
+      <path d="M30.5 16.5c-3.5.2-5.2 2.5-5.5 6.5 3.8-.2 6.2-2 6.5-5.5Z" fill="currentColor" />
+    </ToolbarVectorIcon>
+  );
+}
+
 /** Three links of a print-in-place chain in a gentle bend, held by the round joints between them. */
 export function ToolbarFlexiIcon(props: IconProps) {
   return (
@@ -583,6 +611,19 @@ export function ToolbarMateFacesIcon(props: IconProps) {
       <rect x="6" y="17" width="13" height="14" rx="2" />
       <path d="M21 24h3" />
       <path d="M21 20l3 4-3 4" />
+    </ToolbarVectorIcon>
+  );
+}
+
+/** Build plates (Discussion #456): two plates side by side, a body on each. */
+export function ToolbarBuildPlatesIcon(props: IconProps) {
+  return (
+    <ToolbarVectorIcon {...props}>
+      <rect x="3" y="12" width="19" height="26" rx="3" {...SOLID} />
+      <rect x="3" y="12" width="19" height="26" rx="3" />
+      <rect x="26" y="12" width="19" height="26" rx="3" />
+      <rect x="8" y="20" width="9" height="9" rx="1.5" />
+      <path d="M35.5 19v12M29.5 25h12" />
     </ToolbarVectorIcon>
   );
 }

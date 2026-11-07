@@ -6,7 +6,7 @@ import type * as THREE from "three";
 import type { ThreeState } from "@/components/workplane/ViewportOverlays";
 import { t } from "@/lib/i18n";
 import { useLanguage } from "@/lib/useLanguage";
-import { pivotBoxCorners, scrollAxisMetrics, scrollDistance, scrollViewAlong, viewScrollFrame, type ScrollAxisMetrics } from "@/lib/viewScroll";
+import { pivotBoxCorners, scrollAxisMetrics, scrollDistance, scrollViewAlong, viewScrollFrame, wheelScrollFraction, type ScrollAxisMetrics } from "@/lib/viewScroll";
 
 /**
  * Scrollbars along the right and bottom edge of the 3D view (Discussion #1241), switched in the view bar. Dragging
@@ -55,22 +55,36 @@ export function ViewScrollbars({ threeRef }: { threeRef: MutableRefObject<ThreeS
     };
   };
 
-  // The properties panel lies over the right of the view: the bars end at its left edge, and reach the edge when it is
-  // closed. Measured when the view, the panel or its place change, not every frame (that laid out the page 60 times a
-  // second while nothing moved).
+  // The properties panel lies over the right of the view: a bar whose strip it covers ends at its left edge, and reaches
+  // the edge when it is closed, minimised or moved out of the way. Measured when the view, the panel or its place
+  // change, not every frame (that laid out the page 60 times a second while nothing moved).
   useEffect(() => {
     const box = root.current;
     const stage = box?.parentElement;
     if (!box || !stage || typeof ResizeObserver === "undefined" || typeof MutationObserver === "undefined") return;
-    let lastRight = -1;
+    let last = "";
     const measure = () => {
       const panel = stage.querySelector<HTMLElement>(":scope > .shape-inspector");
       const stageRect = stage.getBoundingClientRect();
       const panelRect = panel?.getBoundingClientRect();
-      const right = panelRect && panelRect.width > 0 ? Math.max(0, Math.round(stageRect.right - panelRect.left)) : 0;
-      if (right === lastRight) return;
-      lastRight = right;
-      box.style.setProperty("--view-scrollbar-right", `${right}px`);
+      const shown = panelRect && panelRect.width > 0 ? panelRect : undefined;
+      // Minimised, the panel is only its header: the upright bar starts below it, the bottom one passes under it.
+      const minimized = panel?.classList.contains("minimized") ?? false;
+      const clear = shown ? Math.max(0, Math.round(stageRect.right - shown.left)) : 0;
+      // A bar's strip along its edge: its own width and the gap around it.
+      const strip = parseFloat(getComputedStyle(box).getPropertyValue("--view-scrollbar-size")) + 8;
+      const inYStrip = !!shown && shown.right > stageRect.right - strip;
+      const yRight = inYStrip && !minimized ? clear : 0;
+      const yTop = inYStrip && minimized ? Math.round(shown.bottom - stageRect.top) + 4 : 4;
+      const xRight = shown && !minimized && shown.bottom > stageRect.bottom - strip ? clear : 0;
+      const next = `${yRight} ${yTop} ${xRight}`;
+      if (next === last) return;
+      last = next;
+      box.style.setProperty("--view-scrollbar-right", `${yRight}px`);
+      // A view cube in a right corner keeps beside the upright bar (viewScrollbars.css).
+      stage.style.setProperty("--view-scrollbar-right", `${yRight}px`);
+      box.style.setProperty("--view-scrollbar-top", `${yTop}px`);
+      box.style.setProperty("--view-scrollbar-x-right", `${xRight}px`);
     };
     const sizes = new ResizeObserver(measure);
     // A panel dragged away from the edge moves by its style, minimised by its class: neither changes a size.
@@ -94,6 +108,7 @@ export function ViewScrollbars({ threeRef }: { threeRef: MutableRefObject<ThreeS
     panelComesAndGoes.observe(stage, { childList: true });
     watchPanel();
     return () => {
+      stage.style.removeProperty("--view-scrollbar-right");
       sizes.disconnect();
       panelPlace.disconnect();
       panelComesAndGoes.disconnect();
@@ -235,11 +250,21 @@ export function ViewScrollbars({ threeRef }: { threeRef: MutableRefObject<ThreeS
     (event.currentTarget as HTMLElement).classList.remove("dragging");
   };
 
-  // The wheel over a bar scrolls along it, as on a page; it does not zoom there.
+  // A drag whose pointer the bar lost without a release (the window lost focus, say) ends there, so a later move over
+  // the track cannot pick it up again.
+  const onTrackLost = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (drag.current?.pointerId !== event.pointerId) return;
+    drag.current = null;
+    event.currentTarget.classList.remove("dragging");
+  };
+
+  // The wheel over a bar scrolls along it as far as it turned, as on a page; it does not zoom there.
   const onWheel = (axis: Axis) => (event: ReactWheelEvent) => {
     event.stopPropagation();
     const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
-    if (delta) step(axis, Math.sign(delta) * ARROW_STEP * 3);
+    const canvas = threeRef.current?.renderer.domElement;
+    const viewPx = (axis === "x" ? canvas?.clientWidth : canvas?.clientHeight) ?? 0;
+    if (delta) step(axis, wheelScrollFraction(delta, event.deltaMode, viewPx));
   };
 
   const bar = (axis: Axis) => {
@@ -268,6 +293,7 @@ export function ViewScrollbars({ threeRef }: { threeRef: MutableRefObject<ThreeS
           onPointerMove={onTrackMove}
           onPointerUp={onTrackUp}
           onPointerCancel={onTrackUp}
+          onLostPointerCapture={onTrackLost}
         >
           <div ref={horizontal ? thumbX : thumbY} className="view-scrollbar-thumb" />
         </div>

@@ -150,11 +150,46 @@ describe("layerling .lyl project packages", () => {
     await expect(importLylProject(broken)).rejects.toThrow(/textEdge/);
   });
 
+  it("keeps a body's paint through saving and opening, and refuses a stroke that is none", async () => {
+    const paint = [
+      { mode: "fill" as const, color: "#f2cf10", size: [20, 20, 20] as [number, number, number], point: [0, 20, 0] as [number, number, number], normal: [0, 1, 0] as [number, number, number], angle: 30 },
+      { mode: "circle" as const, size: [20, 20, 20] as [number, number, number], point: [0, 10, 10] as [number, number, number], normal: [0, 0, 1] as [number, number, number], diameter: 6 },
+      { mode: "lasso" as const, color: "#2f9e44", size: [20, 20, 20] as [number, number, number], origin: [0, 10, 80] as [number, number, number], right: [1, 0, 0] as [number, number, number], up: [0, 1, 0] as [number, number, number], forward: [0, 0, -1] as [number, number, number], perspective: true, outline: [[0, 0], [0.1, 0], [0, 0.1]] as Array<[number, number]> },
+    ];
+    const painted = shape("box", "painted", { paint });
+    const bytes = await exportLylProject(input([painted]));
+    const restored = await importLylProject(bytes);
+    expect(restored.shapes[0].paint).toEqual(paint);
+    const broken = mutateProject(bytes, (document) => {
+      document.states.forEach((state) => state.nodes.forEach((node) => {
+        const definition = node.definition as Record<string, unknown>;
+        if (definition.paint) definition.paint = [{ mode: "spray", size: [1, 1, 1] }];
+      }));
+    });
+    await expect(importLylProject(broken)).rejects.toThrow(/paint/);
+  });
+
   it("keeps a group's Multicolor choice through saving and opening", async () => {
     const group = shape("box", "group-1", { multicolor: false });
     const other = shape("box", "group-2", { multicolor: true });
     const restored = await importLylProject(await exportLylProject(input([group, other])));
     expect(restored.shapes.map((entry) => entry.multicolor)).toEqual([false, true]);
+  });
+
+  it("keeps what a group does with its parts when it is resized, and refuses another word (#526)", async () => {
+    const keeping = shape("box", "group-1", { groupResize: "keepParts" });
+    const stretching = shape("box", "group-2");
+    const bytes = await exportLylProject(input([keeping, stretching]));
+    const restored = await importLylProject(bytes);
+    expect(restored.shapes.map((entry) => entry.groupResize)).toEqual(["keepParts", undefined]);
+    const broken = mutateProject(bytes, (document) => {
+      expect(JSON.stringify(document)).toContain("keepParts");
+      document.states.forEach((state) => state.nodes.forEach((node) => {
+        const definition = node.definition as Record<string, unknown>;
+        if (definition.groupResize) definition.groupResize = "sideways";
+      }));
+    });
+    await expect(importLylProject(broken)).rejects.toThrow(/groupResize/);
   });
 
   it("loads an old cylinder with mismatched width and depth as circular instead of refusing it", async () => {

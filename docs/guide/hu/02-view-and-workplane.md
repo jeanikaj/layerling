@@ -43,7 +43,7 @@ A bal szélen egy keskeny sáv van. Felülről lefelé:
 - A {{ui:camera.zoomIn}} és a {{ui:camera.zoomOut}} lépésenként nagyít és kicsinyít, ahogy a [[+]] és a [[−]] billentyű is.
 - Az {{ui:camera.orthographic}} lapos nézetre vált, amelyben a párhuzamos élek párhuzamosak maradnak. Méréshez és élek egymáshoz igazításához ez gyakran kényelmesebb, mint a perspektivikus nézet. Az [[O]] oda-vissza vált, és egy második kattintás visszavált.
 - A {{ui:camera.secondView}} a terv második nézetét nyitja meg egy saját ablakban, lásd lent. Egy második kattintás bezárja.
-- A {{ui:camera.showScrollbars}} egy görgetősávot tesz a nézet aljára és egyet a jobb szélére. Húzd a sávot, és a nézet egyenletesen csúszik; a végén lévő nyílra kattintva egy kicsit mozdul (nyomva tartva tovább megy), a sáv mellé kattintva pedig majdnem egy egész nézetnyit. Semmi sem fordul el, és a nyílbillentyűkkel ellentétben a sávok akkor is működnek, ha egy alkatrész ki van jelölve - közelről, apró részleteknél hasznos. Egy második kattintás elrejti őket; ez a böngésző megjegyzi a választást.
+- A {{ui:camera.showScrollbars}} egy görgetősávot tesz a nézet aljára és egyet a jobb szélére. Húzd a sávot, és a nézet egyenletesen csúszik; a végén lévő nyílra kattintva egy kicsit mozdul (nyomva tartva tovább megy), a sáv mellé kattintva pedig majdnem egy egész nézetnyit. Semmi sem fordul el, és a nyílbillentyűkkel ellentétben a sávok akkor is működnek, ha egy alkatrész ki van jelölve - közelről, apró részleteknél hasznos. Egy második kattintás elrejti őket; hogy egy terv velük nyíljon-e meg, azt a beállítások {{ui:workspace.startWithScrollbars}} kapcsolója dönti el. Ez a böngésző a választást is megjegyzi.
 - A {{ui:camera.hideWorkplane}} (a rács fölötti szem) elrejti a tárgyasztalt a rácsával együtt, így alulról is megnézheted egy terv alját. Csak a nézet változik: az új alakzatok továbbra is a munkasíkra kerülnek. Egy második kattintás újra megmutatja.
 - A {{ui:camera.placeWorkplane}}, a mérőszalag és a derékszögvonalzó önálló eszközök, ezekről lentebb és a [Mérés és jegyzetek](chapter:measuring-and-notes) fejezetben olvashatsz.
 
@@ -93,6 +93,19 @@ Amíg a munkasík egy lapon van, a {{ui:camera.placeWorkplane}} mellett megjelen
 
 Ha merőlegesen akarsz a munkasíkra nézni, nyomd meg a [[P]] billentyűt, vagy kattints a nézetsávban a {{ui:camera.placeWorkplane}} melletti {{ui:camera.lookOntoWorkplane}} gombra. A nézet addig fordul, amíg szemből látod a síkot, arról az oldalról, amerre az új alakzatok nőnek, a kezdőpontjával középen. Az alaplapon ez a felülnézet.
 
+## Nyomtatótálcák
+
+Ha egy terv több alkatrészt tartalmaz, mint amennyi egy tálcára fér, például egy doboz a fedelével és betéteivel, több nyomtatótálcája is lehet. Kattints a {{ui:editor.tool.buildPlates}} gombra az {{ui:editor.group.arrange}} csoportban, vagy válaszd a {{ui:plates.moveTo}} pontot egy testen jobb kattintással nyíló menüben. A nézet alján megjelenik egy sáv, tálcánként egy gombbal; a rajta lévő szám megmutatja, hány test áll a tálcán.
+
+- Minden tálca akkora, mint a munkasík, és a tálcák egymás mellett fekszenek az első jobb oldalán, 20 mm-re egymástól. Egy test ahhoz a tálcához tartozik, amelyen az alapterülete közepe áll, így áthúzva a másik tálcára kerül. Egy tervnek legfeljebb 12 tálcája lehet.
+- A sávban egy tálcára kattintva az megjelenik, és az új alakzatok ezután rá kerülnek. A {{ui:plates.showAll}} mindet megmutatja. Dupla kattintás egy tálcán vagy a {{ui:plates.rename}} nevet ad neki, például „Fedél”, ami a tálcára is kiíródik.
+- A {{ui:plates.moveLeft}} és a {{ui:plates.moveRight}} a sorrendet változtatja, a testek a tálcájukkal mozognak. A {{ui:plates.remove}} eltávolítja az aktív tálcát; a testei ugyanarra a helyre kerülnek az első tálcán.
+- Az {{ui:plates.arrange}} a kijelölt testeket, vagy mindet, sorról sorra a tálcákra rakja, a legnagyobbat először, 5 mm-re egymástól, és tálcákat ad hozzá, amíg kell. A tálcánál nagyobb test a helyén marad.
+- Kiválasztott nyomtatóval minden test a saját tálcájához mérve ellenőrződik, és a nyomtatási magasság a tálca legalsó testétől számít. Az a tálca, amelyen egy test nem fér el, pirosan mutatja a számát.
+- A tulajdonságokban az X a test saját tálcájának közepétől számít.
+
+Az exportálási ablak ekkor felkínálja: {{ui:export.plates}}: minden tálca egy fájlban, egymás mellett, mint a tervben; tálcánként egy fájl, egy ZIP-be csomagolva (STL, 3MF és OBJ); vagy egyetlen tálca, az első tálca helyére téve. A szeletelő minden fájlt egy tálcaként nyit meg, így ha a tálcákat egymás után nyomtatod, a tálcánkénti fájlokat válaszd. A testek tálcák közötti áthelyezése és elrendezése visszavonható; a tálcák hozzáadása, elnevezése, sorrendje és eltávolítása a tervvel együtt mentődik, de nem vonható vissza.
+
 ## Rács és illesztés
 
 A rács a tárgyasztal méretét mutatja. Jobbra lent van az **illesztési lépés**: a mozgatás és a méretezés ekkora lépésekben illeszkedik, például 1 mm-esekben. Finom munkához vedd kisebbre, durva elrendezéshez nagyobbra. A szalagon a {{ui:editor.tool.snapToGrid}} utólag a legközelebbi rácspontra helyezi a kijelölt alakzatokat. Mozgatás közben az alakzatok más alakzatokhoz is illeszkednek, lásd a [Kijelölés és elrendezés](chapter:select-and-arrange) fejezetet.
@@ -102,6 +115,8 @@ A rács a tárgyasztal méretét mutatja. Jobbra lent van az **illesztési lép�
 ### A beállítások ablaka
 
 A címsorban lévő fogaskerék ({{ui:editor.workspaceSettings}}) megnyitja a beállításokat. Balra öt terület van: {{ui:workspace.appearance}}, {{ui:workspace.measurement}}, {{ui:workspace.workplane}}, {{ui:workspace.shapeDefaults}} és {{ui:workspace.history}}. Egy változtatás azonnal érvényes. Alul a(z) {{ui:workspace.makeDefault}} a jelenlegi beállításokat menti alapértelmezésként, így egy új terv ezekkel indul. Egy megnyitott fájl a saját beállításait hozza magával; a mellette lévő {{ui:workspace.useMyDefault}} a mentett színeidet, rácsodat és a többit alkalmazza a nyitott tervre, a mértékegységeit pedig megtartja. Ha az alapértelmezéseid nyomtatót is tartalmaznak, annak tárgyasztal-mérete is jön vele; nyomtató nélkül a terv megtartja a saját tárgyasztalát és nyomtatóját. A jobb felső sarokban a(z) {{ui:workspace.close}} bezárja az ablakot. Ez a rész sorban végigmegy a beállításokon.
+
+{{ui:workspace.exportSettings}} fájlba menti az ablak beállításait (layerling-settings-<dátum>.json): a színeket, a rácsot, az árnyékokat, a kamerát és az alakzatok alapértékeit, valamint a témát, az eszköztár méretét, a nézetkocka sarkát, az alakzatszíneket és az egyes nyomtatók játékát. Másik számítógépen vagy a böngésző adatvesztése után {{ui:workspace.importSettings}} újra beolvassa a fájlt: az új tervek alapértelmezése lesz, és a megnyitott tervre is rákerül, mint a {{ui:workspace.useMyDefault}}. A billentyűparancsok saját billentyűi is vele mennek.
 
 ### Megjelenés: téma, szalag és nézetkocka
 
@@ -161,6 +176,8 @@ A(z) {{ui:workspace.objectSnap}} húzás közben más alakzatokhoz illeszti egy 
 
 {{ui:workspace.startInPerspective}}: a szerkesztő ilyenkor perspektivikus nézetben nyílik meg a lapos helyett.
 
+{{ui:workspace.startWithScrollbars}}: a terv ilyenkor a nézet görgetősávjaival nyílik meg. A beállítás a tervvel és a {{ui:workspace.makeDefault}} gombbal is mentődik.
+
 A(z) {{ui:workspace.startView}} azt a szöget adja meg, amelyben egy új terv megnyílik, és amelyhez a(z) {{ui:camera.home}} visszatér. Forgasd és nagyítsd a nézetet, ahogy tetszik, majd kattints a(z) {{ui:workspace.startViewUseCurrent}} gombra; a(z) {{ui:workspace.startViewStandard}} visszahozza a szokásos elölről-jobbról nézetet. Ebben a böngészőben minden tervre érvényes. Egy újra megnyitott terv továbbra is úgy nyílik meg, ahogy otthagytad.
 
 A(z) {{ui:workspace.zoomSpeed}} egy csúszka lassútól gyorsig: milyen gyorsan nagyít a görgő és az érintőpad; a nagyítás gombjai és billentyűi megtartják a saját kis lépéseiket. {{ui:workspace.cameraInertia}}: ha elengeded az egeret, a nézet még egy pillanatig forog, és finoman lelassul. Kikapcsolva azonnal megáll, mint a Tinkercadben és a Fusion 360-ban.
@@ -177,9 +194,13 @@ A beállításokban a {{ui:workspace.measurement}} alatt adod meg a {{ui:workspa
 
 Ugyanitt a {{ui:workspace.customSnapGrids}} alatt saját illesztési lépéseket adhatsz hozzá: egy nevet és egy méretet milliméterben, például „Tűosztás 2,54 mm” a DIP chipek, tüskesorok és próbapanel-furatok osztásához, vagy „MX Key Unit” 19,05 mm-rel a billentyűzetgombok osztásához. Az illesztési lépés menüje ezután ezt a méretet egészben, felezve és negyedelve kínálja fel (1 ×, ½ × és ¼ ×), így az alakzatokat egy, fél vagy negyed osztással mozgathatod. Ha csak magát a méretet szeretnéd, vedd ki mellette a pipát a {{ui:workspace.customSnapGridParts}} elől; a menüben ekkor csak ez az egy lépés lesz. A saját lépések a tervvel együtt mentődnek, és a {{ui:workspace.makeDefault}} gombbal is továbbvihetők.
 
+{{ui:workspace.startWithCornerRuler}}: ebben a böngészőben ekkor minden új terv derékszögvonalzóval indul az origóban, lásd [Mérés és jegyzetek](chapter:measuring-and-notes). A meglévő tervek változatlanok maradnak, és ha egy tervből eltávolítod a vonalzót, az nem jön vissza.
+
 ### Munkasík: tárgyasztal és nyomtató
 
 A(z) {{ui:workspace.printer}} a munkasíkot a nyomtatód tárgyasztalához igazítja, és megjelöli azokat a testeket, amelyek túlnyúlnak rajta, lásd [Nyomtatás](chapter:printing). A(z) {{ui:workspace.showPlateLabels}} ráírja a tárgyasztalra a terv nevét, kiválasztott nyomtatónál pedig annak nevét és nyomtatási terét is.
+
+A(z) {{ui:workspace.printerPlay}} az az oldalankénti hely, amelyre egy nyomtatott csapnak szüksége van, hogy a nyomtatódon nyomtatott furatban forogjon. A(z) {{ui:workspace.fitTestMake}} a tárgyasztalra teszi az illesztési próbát, amely ezt méri; az új fedelek, fecskefarkak, pattintós kampók, anyák és a hézagellenőrzés ezután ebből indulnak, lásd [Nyomtatás](chapter:printing). Ebben a böngészőben marad, nem a tervben.
 
 A(z) {{ui:workspace.size}} saját méretet ad a tárgyasztalnak, {{ui:workspace.width}} és {{ui:workspace.length}} milliméterben vagy a választott mértékegységben. A rács mindig átmegy az origón, így az erősebb vonalak a tengelyeken vannak, bármekkora is a tárgyasztal.
 

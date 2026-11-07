@@ -5,6 +5,7 @@ import { type ShapeInspectorUpdateOptions } from "@/components/workplane/ShapeIn
 import { cadModifierPrimitiveForBakedShape, cadTransformFromMatrix, cadTransformToMatrix } from "@/lib/cadBakeMetadata";
 import { starSettingsForSize } from "@/lib/starGeometry";
 import { gridfinityFootprintPatch } from "@/lib/gridfinityGeometry";
+import { pulleyFootprint, pulleyFromSize, pulleySizedPatch } from "@/lib/pulleyGeometry";
 import { type SelectionFrame } from "@/lib/liftGeometry";
 import { scaledHorizontalShapePatch } from "@/lib/scaleByPercent";
 import { POSITION_TYPED_LIMIT } from "@/lib/workplaneSettings";
@@ -14,7 +15,7 @@ import { type DimensionMark, type RotationAxis, type RotationPlaneView, type Rot
 import type { WorkplaneShape } from "@/types/layerling";
 import { directionIsOwnShapeAxis } from "@/lib/geometryRotation";
 import { quaternionForShape, shapeCenter } from "@/components/workplane/ViewportOverlays";
-import { MIN_SHAPE_SIZE, clamp, selectionFrameForShapes } from "./viewportShapeObjects";
+import { MIN_SHAPE_SIZE, boxDimensionsAlongAxes, clamp, selectionFrameForShapes } from "./viewportShapeObjects";
 import { framePoint, frameLocalPoint, selectionFrameCorners } from "./viewportTransformOverlays";
 
 export const MIN_ELEVATION = -POSITION_TYPED_LIMIT;
@@ -271,6 +272,19 @@ export function resizeShapeFromFrameHandle(
   step: number,
   maxSize: number,
 ): Partial<WorkplaneShape> {
+  // A GT2 pulley (Discussion #1319) takes the size as teeth and belt width.
+  return pulleySizedPatch(transform.startShape, resizeShapeFromFrameHandleBox(transform, point, handleKey, shiftKey, altKey, step, maxSize));
+}
+
+function resizeShapeFromFrameHandleBox(
+  transform: TransformDragState,
+  point: THREE.Vector3,
+  handleKey: string,
+  shiftKey: boolean,
+  altKey: boolean,
+  step: number,
+  maxSize: number,
+): Partial<WorkplaneShape> {
   const shape = transform.startShape;
   const frame = transform.selectionFrame;
   const width = frame.width;
@@ -299,10 +313,15 @@ export function resizeShapeFromFrameHandle(
   // drives the one shared diameter instead of stretching width and depth
   // independently into an ellipse.
   // A Hirth joint too: stretched, its teeth no longer interlock all round (#1016).
-  if ((shape.kind === "cylinder" || shape.kind === "star" || shape.kind === "hirth" || shape.kind === "finishingWasher") && (signs.x || signs.z)) {
+  if ((shape.kind === "cylinder" || shape.kind === "star" || shape.kind === "hirth" || shape.kind === "pulley" || shape.kind === "finishingWasher") && (signs.x || signs.z)) {
     const diameter = signs.x && signs.z ? (nextWidth + nextDepth) / 2 : signs.x ? nextWidth : nextDepth;
     nextWidth = diameter;
     nextDepth = diameter;
+  }
+  // A GT2 pulley is whole teeth: its width is rounded to them before the middle is placed.
+  if (shape.kind === "pulley" && (signs.x || signs.z)) {
+    nextWidth = pulleyFootprint({ ...shape, ...pulleyFromSize(shape, { width: nextWidth }) }).width;
+    nextDepth = nextWidth;
   }
 
   // Shift on a corner keeps every proportion, height included.
@@ -329,6 +348,29 @@ export function resizeShapeFromFrameHandle(
   const nextCenter = altKey
     ? frame.center.clone()
     : resizeCenterFromAnchor(frame, transform.scaleAnchorPoint ?? resizeAnchorPointForFrame(frame, signs), centerSigns, nextWidth, nextDepth);
+  // A box on a workplane that stands on one of its side faces (Discussion #1351): the handles run along the
+  // workplane's axes, so each size goes to the box's own dimension that lies along its axis.
+  const boxDimensions = boxDimensionsAlongAxes(shape, { x: frame.xAxis, y: frame.yAxis, z: frame.zAxis });
+  if (boxDimensions && (boxDimensions.x !== "width" || boxDimensions.y !== "height" || boxDimensions.z !== "depth")) {
+    const dims = { width: shapeWidth(shape), height: shape.height, depth: shapeDepth(shape) };
+    dims[boxDimensions.x] = nextWidth;
+    dims[boxDimensions.z] = nextDepth;
+    const center = nextCenter.clone();
+    if (uniformScale !== 1) {
+      // Shift on a corner keeps every proportion: the third size grows from the face the workplane stands on.
+      dims[boxDimensions.y] = Math.max(MIN_SHAPE_SIZE, frame.height * uniformScale);
+      if (!altKey) center.addScaledVector(frame.yAxis, (dims[boxDimensions.y] - frame.height) / 2);
+    }
+    return {
+      x: cleanNearZero(center.x, 0.0005),
+      z: cleanNearZero(center.z, 0.0005),
+      elevation: cleanNearZero(center.y - dims.height / 2, 0.0005),
+      width: dims.width,
+      depth: dims.depth,
+      height: dims.height,
+      size: resizedShapeSize(dims.width, dims.depth),
+    };
+  }
   if (shapeHasTaper(shape)) {
     const scaleX = nextWidth / Math.max(MIN_SHAPE_SIZE, width);
     const scaleZ = nextDepth / Math.max(MIN_SHAPE_SIZE, depth);
@@ -489,6 +531,20 @@ export function resizeShapeAlongFrameNormal(
   nextFrameHeight: number,
   resizingFromBottom: boolean,
 ): Partial<WorkplaneShape> {
+  // A GT2 pulley (Discussion #1319) standing up takes its height as the belt width, rounded to what it allows.
+  if (shape.kind === "pulley" && !shape.rotationX && !shape.rotationZ) {
+    const height = pulleyFootprint({ ...shape, ...pulleyFromSize(shape, { height: Math.abs(nextFrameHeight) }) }).height;
+    return pulleySizedPatch(shape, resizeShapeAlongFrameNormalBox(shape, frame, Math.sign(nextFrameHeight || 1) * height, resizingFromBottom));
+  }
+  return pulleySizedPatch(shape, resizeShapeAlongFrameNormalBox(shape, frame, nextFrameHeight, resizingFromBottom));
+}
+
+function resizeShapeAlongFrameNormalBox(
+  shape: WorkplaneShape,
+  frame: SelectionFrame,
+  nextFrameHeight: number,
+  resizingFromBottom: boolean,
+): Partial<WorkplaneShape> {
   // A body made of a mesh keeps a positive height; past the other face it stops at the smallest size.
   const importedPatch = resizeImportedShapeAlongFrameNormal(shape, frame, Math.max(MIN_SHAPE_SIZE, nextFrameHeight), resizingFromBottom);
   if (importedPatch) {
@@ -618,8 +674,11 @@ export function scaleSelectionItems(
       .add(frame.xAxis.clone().multiplyScalar(localCenter.x * nextX.scale))
       .add(frame.yAxis.clone().multiplyScalar(localCenter.y))
       .add(frame.zAxis.clone().multiplyScalar(localCenter.z * nextZ.scale));
-    const width = snapDimension(shapeWidth(item.startShape) * Math.abs(nextX.scale), step, MIN_SHAPE_SIZE, maxSize);
-    const depth = snapDimension(shapeDepth(item.startShape) * Math.abs(nextZ.scale), step, MIN_SHAPE_SIZE, maxSize);
+    // Only the selection as a whole lies on the grid. A body of several is not snapped on its own: each would round
+    // to a different factor and the layers of an imported drawing no longer fitted into one another (Discussion #1416).
+    const sized = (size: number) => (items.length === 1 ? snapDimension(size, step, MIN_SHAPE_SIZE, maxSize) : clamp(size, MIN_SHAPE_SIZE, maxSize));
+    const width = sized(shapeWidth(item.startShape) * Math.abs(nextX.scale));
+    const depth = sized(shapeDepth(item.startShape) * Math.abs(nextZ.scale));
     const actualScaleX = width / Math.max(MIN_SHAPE_SIZE, shapeWidth(item.startShape));
     const actualScaleZ = depth / Math.max(MIN_SHAPE_SIZE, shapeDepth(item.startShape));
     const patch = {

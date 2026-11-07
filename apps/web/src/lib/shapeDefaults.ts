@@ -1,4 +1,5 @@
 import { normalizeHexColor } from "@/lib/coloredImport";
+import { printerPlayShapeStart } from "@/lib/printerPlay";
 import { makeShapeFromAsset, toolbarShapeAssets } from "@/lib/shapeCatalog";
 import { normalizeShapeCustomizations } from "@/lib/workplaneSettings";
 import { shapeDepth, shapeWidth } from "@/lib/workplaneShapes";
@@ -11,15 +12,15 @@ import type { ShapeCustomization, ShapeCustomizationMap, WorkplaneShape } from "
  * settings, not a property of a body.
  */
 const SHAPE_DEFAULT_FIELDS = [
-  "cornerFillet", "topBottomFillet", "roundedBoxQuality", "steps", "sides", "bevel", "segments", "topRadius", "baseRadius", "curvedConeTop", "curvedConeBend", "screwBossFastener", "screwBossSize", "screwBossHole", "screwBossHoleDepth", "screwBossDiameter", "screwBossGussets", "screwBossGussetHeight", "screwBossGussetThickness", "snapFitPart", "snapFitThickness", "snapFitUndercut", "snapFitClearance", "snapFitLeadAngle", "snapFitRetainAngle", "snapFitFoot", "ribStyle", "ribTop",
-  "topWidth", "topDepth", "teeth", "toothSize", "toothWidth", "centerHoleSize", "gearType", "helixAngle", "helixQuality", "gearProfile", "gearPressureAngle", "gearBacklash", "gearRim",
+  "cornerFillet", "topBottomFillet", "roundedBoxQuality", "steps", "sides", "bevel", "segments", "topRadius", "baseRadius", "curvedConeTop", "curvedConeBend", "screwBossFastener", "screwBossSize", "screwBossHole", "screwBossHoleDepth", "screwBossDiameter", "screwBossGussets", "screwBossGussetHeight", "screwBossGussetThickness", "snapFitPart", "snapFitThickness", "snapFitUndercut", "snapFitClearance", "snapFitLeadAngle", "snapFitRetainAngle", "snapFitFoot", "ribStyle", "ribTop", "ribFoot", "ribThickness", "ribFootThickness", "ribFootShape",
+  "topWidth", "topDepth", "teeth", "toothSize", "toothWidth", "centerHoleSize", "hirthSteepFlank", "hirthReverse", "pulleyBeltWidth", "pulleyFlange", "pulleyFlangeRise", "pulleyHubHeight", "pulleyHubDiameter", "gearType", "helixAngle", "helixQuality", "gearProfile", "gearPressureAngle", "gearBacklash", "gearRim",
   "threadRole", "threadHead", "threadHand", "threadProfile", "threadDiameter", "threadPitch", "threadClearance",
-  "threadBoltClearance", "threadAxialClearance", "threadDepth", "threadFlankAngle", "threadQuality", "threadHeadHeight", "threadChamfer", "threadChamferBottom", "threadHeadChamfer", "threadDrive", "springTurns",
+  "threadBoltClearance", "threadAxialClearance", "threadStarts", "threadDepth", "threadFlankAngle", "threadQuality", "threadHeadHeight", "threadChamfer", "threadChamferBottom", "threadHeadChamfer", "threadDrive", "springTurns",
   "springWire", "springHand", "springQuality", "springForm", "springPattern", "springEnds", "starPoints", "starInnerSize", "starOuterFillet", "starInnerFillet",
   "starQuality", "heartTipFillet", "heartQuality", "crescentThickness", "crescentTipFillet", "crescentQuality",
   "honeycombCellSize", "honeycombWallThickness", "honeycombFrameWidth", "tubeBoreHole", "hingeKnuckles", "hingeKnuckleWidth", "hingeStyle", "hingeConeSize", "hingePinDiameter",
-"hingeLeafThickness", "hingeClearance", "hingePinless", "hingeAngle", "hingeScrewHoles", "hingeScrewDiameter", "hingeScrewSpacing", "hingeScrewAcross", "hingeScrewCountersink", "hingeCornerRadius", "hingeLeafStyle", "hingeScrewHead", "hingeNutWidth", "gridfinityType", "gridfinityLip", "gridfinityMagnets", "gridfinityHalfGrid", "gridfinityLargePlate", "gridfinitySwallowtail", "gridfinitySwallowtailClearance", "gridfinityLabelBack", "gridfinityLabelFront", "gridfinityLabelLeft", "gridfinityLabelRight", "gridfinityLabelBackWidth", "gridfinityLabelBackLength", "gridfinityLabelBackOffset", "gridfinityLabelFrontWidth", "gridfinityLabelFrontLength", "gridfinityLabelFrontOffset", "gridfinityLabelLeftWidth", "gridfinityLabelLeftLength", "gridfinityLabelLeftOffset", "gridfinityLabelRightWidth", "gridfinityLabelRightLength", "gridfinityLabelRightOffset", "gridfinityLabelCorner", "gridfinityLabelCornerSize", "gridfinityScoopBack", "gridfinityScoopFront", "gridfinityScoopLeft", "gridfinityScoopRight", "gridfinityScoopRadius", "gridfinityFloorHeight", "gridfinityOpenBack", "gridfinityOpenFront", "gridfinityOpenLeft", "gridfinityOpenRight", "gridfinityLipChamfer", "gridfinityWallThickness", "gridfinityOpeningCorner", "gridfinityOpeningCornerSize", "gridfinityPaddingBack", "gridfinityPaddingFront", "gridfinityPaddingLeft", "gridfinityPaddingRight", "gridfinityCornerRadius", "gridfinityBinCornerRadius", "gridfinityCompartmentsX", "gridfinityCompartmentsZ", "gridfinityDividerThickness", "knurlPattern", "knurlCount", "knurlDepth", "knurlAngle", "knurlChamfer",
-  "dovetailNeckWidth", "dovetailClearance", "portProfile", "portClearance", "loftBottomOutline", "loftTopOutline", "loftBottomWidth", "loftBottomDepth", "loftTopWidth", "loftTopDepth", "loftBottomCorner", "loftTopCorner", "loftBottomSides", "loftTopSides", "loftOffsetX", "loftOffsetZ", "loftWall", "loftTwist", "loftSmooth", "loftSegments", "loftTiltX", "loftTiltZ", "slotEndRatio", "torusTubeRatio", "screwHoleShaft", "screwHoleHeadDepth", "screwHoleAngle", "bentTubeProfile",
+"hingeLeafThickness", "hingeClearance", "hingePinless", "hingeScrewHoles", "hingeScrewDiameter", "hingeScrewSpacing", "hingeScrewAcross", "hingeScrewCountersink", "hingeCornerRadius", "hingeLeafStyle", "hingeScrewHead", "hingeNutWidth", "gridfinityType", "gridfinityLip", "gridfinityMagnets", "gridfinityHalfGrid", "gridfinityLargePlate", "gridfinitySwallowtail", "gridfinitySwallowtailClearance", "gridfinityLabelBack", "gridfinityLabelFront", "gridfinityLabelLeft", "gridfinityLabelRight", "gridfinityLabelBackWidth", "gridfinityLabelBackLength", "gridfinityLabelBackOffset", "gridfinityLabelFrontWidth", "gridfinityLabelFrontLength", "gridfinityLabelFrontOffset", "gridfinityLabelLeftWidth", "gridfinityLabelLeftLength", "gridfinityLabelLeftOffset", "gridfinityLabelRightWidth", "gridfinityLabelRightLength", "gridfinityLabelRightOffset", "gridfinityLabelCorner", "gridfinityLabelCornerSize", "gridfinityLabelFont", "gridfinityLabelColor", "gridfinityLabelTextSize", "gridfinityScoopBack", "gridfinityScoopFront", "gridfinityScoopLeft", "gridfinityScoopRight", "gridfinityScoopRadius", "gridfinityFloorHeight", "gridfinityOpenBack", "gridfinityOpenFront", "gridfinityOpenLeft", "gridfinityOpenRight", "gridfinityLipChamfer", "gridfinityWallThickness", "gridfinityOpeningCorner", "gridfinityOpeningCornerSize", "gridfinityPaddingBack", "gridfinityPaddingFront", "gridfinityPaddingLeft", "gridfinityPaddingRight", "gridfinityCornerRadius", "gridfinityBinCornerRadius", "gridfinityCompartmentsX", "gridfinityCompartmentsZ", "gridfinityDividerThickness", "knurlPattern", "knurlCount", "knurlDepth", "knurlAngle", "knurlChamfer",
+  "dovetailNeckWidth", "dovetailClearance", "portProfile", "portClearance", "loftBottomOutline", "loftTopOutline", "loftBottomWidth", "loftBottomDepth", "loftTopWidth", "loftTopDepth", "loftBottomCorner", "loftTopCorner", "loftBottomSides", "loftTopSides", "loftOffsetX", "loftOffsetZ", "loftWall", "loftTwist", "loftSmooth", "loftSegments", "loftTiltX", "loftTiltZ", "slotEndRatio", "torusTubeRatio", "screwHoleShaft", "screwHoleHeadDepth", "screwHoleAngle", "drillPointAngle", "bentTubeProfile",
   "bentTubeInnerProfile", "bentTubeSize", "bentTubeWall", "bentTubeQuality", "font", "textCurved", "textRadius",
   "textSize", "textInward", "textFlipped",
 ] as const;
@@ -38,12 +39,14 @@ export function shapeDefaultsAsset(kind: WorkplaneShape["kind"]) {
  * What "Save as default" stores for a shape: its size and its own settings, as
  * far as they differ from what the app starts the kind with. Returns null when
  * nothing differs (then the kind simply has no defaults of its own), or when
- * the shape is not one that can have any.
+ * the shape is not one that can have any. With the printer's play, a clearance
+ * that follows it starts from it: one still at that value is not stored, so it
+ * goes on following the play.
  */
-export function shapeDefaultsFromShape(shape: WorkplaneShape, existing: ShapeCustomizationMap = {}): ShapeCustomization | null {
+export function shapeDefaultsFromShape(shape: WorkplaneShape, existing: ShapeCustomizationMap = {}, printerPlay: number | null = null): ShapeCustomization | null {
   const asset = shapeDefaultsAsset(shape.kind);
   if (!asset) return null;
-  const app = makeShapeFromAsset(asset);
+  const app = makeShapeFromAsset(asset, undefined, printerPlayShapeStart(shape.kind, printerPlay));
   const picked: Record<string, unknown> = {};
   const appValues: Record<string, unknown> = {};
   const take = (key: string, value: unknown, appValue: unknown) => {

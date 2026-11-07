@@ -43,7 +43,7 @@ Ob levem robu je ozka vrstica. Od zgoraj navzdol:
 - {{ui:camera.zoomIn}} in {{ui:camera.zoomOut}} zumirata po korakih, prav tako tipki [[+]] in [[−]].
 - {{ui:camera.orthographic}} preklopi na ploski pogled, v katerem vzporedni robovi ostanejo vzporedni. To je za merjenje in za poravnavanje robov pogosto prijetnejše kot perspektivni pogled. S [[O]] preklapljaš sem in tja, drugi klik gre nazaj.
 - {{ui:camera.secondView}} odpre drugi pogled na načrt v lastnem oknu, opisanem spodaj. Drugi klik ga zapre.
-- {{ui:camera.showScrollbars}} pokaže drsnik ob spodnjem robu pogleda in drugega ob desnem robu. Povleci drsnik, da pogled gladko premakneš, klikni puščico na njegovem koncu za majhen premik (če jo držiš, se premika naprej) ali klikni ob drsnik za skoraj cel pogled. Nič se ne zavrti, in za razliko od smernih tipk drsnika delujeta tudi, ko je izbran del - priročno od blizu pri drobnih podrobnostih. Drugi klik ju skrije; ta brskalnik si izbiro zapomni.
+- {{ui:camera.showScrollbars}} pokaže drsnik ob spodnjem robu pogleda in drugega ob desnem robu. Povleci drsnik, da pogled gladko premakneš, klikni puščico na njegovem koncu za majhen premik (če jo držiš, se premika naprej) ali klikni ob drsnik za skoraj cel pogled. Nič se ne zavrti, in za razliko od smernih tipk drsnika delujeta tudi, ko je izbran del - priročno od blizu pri drobnih podrobnostih. Drugi klik ju skrije; ali se načrt odpre z njima, določa {{ui:workspace.startWithScrollbars}} v nastavitvah. Ta brskalnik si izbiro tudi zapomni.
 - {{ui:camera.hideWorkplane}} (oko nad mrežo) skrije ploščo z mrežo, da lahko spodnjo stran načrta pogledaš od spodaj. Spremeni se samo pogled: nove oblike še naprej pristanejo na delovni ravnini. Drugi klik jo spet prikaže.
 - {{ui:camera.placeWorkplane}}, merilni trak in kotomer so lastna orodja, ki so opisana spodaj in v poglavju [Merjenje in opombe](chapter:merjenje-in-opombe).
 
@@ -95,6 +95,19 @@ Dokler delovna ravnina leži na ploskvi, se ob {{ui:camera.placeWorkplane}} poka
 
 Če želiš na delovno ravnino pogledati naravnost, pritisni [[P]] ali klikni {{ui:camera.lookOntoWorkplane}} poleg {{ui:camera.placeWorkplane}} v vrstici pogleda. Pogled se zasuka, dokler ravnine ne vidiš naravnost, s strani, proti kateri rastejo nove oblike, z njenim izhodiščem na sredini. Na osnovni plošči je to pogled od zgoraj.
 
+## Tiskalne plošče
+
+Ko načrt vsebuje več, kot se natisne na eno ploščo, na primer škatlo s pokrovom in vložki, ima lahko več tiskalnih plošč. Kliknite {{ui:editor.tool.buildPlates}} v skupini {{ui:editor.group.arrange}} ali izberite {{ui:plates.moveTo}} v meniju desnega klika na telo. Na dnu pogleda se pojavi vrstica z gumbom za vsako ploščo; število na njem pove, koliko teles stoji na plošči.
+
+- Vsaka plošča je velika kot delovna ravnina, plošče pa ležijo druga ob drugi desno od prve, 20 mm narazen. Telo spada k plošči, na kateri stoji sredina njegovega tlorisa, zato ga z vlečenjem na drugo stran postavite na drugo ploščo. Načrt ima do 12 plošč.
+- Klik na ploščo v vrstici jo pokaže in nove oblike nato pristanejo na njej. {{ui:plates.showAll}} pokaže vse. Dvojni klik na ploščo ali {{ui:plates.rename}} ji da ime, na primer »Pokrov«, ki je napisano na plošči.
+- {{ui:plates.moveLeft}} in {{ui:plates.moveRight}} spremenita vrstni red, telesa se premikajo s svojo ploščo. {{ui:plates.remove}} odstrani dejavno ploščo; njena telesa gredo na prvo ploščo na isto mesto.
+- {{ui:plates.arrange}} razporedi izbrana telesa, ali vsa, vrsto za vrsto po ploščah, največja najprej, 5 mm narazen, in dodaja plošče, dokler so potrebne. Telo, večje od plošče, ostane na mestu.
+- Z izbranim tiskalnikom se vsako telo preveri glede na svojo ploščo, višina tiska pa se šteje od najnižjega telesa na tej plošči. Plošča s telesom, ki ne gre nanjo, pokaže svoje število rdeče.
+- V lastnostih se X šteje od sredine lastne plošče telesa.
+
+Okno za izvoz nato ponudi {{ui:export.plates}}: vse plošče v eni datoteki, druga ob drugi kot v načrtu; eno datoteko na ploščo, zbrane v ZIP (STL, 3MF in OBJ); ali eno samo ploščo, postavljeno na mesto prve. Rezalnik odpre vsako datoteko kot eno ploščo, zato za tisk plošč eno za drugo vzemite datoteke po ploščah. Premikanje teles med ploščami in razporejanje je mogoče razveljaviti; dodajanje, poimenovanje, razvrščanje in odstranjevanje plošč se shrani z načrtom, a se ne razveljavi.
+
 ## Mreža in pripenjanje
 
 Mreža kaže velikost plošče. Spodaj desno je **pripenjanje**: premikanje in spreminjanje velikosti se zaskočita v korakih te velikosti, na primer 1 mm. Za drobno delo ga nastaviš manjšega, za grobo razporejanje večjega. {{ui:editor.tool.snapToGrid}} v orodni vrstici naknadno pomakne izbrane oblike na najbližje presečišče mreže. Pri premikanju se oblike poleg tega zaskočijo na druge oblike, glej [Izbiranje in razporejanje](chapter:izbiranje-in-razporejanje).
@@ -104,6 +117,8 @@ Mreža kaže velikost plošče. Spodaj desno je **pripenjanje**: premikanje in s
 ### Okno nastavitev
 
 Zobnik v naslovni vrstici ({{ui:editor.workspaceSettings}}) odpre nastavitve. Levo je pet področij: {{ui:workspace.appearance}}, {{ui:workspace.measurement}}, {{ui:workspace.workplane}}, {{ui:workspace.shapeDefaults}} in {{ui:workspace.history}}. Sprememba velja takoj. {{ui:workspace.makeDefault}} spodaj shrani trenutne nastavitve kot privzete, tako da nov načrt začne z njimi. Odprta datoteka prinese svoje nastavitve; {{ui:workspace.useMyDefault}} poleg tega uporabi tvoje shranjene barve, mrežo in ostalo na odprtem načrtu in pri tem obdrži njegove enote. Če tvoje privzete nastavitve vsebujejo tiskalnik, pride zraven tudi velikost njegove plošče; brez tiskalnika načrt obdrži svojo ploščo in tiskalnik. {{ui:workspace.close}} zgoraj desno okno zapre. Ta del gre skozi nastavitve eno za drugo.
+
+{{ui:workspace.exportSettings}} shrani nastavitve okna v datoteko (layerling-settings-<datum>.json): barve, mrežo, sence, kamero in privzete vrednosti oblik skupaj s temo, velikostjo orodne vrstice, kotom kocke pogleda, barvami oblik in režo vsakega tiskalnika. Na drugem računalniku ali po izgubi podatkov brskalnika {{ui:workspace.importSettings}} datoteko znova prebere: postane tvoja privzeta nastavitev za nove načrte in se uporabi na odprtem načrtu kot {{ui:workspace.useMyDefault}}. Tudi tvoje lastne tipke iz bližnjic gredo zraven.
 
 ### Videz: tema, orodna vrstica in kocka
 
@@ -163,6 +178,8 @@ Skicirni pogled ima lastne barve: {{ui:workspace.sketchBackground}} za okno okol
 
 {{ui:workspace.startInPerspective}}: urejevalnik se potem odpre v perspektivnem pogledu namesto v ploskem.
 
+{{ui:workspace.startWithScrollbars}}: načrt se potem odpre z drsniki pogleda. Nastavitev se shrani z načrtom in z {{ui:workspace.makeDefault}}.
+
 {{ui:workspace.startView}} določa kot, pod katerim se odpre nov načrt in na katerega se vrne {{ui:camera.home}}. Zavrti in približaj pogled, kot ti je všeč, nato klikni {{ui:workspace.startViewUseCurrent}}; {{ui:workspace.startViewStandard}} vrne običajni pogled od spredaj desno. Velja za vsak načrt v tem brskalniku. Načrt, ki ga znova odpreš, se še vedno odpre tako, kot si ga zapustil.
 
 {{ui:workspace.zoomSpeed}} je drsnik od počasi do hitro: kako hitro približujeta kolesce in sledilna ploščica; gumbi in tipke za povečavo obdržijo svoje majhne korake. {{ui:workspace.cameraInertia}}: ko spustiš miško, se pogled še malo vrti in nežno zavira. Izklopljeno pomeni, da se takoj ustavi, kot v Tinkercadu in Fusion 360.
@@ -179,9 +196,13 @@ Pod {{ui:workspace.measurement}} v nastavitvah nastaviš {{ui:workspace.units}}.
 
 Pod {{ui:workspace.customSnapGrids}} na istem mestu ustvariš lastne korake pripenjanja: ime in velikost v milimetrih, na primer »Rastrski korak 2,54 mm« za razmik DIP vezij, pinskih letvic in perforiranih plošč ali »MX Key Unit« z 19,05 mm za razmik tipk na tipkovnici. Meni pripenjanja ta korak potem ponudi celega, razpolovljenega in razčetverjenega (1 ×, ½ × in ¼ ×), tako da lahko oblike premakneš za cel, pol ali četrt koraka. Če želiš samo mero samo, odkljukaj {{ui:workspace.customSnapGridParts}} ob njej; meni ima potem samo ta en korak. Lastni koraki ostanejo pri načrtu in gredo zraven z {{ui:workspace.makeDefault}}.
 
+{{ui:workspace.startWithCornerRuler}}: vsak nov osnutek v tem brskalniku se potem začne s kotnikom v izhodišču, glej [Merjenje in opombe](chapter:merjenje-in-opombe). Obstoječi osnutki ostanejo, kot so, in kotnik, ki ga odstraniš iz osnutka, se ne vrne.
+
 ### Delovna ravnina: plošča in tiskalnik
 
 {{ui:workspace.printer}} prilagodi delovno ravnino tiskalni plošči tvojega tiskalnika in označi telesa, ki segajo čeznjo, glej [Tiskanje](chapter:tiskanje). {{ui:workspace.showPlateLabels}} napiše na ploščo ime načrta, pri izbranem tiskalniku pa tudi njegovo ime in tiskalni prostor.
+
+{{ui:workspace.printerPlay}} je prostor na stran, ki ga natisnjen zatič potrebuje, da se vrti v natisnjeni luknji na tvojem tiskalniku. {{ui:workspace.fitTestMake}} položi na ploščo preizkus ujemanja, ki jo izmeri; novi pokrovi, lastovičji repi, zaskočne kljukice, matice in preverjanje zračnosti potem začnejo z njo, glej [Tiskanje](chapter:tiskanje). Hrani se v tem brskalniku, ne v projektu.
 
 {{ui:workspace.size}} da plošči lastno velikost, {{ui:workspace.width}} in {{ui:workspace.length}} v milimetrih ali izbrani enoti. Mreža vedno teče skozi ničlo, tako da močnejše črte ležijo na oseh, ne glede na velikost plošče.
 

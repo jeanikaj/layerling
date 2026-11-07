@@ -39,6 +39,17 @@ Egy egész csoport is lehet tömör vagy lyuk. Egy egyszerű szabály érvényes
 - Ha a csoport csak tömör testekből (vagy csak lyukakból) áll, egészként váltod át, és a részei vele mennek.
 - Ha mindkettőt tartalmazza, mondjuk egy furatos kockát, minden rész megtartja a saját állapotát. Az egész csoport ilyenkor szerszám lesz, de a furat furat marad.
 
+### Csoport átméretezése: a lyukak és kis részek megmaradnak
+
+Ha egy csoportot hosszabbra, szélesebbre vagy magasabbra veszel, a részei vele együtt nyúlnak, mintha gumira rajzolták volna őket: egy lap kerek lyukai oválisak lesznek és befelé csúsznak. Hogy olyanok maradjanak, amilyenek, a csoport beállításaiban a {{ui:inspector.groupResize}} alatt válaszd a {{ui:inspector.groupResizeKeepParts}} lehetőséget; e választás nélkül a {{ui:inspector.groupResizeStretch}} érvényes, mint eddig minden csoportnál. Ettől kezdve a csoport minden átméretezéskor - a fogantyúkkal, a méretmezőkben vagy a {{ui:scalePercent.title}} eszközzel - egyetlen szabály szerint épül újra a részeiből, minden irányban külön:
+
+- Az a rész, amely majdnem az egész csoporton végignyúlik, kilenctizedén vagy annál többön, vele együtt nő vagy zsugorodik, és megtartja a távolságát mindkét oldaltól: maga a lap, egy fal vagy egy doboz belseje, amelynek falai ugyanolyan vastagok maradnak.
+- Minden más rész megtartja a saját méretét és a távolságát a közelebbi oldaltól. A középen álló rész középen marad.
+
+Egy lap, amelyben minden saroktól 5 mm-re van egy lyuk és középen egy horony, 40 mm-rel meghosszabbítva tehát kerek lyukakat tart meg a sarkoktól 5 mm-re, és a horony középen marad. Nincs mögötte kényszermegoldó, és semmit sem kell részenként beállítani: minden részre ugyanaz a szabály érvényes, így előre tudod, mi fog történni. Egy elforgatott rész azzal a dobozzal számít, amelyet a csoportban elfoglal, és elforgatva marad; a csoporton belüli csoport egy résznek számít. Amíg egy fogantyút húzol, a csoport egészében nyúlik; amikor elengeded, újraépül, ugyanabban a visszavonási lépésben. Ha a csoport kisebb lesz annál, amire egy résznek a távolságával együtt szüksége van, az a rész a korábbiakhoz hasonlóan vele együtt zsugorodik, és egy üzenet szól róla. A tükrözött, elvékonyított vagy csavart csoport, valamint a saját lekerekítéssel, élletöréssel vagy textúrával rendelkező csoport mindig mindent megnyújt. Ha egy már megnyújtott csoporthoz választod ezt a beállítást, a részei azonnal újra elrendeződnek.
+
+![Egy lap, amelyben minden saroktól 5 mm-re van egy lyuk és középen egy horony, a „Lyukak és kis részek megtartása” beállítással 40 mm-rel meghosszabbítva: a lyukak még mindig kerekek és 5 mm-re vannak a sarkoktól, a horony még mindig középen van.](shot:group-keep-parts)
+
 ## Kötegbe fogás
 
 Néha a részeknek csak együtt kell maradniuk anélkül, hogy eggyé válnának – mondjuk egy fehér logónak egy fekete lapon, többszínű nyomtatáshoz. Erre való a {{ui:editor.tool.bundle}} ([[Ctrl]]+[[B]]), mint a Tinkercadben. Egy köteg úgy mozog, fordul és méreteződik, mint egy alakzat, de semmi sem egyesül:
@@ -92,6 +103,14 @@ A {{ui:editor.group.modify}} területen lévő {{ui:editor.tool.split}} egy sík
 - Az alatta lévő két forgatócsúszka a másik két tengely körül forgatja a síkot, mindkét irányban legfeljebb 180°-kal, ferde vágáshoz. Kombinálhatók.
 
 A {{ui:split.apply}} vagy az [[Enter]] elvégzi a vágást, az [[Esc]] megszakítja (lapválasztás közben az első [[Esc]] csak a kiválasztást állítja le). Minden objektumból, amelyen a sík átmegy, két zárt test lesz, az oldaluk szerint elnevezve, például „Doboz (Z+)” és „Doboz (Z-)”; azok az objektumok, amelyeket nem metsz, változatlanok maradnak. Egy lyukból két lyuk lesz, a kiüregelt test pedig megtartja az üregét. Mindkét fél a helyén marad – nyomtatáshoz fektesd mindegyiket a vágott lapjára a {{ui:editor.tool.layFlat}} paranccsal.
+
+A(z) {{ui:split.connectors}} újra egymáshoz igazítják a feleket, ahogy a PrusaSlicer, az OrcaSlicer és a Bambu Studio vágóeszközei teszik. A(z) {{ui:split.connectors.none}} beállítással, ez az alapértelmezés, a vágás a fent leírtak szerint történik. A(z) {{ui:split.connectors.dowels}} mindkét félbe furatot készít, és külön csapokat, amelyek mindkettőbe beleillenek: a csapok harmadik testként jelennek meg, a felek mellett állva azok alján, hogy velük együtt nyomtasd őket – állva a rétegekben kerekre jönnek ki, mint a furataik, és éppen ezt méri az illesztési próba. A(z) {{ui:split.connectors.plugs}} kerek csapokat állít arra a félre, amelynek a neve mínuszra végződik, a hozzájuk való furatokat pedig a másik félbe készíti. Az összekötők merőlegesen mennek be a síkra, akárhogyan is van elforgatva, mindegyik a saját átmérőjével és 1,2 mm anyaggal a vágott lap minden széléig, kettő közülük pedig ennek kétszeresére egymástól. A vágott lap minden különálló darabja saját összekötőket kap, egyenletesen elosztva rajta: a(z) {{ui:split.connectorCount}} megadja, hányat, a 0 pedig a darab méretére bízza, legalább kettőt. Az a darab, amely egyhez is túl kicsi, egyet sem kap, és ahol egy fél vékonyabb, mint amilyen mély a furata, ott az összekötő elmarad; a panel ezt még a vágás előtt jelzi, a síkon fehér gyűrűk mutatják, hová kerülnek. Ha egy sem fér el, az alkatrészek nélkülük válnak ketté, és az állapotsor ezt jelzi.
+
+- A(z) {{ui:split.connectorDiameter}} a csapok átmérője, kezdetben 5 mm.
+- A(z) {{ui:split.connectorDepth}} megadja, milyen mélyen megy be minden furat a saját felébe. Egy laza csap ennek kétszerese mínusz 0,6 mm hosszú, egy álló csap pedig 0,3 mm-rel rövidebb a furatánál, így sosem ülnek a furat alján, és a felek teljesen összezárnak. A csapok végein kis letörés van, minden furat szájánál is, hogy egy szétlapult első réteg ne szűkítse.
+- A(z) {{ui:split.connectorClearance}} a csap és a furata közötti hely. Ha a nyomtatód hézagát megmérted az illesztési próbával (a nyomtatásról szóló fejezetben), ebből indul, különben 0,2 mm-ről.
+
+A lyukak összekötők nélkül válnak ketté.
 
 A felek egyszerű hálók: az olyan beállítások, mint egy henger oldalszáma vagy egy szöveg betűi, elvesznek, ezért ezeket előbb állítsd be. A [[Ctrl]]+[[Z]] egy lépésben visszahozza az eredetit. Zárolt és elrejtett objektumok nem vághatók ketté.
 

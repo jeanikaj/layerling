@@ -4,11 +4,14 @@ import {
   axisLockedPoint,
   tapeLengthShift,
   circleOfEdgePoints,
+  closedRoundEdge,
+  cornerOnRoundEdge,
   perpendicularFootOnPlane,
   perpendicularFootOnSegment,
   perpendicularPointsOnCircle,
   pointAcrossCircle,
   pointOnCircle,
+  roundEdgeMeasure,
 } from "@/lib/tapeCircle";
 
 /** A ring of `count` points on a circle, as a display edge has them; `closed` repeats the first point at the end. */
@@ -170,5 +173,62 @@ describe("a typed tape length (#823, #963)", () => {
 
   it("gives no direction for two points on top of each other", () => {
     expect(tapeLengthShift(edge, edge.clone(), 5, true)).toBeNull();
+  });
+});
+
+// A click on a whole round edge gives its diameter, on an arc its radius (asked for in the Facebook group).
+describe("roundEdgeMeasure", () => {
+  const ring = (radius: number, sides: number, closed: boolean, upTo = Math.PI * 2) => {
+    const count = closed ? sides + 1 : sides;
+    return Array.from({ length: count }, (_, index) => {
+      const angle = (upTo * (index % sides)) / sides;
+      return new THREE.Vector3(3 + radius * Math.cos(angle), 7, -2 + radius * Math.sin(angle));
+    });
+  };
+
+  it("measures a full circle as its diameter, closed or one side short", () => {
+    for (const closed of [true, false]) {
+      const measure = roundEdgeMeasure(ring(6, 48, closed))!;
+      expect(measure.full).toBe(true);
+      expect(measure.diameter).toBeCloseTo(12, 6);
+      expect(measure.radius).toBeCloseTo(6, 6);
+      expect(measure.length).toBeCloseTo(48 * 2 * 6 * Math.sin(Math.PI / 48), 6);
+    }
+  });
+
+  it("measures an arc as its radius", () => {
+    const quarter = Array.from({ length: 13 }, (_, index) => {
+      const angle = (Math.PI / 2) * (index / 12);
+      return new THREE.Vector3(4 * Math.cos(angle), 0, 4 * Math.sin(angle));
+    });
+    const measure = roundEdgeMeasure(quarter)!;
+    expect(measure.full).toBe(false);
+    expect(measure.radius).toBeCloseTo(4, 6);
+  });
+
+  it("has nothing to say about a straight edge", () => {
+    expect(roundEdgeMeasure([0, 1, 2, 3, 4].map((x) => new THREE.Vector3(x, 0, 0)))).toBeNull();
+  });
+});
+
+describe("a corner on a cylinder's rim gives way to the rim (Making Layers, 1.142.0)", () => {
+  // The top rim of a cylinder with 100 sides, 20 mm across: each of its side lines ends on one of the rim's points.
+  const rim = ring(new THREE.Vector3(0, 20, 0), 10, 100);
+
+  it("knows the rim as a closed round edge and the end of a side line as lying on it", () => {
+    const edge = closedRoundEdge(rim);
+    expect(edge).not.toBeNull();
+    const sideLineEnd = rim[37].clone();
+    expect(cornerOnRoundEdge(sideLineEnd, edge!)).toBe(true);
+  });
+
+  it("keeps a real corner apart: off the rim, or on an arc that is not a whole circle", () => {
+    const edge = closedRoundEdge(rim)!;
+    expect(cornerOnRoundEdge(new THREE.Vector3(10, 0, 0), edge)).toBe(false);
+    expect(cornerOnRoundEdge(new THREE.Vector3(10.2, 20, 0), edge)).toBe(false);
+    const arc = ring(new THREE.Vector3(0, 0, 0), 5, 20, false, new THREE.Vector3(0, 1, 0), Math.PI / 2);
+    expect(closedRoundEdge(arc)).toBeNull();
+    // A straight edge, as a box has them (the tape splits edges at corners, so a box's outline never comes as one).
+    expect(closedRoundEdge([new THREE.Vector3(0, 0, 0), new THREE.Vector3(5, 0, 0), new THREE.Vector3(10, 0, 0), new THREE.Vector3(15, 0, 0), new THREE.Vector3(20, 0, 0)])).toBeNull();
   });
 });

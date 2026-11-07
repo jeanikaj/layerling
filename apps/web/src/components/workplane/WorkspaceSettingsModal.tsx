@@ -7,6 +7,10 @@ import { Box as BoxIcon, ChevronDown, Grid3X3, History, Palette, Plus, RotateCcw
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useMovablePanel } from "@/lib/useMovablePanel";
 import { SpaceMouseSetting } from "@/components/workplane/SpaceMouseSetting";
+import { printerPlayShapeStart } from "@/lib/printerPlay";
+import { usePrinterPlayFor } from "@/lib/usePrinterPlay";
+import { PrinterPlaySetting } from "@/components/workplane/PrinterPlaySetting";
+import { SettingsFileButtons } from "@/components/workplane/SettingsFileButtons";
 import { createPortal } from "react-dom";
 import { HexColorInput, HexColorPicker } from "react-colorful";
 import { APP_THEME_OPTIONS, type AppThemePreference } from "@/lib/appTheme";
@@ -23,6 +27,7 @@ import { automaticSideCount } from "@/lib/roundSideCount";
 import { torusTessellation } from "@/lib/torusTessellation";
 import { printerPresetById } from "@/lib/printBed";
 import { PRINTER_PRESETS } from "@/lib/printerPresets.generated";
+import { maxDovetailNeckWidth } from "@/lib/dovetailGeometry";
 import {
   DEFAULT_THREAD_CLEARANCE,
   DEFAULT_THREAD_BOLT_CLEARANCE,
@@ -86,6 +91,7 @@ import {
 } from "@/lib/bentTubeGeometry";
 import { numberLocale, t, type MessageKey } from "@/lib/i18n";
 import { useLanguage } from "@/lib/useLanguage";
+import { readStartWithCornerRuler, writeStartWithCornerRuler } from "@/lib/cornerRulerStore";
 import { measurementOptionLabel, normalizeScaleForUnits, parseMeasurementInput, scaleOptionsForUnits, WORKSPACE_UNIT_OPTIONS } from "@/lib/measurementUnits";
 import { shapeAssetDefaultDimensions, shapeAssetLabel, shapeAssetSpecialDefaults, toolbarShapeAssets } from "@/lib/shapeCatalog";
 import { BOOLEAN_TRIANGLE_LIMIT_PRESETS, BOOLEAN_TRIANGLE_LIMIT_STEP, DEFAULT_WORKPLANE_WORKSPACE, ZOOM_SPEED_SLIDER_MAX, MAX_BOOLEAN_TRIANGLE_LIMIT, MAX_CUSTOM_SHAPE_DIMENSION, MAX_HIGH_RESOLUTION_SIDES, MAX_HIGH_RESOLUTION_STEPS, MIN_BOOLEAN_TRIANGLE_LIMIT, MIN_CUSTOM_SHAPE_DIMENSION, booleanTriangleLimitPreset, workspaceForUnits, snapGridForUnits, type BooleanTriangleLimitPreset, DEFAULT_SNAP_GRID, MAX_CUSTOM_SNAP_GRID, MAX_CUSTOM_SNAP_GRID_NAME, MAX_CUSTOM_SNAP_GRIDS, MIN_CUSTOM_SNAP_GRID, customSnapGridDivisors, customSnapGridLabel, customSnapGridSize, parseCustomSnapGrid, readWorkspaceDefault, resetGridInSavedDefault, snapGridOptions, standardGridSettings, workspaceWithSavedDefault } from "@/lib/workplaneSettings";
@@ -94,6 +100,7 @@ import type { BentTubeProfile, CustomSnapGrid, GearProfile, GearType, GridSize, 
 import { DEFAULT_LOFT } from "@/lib/loftGeometry";
 import { DEFAULT_GRIDFINITY_TRAY_SIZE, normalizeGridfinityType } from "@/lib/gridfinityGeometry";
 import { selectWholeValue } from "@/lib/numberField";
+import { DEFAULT_PULLEY_BELT_WIDTH, DEFAULT_PULLEY_BORE, DEFAULT_PULLEY_FLANGE, DEFAULT_PULLEY_FLANGE_RISE, DEFAULT_PULLEY_HUB_DIAMETER, DEFAULT_PULLEY_HUB_HEIGHT, DEFAULT_PULLEY_TEETH, MAX_PULLEY_BELT_WIDTH, MAX_PULLEY_FLANGE, MAX_PULLEY_FLANGE_RISE, MAX_PULLEY_HUB_HEIGHT, MAX_PULLEY_TEETH, MIN_PULLEY_BELT_WIDTH, MIN_PULLEY_FLANGE_RISE, MIN_PULLEY_TEETH } from "@/lib/pulleyGeometry";
 import { DEFAULT_HIRTH_BORE, DEFAULT_HIRTH_TEETH, MAX_HIRTH_TEETH, MIN_HIRTH_TEETH, MIN_HIRTH_TOOTH_HEIGHT, hirthBoreLimit, hirthToothHeightLimit } from "@/lib/hirthGeometry";
 
 type WorkspaceSettings = WorkplaneWorkspaceSettings;
@@ -206,7 +213,8 @@ const BENT_TUBE_PROFILE_OPTIONS: Array<{ value: BentTubeProfile; label: MessageK
 ];
 
 type ShapeSpecialNumberKey = "steps" | "sides" | "bevel" | "segments" | "topRadius" | "baseRadius" | "teeth" | "toothSize" | "toothWidth" | "centerHoleSize" | "helixAngle" | "helixQuality" | "gearPressureAngle" | "gearBacklash" | "gearRim" | "threadDiameter" | "threadPitch" | "threadClearance" | "threadBoltClearance" | "threadAxialClearance" | "threadQuality" | "threadChamfer" | "threadHeadChamfer" | "springTurns" | "springWire" | "springQuality" | "topWidth" | "topDepth" | "starPoints" | "starInnerSize" | "starOuterFillet" | "starInnerFillet" | "starQuality" | "heartTipFillet" | "heartQuality" | "crescentThickness" | "crescentTipFillet" | "crescentQuality" | "honeycombCellSize" | "honeycombWallThickness" | "honeycombFrameWidth" | "dovetailNeckWidth" | "dovetailClearance" | "hingeKnuckles" | "hingePinDiameter" | "hingeLeafThickness" | "hingeClearance" | "screwHoleShaft" | "screwHoleHeadDepth" | "screwHoleAngle" | "cornerFillet" | "topBottomFillet" | "roundedBoxQuality" | "bentTubeSize" | "bentTubeWall" | "bentTubeQuality" | "knurlCount" | "knurlDepth" | "knurlAngle" | "knurlChamfer"
-  | "loftBottomWidth" | "loftBottomDepth" | "loftTopWidth" | "loftTopDepth" | "loftWall";
+  | "loftBottomWidth" | "loftBottomDepth" | "loftTopWidth" | "loftTopDepth" | "loftWall"
+  | "pulleyBeltWidth" | "pulleyFlange" | "pulleyFlangeRise" | "pulleyHubHeight" | "pulleyHubDiameter";
 type ShapeSpecialField =
   | { type: "number"; key: ShapeSpecialNumberKey; label: string; defaultValue: number; min: number; max: number; step?: number; unit?: string }
   | { type: "select"; key: "font" | "gearType" | "gearProfile" | "threadRole" | "threadHead" | "threadHand" | "threadProfile" | "springHand" | "springForm" | "springPattern" | "springEnds" | "bentTubeProfile" | "bentTubeInnerProfile" | "knurlPattern" | "gridfinityType" | "loftBottomOutline" | "loftTopOutline"; label: string; defaultValue: string; options: Array<{ value: string; label: string }> }
@@ -231,8 +239,10 @@ function specialFieldsForShape(
   kind: ShapeKind,
   dimensions: { width: number; depth: number; height: number },
   customization: ShapeCustomization,
+  printerPlay: number | null = null,
 ): ShapeSpecialField[] {
-  const defaults = shapeAssetSpecialDefaults(kind, dimensions);
+  // A clearance that follows the printer's play starts from it here too, as a new shape of the kind does.
+  const defaults = { ...shapeAssetSpecialDefaults(kind, dimensions), ...printerPlayShapeStart(kind, printerPlay) };
   // Ohne eigene Angabe folgt die Seitenzahl der Groesse; hier steht, was das
   // bei den Vorgabemassen ergibt. Eine eingetragene Zahl haelt sie fest.
   // The curved cone's top and bend are kept as shares; "Save as default" on its card keeps them.
@@ -372,6 +382,17 @@ function specialFieldsForShape(
     }
     return fields;
   }
+  if (kind === "pulley") {
+    return [
+      { type: "number", key: "teeth", label: t("prop.teeth"), defaultValue: defaults.teeth ?? DEFAULT_PULLEY_TEETH, min: MIN_PULLEY_TEETH, max: MAX_PULLEY_TEETH, step: 1 },
+      { type: "number", key: "pulleyBeltWidth", label: t("prop.pulleyBeltWidth"), defaultValue: defaults.pulleyBeltWidth ?? DEFAULT_PULLEY_BELT_WIDTH, min: MIN_PULLEY_BELT_WIDTH, max: MAX_PULLEY_BELT_WIDTH, unit: "mm" },
+      { type: "number", key: "centerHoleSize", label: t("prop.centerHole"), defaultValue: defaults.centerHoleSize ?? DEFAULT_PULLEY_BORE, min: 0, max: MAX_PULLEY_BELT_WIDTH, unit: "mm" },
+      { type: "number", key: "pulleyFlange", label: t("prop.pulleyFlange"), defaultValue: defaults.pulleyFlange ?? DEFAULT_PULLEY_FLANGE, min: 0, max: MAX_PULLEY_FLANGE, unit: "mm" },
+      { type: "number", key: "pulleyFlangeRise", label: t("prop.pulleyFlangeRise"), defaultValue: defaults.pulleyFlangeRise ?? DEFAULT_PULLEY_FLANGE_RISE, min: MIN_PULLEY_FLANGE_RISE, max: MAX_PULLEY_FLANGE_RISE, unit: "mm" },
+      { type: "number", key: "pulleyHubHeight", label: t("prop.pulleyHubHeight"), defaultValue: defaults.pulleyHubHeight ?? DEFAULT_PULLEY_HUB_HEIGHT, min: 0, max: MAX_PULLEY_HUB_HEIGHT, unit: "mm" },
+      { type: "number", key: "pulleyHubDiameter", label: t("prop.pulleyHubDiameter"), defaultValue: defaults.pulleyHubDiameter ?? DEFAULT_PULLEY_HUB_DIAMETER, min: 1, max: MAX_PULLEY_BELT_WIDTH, unit: "mm" },
+    ];
+  }
   if (kind === "hirth") {
     return [
       { type: "number", key: "teeth", label: t("prop.teeth"), defaultValue: defaults.teeth ?? DEFAULT_HIRTH_TEETH, min: MIN_HIRTH_TEETH, max: MAX_HIRTH_TEETH, step: 1 },
@@ -433,7 +454,7 @@ function specialFieldsForShape(
   }
   if (kind === "dovetail") {
     return [
-      { type: "number", key: "dovetailNeckWidth", label: t("prop.dovetailNeckWidth"), defaultValue: defaults.dovetailNeckWidth ?? dimensions.width / 2, min: 0.1, max: Math.max(0.2, dimensions.width * 0.95), unit: "mm" },
+      { type: "number", key: "dovetailNeckWidth", label: t("prop.dovetailNeckWidth"), defaultValue: defaults.dovetailNeckWidth ?? dimensions.width / 2, min: 0.1, max: maxDovetailNeckWidth(dimensions.width), unit: "mm" },
       { type: "number", key: "dovetailClearance", label: t("prop.dovetailClearance"), defaultValue: defaults.dovetailClearance ?? 0.2, min: 0, max: 2, step: 0.05, unit: "mm" },
     ];
   }
@@ -506,6 +527,7 @@ export function WorkspaceSettingsModal({
   onSaveStartView,
   onResetStartView,
   onMakeDefault,
+  onMakeFitTest,
   onClose,
 }: {
   workspace: WorkspaceSettings;
@@ -525,13 +547,19 @@ export function WorkspaceSettingsModal({
   onSaveStartView: () => void;
   onResetStartView: () => void;
   onMakeDefault: () => void;
+  /** Puts the fit test on the plate (fitTest.ts); the window closes for it. */
+  onMakeFitTest?: () => void;
   onClose: () => void;
 }) {
   const [defaultSaved, setDefaultSaved] = useState(false);
   // A default saved earlier or just now: what "Use my default" puts on this design (#754).
   const savedDefault = useMemo(() => readWorkspaceDefault(), [defaultSaved]);
   useLanguage();
+  // The play of the printer chosen here (Discussion #1406), as a new shape for it starts from.
+  const { play: printerPlay } = usePrinterPlayFor(workspace.printer ?? "");
   const [activeSection, setActiveSection] = useState<WorkspaceSettingsSection>("appearance");
+  // A setting of this browser, not of the design: read when the window opens (#1386).
+  const [startWithCornerRuler, setStartWithCornerRuler] = useState(readStartWithCornerRuler);
   const toolbarSize = useToolbarSize();
   const shapeColors = useShapeColors();
   const viewCubePosition = useViewCubePosition();
@@ -580,13 +608,16 @@ export function WorkspaceSettingsModal({
     depth: selectedShapeCustomization.depth ?? selectedShapeAppDefaults.depth,
     height: selectedShapeCustomization.height ?? selectedShapeAppDefaults.height,
   };
-  const selectedShapeSpecialFields = specialFieldsForShape(selectedShapeKind, selectedShapeEffectiveDimensions, selectedShapeCustomization);
+  const selectedShapeSpecialFields = specialFieldsForShape(selectedShapeKind, selectedShapeEffectiveDimensions, selectedShapeCustomization, printerPlay);
+  // The fields whose starting value comes from the fit test: their line says so instead of "App".
+  const selectedShapePlayStart = printerPlayShapeStart(selectedShapeKind, printerPlay) as Record<string, number | undefined>;
   // Breite und Tiefe eines Gewindes folgen dem Durchmesser; nur die Hoehe
   // laesst sich sinnvoll vorgeben. Ein Zylinder ist immer kreisrund, daher
   // nur ein Durchmesser- (= Breiten-)Feld statt Breite und Tiefe getrennt.
   // Ein gebogenes Rohr bekommt seinen Rahmen ganz aus Profil und Segmenten.
   // Ein Uebergang bekommt Breite und Tiefe aus seinen beiden Enden, nur die Hoehe ist frei.
-  const selectedShapeDimensionKeys: Array<"width" | "depth" | "height"> = selectedShapeKind === "bentTube"
+  // A GT2 pulley's box follows from its teeth, belt width, flanges and hub.
+  const selectedShapeDimensionKeys: Array<"width" | "depth" | "height"> = selectedShapeKind === "bentTube" || selectedShapeKind === "pulley"
     ? []
     : selectedShapeKind === "loft"
     ? ["height"]
@@ -949,6 +980,11 @@ export function WorkspaceSettingsModal({
                     checked={startInPerspective}
                     onChange={onStartInPerspectiveChange}
                   />
+                  <WorkspaceToggle
+                    label={t("workspace.startWithScrollbars")}
+                    checked={workspace.startWithScrollbars}
+                    onChange={(startWithScrollbars) => patchWorkspace({ startWithScrollbars })}
+                  />
                   <div className="workspace-reset-row" data-help={t("workspace.startViewHint")}>
                     <span>{t("workspace.startView")}</span>
                     <div className="property-defaults-actions">
@@ -1278,6 +1314,15 @@ export function WorkspaceSettingsModal({
                       else if (!customSnapGrids.some((grid) => grid.size === current.size)) onSnapChange(workspace.units === "Imperial" ? "1/8 in" : DEFAULT_SNAP_GRID);
                     }}
                   />
+                  <WorkspaceToggle
+                    label={t("workspace.startWithCornerRuler")}
+                    description={t("workspace.startWithCornerRulerHint")}
+                    checked={startWithCornerRuler}
+                    onChange={(on) => {
+                      setStartWithCornerRuler(on);
+                      writeStartWithCornerRuler(on);
+                    }}
+                  />
                 </>
               ) : null}
 
@@ -1307,6 +1352,11 @@ export function WorkspaceSettingsModal({
                         : t("workspace.printerInfo", { width: chosenPrinter.width, depth: chosenPrinter.depth, height: chosenPrinter.height })
                       : t("workspace.printerHint")}
                   </p>
+                  <PrinterPlaySetting
+                    onMakeFitTest={onMakeFitTest}
+                    printer={chosenPrinter?.id ?? ""}
+                    printerName={chosenPrinter ? `${chosenPrinter.vendor} ${chosenPrinter.model}` : ""}
+                  />
                   <WorkspaceToggle
                     label={t("workspace.showPlateLabels")}
                     description={t("workspace.showPlateLabelsHint")}
@@ -1528,7 +1578,7 @@ export function WorkspaceSettingsModal({
                                     if (event.key === "Enter") event.currentTarget.blur();
                                   }}
                                 />
-                                <small>{t("workspace.appDefault", {
+                                <small>{t(selectedShapePlayStart[field.key] !== undefined ? "workspace.fitTestDefault" : "workspace.appDefault", {
                                     value: `${field.step === 1 ? Math.round(field.defaultValue) : Number(field.defaultValue.toFixed(workspace.accuracy))}${field.unit ? ` ${field.unit}` : ""}`,
                                   })}</small>
                               </label>
@@ -1633,6 +1683,7 @@ export function WorkspaceSettingsModal({
                     {t("workspace.useMyDefault")}
                   </button>
                 ) : null}
+                <SettingsFileButtons workspace={workspace} snap={snap} onWorkspaceChange={onWorkspaceChange} onSnapChange={onSnapChange} />
                 <button
                   className="make-default-button"
                   onClick={() => {

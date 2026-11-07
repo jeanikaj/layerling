@@ -41,7 +41,7 @@ Sur le bord gauche se trouve une barre étroite. Du haut :
 - {{ui:camera.zoomIn}} et {{ui:camera.zoomOut}} zooment pas à pas, tout comme les touches [[+]] et [[−]].
 - {{ui:camera.orthographic}} passe à une vue plate dans laquelle les bords parallèles restent parallèles. Pour mesurer et aligner les bords, c'est souvent plus confortable que la vue en perspective. [[O]] bascule d'avant en arrière et un deuxième clic revient.
 - {{ui:camera.secondView}} ouvre une deuxième vue du design dans une fenêtre à part, décrite plus bas. Un second clic la ferme.
-- {{ui:camera.showScrollbars}} affiche une barre de défilement en bas de la vue et une autre le long de son bord droit. Faites glisser une barre pour déplacer la vue en douceur, cliquez sur une flèche à son extrémité pour la déplacer un peu (maintenez pour continuer), ou cliquez à côté de la barre pour avancer de presque toute la vue. Rien ne tourne et, contrairement aux touches fléchées, les barres fonctionnent même quand une pièce est sélectionnée - pratique de près, sur les petits détails. Un second clic les masque ; ce navigateur retient le choix.
+- {{ui:camera.showScrollbars}} affiche une barre de défilement en bas de la vue et une autre le long de son bord droit. Faites glisser une barre pour déplacer la vue en douceur, cliquez sur une flèche à son extrémité pour la déplacer un peu (maintenez pour continuer), ou cliquez à côté de la barre pour avancer de presque toute la vue. Rien ne tourne et, contrairement aux touches fléchées, les barres fonctionnent même quand une pièce est sélectionnée - pratique de près, sur les petits détails. Un second clic les masque ; {{ui:workspace.startWithScrollbars}} dans les réglages décide si un projet s'ouvre avec elles. Ce navigateur retient aussi le choix.
 - {{ui:camera.hideWorkplane}} (l'œil au-dessus d'une grille) cache la plaque avec sa grille, vous pouvez donc regarder le dessous d'un dessin par le bas. Seule la vue change : de nouvelles formes atterrissent toujours sur le plan de travail. Un deuxième clic l'affiche à nouveau.
 - {{ui:camera.placeWorkplane}}, le mètre ruban et l'équerre d'encadrement sont des outils à part entière, abordés ci-dessous et dans [Mesures et notes] (chapter:measuring-and-notes).
 
@@ -93,6 +93,19 @@ Lorsqu'un plan de travail repose sur une face, un œil apparaît à côté de {{
 
 Pour regarder le plan de travail de face, appuie sur [[P]] ou clique sur {{ui:camera.lookOntoWorkplane}} à côté de {{ui:camera.placeWorkplane}} dans la barre de vue. La vue tourne jusqu'à ce que tu voies le plan de face, du côté vers lequel poussent les nouvelles formes, avec son origine au milieu. Sur la plaque de base, c'est la vue de dessus.
 
+## Plateaux d'impression
+
+Quand un design contient plus qu'un plateau ne peut imprimer, une boîte avec son couvercle et ses inserts par exemple, il peut avoir plusieurs plateaux d'impression. Cliquez sur {{ui:editor.tool.buildPlates}} dans le groupe {{ui:editor.group.arrange}}, ou choisissez {{ui:plates.moveTo}} dans le menu du clic droit sur un corps. Une barre apparaît au pied de la vue, avec un bouton par plateau ; le nombre indique combien de corps s'y trouvent.
+
+- Chaque plateau est aussi grand que le plan de travail, et les plateaux sont côte à côte à droite du premier, à 20 mm l'un de l'autre. Un corps appartient au plateau sur lequel se trouve le milieu de son empreinte ; en le faisant glisser de l'autre côté, il passe sur l'autre plateau. Un design compte jusqu'à 12 plateaux.
+- Un clic sur un plateau dans la barre l'affiche, et les nouvelles formes s'y posent alors. {{ui:plates.showAll}} les affiche tous. Un double-clic sur un plateau, ou {{ui:plates.rename}}, lui donne un nom comme « Couvercle », écrit sur le plateau.
+- {{ui:plates.moveLeft}} et {{ui:plates.moveRight}} changent l'ordre, les corps suivant leur plateau. {{ui:plates.remove}} retire le plateau actif ; ses corps passent sur le premier plateau au même endroit.
+- {{ui:plates.arrange}} dispose les corps sélectionnés, ou tous, rangée par rangée sur les plateaux, les plus grands d'abord, à 5 mm l'un de l'autre, et ajoute des plateaux tant qu'il en faut. Un corps plus grand qu'un plateau reste en place.
+- Avec une imprimante choisie, chaque corps est contrôlé par rapport à son propre plateau, et la hauteur d'impression compte à partir du corps le plus bas de ce plateau. Un plateau avec un corps qui ne tient pas affiche son nombre en rouge.
+- Dans les propriétés, X compte à partir du milieu du plateau du corps.
+
+La fenêtre d'export propose alors {{ui:export.plates}} : tous les plateaux dans un fichier, côte à côte comme dans le design ; un fichier par plateau, réunis dans un ZIP (STL, 3MF et OBJ) ; ou un seul plateau, placé à l'endroit du premier. Un trancheur ouvre chaque fichier comme un seul plateau ; pour imprimer les plateaux l'un après l'autre, prenez donc les fichiers par plateau. Déplacer des corps entre plateaux et les répartir peut être annulé ; ajouter, nommer, ordonner et retirer des plateaux est enregistré avec le design, mais pas annulé.
+
 ## Grille et capture
 
 La grille montre la taille de la plaque. En bas à droite se trouve l'**étape d'accrochage** : déplacer et mettre à l'échelle l'accrochage par pas de cette taille, par exemple 1 mm. Réduisez-le pour un travail fin et plus grand pour un arrangement grossier. {{ui:editor.tool.snapToGrid}} dans le ruban déplace ensuite les formes sélectionnées sur le croisement de grille le plus proche. Lors du déplacement, les formes s'alignent également sur d'autres formes, voir [Sélection et organisation] (chapter:select-and-arrange).
@@ -102,6 +115,8 @@ La grille montre la taille de la plaque. En bas à droite se trouve l'**étape d
 ### La fenêtre des réglages
 
 La roue dentée dans la ligne du titre ({{ui:editor.workspaceSettings}}) ouvre les réglages. À gauche se trouvent cinq zones : {{ui:workspace.appearance}}, {{ui:workspace.measurement}}, {{ui:workspace.workplane}}, {{ui:workspace.shapeDefaults}} et {{ui:workspace.history}}. Une modification compte tout de suite. {{ui:workspace.makeDefault}} en bas enregistre les réglages actuels comme réglages par défaut, afin qu'une nouvelle conception commence avec eux. Un fichier que vous ouvrez apporte ses propres réglages ; {{ui:workspace.useMyDefault}} à côté applique à la conception ouverte vos couleurs, votre grille et le reste enregistrés, en gardant ses unités. Si vos réglages par défaut comportent une imprimante, cette imprimante arrive avec la taille de son plateau ; sans imprimante, la conception garde son plateau et son imprimante. {{ui:workspace.close}} en haut à droite ferme la fenêtre. Cette partie passe les réglages en revue un par un.
+
+{{ui:workspace.exportSettings}} enregistre les réglages de la fenêtre dans un fichier (layerling-settings-<date>.json) : les couleurs, la grille, les ombres, la caméra et les valeurs par défaut des formes, avec le thème, la taille de la barre d'outils, le coin du cube de vue, les couleurs des formes et le jeu de chaque imprimante. Sur un autre ordinateur, ou après une perte de données du navigateur, {{ui:workspace.importSettings}} relit le fichier : il devient votre valeur par défaut pour les nouveaux designs et s'applique au design ouvert comme {{ui:workspace.useMyDefault}}. Vos propres touches des raccourcis clavier suivent aussi.
 
 ### Apparence : thème, barre d'outils et cube de vue
 
@@ -161,6 +176,8 @@ La vue d'esquisse a ses propres couleurs : {{ui:workspace.sketchBackground}} pou
 
 {{ui:workspace.startInPerspective}} : l'éditeur s'ouvre alors dans la vue en perspective, et non dans la vue plate.
 
+{{ui:workspace.startWithScrollbars}} : un projet s'ouvre alors avec les barres de défilement de la vue. Le réglage est enregistré avec le projet et avec {{ui:workspace.makeDefault}}.
+
 {{ui:workspace.startView}} définit l'angle sous lequel s'ouvre une nouvelle conception et auquel revient {{ui:camera.home}}. Tournez et zoomez la vue comme vous l'aimez, puis cliquez sur {{ui:workspace.startViewUseCurrent}} ; {{ui:workspace.startViewStandard}} ramène la vue habituelle de l'avant droit. Cela vaut pour chaque conception de ce navigateur. Une conception que vous rouvrez s'ouvre toujours comme vous l'avez laissée.
 
 {{ui:workspace.zoomSpeed}} est un curseur de lent à rapide : la vitesse de zoom de la molette et du pavé tactile ; les boutons et les touches de zoom gardent leurs petits pas. {{ui:workspace.cameraInertia}} : après avoir lâché la souris, la vue continue de tourner un instant et ralentit doucement. Désactivée, elle s'arrête aussitôt, comme dans Tinkercad et Fusion 360.
@@ -177,9 +194,13 @@ Sous {{ui:workspace.measurement}} dans les paramètres, vous définissez {{ui:wo
 
 Sous {{ui:workspace.customSnapGrids}}, au même endroit, vous ajoutez vos propres étapes d'accrochage : un nom et une taille en millimètres, par exemple "Pin pitch 2,54 mm" pour l'espacement des puces DIP, des embases à broches et des trous de carte perforée, ou "MX Key Unit" avec 19,05 mm pour l'espacement des touches du clavier. Le menu Snap Step propose ensuite cette mesure entière, divisée en deux et en quatre (1 ×, ½ × et ¼ ×), de sorte que les formes peuvent être déplacées d'un pas, d'un demi-pas ou d'un quart de pas. Les étapes personnalisées sont conservées avec la conception et accompagnent {{ui:workspace.makeDefault}}. Si vous ne voulez que la mesure elle-même, décochez {{ui:workspace.customSnapGridParts}} à côté ; le menu n'a alors que ce seul pas.
 
+{{ui:workspace.startWithCornerRuler}} : chaque nouveau design de ce navigateur commence alors avec un carré de charpente à l’origine, voir [Mesures et notes](chapter:measuring-and-notes). Les designs existants restent tels quels, et un carré que vous retirez d’un design ne revient pas.
+
 ### Plan de travail : plateau et imprimante
 
 {{ui:workspace.printer}} dimensionne le plan de travail au plateau de votre imprimante et signale les corps qui le dépassent, voir [Impression](chapter:printing). {{ui:workspace.showPlateLabels}} écrit le nom de la conception sur le plateau, ainsi que le nom et le volume d'impression de l'imprimante quand une imprimante est choisie.
+
+{{ui:workspace.printerPlay}} est la place par côté dont une goupille imprimée a besoin pour tourner dans un trou imprimé sur votre imprimante. {{ui:workspace.fitTestMake}} pose sur le plateau le test d'ajustement qui le mesure ; les nouveaux couvercles, queues d'aronde, clips, écrous et la vérification du jeu partent alors de cette valeur, voir [Impression](chapter:printing). Il est gardé dans ce navigateur, pas dans le motif.
 
 {{ui:workspace.size}} donne au plateau une taille à vous, avec {{ui:workspace.width}} et {{ui:workspace.length}} en millimètres ou dans l'unité choisie. La grille passe toujours par l'origine, si bien que les lignes plus fortes se trouvent sur les axes, quelle que soit la mesure du plateau.
 

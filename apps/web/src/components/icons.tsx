@@ -1,4 +1,4 @@
-import { SearchCheck } from "lucide-react";
+import { PrinterCheck, SearchCheck } from "lucide-react";
 import type { CSSProperties, SVGProps } from "react";
 
 type IconProps = SVGProps<SVGSVGElement>;
@@ -123,6 +123,11 @@ export function ToolbarClearanceIcon({ className, ...props }: IconProps) {
   return <SearchCheck className={["toolbar-vector-art-icon", className].filter(Boolean).join(" ")} {...props} />;
 }
 
+/** The print check: a printer with a tick, beside the clearance check's magnifier; the same class for the dimming. */
+export function ToolbarPrintCheckIcon({ className, ...props }: IconProps) {
+  return <PrinterCheck className={["toolbar-vector-art-icon", className].filter(Boolean).join(" ")} {...props} />;
+}
+
 export function ToolbarAlignIcon(props: IconProps) {
   return <ToolbarSpriteIcon rect={{ x: 97.3, y: 46.7, width: 29.1, height: 32.5 }} {...props} />;
 }
@@ -134,6 +139,7 @@ export {
   SketchHalfCircleIcon,
   SketchPieSliceIcon,
   ToolbarAttachmentsIcon,
+  ToolbarBuildPlatesIcon,
   ToolbarCenterOnWorkplaneIcon,
   ToolbarChamferIcon,
   ToolbarCookieCutterIcon,
@@ -152,6 +158,7 @@ export {
   ToolbarSimplifyIcon,
   ToolbarMakeExactIcon,
   ToolbarSurfaceTextureIcon,
+  ToolbarPaintIcon,
   ToolbarBundleIcon,
   ToolbarGroupIcon,
   ToolbarGuideIcon,
@@ -163,6 +170,7 @@ export {
   ToolbarPatternIcon,
   ToolbarHolePatternIcon,
   ToolbarFaceToolIcon,
+  ToolbarSupportRibIcon,
   ToolbarConstructionLineIcon,
   ToolbarMiddleLineIcon,
   ToolbarLayFlatIcon,

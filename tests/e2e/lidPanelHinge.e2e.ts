@@ -43,6 +43,9 @@ const checkbox = (panel: HTMLElement, name: string) => [...panel.querySelectorAl
   .find((label) => label.textContent?.trim() === name)
   ?.querySelector<HTMLInputElement>("input[type=checkbox]") ?? null;
 const texts = (panel: HTMLElement) => panel.textContent ?? "";
+const slider = (panel: HTMLElement, name: string) => [...panel.querySelectorAll<HTMLLabelElement>("label.range-property")]
+  .find((row) => row.querySelector(".range-property-name")?.textContent === name)
+  ?.querySelector<HTMLInputElement>("input[type=range]") ?? null;
 
 describe("the lid's panel with a hinge", () => {
   it("offers a hinge and asks for its side, pin, clearance, pin play, knuckles and a printed pin once it is on", () => {
@@ -56,6 +59,8 @@ describe("the lid's panel with a hinge", () => {
     act(() => root?.unmount());
     const on = mount({ hinge: true });
     for (const label of ["Hinge side", "Pin diameter", "Hinge clearance", "Pin play (per side)", "Knuckles (0 = automatic)"]) expect(texts(on.panel)).toContain(label);
+    // The play is the lid's: in the body's knuckles the pin sits tight (#1220).
+    expect(texts(on.panel)).toContain("Only the lid's holes have this play, so the lid turns freely; in the body's holes the pin sits tight");
     expect(checkbox(on.panel, "Print the pin too")).not.toBeNull();
     // Teardrop holes are on to start with, and can be turned off.
     const teardrop = checkbox(on.panel, "Teardrop pin holes (no droop when printed)")!;
@@ -101,6 +106,28 @@ describe("the lid's panel with a hinge", () => {
     expect(texts(pivot.panel)).not.toContain("Knuckles (0 = automatic)");
   });
 
+  it("offers end plugs with a flush hinge only, off to begin with, and says what they do once on (Discussion #1387)", () => {
+    for (const hingeStyle of ["outside", "pivot"] as const) {
+      const other = mount({ hinge: true, hingeStyle, hingeEndPlugs: true });
+      expect(checkbox(other.panel, "End plugs"), hingeStyle).toBeNull();
+      expect(texts(other.panel)).not.toContain("so the pin stays hidden and cannot slide out");
+      act(() => root?.unmount());
+    }
+    const off = mount({ hinge: true, hingeStyle: "flush" });
+    const plugs = checkbox(off.panel, "End plugs")!;
+    expect(plugs).not.toBeNull();
+    expect(plugs.checked).toBe(false);
+    expect(texts(off.panel)).not.toContain("so the pin stays hidden and cannot slide out");
+    act(() => plugs.click());
+    expect(off.changes.at(-1)).toEqual({ hingeEndPlugs: true });
+    act(() => root?.unmount());
+    const on = mount({ hinge: true, hingeStyle: "flush", hingeEndPlugs: true });
+    expect(checkbox(on.panel, "End plugs")!.checked).toBe(true);
+    expect(texts(on.panel)).toContain("A square plug closes each end of the pin's hole, flush with the outside of the box, so the pin stays hidden and cannot slide out. Push the pin in first, then press in the plugs.");
+    act(() => checkbox(on.panel, "End plugs")!.click());
+    expect(on.changes.at(-1)).toEqual({ hingeEndPlugs: false });
+  });
+
   it("goes with a lid that pushes in or a flat one, and says so for one with a rim round the outside", () => {
     const cap = mount({ type: "cap", hinge: true });
     const hinge = checkbox(cap.panel, "Hinge")!;
@@ -140,6 +167,29 @@ describe("the lid's panel with click bumps and a handle (#1234, #1230)", () => {
     }
   });
 
+  it("asks how far the bumps reach into the wall only while they are on, 0.4 mm to begin with (#1220)", () => {
+    const off = mount();
+    expect(slider(off.panel, "Bump height")).toBeNull();
+    expect(texts(off.panel)).not.toContain("Less for a small box or a stiff lip");
+    act(() => root?.unmount());
+    const on = mount({ clickBumps: true });
+    const height = slider(on.panel, "Bump height")!;
+    expect(height).not.toBeNull();
+    expect(Number(height.value)).toBeCloseTo(0.4, 9);
+    expect([Number(height.min), Number(height.max), Number(height.step)]).toEqual([0.2, 0.8, 0.05]);
+    expect(texts(on.panel)).toContain("How far each bump reaches into the body's wall. Less for a small box or a stiff lip, more for a firmer click.");
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(height, "0.25");
+      height.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    expect(Object.keys(on.changes.at(-1)!)).toEqual(["clickBumpHeight"]);
+    expect(on.changes.at(-1)!.clickBumpHeight).toBeCloseTo(0.25, 9);
+    act(() => root?.unmount());
+    // Not where the bumps are refused, though they are asked for.
+    const flat = mount({ type: "flat", clickBumps: true });
+    expect(slider(flat.panel, "Bump height")).toBeNull();
+  });
+
   it("offers no handle, a pull tab or a finger notch, and none for a pivot lid", () => {
     const { panel, changes } = mount();
     const group = panel.querySelector<HTMLElement>('[role="radiogroup"][aria-label="Handle"]')!;
@@ -162,5 +212,61 @@ describe("the lid's panel with click bumps and a handle (#1234, #1230)", () => {
     expect(pivotGroup.querySelector('[aria-checked="true"]')?.textContent).toBe("None");
     expect([...pivotGroup.querySelectorAll<HTMLButtonElement>('[role="radio"]')].map((button) => button.disabled)).toEqual([false, true, true]);
     expect(texts(pivot.panel)).toContain("A pivot lid lies in the opening");
+  });
+});
+
+describe("the lid's panel with a screw lid (Discussion #1393)", () => {
+  it("offers both screw and sliding lids, the push-in lid still the one to begin with", () => {
+    const { panel, changes } = mount();
+    const group = panel.querySelector<HTMLElement>('[role="radiogroup"][aria-label="Kind"]')!;
+    const kinds = [...group.querySelectorAll<HTMLButtonElement>('[role="radio"]')];
+    expect(kinds.map((button) => button.textContent)).toEqual(["Push in", "Over the top", "Both sides", "Flat", "Screw on", "Sliding"]);
+    expect(group.querySelector('[aria-checked="true"]')?.textContent).toBe("Push in");
+    act(() => kinds[4].click());
+    expect(changes.at(-1)).toEqual({ type: "screw" });
+    act(() => kinds[5].click());
+    expect(changes.at(-1)).toEqual({ type: "sliding", slidingStyle: "recessed", openingSide: "front", verticalGap: 0.2, engagement: 0.8, guideRoof: 1.2, thumbGrip: true, magnets: false });
+  });
+
+  it("asks for the thread's pitch and turns instead of a depth, keeps the gap and the rim's wall, and says how deep and long the thread is", () => {
+    const { panel, changes } = mount({ type: "screw" });
+    expect(slider(panel, "Thread pitch")!.value).toBe("3");
+    expect(slider(panel, "Turns")!.value).toBe("2");
+    expect(slider(panel, "Gap per side")).not.toBeNull();
+    expect(slider(panel, "Rim wall")).not.toBeNull();
+    expect(slider(panel, "Lip depth")).toBeNull();
+    expect(slider(panel, "Rim depth")).toBeNull();
+    // 3 mm pitch: 0.9 mm deep; two turns: 6 mm of rim.
+    expect(texts(panel)).toContain("The body gets a thread 0.9 mm deep on the outside of its top, the cap the same one inside its rim, which reaches 6 mm down.");
+    const pitch = slider(panel, "Thread pitch")!;
+    act(() => {
+      const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+      setValue.call(pitch, "4.5");
+      pitch.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    expect(changes.at(-1)).toEqual({ threadPitch: 4.5 });
+    act(() => root?.unmount());
+    // A coarse pitch: 1.5 mm deep at most.
+    const coarse = mount({ type: "screw", threadPitch: 6, threadTurns: 1.5 });
+    expect(texts(coarse.panel)).toContain("a thread 1.5 mm deep");
+    expect(texts(coarse.panel)).toContain("which reaches 9 mm down");
+  });
+
+  it("switches off magnets, hinge, click bumps and handle and says once why", () => {
+    const { panel } = mount({ type: "screw", magnets: true, hinge: true, clickBumps: true, handle: "tab" });
+    for (const name of ["Magnets in the corners", "Hinge", "Click bumps"]) {
+      const box = checkbox(panel, name)!;
+      expect(box.checked, name).toBe(false);
+      expect(box.disabled, name).toBe(true);
+    }
+    const handles = panel.querySelector<HTMLElement>('[role="radiogroup"][aria-label="Handle"]')!;
+    expect(handles.querySelector('[aria-checked="true"]')?.textContent).toBe("None");
+    expect([...handles.querySelectorAll<HTMLButtonElement>('[role="radio"]')].map((button) => button.disabled)).toEqual([false, true, true]);
+    expect(texts(panel).split("A screw lid holds by its thread: magnets, a hinge, click bumps and a handle do not go with it.").length).toBe(2);
+    // Their own hints, which name other kinds of lid, stay away.
+    expect(texts(panel)).not.toContain("A hinge goes with a lid that pushes in or a flat one.");
+    expect(texts(panel)).not.toContain("Not for a flat lid or pivot pins.");
+    expect(texts(panel)).not.toContain("A pivot lid lies in the opening");
+    expect(texts(panel)).not.toContain("Magnet diameter");
   });
 });

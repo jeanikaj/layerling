@@ -59,6 +59,22 @@ export function scrollDistance(metrics: Pick<ScrollAxisMetrics, "length" | "size
   return (fraction / travel) * Math.max(metrics.length - windowSize, 0);
 }
 
+/** A line of a wheel that counts in lines (Firefox), in pixels. */
+const WHEEL_LINE_PX = 16;
+
+/**
+ * How far one wheel event over a bar slides the view, as a part of what it shows (Discussion #1361): as far as the wheel
+ * turned, the way a page scrolls, so the view moves `delta` pixels on the screen. A fixed step per event made a Mac's
+ * mouse or trackpad, which sends dozens of tiny events from a resting finger or the glide after a swipe, throw the view
+ * off the screen as the pointer crossed a bar. One event moves at most a whole view.
+ */
+export function wheelScrollFraction(delta: number, deltaMode: number, viewPx: number) {
+  const size = Math.max(viewPx, 1);
+  const pixels = deltaMode === 1 ? delta * WHEEL_LINE_PX : deltaMode === 2 ? delta * size : delta;
+  if (!Number.isFinite(pixels)) return 0;
+  return Math.max(-1, Math.min(1, pixels / size));
+}
+
 /** The screen's right and up directions in the world, and how much of the world the view shows across and up. */
 export function viewScrollFrame(view: ViewCamera, aspect: number) {
   const { camera } = view;
@@ -78,7 +94,11 @@ export function scrollViewAlong(view: ViewCamera, direction: THREE.Vector3, dist
   view.controls.update();
 }
 
-/** Whether the scrollbars are on: one choice for this browser, as the view cube's corner is, not saved in a design. */
+/**
+ * The view bar's switch, remembered for this browser as before #1346, so whoever had the bars on keeps them. The
+ * setting "Start editor with scrollbars" turns them on for a design as well; switched off in the view bar, the choice
+ * here is forgotten.
+ */
 export const VIEW_SCROLLBARS_STORAGE_KEY = "layerling.viewScrollbars";
 
 export function readViewScrollbars(): boolean {

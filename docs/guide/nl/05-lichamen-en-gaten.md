@@ -39,6 +39,17 @@ Ook een hele groep kan een lichaam of een gat zijn. Daarbij geldt een eenvoudige
 - Bestaat de groep alleen uit lichamen (of alleen uit gaten), dan schakel je hem als geheel om en gaan de onderdelen mee.
 - Bevat hij allebei, bijvoorbeeld een blok met een boring, dan houdt elk onderdeel zijn eigen stand. De hele groep wordt dan gereedschap, maar de boring blijft een boring.
 
+### Een groep van formaat veranderen: gaten en kleine onderdelen behouden
+
+Maak je een groep langer, breder of hoger, dan rekken de onderdelen mee alsof ze op rubber getekend zijn: de ronde gaten in een plaat worden ovaal en schuiven naar binnen. Om ze te houden zoals ze zijn, kies je in de instellingen van de groep onder {{ui:inspector.groupResize}} voor {{ui:inspector.groupResizeKeepParts}}; zonder die keuze geldt {{ui:inspector.groupResizeStretch}}, zoals tot nu toe bij elke groep. Vanaf dan wordt de groep bij elke formaatwijziging - met de grepen, in de maatvelden of met {{ui:scalePercent.title}} - volgens één regel opnieuw uit zijn onderdelen opgebouwd, voor elke richting apart:
+
+- Een onderdeel dat over bijna de hele groep reikt, negen tiende of meer, groeit of krimpt mee en houdt zijn afstand tot beide zijden: de plaat zelf, een wand, of de binnenkant van een doos, waarvan de wanden even dik blijven.
+- Elk ander onderdeel houdt zijn eigen maat en zijn afstand tot de dichtstbijzijnde zijde. Een onderdeel in het midden blijft in het midden.
+
+Een plaat met een gat 5 mm van elke hoek en een sleuf in het midden, 40 mm langer gemaakt, houdt dus zijn gaten rond en 5 mm van de hoeken, en de sleuf in het midden. Er zit geen oplosser achter en je hoeft niets per onderdeel in te stellen: voor elk onderdeel geldt dezelfde regel, zodat je vooraf weet wat er gebeurt. Een gedraaid onderdeel telt met de doos die het in de groep inneemt en blijft gedraaid; een groep in de groep telt als één onderdeel. Terwijl je aan een greep trekt, rekt de groep als geheel; laat je los, dan wordt hij opnieuw opgebouwd, in dezelfde ongedaan-maakstap. Wordt de groep kleiner dan een onderdeel met zijn afstand nodig heeft, dan krimpt dat onderdeel zoals vroeger mee, en een melding zegt het. Een gespiegelde, taps toelopende of gedraaide groep, en een met eigen afrondingen, afschuiningen of een oppervlaktestructuur, rekt altijd alles uit. Kies je de instelling voor een groep die al uitgerekt is, dan legt hij zijn onderdelen meteen opnieuw neer.
+
+![Een plaat met een gat 5 mm van elke hoek en een sleuf in het midden, met ‘Gaten en kleine onderdelen behouden’ 40 mm langer gemaakt: de gaten zijn nog rond en 5 mm van de hoeken, de sleuf zit nog in het midden.](shot:group-keep-parts)
+
 ## Bundelen
 
 Soms moeten onderdelen alleen bij elkaar blijven zonder één te worden, bijvoorbeeld een wit logo op een zwarte plaat voor een meerkleurenprint. Daarvoor is {{ui:editor.tool.bundle}} ([[Ctrl]]+[[B]]), net als in Tinkercad. Een bundel verplaats, draai en schaal je als een vorm, maar er wordt niets samengevoegd:
@@ -92,6 +103,14 @@ Let op: afrondingen en afschuiningen die je op de **hele** groep had gezet, gaan
 - Met de twee draaischuiven eronder draai je het vlak om de andere twee assen, tot 180° naar beide kanten, voor een schuine snede. Ze zijn te combineren.
 
 {{ui:split.apply}} of [[Enter]] maakt de snede, [[Esc]] annuleert (tijdens het kiezen van een zijvlak stopt de eerste [[Esc]] alleen het kiezen). Elk object dat het vlak doorsnijdt wordt twee gesloten lichamen, genoemd naar hun kant, bijvoorbeeld "Blok (Z+)" en "Blok (Z-)"; objecten die het mist blijven zoals ze zijn. Een gat wordt twee gaten, en een uitgehold lichaam houdt zijn holte. Beide helften blijven waar ze waren; leg voor het printen elke helft op het snijvlak met {{ui:editor.tool.layFlat}}.
+
+{{ui:split.connectors}} lijnen de helften weer uit, zoals de snijgereedschappen van PrusaSlicer, OrcaSlicer en Bambu Studio dat doen. Met {{ui:split.connectors.none}}, de standaard, wordt gesplitst zoals hierboven beschreven. {{ui:split.connectors.dowels}} maakt een gat in elke helft en losse deuvels die in beide gaan: de deuvels komen als derde lichaam, staand naast de helften op hun bodem, om mee te printen – staand worden ze in de lagen rond, net als hun gaten, en dat is wat de pastest meet. {{ui:split.connectors.plugs}} zet ronde tappen op de helft waarvan de naam op een min eindigt, met de gaten ervoor in de andere helft. De verbinders gaan haaks op het vlak naar binnen, hoe het ook gedraaid is, elk met zijn diameter en 1,2 mm materiaal tot elke rand van het snijvlak, en twee ervan twee keer zo ver uit elkaar. Elk los stuk van het snijvlak krijgt zijn eigen, gelijkmatig erover verdeeld: {{ui:split.connectorCount}} zegt hoeveel, en 0 laat het aan de grootte van het stuk over, minstens twee. Een stuk dat te klein is voor één krijgt er geen, en een verbinder valt weg waar een helft dunner is dan zijn gat diep is; het paneel zegt het voordat je splitst, en witte ringen op het vlak tonen waar ze komen. Past er helemaal geen, dan worden de delen zonder gesplitst en zegt de statusbalk dat.
+
+- {{ui:split.connectorDiameter}} is die van de deuvels en tappen, om te beginnen 5 mm.
+- {{ui:split.connectorDepth}} is hoe ver elk gat in zijn helft gaat. Een deuvel is twee keer zo lang min 0,6 mm en een tap 0,3 mm korter dan zijn gat, zodat ze nooit op de bodem van een gat staan en de helften helemaal sluiten. Deuvels en tappen hebben een kleine afschuining aan de uiteinden, en elk gat een aan zijn opening, zodat een uitgelopen eerste laag het niet nauwer maakt.
+- {{ui:split.connectorClearance}} is de ruimte tussen een deuvel of tap en zijn gat. Heb je de speling van je printer met de pastest gemeten (in het hoofdstuk over printen), dan begint die daarmee, anders met 0,2 mm.
+
+Vormen die een gat zijn, worden zonder verbinders gesplitst.
 
 De helften zijn gewone meshes: instellingen zoals het aantal zijden van een cilinder of de letters van een tekst zijn weg, dus stel die eerst in. [[Ctrl]]+[[Z]] haalt het origineel in één stap terug. Vergrendelde en verborgen objecten kun je niet splitsen.
 

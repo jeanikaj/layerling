@@ -39,6 +39,17 @@ Auch eine ganze Gruppe kann ein Körper oder eine Aussparung sein. Dabei gilt ei
 - Besteht die Gruppe nur aus Körpern (oder nur aus Aussparungen), schaltest du sie als Ganzes um, und ihre Teile gehen mit.
 - Enthält sie beides, etwa einen Würfel mit Bohrung, behält jedes Teil seinen eigenen Zustand. Die ganze Gruppe wird dann zum Werkzeug, aber die Bohrung bleibt eine Bohrung.
 
+### Größe ändern: Aussparungen und kleine Teile behalten
+
+Machst du eine Gruppe länger, breiter oder höher, dehnen sich ihre Teile mit, als wären sie auf Gummi gezeichnet: Die runden Löcher einer Platte werden oval und rücken nach innen. Damit sie bleiben, wie sie sind, wählst du in den Einstellungen der Gruppe unter {{ui:inspector.groupResize}} die Möglichkeit {{ui:inspector.groupResizeKeepParts}}; ohne diese Wahl gilt {{ui:inspector.groupResizeStretch}}, wie bisher bei jeder Gruppe. Von da an wird die Gruppe bei jeder Größenänderung - mit den Griffen, in den Maßfeldern oder mit {{ui:scalePercent.title}} - nach einer einzigen Regel neu aus ihren Teilen gebaut, für jede Richtung für sich:
+
+- Ein Teil, das fast über die ganze Gruppe reicht, neun Zehntel davon oder mehr, wächst oder schrumpft mit ihr und behält seinen Abstand zu beiden Seiten: die Platte selbst, eine Wand oder das Innere eines Kastens, dessen Wände so dick bleiben, wie sie waren.
+- Jedes andere Teil behält seine eigene Größe und seinen Abstand zur näheren Seite. Ein Teil in der Mitte bleibt in der Mitte.
+
+Eine Platte mit einem Loch 5 mm vor jeder Ecke und einem Langloch in der Mitte, um 40 mm verlängert, behält also ihre Löcher rund und 5 mm vor den Ecken und das Langloch in der Mitte. Bedingungen, die du Teil für Teil festlegen müsstest, gibt es dabei nicht: Für jedes Teil gilt dieselbe Regel, so weißt du vorher, was passiert. Ein gedrehtes Teil zählt mit dem Kasten, den es in der Gruppe einnimmt, und bleibt gedreht; eine Gruppe in der Gruppe zählt als ein Teil. Während du an einem Griff ziehst, dehnt sich die Gruppe als Ganzes; lässt du los, wird sie neu gebaut, im selben Rückgängig-Schritt. Wird sie kleiner, als ein Teil mit seinem Abstand braucht, schrumpft dieses Teil wie bisher mit, und eine Meldung sagt es dir. Eine gespiegelte, verjüngte oder verdrehte Gruppe und eine mit eigenen Rundungen, Fasen oder einer Oberfläche dehnt immer alles. Wählst du die Einstellung für eine schon gedehnte Gruppe, ordnet sie deren Teile sofort neu an.
+
+![Eine Platte mit einem Loch 5 mm vor jeder Ecke und einem Langloch in der Mitte, mit „Aussparungen und kleine Teile behalten“ um 40 mm verlängert: Die Löcher sind noch rund und 5 mm vor den Ecken, das Langloch ist noch in der Mitte.](shot:group-keep-parts)
+
 ## Bündeln
 
 Manchmal sollen Teile nur zusammenbleiben, ohne eins zu werden – etwa ein weißes Logo auf einer schwarzen Platte für den Mehrfarbdruck. Dafür gibt es {{ui:editor.tool.bundle}} ([[Strg]]+[[B]]), wie in Tinkercad. Ein Bündel lässt sich verschieben, drehen und in der Größe ändern wie eine Form, aber nichts wird verrechnet:
@@ -73,7 +84,7 @@ Um den Umriss eines Körpers gerade durch einen anderen zu schneiden, wählst du
 
 ## Eine Gruppe bearbeiten
 
-Ist eine Bohrung zu klein geraten, musst du die Gruppe nicht auflösen und neu bauen. Wähle die Gruppe aus und klicke in ihren Einstellungen auf {{ui:group.edit}}, in der Objektliste auf das Ordnersymbol, oder drücke [[E]]. Ein Doppelklick auf die Gruppe tut dasselbe, wie bei Tinkercad, auch bei einem Bündel; wer das nicht mag, schaltet {{ui:workspace.doubleClickOpensGroup}} in den Einstellungen ab. Ein Teil bewegt sich übrigens erst, wenn der Zeiger ein paar Pixel weit gezogen wurde, so verschiebt ein verwackelter Klick oder Doppelklick nichts. Die Teile liegen jetzt einzeln da, und du änderst sie mit allen Werkzeugen: ein Loch größer machen, einen Körper verschieben, eine Aussparung hinzufügen.
+Ist eine Bohrung zu klein geraten, musst du die Gruppe nicht auflösen und neu bauen. Wähle die Gruppe aus und klicke in ihren Einstellungen auf {{ui:group.edit}}, in der Objektliste auf das Ordnersymbol, oder drücke [[E]]. In der Objektliste kannst du die Gruppe auch mit ihrem Pfeil aufklappen und eines ihrer Teile anklicken: Die Gruppe öffnet sich dann mit diesem Teil ausgewählt. Ein Doppelklick auf die Gruppe tut dasselbe, wie bei Tinkercad, auch bei einem Bündel; wer das nicht mag, schaltet {{ui:workspace.doubleClickOpensGroup}} in den Einstellungen ab. Ein Teil bewegt sich übrigens erst, wenn der Zeiger ein paar Pixel weit gezogen wurde, so verschiebt ein verwackelter Klick oder Doppelklick nichts. Die Teile liegen jetzt einzeln da, und du änderst sie mit allen Werkzeugen: ein Loch größer machen, einen Körper verschieben, eine Aussparung hinzufügen.
 
 ![Die Gruppe in Bearbeitung: Unten steht der Balken mit Abbrechen und Fertig, die Objektliste zeigt die Teile.](shot:open-group)
 
@@ -96,6 +107,14 @@ Ein Hinweis: Fasen und Verrundungen, die du auf die **ganze** Gruppe gelegt hatt
 - Die beiden Drehregler darunter drehen die Ebene um die anderen beiden Achsen, bis 180° in jede Richtung, für einen schrägen Schnitt. Sie lassen sich kombinieren.
 
 {{ui:split.apply}} oder [[Enter]] schneidet, [[Esc]] bricht ab (beim Wählen einer Fläche beendet das erste [[Esc]] nur das Wählen). Jedes Objekt, durch das die Ebene geht, wird zu zwei geschlossenen Körpern, benannt nach ihrer Seite, zum Beispiel „Quader (Z+)“ und „Quader (Z-)“; Objekte, die sie verfehlt, bleiben, wie sie sind. Aus einer Aussparung werden zwei Aussparungen, und ein ausgehöhlter Körper behält seinen Hohlraum. Beide Hälften bleiben, wo sie waren – zum Drucken legst du jede mit {{ui:editor.tool.layFlat}} auf ihre Schnittfläche.
+
+{{ui:split.connectors}} richten die Hälften wieder aus, wie es die Schneidewerkzeuge von PrusaSlicer, OrcaSlicer und Bambu Studio tun. Mit {{ui:split.connectors.none}}, der Voreinstellung, wird wie oben beschrieben geteilt. {{ui:split.connectors.dowels}} macht ein Loch in jede Hälfte und lose Stifte, die in beide gehen: Die Stifte kommen als dritter Körper, stehend neben den Hälften auf ihrem Boden, und werden mit ihnen gedruckt – stehend werden sie in den Schichten rund wie ihre Löcher, und genau das misst die Passprobe. {{ui:split.connectors.plugs}} stellt runde Zapfen auf die Hälfte, deren Name mit einem Minus endet, und macht die Löcher dafür in die andere Hälfte. Die Verbinder gehen senkrecht zur Ebene hinein, wie auch immer sie gedreht ist, jeder mit seinem Durchmesser und 1,2 mm Material bis zu jedem Rand der Schnittfläche, und zwei voneinander doppelt so weit. Jedes getrennte Stück der Schnittfläche bekommt eigene, gleichmäßig darauf verteilt: {{ui:split.connectorCount}} sagt, wie viele, und 0 überlässt es der Größe des Stücks, mindestens zwei. Ein Stück, das für einen zu klein ist, bekommt keinen, und wo eine Hälfte dünner ist, als ihr Loch tief ist, fällt der Verbinder weg; das Fenster sagt es, bevor du teilst, und weiße Ringe auf der Ebene zeigen, wo sie hinkommen. Passt gar keiner, werden die Teile ohne geteilt, und die Statusleiste sagt es.
+
+- {{ui:split.connectorDiameter}} ist der der Stifte und Zapfen, anfangs 5 mm.
+- {{ui:split.connectorDepth}} sagt, wie weit jedes Loch in seine Hälfte geht. Ein Dübel ist doppelt so lang, weniger 0,6 mm, ein Zapfen 0,3 mm kürzer als sein Loch, damit sie nie auf dem Grund eines Lochs stehen und die Hälften ganz schließen. Stifte und Zapfen haben an den Enden eine kleine Fase, jedes Loch eine an seiner Öffnung, damit eine breit gedrückte erste Schicht es nicht enger macht.
+- {{ui:split.connectorClearance}} ist der Raum zwischen Stift oder Zapfen und seinem Loch. Hast du das Spiel deines Druckers mit der Passprobe gemessen (im Kapitel über das Drucken), beginnt es damit, sonst mit 0,2 mm.
+
+Aussparungen werden ohne Verbinder geteilt.
 
 Die Hälften sind einfache Netze: Einstellungen wie die Seitenzahl eines Zylinders oder die Buchstaben eines Textes gehen verloren, stelle sie also vorher ein. [[Strg]]+[[Z]] holt das Original in einem Schritt zurück. Gesperrte und ausgeblendete Objekte lassen sich nicht teilen.
 

@@ -3,17 +3,20 @@ import type { WorkplaneShape } from "@/types/layerling";
 import { shapeDepth, shapeHasShapeDeform, shapeWidth } from "@/lib/workplaneShapes";
 import { cadBrepTransformForShape } from "@/lib/cadBakeMetadata";
 import { dropOcctKernel, loadBrepWithOcct, occtKernel, type Brep, type BrepSolid } from "@/lib/brepKernel";
-import { asDesignedRound, cadModifierGridfinityForShape, cadModifierHelicalGearForShape, cadModifierHirthForShape, cadModifierProfileForShape, cadModifierSpringForShape, cadModifierThreadForShape } from "@/lib/cadProfileExtrusion";
+import { asDesignedRound, cadModifierEnclosureForShape, cadModifierGridfinityForShape, cadModifierHelicalGearForShape, cadModifierHirthForShape, cadModifierProfileForShape, cadModifierSpringForShape, cadModifierThreadForShape, textGlyphProfiles } from "@/lib/cadProfileExtrusion";
 import { threadPartSolid } from "@/lib/threadSolid";
 import { springPartSolid } from "@/lib/springSolid";
 import { helicalGearPartSolid } from "@/lib/gearSolid";
 import { gridfinityPartSolid } from "@/lib/gridfinitySolid";
 import { hirthPartSolid } from "@/lib/hirthSolid";
+import { enclosurePartSolid } from "@/lib/enclosureSolid";
 import { profileExtrusionSolid } from "@/lib/cadProfileSolid";
 import { applyCadTransform, isCadModifierWasmMemoryFault } from "@/lib/cadModifierRuntime";
 import { hingeWorldParts } from "@/lib/hingeParts";
 import { restoreGroupedChildren } from "@/lib/editorBooleans";
+import { groupShowsPartColors } from "@/lib/groupColors";
 import { meshForShape } from "@/lib/editorMeshCore";
+import { shapeDrillPointAngle, shapeDrillPointLength } from "@/lib/drillPoint";
 import { exactMeshFreeformShare, exactSolidFromMesh } from "@/lib/cadMeshExact";
 
 /**
@@ -51,7 +54,7 @@ export class StepExportEmptyError extends Error {
 }
 
 // Only primitives that OCCT can represent as exact analytic surfaces under a
-// rigid placement are mapped to B-Rep. Everything else (swept/tessellated/text
+// rigid placement are mapped to B-Rep. Everything else (swept/tessellated
 // shapes) is reported as skipped rather than faceted into a low-fidelity STEP.
 //
 // Cones are exact: the multi-solid STEP writer that used to drop a cone's lateral
@@ -77,7 +80,7 @@ function unsupportedReason(): string {
  *   ist danach kein Quader mehr, sondern ein Netz, und ein Netz kann STEP
  *   nicht tragen - obwohl die exakte Form die ganze Zeit danebenlag.
  */
-export type StepSource = "primitive" | "imported" | "baked" | "profile" | "thread" | "spring" | "helicalGear" | "gridfinity" | "hirth" | "unsupported";
+export type StepSource = "primitive" | "imported" | "baked" | "profile" | "thread" | "spring" | "helicalGear" | "gridfinity" | "hirth" | "enclosure" | "unsupported";
 
 function hasExactProfile(shape: WorkplaneShape) {
   try {
@@ -105,7 +108,7 @@ function hasExactSpring(shape: WorkplaneShape) {
 
 function hasExactHelicalGear(shape: WorkplaneShape) {
   try {
-    return cadModifierHelicalGearForShape(shape) !== null;
+    return cadModifierHelicalGearForShape(shape, { anySize: true }) !== null;
   } catch {
     return false;
   }
@@ -114,6 +117,14 @@ function hasExactHelicalGear(shape: WorkplaneShape) {
 function hasExactHirth(shape: WorkplaneShape) {
   try {
     return cadModifierHirthForShape(shape) !== null;
+  } catch {
+    return false;
+  }
+}
+
+function hasExactEnclosure(shape: WorkplaneShape) {
+  try {
+    return cadModifierEnclosureForShape(shape) !== null;
   } catch {
     return false;
   }
@@ -139,7 +150,9 @@ export function stepSourceForShape(shape: WorkplaneShape): StepSource {
   }
   if (shape.kind === "mesh" && shape.importedMesh?.brepStep) return "imported";
   const oval = (shape.kind === "cylinder" || shape.kind === "cone") && Math.abs(shapeWidth(shape) - shapeDepth(shape)) >= SIZE_EPS;
-  if (EXACT_KINDS.has(shape.kind) && !oval) return "primitive";
+  // A drilled hole (Discussion #621) is no plain cylinder: it goes out turned from its section, the drill point with it.
+  const drilled = shapeDrillPointAngle(shape) !== undefined;
+  if (EXACT_KINDS.has(shape.kind) && !oval && !drilled) return "primitive";
   if (shape.cadBrep) return "baked";
   if (hasExactProfile(shape)) return "profile";
   if (hasExactThread(shape)) return "thread";
@@ -147,6 +160,7 @@ export function stepSourceForShape(shape: WorkplaneShape): StepSource {
   if (hasExactHelicalGear(shape)) return "helicalGear";
   if (hasExactGridfinity(shape)) return "gridfinity";
   if (hasExactHirth(shape)) return "hirth";
+  if (hasExactEnclosure(shape)) return "enclosure";
   // An oval cylinder or cone without a profile: the builder says why it is skipped.
   if (EXACT_KINDS.has(shape.kind)) return "primitive";
   return "unsupported";
@@ -334,25 +348,42 @@ function throwIfKernelBroken(error: unknown) {
   throw error;
 }
 
+/** Lets go of every handle made since `mark`; only a broken kernel stops the export there. */
+function releaseKernelSince(kernel: OcctKernel, mark: number) {
+  try {
+    kernel.releaseSince(mark);
+  } catch (error) {
+    throwIfKernelBroken(error);
+  }
+}
+
 /** A part's exact body in its own frame, placed and handed over as the CAD worker does. */
 function buildPlacedBody(brep: Brep, part: { transform?: number[] } | null, build: (kernel: OcctKernel) => ShapeHandle, what = "exact body"): BuildOutcome {
   const kernel = occtKernel();
   if (!kernel || !part) return { skip: unsupportedReason() };
-  let local: ShapeHandle | null = null;
-  let placed: ShapeHandle | null = null;
+  // The kernel is kept for the whole session, so a lost handle stays lost: everything the build makes on the way (a
+  // Hirth joint leaves some 600 faces, edges and wires, a screw boss a dozen) goes at the end, whether the build
+  // worked or not. The body leaves the kernel as BREP text and is read back only after that, as brepjs keeps its
+  // shapes in the same kernel and the release would take the read-back body along.
+  const mark = kernel.checkpoint();
+  let text: string;
   try {
-    local = build(kernel);
-    placed = applyCadTransform(kernel, local, part.transform);
-    const text = kernel.toBREP(placed);
+    const local = build(kernel);
+    const placed = applyCadTransform(kernel, local, part.transform);
+    text = kernel.toBREP(placed);
+  } catch (error) {
+    throwIfKernelBroken(error);
+    return { skip: `${what} could not be built: ${error instanceof Error ? error.message : String(error)}` };
+  } finally {
+    if (occtKernel() === kernel) releaseKernelSince(kernel, mark);
+  }
+  try {
     const restored = brep.fromBREP(text);
     if (!restored.ok) return { skip: `${what} failed to load: ${String(restored.error.message ?? restored.error)}` };
     return { solid: restored.value as unknown as BrepSolid };
   } catch (error) {
     throwIfKernelBroken(error);
-    return { skip: `${what} could not be built: ${error instanceof Error ? error.message : String(error)}` };
-  } finally {
-    // Also when placing or writing failed: the kernel is kept for the whole session, so a lost handle stays lost.
-    if (occtKernel() === kernel) releaseKernelHandles(kernel, [local, placed]);
+    return { skip: `${what} failed to load: ${error instanceof Error ? error.message : String(error)}` };
   }
 }
 
@@ -416,7 +447,7 @@ function buildSpringBody(brep: Brep, shape: WorkplaneShape): BuildOutcome {
 
 /** A helical gear as its exact body, built and placed as the CAD worker does. */
 function buildHelicalGearBody(brep: Brep, shape: WorkplaneShape): BuildOutcome {
-  const part = cadModifierHelicalGearForShape(shape);
+  const part = cadModifierHelicalGearForShape(shape, { anySize: true });
   return buildPlacedBody(brep, part, (kernel) => helicalGearPartSolid(kernel, part!));
 }
 
@@ -424,6 +455,12 @@ function buildHelicalGearBody(brep: Brep, shape: WorkplaneShape): BuildOutcome {
 function buildHirthBody(brep: Brep, shape: WorkplaneShape): BuildOutcome {
   const part = cadModifierHirthForShape(shape);
   return buildPlacedBody(brep, part, (kernel) => hirthPartSolid(kernel, part!));
+}
+
+/** A screw boss, snap-fit or rib as its exact body, built and placed as the CAD worker does; a boss set as a hole is its pocket. */
+function buildEnclosureBody(brep: Brep, shape: WorkplaneShape): BuildOutcome {
+  const part = cadModifierEnclosureForShape(shape);
+  return buildPlacedBody(brep, part, (kernel) => enclosurePartSolid(kernel, part!));
 }
 
 /** A Gridfinity bin or baseplate as its exact body, built and placed as the CAD worker does. */
@@ -462,6 +499,27 @@ function buildHingeBody(brep: Brep, shape: WorkplaneShape): BuildOutcome {
   return cut.ok ? { solid: cut.value as BrepSolid } : { skip: "the hinge's screw holes could not be cut" };
 }
 
+/**
+ * A raised text of several letters as its exact body (#1337): each letter (or each loose piece of a filled text) built
+ * from the font's own curves, as the edge tool gets them, and fused into one. A text of one letter already goes as a
+ * profile. Null when the text has no exact outline: a bevel, a rounded top edge, a taper or twist, or fonts that are not
+ * loaded - where the export runs, they are (exportShapesToStepOffThread keeps a text on the page).
+ */
+function buildTextBody(brep: Brep, shape: WorkplaneShape): BuildOutcome | null {
+  if (shape.kind !== "text") return null;
+  const glyphs = textGlyphProfiles(shape);
+  if (!glyphs?.length || glyphs.some((glyph) => !glyph.profile)) return null;
+  const solids: BrepSolid[] = [];
+  for (const { profile } of glyphs) {
+    const built = buildPlacedBody(brep, profile, (kernel) => profileExtrusionSolid(kernel, profile!), "letter");
+    if ("skip" in built) return built;
+    solids.push(built.solid);
+  }
+  if (solids.length === 1) return { solid: solids[0] };
+  const fused = brep.fuseAll(solids as Parameters<Brep["fuseAll"]>[0]);
+  return fused.ok ? { solid: fused.value as BrepSolid } : { skip: "the letters could not be joined" };
+}
+
 export function skipCodeFor(shape: WorkplaneShape, reason: string): SkipCode {
   if (reason.startsWith("hole subtraction")) return "holeCut";
   if (reason.startsWith(FREEFORM_REASON)) return "freeform";
@@ -489,21 +547,25 @@ export type Aabb = { min: [number, number, number]; max: [number, number, number
 // Axis-aligned shapes get a tight box. Rotated shapes fall back to the box that
 // encloses the bounding sphere (rotation-invariant, never under-reports), trading
 // tightness for the guarantee that a real intersection is never missed.
+//
+// A drill point (Discussion #621) reaches past the frame by its tip: the box grows by it at the bottom (at the top
+// when the hole is mirrored upside down), and a turned one round a body with a tip at both ends, which holds it however
+// it is turned.
 export function worldAabb(shape: WorkplaneShape): Aabb {
   const w = shapeWidth(shape);
   const d = shapeDepth(shape);
   const h = shape.height;
+  const tip = shapeDrillPointLength(shape);
   const cx = shape.x;
   const cy = (shape.elevation ?? 0) + h / 2;
   const cz = shape.z;
   const rotated = (shape.rotationX ?? 0) !== 0 || (shape.rotationZ ?? 0) !== 0 || shapeYawDegrees(shape) !== 0;
-  const [hx, hy, hz] = rotated
-    ? (() => {
-        const r = 0.5 * Math.sqrt(w * w + h * h + d * d);
-        return [r, r, r];
-      })()
-    : [w / 2, h / 2, d / 2];
-  return { min: [cx - hx, cy - hy, cz - hz], max: [cx + hx, cy + hy, cz + hz] };
+  if (rotated) {
+    const r = 0.5 * Math.sqrt(w * w + (h + 2 * tip) ** 2 + d * d);
+    return { min: [cx - r, cy - r, cz - r], max: [cx + r, cy + r, cz + r] };
+  }
+  const below = shape.mirrorY ? 0 : tip;
+  return { min: [cx - w / 2, cy - h / 2 - below, cz - d / 2], max: [cx + w / 2, cy + h / 2 + tip - below, cz + d / 2] };
 }
 
 export function aabbsOverlap(a: Aabb, b: Aabb): boolean {
@@ -541,13 +603,18 @@ function collectHoles(brep: Brep, shapes: WorkplaneShape[], skipped: SkippedShap
       collectHoles(brep, restoreGroupedChildren(shape).filter((child) => !child.hidden), skipped, holes);
       continue;
     }
+    const text = source === "unsupported" ? buildTextBody(brep, shape) : null;
+    if (text && "solid" in text) {
+      holes.push({ box: worldAabb(shape), solid: text.solid });
+      continue;
+    }
     if (source === "unsupported") {
-      skipped.push(describe(shape, `hole ${unsupportedReason()}; cut omitted`));
+      skipped.push(describe(shape, `hole ${text?.skip ?? unsupportedReason()}; cut omitted`));
       continue;
     }
     // Eine Aussparung wird hier nur aus dem gebaut, was ohne Warten geht; eine
     // eingelesene STEP-Quelle als Bohrer ist kein Fall, der vorkommt.
-    const built = source === "primitive" ? buildExactSolid(brep, shape) : source === "profile" ? buildProfileBody(brep, shape) : source === "thread" ? buildThreadBody(brep, shape) : source === "spring" ? buildSpringBody(brep, shape) : source === "helicalGear" ? buildHelicalGearBody(brep, shape) : source === "gridfinity" ? buildGridfinityBody(brep, shape) : source === "hirth" ? buildHirthBody(brep, shape) : buildBakedBody(brep, shape);
+    const built = source === "primitive" ? buildExactSolid(brep, shape) : source === "profile" ? buildProfileBody(brep, shape) : source === "thread" ? buildThreadBody(brep, shape) : source === "spring" ? buildSpringBody(brep, shape) : source === "helicalGear" ? buildHelicalGearBody(brep, shape) : source === "gridfinity" ? buildGridfinityBody(brep, shape) : source === "hirth" ? buildHirthBody(brep, shape) : source === "enclosure" ? buildEnclosureBody(brep, shape) : buildBakedBody(brep, shape);
     if ("skip" in built) {
       skipped.push(describe(shape, `hole ${built.skip}; cut omitted`));
       continue;
@@ -590,11 +657,16 @@ async function buildScope(brep: Brep, shapes: WorkplaneShape[], skipped: Skipped
     const source = stepSourceForShape(shape);
     if (source === "unsupported" && isOpenableGroup(shape)) {
       // Its holes were cut inside; the holes around it still reach its bodies below.
-      parts.push(...await buildScope(brep, restoreGroupedChildren(shape).filter((child) => !child.hidden), skipped, budget));
+      const inner = await buildScope(brep, restoreGroupedChildren(shape).filter((child) => !child.hidden), skipped, budget);
+      // A group shown in one colour gives it to all its parts, as the editor draws it; with Multicolor they keep their own (#1305).
+      parts.push(...(groupShowsPartColors(shape) ? inner : inner.map((part) => ({ ...part, color: shape.color }))));
       continue;
     }
+    const text = source === "unsupported" ? buildTextBody(brep, shape) : null;
     if (shape.groupOperation === "intersection" && shape.groupedShapes?.length && source === "unsupported" && !shapeHasShapeDeform(shape)) {
       built = await buildIntersectionBody(brep, shape, skipped, budget);
+    } else if (text) {
+      built = text;
     } else if (shape.kind === "hinge" && !shape.cadBrep && !shapeHasShapeDeform(shape)) {
       built = buildHingeBody(brep, shape);
     } else if (source === "imported") {
@@ -615,6 +687,8 @@ async function buildScope(brep: Brep, shapes: WorkplaneShape[], skipped: Skipped
       built = buildGridfinityBody(brep, shape);
     } else if (source === "hirth") {
       built = buildHirthBody(brep, shape);
+    } else if (source === "enclosure") {
+      built = buildEnclosureBody(brep, shape);
     } else if (shape.importedMesh && !shape.importedMesh.brepStep) {
       built = buildMeshMadeExact(brep, shape, budget);
     } else {

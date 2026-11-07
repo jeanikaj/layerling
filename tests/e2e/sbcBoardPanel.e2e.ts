@@ -151,9 +151,43 @@ describe("the SBC board card", () => {
     expect(asked).toEqual([{ board: "pi4", clearance: 0, reach: 0, gpioUp: true, upReach: 35 }, { board: "pi4", clearance: 0, reach: 0, gpioUp: true, upReach: 20 }]);
   });
 
+  it("asks for the camera lens up through the lid on a camera board, with the reach up", async () => {
+    const asked: SbcBoardSettings[] = [];
+    const panel = mount({ board: "esp32CamMb", clearance: 0 }, async (settings) => { asked.push(settings); });
+    const lens = card(panel).querySelector<HTMLInputElement>("[data-testid=sbc-board-lens-up]")!;
+    expect(lens.closest("label")!.textContent).toBe("Camera lens up through the lid");
+    expect(card(panel).querySelector(".sbc-board-up-reach")).toBeNull();
+    act(() => lens.click());
+    await act(async () => {});
+    expect(asked).toEqual([{ board: "esp32CamMb", clearance: 0, reach: 0, lensUp: true }]);
+    act(() => root?.unmount());
+    const up = mount({ board: "esp32s3Cam", clearance: 0, lensUp: true }, async () => {});
+    expect(card(up).querySelector(".sbc-board-up-reach")).not.toBeNull();
+  });
+
   it("offers only what the board has: no ribbon cables on the BIGTREETECH Pi", () => {
     const panel = mount({ board: "bttPi12", clearance: 0 }, async () => {});
     expect(card(panel).querySelector("[data-testid=sbc-board-ribbon-up]")).toBeNull();
     expect(card(panel).querySelector("[data-testid=sbc-board-gpio-up]")).not.toBeNull();
+  });
+
+  it("shows the buttons' reach, 0 at first, kept between 0 and 100 mm", async () => {
+    const asked: SbcBoardSettings[] = [];
+    const panel = mount({ board: "featherEsp32s3", clearance: 0.3 }, async (settings) => { asked.push(settings); });
+    const field = card(panel).querySelector<HTMLInputElement>(".sbc-board-button-reach input")!;
+    expect(card(panel).querySelector(".sbc-board-button-reach")!.textContent).toContain("Button reach");
+    expect(field.value).toBe("0.00");
+    type(field, "15");
+    await act(async () => {});
+    type(field, "250");
+    await act(async () => {});
+    expect(asked).toEqual([{ board: "featherEsp32s3", clearance: 0.3, reach: 0, buttonReach: 15 }, { board: "featherEsp32s3", clearance: 0.3, reach: 0, buttonReach: 100 }]);
+  });
+
+  it("offers the buttons' reach only on a board with buttons", () => {
+    expect(card(mount({ board: "arduinoNano", clearance: 0 }, async () => {})).querySelector(".sbc-board-button-reach")).not.toBeNull();
+    act(() => root?.unmount());
+    container?.remove();
+    expect(card(mount({ board: "pi4", clearance: 0 }, async () => {})).querySelector(".sbc-board-button-reach")).toBeNull();
   });
 });

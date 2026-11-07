@@ -119,6 +119,23 @@ describe("STEP export round-trip (real OCCT kernel)", () => {
     }
   });
 
+  it("exports a raised leaf, folded up and down, with the display mesh's volume (#1259)", async () => {
+    const { hingeTriangles } = await import("@/lib/hingeGeometry");
+    for (const [hingeStyle, hingeAngle, extra] of [["pin", 0, {}], ["pin", 180, {}], ["pin", -120, { hingeScrewHoles: 2, hingeCornerRadius: 3 }], ["liftOff", 90, { hingeScrewHoles: 2, hingeScrewHead: "countersunkNut" }], ["pinless", -60, {}], ["cone", 0, {}], ["pin", 0, { height: 8, hingePinDiameter: 6.4, hingeLeafThickness: 2 }], ["liftOff", 45, { hingePinDiameter: 4.4 }], ["pinless", 0, { height: 8, hingePinDiameter: 5.2, hingeLeafThickness: 0.4, hingeClearance: 1 }]] as const) {
+      // The last three with a pin near its largest, where the bore reaches above the raised leaf's lowest level.
+      const fields = { width: 40, depth: 40, height: 6, sides: 96, hingePinDiameter: 3, hingeLeafThickness: 1.1, hingeLeafStyle: "raised" as const, hingeStyle, hingeAngle, ...extra };
+      const hinge = shape({ kind: "hinge", name: "Hinge", size: 40, rotation: 30, x: 12, z: -7, elevation: 3, ...fields });
+      const { blob, exportedCount, skipped } = await exportShapesToStep([hinge]);
+      expect(skipped).toEqual([]);
+      expect(exportedCount).toBe(1);
+      const meshVolume = hingeTriangles(fields).reduce(
+        (sum, [a, b, c]) => sum + (a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0])) / 6,
+        0,
+      );
+      expect(near(await reimportVolume(blob), meshVolume, 0.01), `${hingeStyle} ${hingeAngle}`).toBe(true);
+    }
+  });
+
   it("exports a lift-off hinge and nut pockets, turned, folded and mirrored, with the display mesh's volume", async () => {
     const { hingeTriangles } = await import("@/lib/hingeGeometry");
     const volume = (fields: Parameters<typeof hingeTriangles>[0]) => hingeTriangles(fields).reduce(
@@ -547,6 +564,20 @@ describe("STEP export round-trip (real OCCT kernel)", () => {
     // Shaft from 8.1 to 16.9, head pocket from 16.9 up to the top of the plate at 20.
     const expected = 20 * 20 * 20 - PI * 1.7 ** 2 * (16.9 - 8.1) - PI * 3.2 ** 2 * (20 - 16.9);
     expect(near(await reimportVolume(blob), expected, 0.001)).toBe(true);
+  });
+
+  it("cuts a drilled blind hole out of a plate, the drill point with it (Discussion #621)", async () => {
+    const plate = shape({ kind: "box", name: "Plate", width: 20, depth: 20, height: 20 });
+    const drilled = shape({ kind: "cylinder", name: "Drilled", hole: true, width: 6, depth: 6, height: 12, elevation: 9, drillPointAngle: 118 });
+
+    const { blob, exportedCount, skipped } = await exportShapesToStep([plate, drilled]);
+    expect(exportedCount).toBe(1);
+    expect(skipped).toEqual([]);
+
+    // The wall from 9 up through the top at 20, the tip below 9.
+    const tip = 3 / Math.tan((59 * PI) / 180);
+    const expected = 20 * 20 * 20 - PI * 3 * 3 * (20 - 9) - (PI * 3 * 3 * tip) / 3;
+    expect(near(await reimportVolume(blob), expected, 0.0005)).toBe(true);
   });
 
   it("keeps the planes and cylinders of an edited body that was moved and turned, and still exports a stretched one", async () => {

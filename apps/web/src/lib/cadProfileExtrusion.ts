@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { taperedSlotOutline } from "@/lib/slotGeometry";
 import { weldOnGrid } from "@/lib/gridWeld";
 import type { WorkplaneShape } from "@/types/layerling";
-import type { CadModifierProfileLoop, CadModifierProfilePart, CadModifierProfileSegment, CadModifierGridfinityPart, CadModifierHelicalGearPart, CadModifierHirthPart, CadModifierSpringPart, CadModifierSweepPiece, CadModifierThreadPart } from "@/lib/cadModifierTypes";
+import type { CadModifierProfileLoop, CadModifierProfilePart, CadModifierProfileSegment, CadModifierEnclosurePart, CadModifierGridfinityPart, CadModifierHelicalGearPart, CadModifierHirthPart, CadModifierSpringPart, CadModifierSweepPiece, CadModifierThreadPart } from "@/lib/cadModifierTypes";
 import { hirthMeasures } from "@/lib/hirthGeometry";
 import { profileArcPoint, profileLoopBounds, TWIST_SECTION_STEP, validateCadProfile } from "@/lib/cadProfileSolid";
 import { cadTransformFromMatrix } from "@/lib/cadBakeMetadata";
@@ -24,6 +24,7 @@ import { teardropExactSection } from "@/lib/teardropGeometry";
 import { isPolygonPortProfile, normalizePortCorner, portChamfer, portPolygonCorners } from "@/lib/portGeometry";
 import { normalizePyramidTop, pyramidOutline } from "@/lib/pyramidGeometry";
 import { screwHoleProfile } from "@/lib/screwHoleGeometry";
+import { shapeDrillPointAngle, shapeDrillPointLength } from "@/lib/drillPoint";
 import { curvedConeSection } from "@/lib/curvedCone";
 import { finishingWasherMeasures } from "@/lib/finishingWasherGeometry";
 import { DEFAULT_ROUNDED_BOX_CORNER_FILLET, DEFAULT_ROUNDED_BOX_TOP_BOTTOM_FILLET, normalizeCornerFillet, normalizeRoundedBoxQuality, normalizeTopBottomFillet } from "@/lib/roundedBoxGeometry";
@@ -36,8 +37,10 @@ import { threadBuildPlan, WHITWORTH_PROFILE_CONSTANTS } from "@/lib/threadGeomet
 import { springBuildPlan, springRingSectionShare } from "@/lib/springGeometry";
 import { flatSpringProfileLoops } from "@/lib/flatSpringGeometry";
 import { gridfinityHasPieces, gridfinityPlan } from "@/lib/gridfinityGeometry";
+import { gridfinityLabelGlyphs } from "@/lib/gridfinityLabelText";
 import { knurlCorners, knurlSettings, roundKnurlWave } from "@/lib/knurlGeometry";
-import { BEVEL_GEAR_TOP_SCALE, gearHelixTwist, gearOutlineCorners, gearTypeHasHelix, internalGearMeasures, internalGearOutline, involuteFlankPoint, involuteGearMeasures, involuteOutlineStretch, involuteToothCentre, normalizeGearCenterHoleSize, normalizeGearProfile, normalizeGearToothSize, normalizeGearType, rackMeasures, rackOutlinePoints, rackToothArcs, roundGearMeasures, roundInternalMeasures, roundToothArcs, type GearOutlineOptions, type InternalGearOptions, type InvoluteGearMeasures, type RackOptions, type RoundWave } from "@/lib/gearGeometry";
+import { pulleyArcPoint, pulleyMeasures, pulleyToothArcs } from "@/lib/pulleyGeometry";
+import { BEVEL_GEAR_TOP_SCALE, bevelGearIsSpiral, gearHelixTwist, gearOutlineCorners, gearTypeHasHelix, internalGearMeasures, internalGearOutline, involuteFlankPoint, involuteGearMeasures, involuteOutlineStretch, involuteToothCentre, normalizeGearCenterHoleSize, normalizeGearProfile, normalizeGearToothSize, normalizeGearType, rackMeasures, rackOutlinePoints, rackToothArcs, roundGearMeasures, roundInternalMeasures, roundToothArcs, type GearOutlineOptions, type InternalGearOptions, type InvoluteGearMeasures, type RackOptions, type RoundWave } from "@/lib/gearGeometry";
 
 /*
  * The outlines below follow the display geometry of each shape
@@ -51,7 +54,7 @@ type Point = { x: number; z: number };
 type Arc = { cx: number; cz: number; rx: number; rz: number; start: number; end: number };
 type Corner = { start: Point; end: Point; arc?: Arc };
 
-export const CAD_PROFILE_SHAPE_KINDS = new Set<WorkplaneShape["kind"]>(["polygon", "star", "heart", "crescent", "slot", "honeycomb", "gear", "knurl", "dovetail", "teardrop", "port", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "ellipse", "cylinder", "tube", "ring", "halfSphere", "paraboloid", "curvedCone", "sphere", "cone", "pyramid", "wedge", "roundRoof", "roundedBox", "text", "bentTube", "loft", "spring"]);
+export const CAD_PROFILE_SHAPE_KINDS = new Set<WorkplaneShape["kind"]>(["polygon", "star", "heart", "crescent", "slot", "honeycomb", "gear", "pulley", "knurl", "dovetail", "teardrop", "port", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "ellipse", "cylinder", "tube", "ring", "halfSphere", "paraboloid", "curvedCone", "sphere", "cone", "pyramid", "wedge", "roundRoof", "roundedBox", "text", "bentTube", "loft", "spring"]);
 
 function shortestAngleDelta(from: number, to: number) {
   let delta = to - from;
@@ -1087,6 +1090,16 @@ export function cadProfileForShapeKind(shape: WorkplaneShape, designedRound = fa
       // stays one. Otherwise a round cylinder is an analytic primitive, and
       // only an oval one, or the ellipse, comes here.
       const count = Math.max(3, Math.round(roundSideCount(shape.sides, width, depth)));
+      // A drilled hole (Discussion #621): the wall and the cone of its drill point below it, turned around the axis
+      // as the screw holes are. Drawn with few sides it is a prism on a pyramid and keeps its display mesh.
+      const drillPoint = shape.kind === "cylinder" ? shapeDrillPointLength(shape) : 0;
+      if (drillPoint > 0) {
+        if (!drawnRound(shape.sides, ROUND_FROM_SIDES, count, width, depth) || Math.abs(width - depth) > 1e-4) return null;
+        const radius = width / 2;
+        const section = polygonLoop([{ x: 0, z: -drillPoint }, { x: radius, z: 0 }, { x: radius, z: shape.height }, { x: 0, z: shape.height }]);
+        // solid (x, y, z) -> local (x, z, -y): the turned body stands along z, the shape's height runs along y
+        return { loops: [section], frame: { kind: "revolution", height: shape.height, local: new THREE.Matrix4().makeRotationX(-Math.PI / 2) } };
+      }
       if (!drawnRound(shape.sides, ROUND_FROM_SIDES, count, width, depth)) return { loops: polygonProfileLoops(width, depth, count) };
       if (shape.kind === "cylinder" && Math.abs(width - depth) <= 1e-4) return null;
       return { loops: [ellipseLoop(width / 2, depth / 2)] };
@@ -1199,8 +1212,9 @@ export function cadProfileForShapeKind(shape: WorkplaneShape, designedRound = fa
     case "doubleCountersink": {
       // Only a round hole is a body of revolution; stretched along z it stays a mesh.
       if (Math.abs(width - depth) > 1e-6) return null;
-      const points = screwHoleProfile({ kind: shape.kind, width, height: shape.height, screwHoleShaft: shape.screwHoleShaft, screwHoleHeadDepth: shape.screwHoleHeadDepth, screwHoleAngle: shape.screwHoleAngle })
+      const points = screwHoleProfile({ kind: shape.kind, width, height: shape.height, screwHoleShaft: shape.screwHoleShaft, screwHoleHeadDepth: shape.screwHoleHeadDepth, screwHoleAngle: shape.screwHoleAngle, drillPointAngle: shapeDrillPointAngle(shape) })
         .map(({ r, y }) => ({ x: r, z: y }));
+      // A drill point's tip (Discussion #621) lies on the axis already; the loop leaves out the edge of no length to it.
       const section = [{ x: 0, z: points[0].z }, ...points, { x: 0, z: points[points.length - 1].z }];
       // solid (x, y, z) -> local (x, z, -y): the turned body stands along z, the shape's height runs along y
       return { loops: [polygonLoop(section)], frame: { kind: "revolution", height: shape.height, local: new THREE.Matrix4().makeRotationX(-Math.PI / 2) } };
@@ -1574,9 +1588,11 @@ export function cadModifierProfileForShape(shape: WorkplaneShape, options: { des
   }
   if (!CAD_PROFILE_SHAPE_KINDS.has(shape.kind)) return null;
   try {
-    if (shape.kind === "gear" && normalizeGearType(shape.gearType) === "bevel") return bevelGearProfile(shape, width, depth);
+    // A spiral bevel gear (Discussion #1299) has twisted flanks the loft cannot build: it stays its mesh.
+    if (shape.kind === "gear" && normalizeGearType(shape.gearType) === "bevel") return bevelGearIsSpiral(shape.bevelHelixAngle) ? null : bevelGearProfile(shape, width, depth);
     if (shape.kind === "loft") return loftShapeProfile(shape);
     if (shape.kind === "pyramid") return pyramidProfile(shape, width, depth);
+    if (shape.kind === "pulley") return pulleyProfile(shape);
     const profile = cadProfileForShapeKind(shape, options.designedRound);
     if (!profile) return null;
     const part: CadModifierProfilePart = {
@@ -1622,6 +1638,7 @@ export function cadModifierThreadForShape(shape: WorkplaneShape): CadModifierThr
     threadClearance: shape.threadClearance,
     threadBoltClearance: shape.threadBoltClearance,
     threadAxialClearance: shape.threadAxialClearance,
+    threadStarts: shape.threadStarts,
     threadDepth: shape.threadDepth,
     threadFlankAngle: shape.threadFlankAngle,
     threadQuality: shape.threadQuality,
@@ -1644,6 +1661,7 @@ export function cadModifierThreadForShape(shape: WorkplaneShape): CadModifierThr
     major: plan.major,
     minor: plan.minor,
     pitch: settings.pitch,
+    ...(settings.starts > 1 ? { starts: settings.starts } : {}),
     hand: plan.handSign === -1 ? -1 : 1,
     height: plan.height,
     shaftBottom: plan.shaftBottom,
@@ -1735,6 +1753,18 @@ export function cadModifierGridfinityForShape(shape: WorkplaneShape): CadModifie
   const plan = gridfinityPlan({ width, depth, height: shape.height, gridfinityType: shape.gridfinityType, gridfinityLip: shape.gridfinityLip, gridfinityMagnets: shape.gridfinityMagnets, gridfinityHalfGrid: shape.gridfinityHalfGrid, gridfinityLargePlate: shape.gridfinityLargePlate, gridfinitySwallowtail: shape.gridfinitySwallowtail, gridfinityPaddingBack: shape.gridfinityPaddingBack, gridfinityPaddingFront: shape.gridfinityPaddingFront, gridfinityPaddingLeft: shape.gridfinityPaddingLeft, gridfinityPaddingRight: shape.gridfinityPaddingRight, gridfinityOutline: shape.gridfinityOutline });
   // Label shelves, finger scoops and dividers, an outline plate's sockets and a Swallowtail plate's pockets, are in the display mesh only once Manifold has loaded; until then the body would not match it (#455, #554, #1061).
   if (!loadedManifoldRuntime() && gridfinityHasPieces({ ...shape, width, depth })) return null;
+  // The letters on the shelves (#1308) with the font's own curves, laid out where the display mesh has them.
+  const letters = gridfinityLabelGlyphs({ ...shape, width, depth }).map(({ place, layout, map }) => ({
+    top: place.top,
+    glyphs: layout.glyphs.flatMap((glyph) => {
+      const loop = (path: GlyphPath) => glyphLoop(path, (point) => map(point.x, point.y), layout.segments === 1);
+      const outer = loop(glyph);
+      const holes = glyph.holes.map(loop);
+      // A text whose glyph cannot be read goes as its mesh; here the glyph is left out, and the missing-letters check in
+      // gridfinitySolid.ts notices a real loss.
+      return outer && holes.every((hole) => hole !== null) ? [[outer, ...(holes as CadModifierProfileLoop[])]] : [];
+    }),
+  }));
   return {
     width: plan.size.width,
     depth: plan.size.depth,
@@ -1791,6 +1821,7 @@ export function cadModifierGridfinityForShape(shape: WorkplaneShape): CadModifie
     gridfinityOpeningCorner: shape.gridfinityOpeningCorner,
     gridfinityOpeningCornerSize: shape.gridfinityOpeningCornerSize,
     gridfinityOutline: shape.gridfinityOutline,
+    ...(letters.length > 0 ? { gridfinityLetters: letters } : {}),
     // Mesh and body are built at the size of the grid units, which canonicalizeShape
     // keeps the shape's box at; a box that differs anyway stretches the body to it.
     transform: profileTransformForShape(shape, new THREE.Matrix4().makeScale(width / plan.size.width, shape.height / plan.size.height, depth / plan.size.depth)),
@@ -1821,12 +1852,15 @@ function turningReach(radius: number, angle: number, twist: number) {
  */
 /**
  * Every corner of a helical ring becomes a twisted face of its own, so an involute ring -
- * about fifteen corners a tooth - is built exactly only up to this many; a bigger one stays
- * the display mesh.
+ * about fifteen corners a tooth - is built exactly for the edge tool only up to this many,
+ * so its preview stays inside the timeout; a bigger one stays the display mesh there.
+ * The STEP export takes any size (`anySize`, #1321): it runs in the geometry worker, and
+ * measured with the kernel in Node a herringbone gear of 96 involute teeth builds in 3.7 s
+ * and writes in 0.9 s, one of 500 teeth (the most a gear can have) in 36 s and 11 s.
  */
 const HELICAL_GEAR_CORNER_LIMIT = 480;
 
-export function cadModifierHelicalGearForShape(shape: WorkplaneShape): CadModifierHelicalGearPart | null {
+export function cadModifierHelicalGearForShape(shape: WorkplaneShape, options: { anySize?: boolean } = {}): CadModifierHelicalGearPart | null {
   if (shape.kind !== "gear" || !gearTypeHasHelix(shape.gearType)) return null;
   if (shape.importedMesh || shape.groupedShapes?.length || shape.cadBrep || shape.imagePlate || shapeHasShapeDeform(shape)) return null;
   const width = shapeWidth(shape);
@@ -1837,7 +1871,7 @@ export function cadModifierHelicalGearForShape(shape: WorkplaneShape): CadModifi
   const corners = gearOutlineCorners(width, depth, shape).map((corner) => ({ angle: corner.angle, radius: corner.radiusX }));
   // Involute teeth keep their tip circle on width x depth instead of what the turn spans (#201).
   const involute = involuteOutlineStretch(width, depth, shape);
-  if (involute && corners.length > HELICAL_GEAR_CORNER_LIMIT) return null;
+  if (involute && !options.anySize && corners.length > HELICAL_GEAR_CORNER_LIMIT) return null;
   const herringbone = normalizeGearType(shape.gearType) === "herringbone";
   const turn = herringbone ? twist / 2 : twist;
   let minX = Infinity;
@@ -1864,6 +1898,31 @@ export function cadModifierHelicalGearForShape(shape: WorkplaneShape): CadModifi
   return { corners, twist, ...(herringbone ? { herringbone } : {}), height: shape.height, stretch, boreRadius, transform: profileTransformForShape(shape) };
 }
 
+/**
+ * A GT2 pulley (Discussion #1319) as the kernel builds it: the toothed band's true arcs
+ * (pulleyToothArcs, which the display mesh samples) pushed up between the flanges, the
+ * flanges and the hub as discs, the bore through all of it.
+ */
+function pulleyProfile(shape: WorkplaneShape): CadModifierProfilePart {
+  const measures = pulleyMeasures(shape);
+  const { flange, beltWidth, hubHeight, flangeRadius, hubRadius, boreRadius, height } = measures;
+  const arcs = pulleyToothArcs(measures);
+  const segments = arcs.map((arc) => arcSegment({ cx: arc.cx, cz: arc.cz, rx: arc.radius, rz: arc.radius, start: arc.start, end: arc.end }));
+  const loop: CadModifierProfileLoop = { ...pulleyArcPoint(arcs[0], arcs[0].start), segments };
+  const discs: Array<{ bottom: number; top: number; radius: number }> = [];
+  if (flange > 0) discs.push({ bottom: 0, top: flange, radius: flangeRadius }, { bottom: flange + beltWidth, top: 2 * flange + beltWidth, radius: flangeRadius });
+  if (hubHeight > 0) discs.push({ bottom: 2 * flange + beltWidth, top: height, radius: hubRadius });
+  const part: CadModifierProfilePart = {
+    kind: "extrusion",
+    loops: [loop],
+    height,
+    transform: profileTransformForShape(shape),
+    pulley: { teethBottom: flange, teethTop: flange + beltWidth, discs, boreRadius },
+  };
+  validateCadProfile(part);
+  return part;
+}
+
 /** A Hirth joint (#1016) as the exact body its display mesh draws, or null for one that has to stay its mesh. */
 export function cadModifierHirthForShape(shape: WorkplaneShape): CadModifierHirthPart | null {
   if (shape.kind !== "hirth") return null;
@@ -1871,14 +1930,86 @@ export function cadModifierHirthForShape(shape: WorkplaneShape): CadModifierHirt
   const width = shapeWidth(shape);
   const depth = shapeDepth(shape);
   if (![width, depth, shape.height].every((value) => Number.isFinite(value) && value > 0)) return null;
-  const { rx, rz, height, teeth, toothHeight, boreRadius } = hirthMeasures(shape, width, depth);
-  return { rx, rz, height, teeth, toothHeight, boreRadius, transform: profileTransformForShape(shape) };
+  const { rx, rz, height, teeth, toothHeight, boreRadius, split } = hirthMeasures(shape, width, depth);
+  return { rx, rz, height, teeth, toothHeight, boreRadius, ...(split !== 0.5 ? { split } : {}), transform: profileTransformForShape(shape) };
+}
+
+/**
+ * A screw boss, snap-fit or rib (#1246) as the exact body its display mesh draws, or null for one that has to stay its
+ * mesh. The shape's fields go to `enclosureSolid.ts`, which builds the body from the same plan as the mesh; a screw
+ * boss set as a hole takes that along, so its body is its pocket alone (#1288). They take no taper or extrude deform.
+ */
+export function cadModifierEnclosureForShape(shape: WorkplaneShape): CadModifierEnclosurePart | null {
+  if (shape.kind !== "screwBoss" && shape.kind !== "snapFit" && shape.kind !== "rib") return null;
+  if (shape.importedMesh || shape.groupedShapes?.length || shape.cadBrep || shape.imagePlate || shapeHasShapeDeform(shape)) return null;
+  const width = shapeWidth(shape);
+  const depth = shapeDepth(shape);
+  const height = shape.height;
+  if (![width, depth, height].every((value) => Number.isFinite(value) && value > 0)) return null;
+  // The mesh is built at the shape's size in its own frame, unstretched; the body is placed the same way.
+  const transform = profileTransformForShape(shape);
+  if (shape.kind === "screwBoss") {
+    return {
+      kind: "screwBoss",
+      fields: {
+        hole: Boolean(shape.hole),
+        width,
+        depth,
+        height,
+        screwBossFastener: shape.screwBossFastener,
+        screwBossSize: shape.screwBossSize,
+        screwBossHole: shape.screwBossHole,
+        screwBossHoleDepth: shape.screwBossHoleDepth,
+        screwBossDiameter: shape.screwBossDiameter,
+        screwBossGussets: shape.screwBossGussets,
+        screwBossGussetHeight: shape.screwBossGussetHeight,
+        screwBossGussetThickness: shape.screwBossGussetThickness,
+      },
+      transform,
+    };
+  }
+  if (shape.kind === "snapFit") {
+    return {
+      kind: "snapFit",
+      fields: {
+        width,
+        depth,
+        height,
+        snapFitPart: shape.snapFitPart,
+        snapFitThickness: shape.snapFitThickness,
+        snapFitUndercut: shape.snapFitUndercut,
+        snapFitLeadAngle: shape.snapFitLeadAngle,
+        snapFitRetainAngle: shape.snapFitRetainAngle,
+        snapFitClearance: shape.snapFitClearance,
+        snapFitFoot: shape.snapFitFoot,
+      },
+      transform,
+    };
+  }
+  return {
+    kind: "rib",
+    fields: { width, depth, height, ribStyle: shape.ribStyle, ribTop: shape.ribTop, ribFoot: shape.ribFoot, ribThickness: shape.ribThickness, ribFootThickness: shape.ribFootThickness, ribFootShape: shape.ribFootShape },
+    transform,
+  };
 }
 
 /** Outline pieces of a profile, the measure its kernel cost grows with. */
 export function cadProfileSegmentCount(profile: CadModifierProfilePart) {
   // A sweep builds its section once per piece of the centre line.
   return profile.loops.reduce((total, loop) => total + loop.segments.length, 0) * Math.max(1, profile.path?.length ?? 1);
+}
+
+/** The outline pieces of the letters on a Gridfinity bin's shelves (#1308), which the exact body builds one glyph at a time. */
+export function cadGridfinityLetterSegmentCount(part: CadModifierGridfinityPart) {
+  return (part.gridfinityLetters ?? []).reduce((total, label) => total + label.glyphs.flat().reduce((sum, loop) => sum + loop.segments.length, 0), 0);
+}
+
+/**
+ * What a Gridfinity part adds to a request's outline pieces, for its time budget: an outline plate's slab has a side face
+ * for each edge of its outline (#1061), as a profile has for each segment, and its letters their pieces (#1308).
+ */
+export function cadGridfinitySegmentCount(part: CadModifierGridfinityPart | undefined) {
+  return part ? (part.gridfinityOutline?.length ?? 0) + cadGridfinityLetterSegmentCount(part) : 0;
 }
 
 /**
@@ -1888,22 +2019,25 @@ export function cadProfileSegmentCount(profile: CadModifierProfilePart) {
  * until the rest fits: first those whose mesh is cheapest for the pieces it
  * saves, so a gear (few triangles per piece) goes before a glyph (many), and
  * one big honeycomb does not send every other shape of the group back too.
+ * The letters on a Gridfinity bin's shelves (#1308) count in the same budget,
+ * and a bin with too many of them goes back to its mesh the same way.
  */
-export function withinExactProfileLimit<M extends { faces: { length: number } }, T extends { profile?: CadModifierProfilePart; profileMesh?: M; mesh?: M }>(parts: T[], limit = CAD_MODIFIER_EXACT_SEGMENT_LIMIT): T[] {
-  let segments = parts.reduce((total, part) => total + (part.profile ? cadProfileSegmentCount(part.profile) : 0), 0);
+export function withinExactProfileLimit<M extends { faces: { length: number } }, T extends { profile?: CadModifierProfilePart; gridfinity?: CadModifierGridfinityPart; profileMesh?: M; mesh?: M }>(parts: T[], limit = CAD_MODIFIER_EXACT_SEGMENT_LIMIT): T[] {
+  const pieces = (part: T) => (part.profile ? cadProfileSegmentCount(part.profile) : part.gridfinity ? cadGridfinityLetterSegmentCount(part.gridfinity) : 0);
+  let segments = parts.reduce((total, part) => total + pieces(part), 0);
   if (segments <= limit) return parts;
-  const cost = (part: T) => (part.profileMesh?.faces.length ?? 0) / Math.max(1, cadProfileSegmentCount(part.profile as CadModifierProfilePart));
+  const cost = (part: T) => (part.profileMesh?.faces.length ?? 0) / Math.max(1, pieces(part));
   const order = parts
     .map((part, index) => ({ part, index }))
-    .filter(({ part }) => part.profile)
-    .sort((a, b) => cost(a.part) - cost(b.part) || cadProfileSegmentCount(b.part.profile as CadModifierProfilePart) - cadProfileSegmentCount(a.part.profile as CadModifierProfilePart));
+    .filter(({ part }) => pieces(part) > 0)
+    .sort((a, b) => cost(a.part) - cost(b.part) || pieces(b.part) - pieces(a.part));
   const toMesh = new Set<number>();
   for (const { part, index } of order) {
     if (segments <= limit) break;
-    segments -= cadProfileSegmentCount(part.profile as CadModifierProfilePart);
+    segments -= pieces(part);
     toMesh.add(index);
   }
-  return parts.map((part, index) => (toMesh.has(index) ? { ...part, profile: undefined, profileMesh: undefined, mesh: part.profileMesh } : part));
+  return parts.map((part, index) => (toMesh.has(index) ? { ...part, profile: undefined, gridfinity: undefined, profileMesh: undefined, mesh: part.profileMesh } : part));
 }
 
 /**

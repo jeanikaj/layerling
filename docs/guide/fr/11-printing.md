@@ -46,11 +46,46 @@ Dans le menu à côté de l'œil ({{ui:editor.group.visibility}}), **Afficher le
 
 La pente que gère votre imprimante est définie dans les paramètres sous {{ui:workspace.appearance}} : de 30° (attention) à 70° (pour les imprimantes avec un bon refroidissement des pièces). Une face posée sur un autre corps est encore marquée – layerling ne regarde que la face elle-même.
 
+## Nervures de support pour une pièce inclinée
+
+Une pièce imprimée inclinée sur une arête, à 45° par exemple, n'a souvent besoin d'aucun support : ses faces sont assez raides. Mais elle repose sur une arête fine et peut basculer. La {{ui:supportRib.title}} la tient : une fine nervure se place sous sa face inférieure à petite distance, sur un pied ovale, et de minuscules ponts la retiennent. Posez d'abord la pièce sur son arête, sur le plateau.
+
+1. Sélectionnez la pièce et cliquez sur {{ui:supportRib.title}} dans le groupe {{ui:editor.group.modify}} du ruban, faites un clic droit sur la pièce ou trouvez-la avec [[Ctrl]]+[[K]].
+2. Cliquez sur la face inférieure là où la nervure doit se trouver. La face doit regarder vers le bas, être inclinée entre 15° et 75° et descendre jusqu'au plateau ; la nervure descend tout droit le long de la face depuis votre clic.
+3. Réglez {{ui:supportRib.nozzle}}, {{ui:supportRib.layerHeight}} et {{ui:supportRib.firstLayer}} comme dans votre slicer. La nervure fait deux lignes de buse d'épaisseur, l'écart avec la pièce une demi-ligne ; chaque pont fait une ligne de large et exactement une couche de haut, posé sur une couche de l'impression, pour que le slicer l'imprime comme une seule ligne fine qui se casse proprement. {{ui:supportRib.height}} indique jusqu'où la nervure monte le long de la face (à mi-hauteur au départ), {{ui:supportRib.bridgeSpacing}} l'écart entre les ponts, en couches entières.
+4. Sous {{ui:supportRib.more}}, l'épaisseur, l'écart, la largeur des ponts et l'épaisseur du pied se règlent à la main (jusque-là ils suivent la buse et les couches), ainsi que la largeur du pied et les arrondis au pied et en haut.
+5. {{ui:supportRib.apply}} ajoute la nervure. Avec {{ui:supportRib.bundle}} (activé au départ), nervure et pièce sont regroupées : elles bougent ensemble et arrivent dans le slicer comme deux corps côte à côte, reliés par les ponts à l'impression.
+
+La nervure est un corps maillé : pour la modifier, supprimez-la et refaites-la. Chaque clic crée une nervure ; pour d'autres, cliquez sur {{ui:supportRib.repick}} ou répétez-la avec {{ui:editor.tool.array}}. La nervure ne doit entrer nulle part dans la pièce, et la pièce doit reposer sur le plateau - sinon la fenêtre dit pourquoi. Vos réglages sont gardés dans ce navigateur pour la prochaine nervure.
+
 ## Épaisseur de paroi, jeu et chanfreins
 
 - Les parois doivent avoir une largeur d'au moins deux lignes d'extrusion, soit 0,8 mm avec une buse de 0,4 mm. Les pièces robustes ont besoin de 1,2 à 2 mm.
 - Lorsque deux pièces s'emboîtent, vous avez besoin d'un jeu : généralement 0,2 à 0,4 mm, selon l'imprimante. Faites une petite paire de tests avant d'imprimer la grande partie.
 - De nombreuses personnes chanfreinent légèrement le bord inférieur qui repose sur la plaque. Cela empêche la première couche de s'étendre (« pied d'éléphant »).
+
+## Le jeu de votre imprimante : le test d'ajustement
+
+Chaque imprimante imprime les trous un peu plus petits et les goupilles un peu plus épaisses que dessinés, chacune selon sa propre mesure ; le jeu dont deux pièces imprimées ont besoin n'est donc au départ qu'une estimation. Mesurez-le plutôt une fois : dans les réglages, sous {{ui:workspace.workplane}}, {{ui:workspace.fitTestMake}} pose un test d'ajustement sur le plateau. C'est une plaque de 60 × 20 × 4 mm avec sept trous pour une goupille de 5 mm, chacun dessiné à 5 mm plus deux fois 0,05, 0,10, 0,15, 0,20, 0,25, 0,30 ou 0,40 mm, la valeur en relief à côté, et la goupille de 5 mm elle-même, debout à côté de la plaque, avec un petit chanfrein en haut. Il est fait de formes ordinaires, il s'imprime donc avec le reste du plateau, sans supports.
+
+Imprimez-le tel qu'il est posé, puis enfoncez la goupille, côté chanfreiné en premier, dans les trous en commençant par le plus serré. **Le trou le plus serré dans lequel la goupille tourne encore** donne le jeu de votre imprimante. Saisissez sa valeur sous {{ui:workspace.printerPlay}} ou cliquez-la parmi les valeurs sous le champ. Le jeu s'entend par côté, en millimètres, et le navigateur le garde pour tous les motifs ; un champ vide signifie non mesuré.
+Avec plusieurs imprimantes, choisissez d'abord sous {{ui:workspace.printer}} celle sur laquelle vous imprimez : chaque imprimante garde son propre jeu, et les nouveaux usages partent du jeu de l'imprimante choisie pour le modèle. Une imprimante sans jeu propre prend le jeu réglé quand aucune imprimante n'était choisie.
+
+Dès lors, les nouvelles utilisations partent du jeu au lieu de la valeur intégrée : {{ui:lid.gap}} et {{ui:lid.hingePinPlay}} dans l'outil {{ui:editor.tool.lid}}, le jeu d'une nouvelle forme {{ui:shape.dovetail}} ou {{ui:shape.snapFit}}, {{ui:prop.clearance}} d'un nouvel écrou ou trou taraudé – deux fois le jeu, puisque c'est la place sur tout le diamètre – et {{ui:clearance.threshold}} dans {{ui:editor.tool.clearance}}. De même pour le {{ui:split.connectorClearance}} des goujons et des tenons dans {{ui:editor.tool.split}}. Tant qu'un tel champ garde cette valeur, « {{ui:printerPlay.fromFitTest}} » à côté indique d'où vient le nombre. Une charnière imprimée en place et les articulations de l'outil {{ui:editor.tool.flexi}} gardent leurs 0,4 mm : imprimées d'une seule pièce, leurs interstices doivent aussi rester ouverts entre les couches, ce qu'une goupille imprimée à part ne mesure pas. La place pour enfoncer un aimant ou une clé Gridfinity et celle pour une prise ou une carte achetée gardent aussi leurs propres valeurs. Les corps déjà présents dans un motif ne changent jamais, pas plus qu'un motif que vous ouvrez.
+
+## Vérifier l'impression
+
+{{ui:editor.tool.printCheck}}, à côté de {{ui:editor.tool.clearance}} dans {{ui:editor.group.combine}}, examine les objets sélectionnés, ou tous les objets visibles si rien n'est sélectionné, et dit dans une fenêtre ce qui raterait à l'impression. Chacune de ses cinq lignes est verte quand elle n'a rien trouvé, et orange avec quoi et où dans le cas contraire :
+
+- **{{ui:printCheck.thin.title}}** : les endroits plus fins que deux lignes de la buse - 0,8 mm avec une buse de 0,4 mm. Le trancheur omet une telle paroi ou l'imprime en une seule ligne fragile. Choisissez votre buse sous {{ui:printCheck.nozzle}} en haut de la fenêtre (de 0,2 à 0,8 en un clic, toute autre dans le champ). Les endroits fins sont peints en rouge avec une grille claire sur les corps, et la ligne indique l'endroit le plus fin et la surface trop fine. Les endroits de moins de 1 mm² et les arêtes vives, comme celle d'un coin, sont ignorés.
+- **{{ui:printCheck.floating.title}}** : un corps, ou une pièce séparée d'un corps, qui ne touche ni le plateau ni une autre pièce (à 0,05 mm près). Il serait imprimé dans le vide. Une pièce posée sur une pièce qui tient debout ne pose pas de problème.
+- **{{ui:printCheck.contact.title}}** : une pièce sur le plateau dont la première couche est très petite pour sa hauteur, comme une sphère ou un cône sur sa pointe. Elle peut se décoller pendant l'impression. L'avertissement vient sous 0,5 mm² d'appui, mesuré à 0,1 mm au-dessus du plateau, par millimètre de hauteur : une sphère est toujours en dessous, un cube de 10 mm a 10.
+- **{{ui:printCheck.overhang.title}}** : les mêmes chiffres que **Afficher les surplombs**, avec l'angle réglé là.
+- **{{ui:printCheck.openMesh.title}}** : un maillage importé avec des arêtes ouvertes, ou des arêtes partagées par trois faces ou plus. Le trancheur doit alors deviner où est l'intérieur.
+
+![Un bac dont la paroi droite ne fait que 0,6 mm : Vérifier l'impression la peint en rouge et la signale dans la fenêtre.](shot:print-check)
+
+{{ui:printCheck.show}} sur une ligne y amène la caméra ; il sélectionne les pièces en l'air, celles qui reposent sur trop peu et les maillages ouverts, et pour les surplombs il active **Afficher les surplombs**. Les corps qui se chevauchent sont vérifiés réunis, comme le trancheur les réunit. Si vous modifiez le modèle pendant que la fenêtre est ouverte, elle affiche {{ui:printCheck.stale}} ; cliquez dessus ou sur {{ui:printCheck.checkAgain}}. [[Esc]] ferme la fenêtre. Rien ne change dans le modèle. Une IA fait la même vérification avec `layerling_check_print`.
 
 ## Quand tu es prêt
 

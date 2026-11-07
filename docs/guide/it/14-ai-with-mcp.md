@@ -98,12 +98,16 @@ L’IA usa le stesse funzioni che hai a disposizione, attraverso lo stesso perco
 | `layerling_scale_objects` | Ridimensiona gli oggetti in percentuale, tutti insieme oppure ciascuno attorno alla propria posizione. |
 | `layerling_lay_flat` | Appoggia un oggetto sul piano usando una delle sue facce. |
 | `layerling_place_on_face` | Appoggia gli oggetti su una faccia di un altro, anche se inclinata, come con il tasto C. |
-| `layerling_perforate_face` | Crea un motivo di fori su una faccia piana; i fori restano tali e vengono raggruppati con il corpo. |
+| `layerling_perforate_face` | Crea un motivo di fori su una faccia piana o intorno alla parete di un cilindro, un tubo o un foro; i fori restano tali e vengono raggruppati con il corpo. |
 | `layerling_sweep_sketch` | Estende una sezione rettangolare o circolare lungo un percorso di punti, creando un corpo esatto; se il percorso è chiuso, crea un anello. |
 | `layerling_push_face` | Estende una faccia piana o crea una tasca al suo interno, impostando un margine dal bordo e il raggio degli angoli; la nuova parte è un corpo da schizzo raggruppato con il corpo originale. |
+| `layerling_paint` | dipinge parti di un corpo in colori propri per stampare in più colori (Dipingi): riempire una faccia fino agli spigoli vivi, una macchia rotonda o un lazo tracciato in una vista piana; cancellare, togliere tutto; salvato con il corpo e scritto in un 3MF come facce dipinte |
+| `layerling_support_rib` | mette una nervatura di supporto sottile sotto la faccia inferiore di un pezzo stampato inclinato su uno spigolo, con ponti alti un layer (Nervatura di supporto) |
 | `layerling_mate_faces` | Accosta una faccia di un oggetto a quella di un altro, facendole combaciare o allineandole a filo. |
 | `layerling_open_group` | Apre un gruppo per modificare le parti singolarmente, anche se si trova dentro un altro gruppo già aperto. |
 | `layerling_close_group` | Chiude il gruppo (con «Fine») oppure annulla l’operazione. |
+| `layerling_add_to_group` | mette oggetti sciolti in un gruppo senza aprirlo |
+| `layerling_take_out_of_group` | toglie una parte da un gruppo senza aprirlo |
 | `layerling_group_objects` | Raggruppa gli oggetti. |
 | `layerling_ungroup_objects` | Scioglie i gruppi. |
 | `layerling_boolean_cut` | Sottrae i fori dai solidi. |
@@ -137,6 +141,8 @@ L’IA usa le stesse funzioni che hai a disposizione, attraverso lo stesso perco
 | `layerling_show_overhangs` | Attiva o disattiva la visualizzazione dei sovrasbalzi, ne imposta l’angolo e indica per ogni corpo l’area che richiederebbe supporti. |
 | `layerling_estimate_print` | Stima volume, peso e filamento per la selezione o per l’intero progetto: calcola il corpo pieno e fornisce una stima approssimativa con pareti e riempimento, come nella finestra di esportazione. |
 | `layerling_check_clearance` | Controlla prima della stampa quali parti si sovrappongono, si toccano o sono più vicine di un gioco minimo, anche le parti separate di un oggetto |
+| `layerling_printer_play` | legge, imposta o cancella il gioco della stampante ({{ui:workspace.printerPlay}} nelle impostazioni) e mette la prova di accoppiamento che lo misura |
+| `layerling_check_print` | Controlla prima della stampa cosa andrebbe storto: pareti troppo sottili per l'ugello, parti sospese, poco contatto con il piatto, sporgenze e mesh aperte |
 | `layerling_add_reference_points` | Aggiunge punti di riferimento — al centro, agli angoli o nei punti medi degli spigoli degli oggetti, oppure in posizioni precise — a cui si agganciano le forme. |
 | `layerling_list_reference_points` | Elenca i punti di riferimento con i rispettivi ID e posizioni. |
 | `layerling_remove_reference_points` | Elimina i punti di riferimento indicati tramite ID oppure li elimina tutti. |
@@ -156,9 +162,10 @@ L’IA usa le stesse funzioni che hai a disposizione, attraverso lo stesso perco
 | `layerling_delete_custom_shape` | Elimina una forma personalizzata; i corpi già inseriti restano nel progetto. |
 | `layerling_show_workplane` | Nasconde o mostra il piano con la griglia, per esempio per fotografare la parte inferiore (modifica solo la vista). |
 | `layerling_set_section_view` | Apre la vista lungo un piano di sezione per mostrare l’interno; non taglia realmente il pezzo (modifica solo la vista). |
-| `layerling_measurements` | mostra o nasconde le misurazioni del metro a nastro e le elenca con le loro lunghezze, e nasconde o mostra le misure attorno alla selezione come [[Q]] |
+| `layerling_measurements` | mostra o nasconde le misurazioni del metro a nastro e le elenca con le loro lunghezze, e nasconde o mostra le misure attorno alla selezione come [[Q]], e digita una lunghezza per una di esse, che sposta il corpo alla sua estremità come un clic sul numero |
 | `layerling_measure_angle` | misura un angolo come il goniometro: al vertice di tre punti o tra due facce piane, e lo mostra nella vista |
 | `layerling_saved_view` | Salva la vista corrente con il tasto 7, 8, 9 o 0 e la richiama in seguito, come con Maiusc+tasto e poi il tasto (modifica solo la vista). Imposta anche la vista di avvio dei nuovi progetti. |
+| `layerling_build_plates` | Elenca, aggiunge, nomina, ordina e toglie i piatti di stampa, sposta oggetti su un piatto e li distribuisce sui piatti, come la barra dei piatti. |
 | `layerling_clear_history` | Elimina definitivamente tutti i passaggi annullabili, come il pulsante «Elimina cronologia» nella vista Cronologia; richiede `confirm: true`. |
 | `layerling_set_history_view` | Mostra uno stato precedente del progetto, come la vista Cronologia. Il progetto vero e proprio non viene modificato; gli strumenti di modifica restano in attesa finché la vista non viene chiusa. |
 | `layerling_restore_from_history` | Ripristina nel progetto come copie gli oggetti di uno stato precedente, comprese le parti all’interno dei gruppi, come «Inserisci nel progetto» nella vista Cronologia; l’operazione è un singolo passaggio annullabile. |

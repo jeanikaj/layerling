@@ -45,7 +45,7 @@ Am linken Rand liegt eine schmale Leiste. Von oben nach unten:
 - {{ui:camera.zoomIn}} und {{ui:camera.zoomOut}} zoomen schrittweise, ebenso die Tasten [[+]] und [[−]].
 - {{ui:camera.orthographic}} schaltet auf eine flache Ansicht um, in der parallele Kanten parallel bleiben. Das ist zum Messen und zum Ausrichten von Kanten oft angenehmer als die perspektivische Ansicht. Mit [[O]] wechselst du hin und her, ein zweiter Klick geht zurück.
 - {{ui:camera.secondView}} öffnet eine zweite Ansicht des Entwurfs in einem eigenen Fenster, siehe unten. Ein zweiter Klick schließt es.
-- {{ui:camera.showScrollbars}} blendet unten und am rechten Rand der Ansicht je eine Bildlaufleiste ein. Ziehst du den Balken, gleitet die Ansicht stufenlos mit; ein Klick auf einen Pfeil am Ende schiebt sie ein kleines Stück (gehalten läuft sie weiter), ein Klick neben den Balken fast um eine ganze Bildbreite. Dabei dreht sich nichts, und anders als die Pfeiltasten gehen die Leisten auch, während ein Teil ausgewählt ist - praktisch, wenn du nah an kleinen Details arbeitest. Ein zweiter Klick blendet sie aus; dieser Browser merkt sich die Wahl.
+- {{ui:camera.showScrollbars}} blendet unten und am rechten Rand der Ansicht je eine Bildlaufleiste ein. Ziehst du den Balken, gleitet die Ansicht stufenlos mit; ein Klick auf einen Pfeil am Ende schiebt sie ein kleines Stück (gehalten läuft sie weiter), ein Klick neben den Balken fast um eine ganze Bildbreite. Dabei dreht sich nichts, und anders als die Pfeiltasten gehen die Leisten auch, während ein Teil ausgewählt ist - praktisch, wenn du nah an kleinen Details arbeitest. Ein zweiter Klick blendet sie aus; ob ein Entwurf mit ihnen öffnet, entscheidet {{ui:workspace.startWithScrollbars}} in den Einstellungen. Dieser Browser merkt sich den Schalter außerdem.
 - {{ui:camera.hideWorkplane}} (das Auge über dem Gitter) blendet die Platte mit ihrem Gitter aus, damit du die Unterseite eines Entwurfs von unten ansehen kannst. Es ändert sich nur die Ansicht: Neue Formen landen weiter auf der Arbeitsebene. Ein zweiter Klick blendet sie wieder ein.
 - {{ui:camera.placeWorkplane}}, das Maßband und das Winkellineal sind eigene Werkzeuge, sie kommen weiter unten und im Kapitel [Messen und Notizen](chapter:messen-und-notizen) vor.
 
@@ -91,9 +91,22 @@ Auf einer Fläche rastet der Ursprung der Arbeitsebene sonst am Raster ein. Klic
 
 Ein Klick neben die Platte oder [[Esc]] holt die Arbeitsebene zurück auf die Grundplatte. Schneller geht es mit {{ui:camera.resetWorkplane}}: Der Knopf mit dem Pfeil nach unten steht in der Ansichtsleiste unter dem Auge, solange die Ebene auf einer Fläche liegt. Mit [[Umschalt]]+[[W]] legst du sie direkt auf die gerade ausgewählte Fläche. [[Alt]]+[[W]] legt sie jederzeit zurück auf die Grundplatte, ob etwas ausgewählt ist oder nicht. Hältst du beim Klicken [[Umschalt]] gedrückt, zeigt die Ebene in die andere Richtung.
 
-Solange die Arbeitsebene auf einer Fläche liegt, erscheint neben {{ui:camera.placeWorkplane}} ein Auge. Es blendet die Ebene aus, ohne sie aufzuheben, damit du freie Sicht auf den Entwurf hast: Neue Formen landen weiter auf dieser Fläche, und gedreht wird weiter um sie. Ein Klick auf das Auge blendet sie wieder ein, ebenso das Setzen einer neuen Arbeitsebene.
+Solange die Arbeitsebene auf einer Fläche liegt, erscheint neben {{ui:camera.placeWorkplane}} ein Auge. Es blendet die Ebene aus, ohne sie aufzuheben, damit du freie Sicht auf den Entwurf hast: Neue Formen landen weiter auf dieser Fläche, und gedreht wird weiter um sie. Ein Klick auf das Auge blendet sie wieder ein, ebenso das Setzen einer neuen Arbeitsebene. Die Größengriffe eines Quaders folgen auch einer Arbeitsebene, die auf einer seiner Seiten steht: Die Eck- und Kantengriffe liegen auf dieser Fläche, und jeder ändert die eigene Breite, Länge oder Höhe des Quaders, die an ihm entlangläuft. Der Griff in der Mitte der Fläche ändert das Maß quer dazu.
 
 Um gerade auf die Arbeitsebene zu schauen, drücke [[P]] oder klicke in der Ansichtsleiste neben {{ui:camera.placeWorkplane}} auf {{ui:camera.lookOntoWorkplane}}. Die Ansicht dreht sich, bis du die Ebene von vorn siehst, von der Seite, zu der neue Formen wachsen, mit ihrem Ursprung in der Mitte. Auf der Grundplatte ist das die Ansicht von oben.
+
+## Druckplatten
+
+Passt ein Entwurf nicht auf eine Platte, etwa eine Dose mit Deckel und Einsätzen, bekommt er mehrere Druckplatten. Klicke {{ui:editor.tool.buildPlates}} in der Gruppe {{ui:editor.group.arrange}} oder wähle {{ui:plates.moveTo}} im Menü eines Rechtsklicks auf einen Körper. Am unteren Rand der Ansicht erscheint eine Leiste mit einem Knopf je Platte; die Zahl darauf sagt, wie viele Körper auf der Platte stehen.
+
+- Jede Platte ist so groß wie die Arbeitsfläche, die Platten liegen rechts neben der ersten, 20 mm auseinander. Ein Körper gehört zu der Platte, auf der die Mitte seiner Grundfläche steht; zieht man ihn hinüber, steht er auf der anderen Platte. Ein Entwurf hat bis zu 12 Platten.
+- Ein Klick auf eine Platte in der Leiste zeigt sie, und neue Formen landen dann auf ihr. {{ui:plates.showAll}} zeigt alle. Ein Doppelklick auf eine Platte oder {{ui:plates.rename}} gibt ihr einen Namen wie „Deckel“, der auf der Platte steht.
+- {{ui:plates.moveLeft}} und {{ui:plates.moveRight}} ändern die Reihenfolge, die Körper wandern mit ihrer Platte. {{ui:plates.remove}} nimmt die aktive Platte weg; ihre Körper kommen an derselben Stelle auf die erste Platte.
+- {{ui:plates.arrange}} legt die ausgewählten Körper, oder alle, Reihe für Reihe auf die Platten, die größten zuerst, 5 mm auseinander, und fügt Platten hinzu, solange sie gebraucht werden. Ein Körper, der größer als eine Platte ist, bleibt stehen.
+- Mit gewähltem Drucker wird jeder Körper gegen seine eigene Platte geprüft, und die Bauhöhe zählt ab dem tiefsten Körper dieser Platte. Eine Platte mit einem Körper, der nicht passt, zeigt ihre Zahl rot.
+- In den Eigenschaften zählt X ab der Mitte der eigenen Platte des Körpers.
+
+Das Exportfenster bietet dann {{ui:export.plates}}: alle Platten in einer Datei, nebeneinander wie im Entwurf; je Platte eine Datei, zusammen in einer ZIP (STL, 3MF und OBJ); oder eine einzelne Platte, an die Stelle der ersten gesetzt. Ein Slicer öffnet jede Datei als eine Platte; wer die Platten nacheinander druckt, nimmt also die Dateien je Platte. Körper zwischen Platten verschieben und verteilen lässt sich rückgängig machen; Platten hinzufügen, benennen, umsortieren und entfernen wird mit dem Entwurf gespeichert, aber nicht rückgängig gemacht.
 
 ## Gitter und Raster
 
@@ -104,6 +117,8 @@ Das Gitter zeigt die Größe der Platte. Unten rechts steht das **Raster**: Vers
 ### Das Einstellungsfenster
 
 Das Zahnrad in der Titelzeile ({{ui:editor.workspaceSettings}}) öffnet die Einstellungen. Links liegen fünf Bereiche: {{ui:workspace.appearance}}, {{ui:workspace.measurement}}, {{ui:workspace.workplane}}, {{ui:workspace.shapeDefaults}} und {{ui:workspace.history}}. Eine Änderung gilt sofort. {{ui:workspace.makeDefault}} unten sichert die aktuellen Einstellungen als Vorgabe, sodass ein neues Design mit ihnen beginnt. Eine geöffnete Datei bringt ihre eigenen Einstellungen mit; {{ui:workspace.useMyDefault}} daneben legt deine gesicherten Farben, das Raster und das Übrige auf den offenen Entwurf und lässt die Einheiten unberührt. Steht in deiner Vorgabe ein Drucker, kommt er mit seiner Plattengröße mit; sonst behält der Entwurf seine Platte und seinen Drucker. {{ui:workspace.close}} oben rechts schließt das Fenster. Dieser Teil geht die Einstellungen eine nach der anderen durch.
+
+{{ui:workspace.exportSettings}} daneben speichert die Einstellungen des Fensters in einer Datei (layerling-settings-<Datum>.json): die Farben, das Raster, die Schatten, die Kamera und die Formvorgaben, dazu das Design, die Größe der Symbolleiste, die Ecke des Ansichtswürfels, die Formfarben und das Spiel jedes Druckers. Auf einem anderen Rechner oder nach einem Datenverlust des Browsers liest {{ui:workspace.importSettings}} die Datei wieder ein: Sie wird deine Vorgabe für neue Entwürfe und kommt wie bei {{ui:workspace.useMyDefault}} auf den offenen Entwurf. Deine eigenen Tasten aus den Tastenkürzeln wandern mit.
 
 ### Darstellung: Thema, Leiste und Ansichtswürfel
 
@@ -163,6 +178,8 @@ Die Skizzenansicht hat eigene Farben: {{ui:workspace.sketchBackground}} für das
 
 {{ui:workspace.startInPerspective}}: Der Editor öffnet dann in der perspektivischen Ansicht, nicht in der flachen.
 
+{{ui:workspace.startWithScrollbars}}: Ein Entwurf öffnet dann mit den Bildlaufleisten der Ansicht. Die Einstellung wird mit dem Entwurf und mit {{ui:workspace.makeDefault}} gespeichert.
+
 {{ui:workspace.startView}} legt den Blickwinkel fest, in dem ein neuer Entwurf öffnet und zu dem {{ui:camera.home}} zurückkehrt. Dreh und zoome die Ansicht, wie du sie magst, und klicke dann {{ui:workspace.startViewUseCurrent}}; {{ui:workspace.startViewStandard}} bringt den gewohnten Blick von vorne rechts zurück. Das gilt für alle Entwürfe in diesem Browser. Ein Entwurf, den du wieder öffnest, öffnet weiter so, wie du ihn verlassen hast.
 
 {{ui:workspace.zoomSpeed}} ist ein Regler von langsam bis schnell: wie schnell Rad und Trackpad zoomen; die Zoomknöpfe und -tasten behalten ihre eigenen kleinen Schritte. {{ui:workspace.cameraInertia}}: Lässt du die Maus nach dem Drehen los, dreht die Ansicht noch kurz weiter und bremst sanft ab. Ausgeschaltet bleibt sie sofort stehen, wie in Tinkercad und Fusion 360.
@@ -179,9 +196,13 @@ Unter {{ui:workspace.measurement}} in den Einstellungen stellst du die {{ui:work
 
 Unter {{ui:workspace.customSnapGrids}} an derselben Stelle legst du eigene Rasterschritte an: einen Namen und eine Größe in Millimetern, zum Beispiel „Rastermaß 2,54 mm" für den Abstand von DIP-Chips, Stiftleisten und Lochrasterplatinen oder „MX Key Unit" mit 19,05 mm für den Abstand von Tastaturtasten. Das Rastermenü bietet dieses Maß dann ganz, halbiert und geviertelt an (1 ×, ½ × und ¼ ×), sodass sich Formen um ein ganzes, ein halbes oder ein viertel Rastermaß verschieben lassen. Willst du nur das Maß selbst, nimm den Haken bei {{ui:workspace.customSnapGridParts}} daneben weg; das Menü hat dann nur diesen einen Schritt. Eigene Schritte bleiben beim Entwurf und gehen mit {{ui:workspace.makeDefault}} mit.
 
+{{ui:workspace.startWithCornerRuler}}: Jeder neue Entwurf in diesem Browser beginnt dann mit einem Winkellineal im Nullpunkt, siehe [Messen und Notizen](chapter:messen-und-notizen). Vorhandene Entwürfe bleiben, wie sie sind, und ein Winkellineal, das du aus einem Entwurf entfernst, bleibt weg.
+
 ### Arbeitsebene: Platte und Drucker
 
 {{ui:workspace.printer}} stellt die Arbeitsebene auf die Druckplatte deines Druckers ein und markiert Körper, die darüber hinausragen, siehe [Drucken](chapter:drucken). {{ui:workspace.showPlateLabels}} schreibt den Namen des Designs auf die Platte und, wenn ein Drucker gewählt ist, seinen Namen und sein Bauvolumen.
+
+{{ui:workspace.printerPlay}} ist der Raum je Seite, den ein gedruckter Stift braucht, um sich in einem gedruckten Loch deines Druckers zu drehen. {{ui:workspace.fitTestMake}} legt die Passprobe auf die Platte, die es misst; neue Deckel, Schwalbenschwänze, Schnapphaken, Muttern und die Spielprüfung beginnen dann damit, siehe [Drucken](chapter:drucken). Es bleibt in diesem Browser, nicht im Entwurf.
 
 {{ui:workspace.size}} gibt der Platte eine eigene Größe, mit {{ui:workspace.width}} und {{ui:workspace.length}} in Millimetern oder der gewählten Einheit. Das Gitter läuft immer durch den Nullpunkt, sodass die kräftigen Linien auf den Achsen liegen, wie groß die Platte auch ist.
 

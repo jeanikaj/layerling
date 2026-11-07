@@ -11,7 +11,7 @@ Tvar za jiným tvarem, například výřez uvnitř tělesa, vyberete bez otáče
 
 Překážející objekt skryjte pomocí {{ui:editor.tool.hideSelected}}, [[Ctrl]]+[[H]]. V projektu zůstane, ale nebude viditelný ani zahrnutý v exportu. Exportní okno předem uvede počet skrytých dílů. [[Ctrl]]+[[Shift]]+[[H]] všechny zobrazí. Proti nechtěným změnám chrání zámek nahoře v nastavení nebo [[Ctrl]]+[[L]]. Zamčený tvar nelze přesouvat, měnit jeho rozměry, otáčet, přebarvovat ani mazat. Úchyty zešednou, u horní šipky se objeví zámek a editační nástroje se vypnou. Rozměry lze stále zjistit najetím na úchyt. Klávesa pro změnu ohlásí zamčený objekt. Obsahuje-li výběr zamčený tvar, nemění se ani ostatní části. Skrytí, přejmenování, kopírování a duplikování zůstávají dostupné. Chceš-li díl nechat, jak je, a přesto s ním stavět, zamkni jen jeho tvar: štítem vedle zámku, položkou {{ui:contextMenu.lockShape}} v nabídce pravého tlačítka nebo [[Ctrl]]+[[Shift]]+[[L]]. Dál se dá posouvat, otáčet, zvedat, zarovnávat, kopírovat a seskupovat s ostatními, ale velikost, nastavení a název zůstávají beze změny: úchyty velikosti zmizí, jejich pole zešednou a změna velikosti, zrcadlení, zrušení skupiny, nástroje hran a mazání se odmítnou. Kopie zámek zachová, stejně jako díl ve skupině: skupinu lze posouvat a znovu rozdělit, ale ne měnit její velikost. Štít tvar zase odemkne.
 
-Číslo na tlačítku skupiny {{ui:editor.group.visibility}} říká, kolik tvarů je skrytých, a kliknutím na něj se všechny znovu zobrazí. Projekt otevřený se skrytými tvary to jednou oznámí zprávou s tlačítkem pro jejich zobrazení.
+Číslo na tlačítku skupiny {{ui:editor.group.visibility}} říká, kolik tvarů je skrytých, a kliknutím na něj se všechny znovu zobrazí. Projekt otevřený se skrytými tvary to jednou oznámí zprávou s tlačítkem pro jejich zobrazení. Díl, který skryjete v otevřené skupině, zůstane skrytý i po jejím zavření tlačítkem {{ui:group.done}}: skupina si ponechá svou velikost a ostatní díly zůstanou, jak jsou, při zarovnání se skrytý díl dál počítá a zobrazení všech skrytých tvarů se ho netýká. Pro zobrazení skupinu znovu otevřete.
 
 ## Seznam objektů
 
@@ -26,6 +26,7 @@ U složitého modelu pomůže seznam všech tvarů: {{ui:editor.tool.showOutline
 - {{ui:outliner.rename}} přiřadí vlastní název. Stejně funguje tužka nahoře v nastavení vybraného tvaru. Smysluplné názvy usnadňují práci ve velkém projektu.
 - Tlačítko A–Z v záhlaví ({{ui:outliner.sortByName}}) seřadí pojmenované tvary abecedně, čísla počítá jako čísla (Díl 2 před Dílem 10). Tvary s výchozím názvem zůstanou pod nimi v pořadí přidání, nejnovější na konci, a díly ve skupinách se řadí stejně. Mění se jen seznam, nikdy projekt. Druhé kliknutí ukáže vše znovu v pořadí přidání a prohlížeč si volbu zapamatuje.
 - Úchyt na levé straně řádku (šest teček) přesune tvar v seznamu: přetáhněte jej nahoru nebo dolů, nebo na něj přejděte a stiskněte [[↑]] nebo [[↓]]. Tím se mění vlastní pořadí návrhu, ke kterému se seznam vrací bez řazení A–Z, a Zpět to vrátí. Při řazení A–Z nebo vyhledávání jsou úchyty skryté.
+- Chcete-li tvar vložit do skupiny, rozbalte skupinu šipkou a přetáhněte tvar za úchyt na díly skupiny; skupina dostane oranžový rámeček. Tvar zůstane, kde je, a ponechá si název, stejně jako skupina: skupina se s ním znovu sloučí, svazek ho jen přijme. Díly rozbalené skupiny mají vlastní úchyt: vytažený ze skupiny leží díl opět samostatně, na místě seznamu, kde ho pustíte, nebo ho pusťte na jinou rozbalenou skupinu a přesune se do ní. Skupina, které zůstane jediný díl, zanikne a zůstane po ní ten díl. Zpět vrátí každý z těchto kroků najednou. Během úprav skupiny to nejde.
 - Vyhledávání používá názvy i typy, například válec nebo výřez, a prochází libovolně vnořená sloučení. Nadřazené celky zůstanou v seznamu a rozbalí cestu k nalezeným částem. Celek nalezený vlastním názvem po rozbalení ukazuje všechny části.
 - Šipka vlevo v záhlaví sbalí seznam na záhlaví a znovu jej rozbalí.
 
@@ -63,7 +64,7 @@ Vedle prostředního bodu každé čáry stojí širší bod s čárkou na každ
 
 Je-li mezi vybranými tvary deska, která je v tomto směru delší než všechny ostatní, tvary se rozmístí na ní: mezera k jejím okrajům je stejná jako mezi tvary a jediný tvar přijde doprostřed. Tvary v několika řadách, jako zvířátka vkládací skládačky, se rozmístí řadu po řadě; tvary, jejichž kvádry se překrývají napříč směrem, tvoří jednu řadu. Kde tvary nestojí v čistých sloupcích, jako zvířátka zepředu dozadu, posouvají se tvary stojící vedle sebe místo toho jako celá řada.
 
-Bez desky nejdřív klikněte na volné místo podložky: podložka je pak pevný tvar, stejné mezery rozmístí tvary po celé podložce se stejnou mezerou k jejím okrajům a ostatní body je zarovnají k jejím okrajům nebo středu. Další klik na volnou podložku ji uvolní.
+Bez desky nejdřív se stisknutým [[Shift]] klikněte na volné místo podložky: podložka je pak pevný tvar, stejné mezery rozmístí tvary po celé podložce se stejnou mezerou k jejím okrajům a ostatní body je zarovnají k jejím okrajům nebo středu. Další klik se [[Shift]] na volnou podložku ji uvolní. Klik do prázdna bez [[Shift]] zarovnání ukončí, stejně jako [[L]] a [[Esc]].
 
 Podržte [[Alt]] a klikněte na bod, chcete-li mezeru zadat sami, třeba 5 mm: tvary se seřadí v této vzdálenosti, od prvního tvaru nebo od toho, na který jste klikli jako první; na desce přijde řada doprostřed. Zamčený tvar zůstane na místě, takže jeden mezi krajními tvary stejným mezerám zabrání.
 
@@ -124,7 +125,7 @@ Se zaškrtnutým {{ui:array.groupCopies}} sloučí {{ui:array.apply}} originál 
 
 {{ui:holePattern.title}} rozmístí otvory po rovinné ploše krytu, mřížky reproduktoru, košíku nebo ventilace. Nemusíte vytvářet a opakovat jednotlivý výřez. Vyberte právě jedno těleso a spusťte {{ui:holePattern.title}} v {{ui:editor.group.modify}} vedle opakování, pravým tlačítkem nebo vyhledáváním [[Ctrl]]+[[K]].
 
-1. Klikněte na rovinnou plochu. Použije se celá souvislá rovinná oblast, nikoli jen trojúhelník pod ukazatelem. Oblá plocha není podporovaná a nástroj vás vyzve k jinému výběru. U sloučeného celku nebo skupiny se plocha táhne přes díly, které se stýkají, jako u jednoho tělesa, u skupiny ale jen tehdy, když mezi díly není výřez. Díly se spojí krátce po otevření nástroje; do té doby se pod ukazatelem rozsvítí jen plocha jednoho dílu a kliknutí počká, až se díly spojí. U sloučeného celku nebo skupiny s textem se rozsvítí jen plocha jednoho dílu a díly spojí až kliknutí.
+1. Klikněte na rovinnou plochu. Použije se celá souvislá rovinná oblast, nikoli jen trojúhelník pod ukazatelem. Funguje i kulatá stěna válce, trubky nebo díry, viz níže; jiná oblá plocha podporovaná není a nástroj vás vyzve k jinému výběru. U sloučeného celku nebo skupiny se plocha táhne přes díly, které se stýkají, jako u jednoho tělesa, u skupiny ale jen tehdy, když mezi díly není výřez. Díly se spojí krátce po otevření nástroje; do té doby se pod ukazatelem rozsvítí jen plocha jednoho dílu a kliknutí počká, až se díly spojí. U sloučeného celku nebo skupiny s textem se rozsvítí jen plocha jednoho dílu a díly spojí až kliknutí.
 2. V okně nastavte, jak otvory vypadají a jak leží:
    - **{{ui:holePattern.form}}:** {{ui:holePattern.form.round}}, {{ui:holePattern.form.square}}, {{ui:holePattern.form.rectangle}}, {{ui:holePattern.form.hexagon}} nebo {{ui:holePattern.form.slot}}.
    - **Rozměry:** {{ui:holePattern.size.diameter}} kruhu, {{ui:holePattern.size.side}} čtverce, {{ui:holePattern.size.width}} a {{ui:holePattern.size.height}} obdélníku či podlouhlého otvoru. Šestiúhelník používá {{ui:holePattern.size.corners}}.
@@ -142,13 +143,15 @@ Se zaškrtnutým {{ui:array.groupCopies}} sloučí {{ui:array.apply}} originál 
 
 Výřezy zůstávají běžnými tvary sloučenými s tělesem jako po {{ui:editor.tool.group}}. {{ui:editor.tool.ungroup}} je uvolní pro samostatný posun, změnu nebo smazání. Vše je jediný krok {{ui:editor.tool.undo}}. Najednou lze vytvořit nejvýše 400 otvorů; při překročení zvětšete otvory nebo rozteč.
 
+Otvory přijme i kulatá stěna válce, trubky nebo díry: stojánek na tužky, stínidlo lampy, trubka s větráním. Klikněte místo rovné plochy na stěnu; pod ukazatelem se rozsvítí celá stěna. Každý otvor pak míří přímo k ose a řady obíhají stěnu. Na stěně, která jde dokola, má každá řada celý počet otvorů, vyrovnaný tak, aby se kruh uzavřel bez mezery a otvory nebyly blíž než rozteč; okno ukáže, kolik jich obíhá a jak daleko od sebe. Okraj platí k hornímu a dolnímu lemu a k otvorům ve stěně, na části stěny (třeba zaoblení) i k jejím bokům. {{ui:holePattern.depth.throughWall}} prořízne jen stěnu, na kterou jste klikli, a druhou stranu trubky nechá celou; u plného válce jdou otvory až do jeho středu. Kliknete-li dovnitř díry, otvory vedou ven skrz její stěnu. {{ui:holePattern.arrangement.perimeter}} je pro rovné plochy a na stěně se nenabízí.
+
 AI může provést totéž přes `layerling_perforate_face`, viz [Modelování s AI](chapter:ai-with-mcp).
 
 ## Vysunutí plochy ven nebo dovnitř
 
 Pro zesílení stěny, vyvýšenou plošku nebo vyříznutou kapsu pracuje nástroj {{ui:faceTool.title}} s jednou rovinnou plochou. Funguje i u importovaného STL, které nemá náčrt ke změně. Vyberte právě jedno těleso a spusťte {{ui:faceTool.title}} v {{ui:editor.group.modify}} vedle rastru otvorů, pravým tlačítkem nebo vyhledáváním [[Ctrl]]+[[K]].
 
-1. Klikněte na rovinnou plochu tělesa. Stejně jako u rastru otvorů se použije celá souvislá rovinná oblast; oblá plocha není podporovaná. U sloučeného celku nebo skupiny se plocha jako u rastru otvorů táhne přes díly, které se stýkají.
+1. Klikněte na rovinnou plochu tělesa. Stejně jako u rastru otvorů se použije celá souvislá rovinná oblast; oblá plocha tu podporovaná není, ani kulatá stěna. U sloučeného celku nebo skupiny se plocha jako u rastru otvorů táhne přes díly, které se stýkají.
 2. V okně:
    - **{{ui:faceTool.direction}}:** {{ui:faceTool.direction.out}} pro materiál na ploše, nebo {{ui:faceTool.direction.in}} pro kapsu vyříznutou do ní. Kapsa nejde hlouběji než těleso za plochou; u dutého tělesa může přesto dosáhnout do dutiny.
    - **{{ui:faceTool.inset}}:** jak daleko zůstane nový obrys uvnitř okraje plochy. Směrem ven se při 0 vezme celá plocha, tak se stěna zesílí. Otvory v ploše se zvětší o stejnou hodnotu.

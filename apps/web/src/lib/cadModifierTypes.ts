@@ -2,6 +2,9 @@ import type { CadLidRequest } from "@/lib/cadLid";
 import type { ThreadOutlineTier } from "@/lib/threadOutline";
 import type { ThreadHead } from "@/types/layerling";
 import type { ThreadDriveOutline } from "@/lib/threadGeometry";
+import type { ScrewBossFields } from "@/lib/screwBoss";
+import type { SnapFitFields } from "@/lib/snapFit";
+import type { RibFields } from "@/lib/rib";
 import type { GridfinityCompartmentLabel, GridfinityLabelCorner, GridfinityOpening, GridfinityOutlinePoint, GridfinityType, ShellEdges, ShellOpenings } from "@/types/layerling";
 
 export type CadModifierKind = "chamfer" | "chamfillet" | "fillet" | "shell" | "deleteFace" | "offset";
@@ -172,6 +175,12 @@ export type CadModifierProfilePart = {
   /** Extrusion only: round every edge of the two flat ends by this radius (a rounded box). */
   capFillet?: number;
   /**
+   * Extrusion only, a GT2 pulley (Discussion #1319): `loops` is the toothed band alone, pushed up
+   * from `teethBottom` to `teethTop`; the round discs (flanges, hub) on the y axis are joined to it
+   * and the bore is cut through the whole height.
+   */
+  pulley?: { teethBottom: number; teethTop: number; discs: Array<{ bottom: number; top: number; radius: number }>; boreRadius: number };
+  /**
    * Extrusion only: chamfer a round body at both ends at 45 degrees - keep
    * what lies within `radius` less `size` plus the distance from the nearer
    * end, measured from the axis through the outline's origin (knurling).
@@ -226,6 +235,8 @@ export type CadModifierThreadPart = {
   major: number;
   minor: number;
   pitch: number;
+  /** Threads side by side (#1348), each `pitch` from the next, each climbing `pitch * starts` a turn; 1 when absent. */
+  starts?: number;
   /** 1: the thread climbs as the angle from +x towards +z grows, a left-hand thread about +y; -1 the other way, a right-hand one. */
   hand: 1 | -1;
   height: number;
@@ -325,6 +336,8 @@ export type CadModifierHirthPart = {
   teeth: number;
   toothHeight: number;
   boreRadius: number;
+  /** Saw teeth (Discussion #1320): how far past its crest a root lies, as a share of one tooth; missing means 0.5, symmetric teeth. */
+  split?: number;
   transform?: number[];
   expected?: { bounds: number[]; volume: number };
 };
@@ -391,6 +404,26 @@ export type CadModifierGridfinityPart = {
   gridfinityOpeningCorner?: GridfinityLabelCorner;
   gridfinityOpeningCornerSize?: number;
   gridfinityOutline?: GridfinityOutlinePoint[];
+  /**
+   * The letters on its shelves (#1308), made on the page from the fonts: for each shelf its top, and each glyph as its
+   * outline and holes with the font's own curves, in the shape's x and z.
+   */
+  gridfinityLetters?: Array<{ top: number; glyphs: CadModifierProfileLoop[][] }>;
+  transform?: number[];
+  expected?: { bounds: number[]; volume: number };
+};
+
+/**
+ * An enclosure part (#1246) - a screw boss, a snap-fit or a rib - as the exact body its display mesh draws: the
+ * shape's own fields, from which `enclosureSolid.ts` builds the body by the same plan as the mesh, with true circles
+ * where the mesh has polygons. In the shape's own frame (y up, the bottom at y = 0, centred on x and z); `transform`
+ * places it. A screw boss set as a hole (`fields.hole`) is its pocket alone, as its mesh is (#1288).
+ */
+export type CadModifierEnclosurePart = (
+  | { kind: "screwBoss"; fields: ScrewBossFields }
+  | { kind: "snapFit"; fields: SnapFitFields }
+  | { kind: "rib"; fields: RibFields }
+) & {
   transform?: number[];
   expected?: { bounds: number[]; volume: number };
 };
@@ -418,6 +451,8 @@ export type CadModifierMeshPart = {
   gridfinity?: CadModifierGridfinityPart;
   /** A Hirth joint's exact body; positions/indices (if any) are only the fallback if it cannot be built. */
   hirth?: CadModifierHirthPart;
+  /** A screw boss's, snap-fit's or rib's exact body; positions/indices (if any) are only the fallback if it cannot be built. */
+  enclosure?: CadModifierEnclosurePart;
   primitive?: CadModifierPrimitivePart;
   /** When set, positions/indices (if any) are only the fallback if the exact body fails. */
   profile?: CadModifierProfilePart;

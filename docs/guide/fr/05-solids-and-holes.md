@@ -39,6 +39,17 @@ Un groupe entier peut aussi être un solide ou un trou. Une règle simple s'appl
 - Si le groupe est constitué uniquement de solides (ou uniquement de trous), vous le permutez dans son ensemble et ses parties suivent.
 - S'il contient les deux, disons un cube avec un alésage, chaque partie garde son propre état. Le groupe tout entier devient alors un outil, mais l'ennui reste un ennui.
 
+### Redimensionner un groupe : garder trous et petites pièces
+
+Quand un groupe est allongé, élargi ou rehaussé, ses pièces s'étirent avec lui comme si elles étaient dessinées sur du caoutchouc : les trous ronds d'une plaque deviennent ovales et se rapprochent du centre. Pour les garder tels quels, choisissez {{ui:inspector.groupResizeKeepParts}} sous {{ui:inspector.groupResize}} dans les réglages du groupe ; {{ui:inspector.groupResizeStretch}} est ce que fait tout groupe tant que vous n'y changez rien. Dès lors, chaque fois que le groupe change de taille - avec les poignées, les champs de dimensions ou {{ui:scalePercent.title}} - il est reconstruit à partir de ses pièces selon une seule règle, direction par direction :
+
+- Une pièce qui traverse presque tout le groupe, neuf dixièmes ou plus, grandit ou rétrécit avec lui et garde sa distance aux deux côtés : la plaque elle-même, une paroi, ou l'intérieur d'une boîte, dont les parois gardent leur épaisseur.
+- Toute autre pièce garde sa propre taille et sa distance au côté le plus proche. Une pièce au milieu reste au milieu.
+
+Une plaque avec un trou à 5 mm de chaque coin et une fente au milieu, allongée de 40 mm, garde donc ses trous ronds et à 5 mm des coins, et la fente au milieu. Il n'y a pas de solveur de contraintes derrière, rien à régler pièce par pièce : la même règle vaut pour toutes les pièces, on sait d'avance ce qui va se passer. Une pièce tournée compte avec la boîte qu'elle occupe dans le groupe et reste tournée ; un groupe dans le groupe compte comme une seule pièce. Pendant que vous tirez une poignée, le groupe s'étire en entier ; quand vous relâchez, il est reconstruit, dans la même étape d'annulation. Si le groupe devient plus petit qu'une pièce avec sa distance, cette pièce rétrécit avec lui comme avant, et un message le signale. Un groupe mis en miroir, effilé ou tordu, ou qui porte ses propres congés, chanfreins ou une texture, étire toujours tout. Choisi pour un groupe déjà étiré, le réglage replace aussitôt ses pièces.
+
+![Une plaque avec un trou à 5 mm de chaque coin et une fente au milieu, allongée de 40 mm avec « Garder trous et petites pièces » : les trous sont toujours ronds et à 5 mm des coins, la fente toujours au milieu.](shot:group-keep-parts)
+
 ## Regroupement
 
 Parfois, les pièces doivent simplement rester ensemble sans ne former qu'une seule pièce – un logo blanc sur une plaque noire pour une impression multicolore, par exemple. C'est à cela que sert {{ui:editor.tool.bundle}} ([[Ctrl]]+[[B]]), comme dans Tinkercad. Un bundle bouge, tourne et se redimensionne comme une forme, mais rien n'est fusionné :
@@ -92,6 +103,14 @@ A noter : les congés et chanfreins que vous aviez mis sur l'ensemble **tout** s
 - Les deux curseurs de rotation ci-dessous font tourner le rabot autour des deux autres axes, jusqu'à 180° dans les deux sens, pour une coupe en angle. Ils peuvent être combinés.
 
 {{ui:split.apply}} ou [[Enter]] fait la coupe, [[Esc]] annule (lors du picking d'une face, le premier [[Esc]] arrête seulement le picking). Chaque objet traversé par l'avion devient deux corps fermés, nommés d'après leur côté, par exemple « Boîte (Z+) » et « Boîte (Z-) » ; les objets qui lui manquent restent tels quels. Un trou devient deux trous, et un corps évidé garde sa cavité. Les deux moitiés restent là où elles étaient - pour l'impression, posez chacune sur sa face coupée avec {{ui:editor.tool.layFlat}}.
+
+Les {{ui:split.connectors}} réalignent les moitiés, comme le font les outils de coupe de PrusaSlicer, OrcaSlicer et Bambu Studio. Avec {{ui:split.connectors.none}}, le réglage par défaut, la division se fait comme décrit ci-dessus. {{ui:split.connectors.dowels}} fait un trou dans chaque moitié et des goujons séparés qui entrent dans les deux : ils forment un troisième corps, debout à côté des moitiés sur leur fond, à imprimer avec elles – debout, ils sortent ronds dans les couches comme leurs trous, et c'est ce que mesure le test d'ajustement. {{ui:split.connectors.plugs}} dresse des tenons ronds sur la moitié dont le nom finit par un moins, avec leurs trous dans l'autre moitié. Les connecteurs entrent perpendiculairement au plan, quelle que soit son inclinaison, chacun avec son diamètre et 1,2 mm de matière jusqu'à chaque bord de la face de coupe, et deux d'entre eux deux fois plus loin l'un de l'autre. Chaque morceau séparé de la face de coupe reçoit les siens, répartis régulièrement : {{ui:split.connectorCount}} indique combien, et 0 laisse la taille du morceau en décider, au moins deux. Un morceau trop petit pour un connecteur n'en reçoit aucun, et un connecteur est omis là où une moitié est plus mince que la profondeur de son trou ; le panneau l'indique avant la division, et des anneaux blancs sur le plan montrent où ils iront. Si aucun ne tient, les pièces sont divisées sans, et la barre d'état le signale.
+
+- {{ui:split.connectorDiameter}} : celui des goujons et des tenons, 5 mm au départ.
+- {{ui:split.connectorDepth}} : jusqu'où chaque trou entre dans sa moitié. Un goujon mesure deux fois cette valeur moins 0,6 mm, un tenon 0,3 mm de moins que son trou, pour qu'ils ne reposent jamais au fond d'un trou et que les moitiés se ferment entièrement. Goujons et tenons ont un petit chanfrein aux extrémités, et chaque trou un à son entrée, pour qu'une première couche écrasée ne le rétrécisse pas.
+- {{ui:split.connectorClearance}} : la place entre un goujon ou un tenon et son trou. Une fois le jeu de votre imprimante mesuré avec le test d'ajustement (dans le chapitre sur l'impression), il part de cette valeur, sinon de 0,2 mm.
+
+Les formes en mode Trou sont divisées sans connecteurs.
 
 Les moitiés sont des maillages simples : les paramètres tels que les côtés d'un cylindre ou le lettrage d'un texte ont disparu, alors définissez-les en premier. [[Ctrl]]+[[Z]] ramène l'original en une seule étape. Les objets verrouillés et masqués ne peuvent pas être divisés.
 

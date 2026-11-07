@@ -39,6 +39,17 @@ Um grupo de união inteiro também pode ser um sólido ou um buraco. Vale uma re
 - Se o grupo de união tem só sólidos (ou só buracos), você o troca por inteiro e as peças acompanham.
 - Se tem os dois, por exemplo um cubo com um furo, cada peça mantém o seu próprio estado. O grupo de união inteiro vira então uma ferramenta, mas o furo continua sendo um furo.
 
+### Redimensionando um grupo de união: mantendo furos e peças pequenas
+
+Quando um grupo de união fica mais comprido, mais largo ou mais alto, as peças se esticam junto, como se estivessem desenhadas em borracha: os furos redondos de uma placa viram ovais e se deslocam para dentro. Para mantê-los como estão, escolha {{ui:inspector.groupResizeKeepParts}} em {{ui:inspector.groupResize}} nas configurações do grupo; {{ui:inspector.groupResizeStretch}} é o que todo grupo faz até você mudar. A partir daí, cada vez que o grupo é redimensionado - pelas alças, pelos campos de tamanho ou por {{ui:scalePercent.title}} - ele é montado de novo a partir das peças por uma única regra, em cada direção separadamente:
+
+- Uma peça que atravessa quase o grupo inteiro, nove décimos dele ou mais, cresce ou encolhe junto e mantém a distância aos dois lados: a própria placa, uma parede ou o interior de uma caixa, cujas paredes continuam com a mesma espessura.
+- Todas as outras peças mantêm o próprio tamanho e a distância ao lado mais próximo. Uma peça no meio continua no meio.
+
+Assim, uma placa com um furo a 5 mm de cada canto e uma fenda no meio, aumentada em 40 mm de comprimento, mantém os furos redondos e a 5 mm dos cantos, e a fenda no meio. Não há nenhum solver por trás e nada para configurar peça por peça: a mesma regra vale para todas as peças, então dá para saber antes o que vai acontecer. Uma peça girada conta com a caixa que ocupa no grupo e continua girada; um grupo dentro do grupo conta como uma peça. Enquanto você arrasta uma alça, o grupo se estica por inteiro; ao soltar, ele é montado de novo, no mesmo passo de desfazer. Se ficar menor do que uma peça precisa com a sua distância, essa peça encolhe com o grupo como antes, e uma mensagem avisa. Um grupo espelhado, afunilado ou torcido, e um com arredondamentos, chanfros ou uma textura própria, sempre estica tudo. Escolhida para um grupo que já está esticado, a configuração reorganiza as peças na hora.
+
+![Uma placa com um furo a 5 mm de cada canto e uma fenda no meio, aumentada em 40 mm de comprimento com a opção de manter furos e peças pequenas: os furos continuam redondos e a 5 mm dos cantos, a fenda continua no meio.](shot:group-keep-parts)
+
 ## Criando conjuntos
 
 Às vezes as peças só devem ficar juntas, sem virar uma só, por exemplo um logotipo branco sobre uma placa preta para uma impressão multicolorida. É para isso que serve {{ui:editor.tool.bundle}} ([[Ctrl]]+[[B]]), como no Tinkercad. Um conjunto se move, gira e muda de tamanho como uma forma, mas nada é fundido:
@@ -73,7 +84,7 @@ Para cortar o contorno de um sólido em linha reta através de outro, selecione 
 
 ## Editando um grupo de união
 
-Se um furo ficou pequeno demais, você não precisa desfazer o grupo de união e montar tudo de novo. Selecione o grupo de união e clique em {{ui:group.edit}} no painel de propriedades, no ícone de pasta na lista de objetos, ou pressione [[E]]. Um clique duplo no grupo de união faz o mesmo, como no Tinkercad, e num conjunto também; se preferir que não, desligue {{ui:workspace.doubleClickOpensGroup}} nas configurações. Uma peça só começa a se mover depois que o ponteiro foi arrastado alguns pixels, então um clique ou clique duplo tremido não a desloca. As peças agora ficam separadas, e você as altera com qualquer ferramenta: aumentar um buraco, mover um sólido, adicionar um buraco.
+Se um furo ficou pequeno demais, você não precisa desfazer o grupo de união e montar tudo de novo. Selecione o grupo de união e clique em {{ui:group.edit}} no painel de propriedades, no ícone de pasta na lista de objetos, ou pressione [[E]]. Na lista de objetos, você também pode expandir o grupo de união clicando na seta ao lado dele. Depois, clique numa das peças: o grupo de união se abre para edição com essa peça selecionada. Um clique duplo também abre um grupo de união ou um conjunto para edição, como no Tinkercad; se preferir que não, desligue {{ui:workspace.doubleClickOpensGroup}} nas configurações. Uma peça só começa a se mover depois que o ponteiro foi arrastado alguns pixels, então um clique ou clique duplo tremido não a desloca. As peças agora ficam separadas, e você as altera com qualquer ferramenta: aumentar um buraco, mover um sólido, adicionar um buraco.
 
 ![O grupo de união em edição: a barra embaixo tem Cancelar e Concluído, e a lista de objetos mostra as peças.](shot:open-group)
 
@@ -96,6 +107,14 @@ Uma observação: arredondamentos e chanfros que você aplicou no grupo de uniã
 - Os dois controles deslizantes de rotação abaixo giram o plano em torno dos outros dois eixos, até 180° para cada lado, para um corte em ângulo. Eles podem ser combinados.
 
 {{ui:split.apply}} ou [[Enter]] faz o corte, [[Esc]] cancela (enquanto você escolhe uma face, o primeiro [[Esc]] só interrompe a escolha). Cada objeto que o plano cruza vira dois sólidos fechados, com o nome do seu lado, por exemplo "Caixa (Z+)" e "Caixa (Z-)"; os objetos que ele não cruza ficam como estão. Um buraco vira dois buracos, e um sólido vazado mantém o seu espaço interno. As duas metades ficam onde estavam; para imprimir, deite cada uma sobre a face cortada com {{ui:editor.tool.layFlat}}.
+
+{{ui:split.connectors}} alinham as metades de novo, como fazem as ferramentas de corte do PrusaSlicer, do OrcaSlicer e do Bambu Studio. Com {{ui:split.connectors.none}}, o padrão, a divisão é como descrito acima. {{ui:split.connectors.dowels}} faz um furo em cada metade e pinos soltos que entram nas duas: os pinos vêm como um terceiro sólido, em pé ao lado das metades sobre o piso, para imprimir junto - em pé, eles saem redondos nas camadas como os furos, e é isso que o teste de encaixe mede. {{ui:split.connectors.plugs}} coloca pinos redondos na metade cujo nome termina em menos, com os furos para eles na outra metade. Os conectores entram perpendiculares ao plano, seja qual for o giro dele, cada um com seu diâmetro e 1,2 mm de material até cada borda da face de corte, e dois deles a uma distância do dobro disso. Cada pedaço separado da face de corte recebe os seus, distribuídos por igual: {{ui:split.connectorCount}} diz quantos, e 0 deixa isso pelo tamanho do pedaço, com pelo menos dois. Um pedaço pequeno demais para um não recebe nenhum, e um conector fica de fora onde uma metade é mais fina do que a profundidade do seu furo; o painel avisa antes de você dividir, e anéis brancos no plano mostram onde eles vão ficar. Se nenhum couber, as peças são divididas sem conectores, e a barra de status avisa.
+
+- {{ui:split.connectorDiameter}} é o diâmetro dos pinos, 5 mm para começar.
+- {{ui:split.connectorDepth}} é quanto cada furo entra na sua metade. Um pino solto tem o dobro disso menos 0,6 mm de comprimento, e um pino fixo é 0,3 mm mais curto que o seu furo, para que nunca apoiem no fundo de um furo e as metades fechem por completo. Os pinos têm um pequeno chanfro nas pontas, e cada furo um na boca, para que uma primeira camada que se espalhou não o estreite.
+- {{ui:split.connectorClearance}} é a folga entre um pino e o seu furo. Depois que você mediu a folga da sua impressora com o teste de encaixe (no capítulo sobre impressão), ele parte desse valor, senão de 0,2 mm.
+
+Furos são divididos sem conectores.
 
 As metades são malhas simples: configurações como os lados de um cilindro ou as letras de um texto se perdem, então ajuste isso antes. [[Ctrl]]+[[Z]] traz o original de volta num só passo. Objetos bloqueados e ocultos não podem ser divididos.
 
