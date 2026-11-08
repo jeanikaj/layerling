@@ -2,6 +2,7 @@ import type { ManifoldToplevel } from "manifold-3d";
 import type { PerforableFace } from "@/lib/holePatternShapes";
 import { clearanceMeshShape } from "@/lib/clearanceCheck";
 import { shapeToManifoldSolid } from "@/lib/editorBooleans";
+import { supportRibMark } from "@/lib/supportRibMark";
 import type { ManifoldSolid } from "@/lib/editorMeshCore";
 import type { WorkplaneShape } from "@/types/layerling";
 
@@ -16,7 +17,7 @@ import type { WorkplaneShape } from "@/types/layerling";
  * The rib is built in its own frame - s along the bed under the face (the way the face looks down), y up, w across the
  * rib - and set into the scene from there. One cut by the plane a gap off the face keeps every part of it clear of the
  * face; the bridges come after that cut. The result is a mesh body; a part not standing on the bed, a face that does
- * not reach the bed, one too flat or too steep, are refused.
+ * not reach the bed (or stop just above it, at a rounded or chamfered edge), one too flat or too steep, are refused.
  */
 
 type Vec = { x: number; y: number; z: number };
@@ -64,8 +65,14 @@ export const DEFAULT_SUPPORT_RIB: SupportRibSettings = {
 /** The faces a rib can stand under: sloping between these angles from the bed. */
 export const SUPPORT_RIB_MIN_ANGLE = 15;
 export const SUPPORT_RIB_MAX_ANGLE = 75;
-/** How close to the bed the face's low end and the part's lowest point must be, mm. */
+/** How close to the bed the part's lowest point must be, mm. */
 export const SUPPORT_RIB_BED_TOLERANCE = 0.05;
+/**
+ * How far above the bed the face's low end may stop, mm: a rounded or chamfered bottom edge (Discussion #1385, Ingo,
+ * 07.11.2026, so the slicer finds the first layer) ends the flat face a little above the bed; the rib then follows the
+ * face's plane down to the bed, and its bridges begin above the rounding.
+ */
+export const SUPPORT_RIB_RAISED_END = 3;
 /** How far a bridge reaches into the part and into the rib, mm. */
 const BRIDGE_INTO_PART = 0.3;
 const BRIDGE_INTO_RIB = 0.6;
@@ -128,7 +135,7 @@ export type SupportRibFaceResult =
 /**
  * Whether a rib can stand under a flat face, and where: the face must look down, slope between SUPPORT_RIB_MIN_ANGLE
  * and SUPPORT_RIB_MAX_ANGLE, and reach down to the bed straight down its slope from the click, as a part does that
- * stands tilted on one edge.
+ * stands tilted on one edge - or stop at most SUPPORT_RIB_RAISED_END above it, where that edge is rounded or chamfered.
  */
 export function supportRibFace(face: PerforableFace): SupportRibFaceResult {
   const { workplane, outline } = face;
@@ -168,7 +175,7 @@ export function supportRibFace(face: PerforableFace): SupportRibFaceResult {
   const slopeDown = down.y / dl;
   const low = point.y + forward * slopeDown;
   const high = point.y - backward * slopeDown;
-  if (low > SUPPORT_RIB_BED_TOLERANCE) return { ok: false, reason: "offBed" };
+  if (low > SUPPORT_RIB_RAISED_END) return { ok: false, reason: "offBed" };
   return { ok: true, face: { point: { ...point }, normal, angle, low: Math.max(0, low), high } };
 }
 
@@ -352,9 +359,10 @@ export function buildSupportRib(runtime: ManifoldToplevel, face: SupportRibFace,
   }
 }
 
-/** The rib as a body of the design. */
-export function supportRibShape(id: string, name: string, color: string, positions: ArrayLike<number>): WorkplaneShape | null {
-  return clearanceMeshShape(id, name, color, positions);
+/** The rib as a body of the design, marked with its part for the checks (lib/supportRibMark). */
+export function supportRibShape(id: string, name: string, color: string, positions: ArrayLike<number>, partId?: string): WorkplaneShape | null {
+  const shape = clearanceMeshShape(id, name, color, positions);
+  return shape && partId ? { ...shape, ...supportRibMark(partId) } : shape;
 }
 
 const SUPPORT_RIB_SETTINGS_KEY = "layerling.supportRib";

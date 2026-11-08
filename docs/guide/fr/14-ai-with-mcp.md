@@ -82,6 +82,7 @@ L'IA fonctionne avec les mêmes fonctions que vous, via le même chemin que votr
 | `layerling_read_scene` | lit la scène, la sélection, les unités et les dimensions exactes de tous les objets |
 | `layerling_list_objects` | répertorie tous les objets avec les dimensions, la position, la rotation et l'identifiant |
 | `layerling_select_objects` | sélectionne des objets |
+| `layerling_hide_others` | masque tout sauf la sélection ou les objets indiqués, en une seule étape d'annulation |
 | `layerling_delete_objects` | supprime des objets |
 | `layerling_move_object` | déplace un objet à un autre endroit de la liste des objets |
 | `layerling_create_shape` | crée une forme : boîte, cylindre, texte (également courbé), fil, engrenage, corps d'esquisse et tous les autres |
@@ -99,6 +100,7 @@ L'IA fonctionne avec les mêmes fonctions que vous, via le même chemin que votr
 | `layerling_push_face` | tire une face plane vers l'extérieur ou y creuse une poche, avec un retrait depuis le bord et un rayon des coins ; la nouvelle pièce est un corps d'esquisse regroupé avec le corps |
 | `layerling_paint` | peint des parties d'un corps dans leurs propres couleurs pour une impression en plusieurs couleurs (Peindre) : remplir une face jusqu'à ses arêtes vives, une tache ronde ou un lasso tracé dans une vue à plat ; gommer, tout retirer ; enregistré avec le corps et écrit dans un 3MF sous forme de faces peintes |
 | `layerling_support_rib` | place une fine nervure de support sous la face inférieure d'une pièce imprimée inclinée sur une arête, avec des ponts d'une couche de haut (Nervure de support) |
+| `layerling_stencil_bridges` | retient les parties d'une plaque traversée par un texte qui tomberaient, avec des ponts regroupés avec la plaque, aussi larges et hauts que demandé (Ponts de pochoir) |
 | `layerling_mate_faces` | amène la face d'un objet contre la face d'un autre, face à face ou à fleur |
 | `layerling_open_group` | ouvre un groupe pour que ses parties puissent être modifiées une par une, également un groupe à l'intérieur d'un groupe ouvert |
 | `layerling_close_group` | le referme ("Terminé") ou annule |

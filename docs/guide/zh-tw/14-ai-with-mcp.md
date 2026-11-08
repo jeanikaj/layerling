@@ -86,6 +86,7 @@ AI 使用的是與你相同的功能，走的也是你在編輯器中操作時�
 | `layerling_read_scene` | 讀取場景、選取範圍、單位，以及所有物件的精確尺寸 |
 | `layerling_list_objects` | 列出所有物件及其尺寸、位置、旋轉與 id |
 | `layerling_select_objects` | 選取物件 |
+| `layerling_hide_others` | 隱藏選取或指定物件以外的所有內容，只佔一步復原 |
 | `layerling_delete_objects` | 刪除物件 |
 | `layerling_move_object` | 把物件移到物件清單中的另一個位置 |
 | `layerling_create_shape` | 建立形狀：方塊、圓柱、文字（也能彎曲）、螺紋、齒輪、草圖實體，以及其他所有形狀 |
@@ -103,6 +104,7 @@ AI 使用的是與你相同的功能，走的也是你在編輯器中操作時�
 | `layerling_push_face` | 把平面推出，或在其中挖出凹槽，可設定距邊緣的內縮與轉角半徑；新零件是與實體群組在一起的草圖實體 |
 | `layerling_paint` | 為多色列印給實體的部分表面上自己的顏色（上色）：把面填色到銳利邊緣、圓斑，或在平面檢視中畫的套索；橡皮擦、全部清除；隨實體儲存，並在 3MF 中寫成已上色的面 |
 | `layerling_support_rib` | 在以一條稜邊傾斜列印的零件下表面下方立一條薄支撐肋，帶一層高的連接橋（支撐肋） |
+| `layerling_stencil_bridges` | 用與板組合在一起、寬度和高度可設的連接橋固定文字穿透的板中會掉出的部分（模板連接橋） |
 | `layerling_mate_faces` | 把一個物件的面貼到另一個物件的面，可面對面或齊平 |
 | `layerling_open_group` | 開啟群組，以便逐一修改其中的部件，開啟中的群組內還能再開啟群組 |
 | `layerling_close_group` | 再次關閉群組（「完成」）或取消 |

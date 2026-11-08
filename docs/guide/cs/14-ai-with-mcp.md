@@ -82,6 +82,7 @@ AI používá stejné funkce a stejné zpracování příkazů jako ruční ovl�
 | `layerling_read_scene` | přečte scénu, výběr, jednotky a přesné rozměry objektů |
 | `layerling_list_objects` | vypíše objekty s rozměry, polohou, natočením a identifikátorem |
 | `layerling_select_objects` | vybere objekty |
+| `layerling_hide_others` | skryje vše kromě výběru nebo zadaných objektů, v jednom kroku zpět |
 | `layerling_delete_objects` | odstraní objekty |
 | `layerling_move_object` | přesune objekt na jiné místo v seznamu objektů |
 | `layerling_create_shape` | vytvoří kvádr, válec, text i po oblouku, závit, ozubené kolo, těleso z náčrtu a další tvary |
@@ -99,6 +100,7 @@ AI používá stejné funkce a stejné zpracování příkazů jako ruční ovl�
 | `layerling_push_face` | vysune rovinnou plochu ven nebo do ní vyřízne kapsu, s odsazením od okraje a poloměrem rohů; nový díl je těleso z náčrtu sloučené s tělesem |
 | `layerling_paint` | obarví části tělesa vlastními barvami pro tisk více barvami (Malování): vyplnit plochu k ostrým hranám, kulatá skvrna nebo laso v rovinném pohledu; gumovat, smazat vše; uloží se s tělesem a do 3MF se zapíše jako obarvené plochy |
 | `layerling_support_rib` | postaví tenké podpěrné žebro pod spodní plochu dílu tištěného šikmo na hraně, s můstky vysokými jednu vrstvu (Podpěrné žebro) |
+| `layerling_stencil_bridges` | drží části desky s textem prořezaným skrz, které by vypadly, můstky seskupenými s deskou, o zadané šířce a výšce (Můstky šablony) |
 | `layerling_mate_faces` | přiloží plochy dvou objektů proti sobě nebo do společné roviny |
 | `layerling_open_group` | otevře sloučený celek k úpravě částí, i uvnitř jiného otevřeného celku |
 | `layerling_close_group` | potvrdí úpravu celku nebo ji zruší |

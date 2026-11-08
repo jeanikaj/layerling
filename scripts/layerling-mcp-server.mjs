@@ -100,6 +100,8 @@ async function callTool(name, args) {
       return bridgeCommand("list_objects", args);
     case "layerling_select_objects":
       return bridgeCommand("select_objects", args);
+    case "layerling_hide_others":
+      return bridgeCommand("hide_others", args);
     case "layerling_delete_objects":
       return bridgeCommand("delete_objects", args);
     case "layerling_move_object":
@@ -128,6 +130,8 @@ async function callTool(name, args) {
       return bridgeCommand("paint_object", args, 120000);
     case "layerling_support_rib":
       return bridgeCommand("support_rib", args, 60000);
+    case "layerling_stencil_bridges":
+      return bridgeCommand("stencil_bridges", args, 120000);
     case "layerling_mate_faces":
       return bridgeCommand("mate_faces", args, 30000);
     case "layerling_open_group":

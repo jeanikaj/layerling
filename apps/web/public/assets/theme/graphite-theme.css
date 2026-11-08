@@ -3362,6 +3362,16 @@ html[data-theme="dark"]:where([data-palette="graphite"]) .touch-multi-select {
   filter: drop-shadow(0 0 4px rgba(129, 67, 0, 0.4));
 }
 
+:where(html[data-theme="dark"][data-palette="graphite"]) .corner-ruler-end-handle {
+  fill: #ffffff;
+  stroke: #b66108;
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .corner-ruler-end-handle:active {
+  fill: #efefef;
+  filter: drop-shadow(0 0 4px rgba(129, 67, 0, 0.4));
+}
+
 :where(html[data-theme="dark"][data-palette="graphite"]) .corner-ruler-tick-label {
   color: #5a3917;
 }
@@ -3403,7 +3413,8 @@ html[data-theme="dark"]:where([data-palette="graphite"]) .touch-multi-select {
 }
 
 :where(html[data-theme="dark"][data-palette="graphite"]) .corner-ruler-occlude-toggle,
-:where(html[data-theme="dark"][data-palette="graphite"]) .corner-ruler-selected-toggle {
+:where(html[data-theme="dark"][data-palette="graphite"]) .corner-ruler-selected-toggle,
+:where(html[data-theme="dark"][data-palette="graphite"]) .corner-ruler-plate-toggle {
   color: #595959;
   background: rgba(255, 255, 255, 0.96);
   border-color: rgba(182, 97, 8, 0.45);
@@ -3517,6 +3528,39 @@ html[data-theme="dark"]:where([data-palette="graphite"]) .touch-multi-select {
   border: 2px solid #fafafa;
   background: #2a2a2a;
   box-shadow: 0 1px 5px rgba(33, 33, 33, 0.32);
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .align-dot.axis-x,
+:where(html[data-theme="dark"][data-palette="graphite"]) .align-spread.axis-x {
+  --align-axis-color: #d6363c;
+  background: var(--align-axis-color);
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .align-dot.axis-y,
+:where(html[data-theme="dark"][data-palette="graphite"]) .align-spread.axis-y {
+  --align-axis-color: #2f6fe0;
+  background: var(--align-axis-color);
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .align-dot.axis-z,
+:where(html[data-theme="dark"][data-palette="graphite"]) .align-spread.axis-z {
+  --align-axis-color: #2f9a4b;
+  background: var(--align-axis-color);
+}
+
+html[data-theme="dark"]:where([data-palette="graphite"]) .align-dot.axis-x,
+html[data-theme="dark"]:where([data-palette="graphite"]) .align-spread.axis-x {
+  --align-axis-color: #ff6b70;
+}
+
+html[data-theme="dark"]:where([data-palette="graphite"]) .align-dot.axis-y,
+html[data-theme="dark"]:where([data-palette="graphite"]) .align-spread.axis-y {
+  --align-axis-color: #6aa0ff;
+}
+
+html[data-theme="dark"]:where([data-palette="graphite"]) .align-dot.axis-z,
+html[data-theme="dark"]:where([data-palette="graphite"]) .align-spread.axis-z {
+  --align-axis-color: #5fd47c;
 }
 
 :where(html[data-theme="dark"][data-palette="graphite"]) .align-dot:hover:not(:disabled),
@@ -3864,6 +3908,38 @@ html[data-theme="dark"]:where([data-palette="graphite"]) .touch-multi-select {
 }
 
 :where(html[data-theme="dark"][data-palette="graphite"]) .rotate-arrow-heads {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .slide-handle {
+  --slide-handle-axis: #3a3a3a;
+  --slide-handle-halo: rgba(251, 251, 251, 0.95);
+  color: var(--slide-handle-axis);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .slide-handle.axis-x {
+  --slide-handle-axis: #d6363c;
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .slide-handle.axis-y {
+  --slide-handle-axis: #2f9a4b;
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .slide-arrow-rim {
+  fill: var(--slide-handle-halo);
+  stroke: var(--slide-handle-halo);
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .slide-arrow-shaft {
+  fill: none;
+  stroke: currentColor;
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .slide-arrow-head {
   fill: currentColor;
   stroke: currentColor;
 }
@@ -4926,6 +5002,11 @@ html[data-theme="dark"]:where([data-palette="graphite"]) .pattern-picker-empty {
 :where(html[data-theme="dark"][data-palette="graphite"]) .snap-object-toggle {
   color: #4f4f4f;
   border-top: 1px solid var(--border);
+}
+
+:where(html[data-theme="dark"][data-palette="graphite"]) .snap-menu-title {
+  color: #4f4f4f;
+  border-bottom: 1px solid var(--border);
 }
 
 :where(html[data-theme="dark"][data-palette="graphite"]) .workspace-modal-card {
@@ -6202,6 +6283,7 @@ html[data-theme="dark"]:where([data-palette="graphite"]) .shape-menu-item .sketc
 html[data-theme="dark"]:where([data-palette="graphite"]) .camera-controls button,
 html[data-theme="dark"]:where([data-palette="graphite"]) .snap-menu button,
 html[data-theme="dark"]:where([data-palette="graphite"]) .snap-object-toggle,
+html[data-theme="dark"]:where([data-palette="graphite"]) .snap-menu-title,
 html[data-theme="dark"]:where([data-palette="graphite"]) .snap-row {
   color: #c4c4c4;
 }
@@ -6453,6 +6535,18 @@ html[data-theme="dark"]:where([data-palette="graphite"]) .rotate-handle.axis-x {
 
 html[data-theme="dark"]:where([data-palette="graphite"]) .rotate-handle.axis-y {
   --rotate-handle-axis: #5fd47c;
+}
+
+html[data-theme="dark"]:where([data-palette="graphite"]) .slide-handle {
+  --slide-handle-halo: rgba(31, 31, 31, 0.9);
+}
+
+html[data-theme="dark"]:where([data-palette="graphite"]) .slide-handle.axis-x {
+  --slide-handle-axis: #ff6b70;
+}
+
+html[data-theme="dark"]:where([data-palette="graphite"]) .slide-handle.axis-y {
+  --slide-handle-axis: #5fd47c;
 }
 
 html[data-theme="dark"]:where([data-palette="graphite"]) .rotate-handle.axis-z {
