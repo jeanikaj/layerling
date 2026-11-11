@@ -111,12 +111,12 @@ layerling 的每個零件都從一個形狀開始。其餘一切都是由形狀�
 
 - **角與邊**可把形狀放大或縮小。把其中一個拖過對面，形狀會在那條邊的另一側繼續增大。頂端的箭頭在底面下方做同樣的事。拖曳角時按住 [[Shift]] 可同時縮放寬度、深度與高度並保持比例；按住 [[Alt]] 則從中心縮放，而不是從對角縮放。沒有鍵盤，或不想一直按著鍵時，可開啟屬性面板頂端的 {{ui:inspector.keepProportions}}：此後拖曳角一律保持比例，輸入寬度、深度或高度其中之一，另外兩項會按相同比例縮放。這項設定會被記住。
 - 形狀**上方的黑色箭頭**抬高或降低形狀；從一開始按住 [[Alt]]，會在放開處產生一個副本，方便疊放。**頂面上的白色控制點**改變高度。
-- 頂部的**紅色和綠色箭頭**只沿 X 或只沿 Y 移動形狀。形狀會沿這條線跟隨滑鼠，即使從很低的角度看平台也是如此，而自由拖曳在那裡會跑得很遠。它像拖曳時一樣吸附到其他形狀，之後可以點擊移動的距離並輸入精確值。
+- 頂部的**紅色和綠色箭頭**只沿 X 或只沿 Y 移動形狀。形狀會沿這條線跟隨滑鼠，即使從很低的角度看平台也是如此，而自由拖曳在那裡會跑得很遠。它像拖曳時一樣吸附到其他形狀，之後可以點擊移動的距離並輸入精確值。如果礙事，可在設定中關閉 {{ui:workspace.showSlideArrows}}。
 - **弧形箭頭**旋轉它。
 - **形狀旁的數字**顯示尺寸。點擊其中一個會開啟欄位，讓你輸入想要的數字。按 [[Enter]] 時，形狀從該數字對面的邊開始增大，跟拖曳時一樣；按 [[Alt]]+[[Enter]] 則繞著自己的中心增大，因此先前與其他形狀對齊過的形狀仍保持對齊。這適用於寬度與長度；高度一律從底面往上增大。右側屬性面板中的欄位不需按鍵就會保持中心。[[Tab]] 保留數字並開啟下一個欄位（寬度、深度、高度）；[[Shift]]+[[Tab]] 返回上一個。在屬性面板中已點入的欄位，滑鼠滾輪也能改變數值：每一格一個單位，按住 [[Shift]] 為十倍，[[Ctrl]] 為十分之一，[[Alt]] 為百分之一。沒點入的欄位則把滾輪留給面板捲動。
 - **點擊一個角**（不拖曳）會同時開啟寬度與深度。輸入第一個，按 [[Tab]] 切到第二個，再按 [[Enter]] 套用兩者。[[Esc]] 取消。
 
-形狀一旦轉過直角，例如用 {{ui:editor.tool.layFlat}} 側放，屬性面板中的欄位就會按每項尺寸目前的方向命名：{{ui:prop.height}} 是往上的尺寸，{{ui:prop.width}} 沿 X 方向，{{ui:prop.length}} 沿 Y 方向。因此對躺下的形狀輸入高度，改的是垂直方向的尺寸，而它的底面仍留在平台上。以其他角度傾斜的形狀，欄位中顯示的是它自己的尺寸，下方會有備註說明。
+形狀一旦轉過直角，例如用 {{ui:editor.tool.layFlat}} 側放，屬性面板中的欄位就會按每項尺寸目前的方向命名：{{ui:prop.height}} 是往上的尺寸，{{ui:prop.width}} 沿 X 方向，{{ui:prop.length}} 沿 Y 方向。有專用名稱的欄位（例如沉頭孔的頭部直徑）保留其名稱。因此對躺下的形狀輸入高度，改的是垂直方向的尺寸，而它的底面仍留在平台上。以其他角度傾斜的形狀，欄位中顯示的是它自己的尺寸，下方會有備註說明。
 
 不用滑鼠時，可以用鍵盤：方向鍵把選取項移動一個吸附步距（格線關閉時為 0.01 mm），按住 [[Shift]] 為五個，若把 {{ui:workspace.gridMajorEvery}} 設為 {{ui:workspace.gridMajorSteps|10}}（在設定中的 {{ui:workspace.appearance}} 下），則為十個：移動到下一條較深的格線，跟 Tinkercad 一樣。方向鍵跟隨檢視：[[→]] 往螢幕右側，[[↑]] 遠離你，即使轉過平台也一樣。把形狀推出畫面，檢視也會跟著移動。[[Ctrl]]+[[↑]] 與 [[Ctrl]]+[[↓]] 升高與降低它。連續按方向鍵在歷史記錄中算一步：只要下一次按鍵在 1.5 秒內接上，復原就會收回整串操作，而不是一次一下。[[R]] 旋轉 45°，[[Shift]]+[[R]] 旋轉 22.5°。[[D]] 把選取項放到工作平面上。
 
@@ -141,6 +141,8 @@ layerling 的每個零件都從一個形狀開始。其餘一切都是由形狀�
 多個實體會一起回來，保持彼此原本的相對位置，而且仍可逐一選取。釘在已儲存實體上的[備註](chapter:measuring-and-notes)會一起存下，插入時以收合狀態回來、仍釘在插入的實體上；自由備註與參考點則留在設計中。圖磚上的鉛筆可重新命名，垃圾桶會先詢問再刪除。已插入設計中的形狀則保持原樣。
 
 {{ui:myShapes.title}} 儲存在這個瀏覽器中，與設計分開，下次啟動時仍然存在。起始頁的 {{ui:dashboard.backupAll}} 會把它們和設計一起備份，開啟備份就會把兩者一起還原。若只想把形狀帶到另一個瀏覽器，{{ui:myShapes.backup}}（向下的箭頭）會把它們儲存成 ZIP 檔案，{{ui:myShapes.load}}（向上的箭頭）再把它們帶回那裡。{{ui:myShapes.load}} 也接受單一的 `.lyl` 設計；每一個都會變成一個形狀。已存在的形狀不會重複新增。
+
+形狀庫的搜尋也會依名稱找到你的自訂形狀，包括資料夾裡的形狀；它們顯示在形狀庫自己的結果上方。資料夾按鈕旁帶箭頭和字母 A 到 Z 的按鈕，會依名稱而不是依儲存日期排列自訂形狀；再按一次即恢復原本的順序，瀏覽器會記住這個選擇。
 
 ### 資料夾
 
@@ -172,7 +174,7 @@ layerling 的每個零件都從一個形狀開始。其餘一切都是由形狀�
 
 ## 表面紋理
 
-在實體上加凹槽、滾花、蜂巢或凸點，讓它更好握或更好看：在形狀設定中開啟 {{ui:inspector.surfaceTexture}}。上方 {{ui:editor.group.modify}} 群組裡的 {{ui:inspector.surfaceTexture}} 按鈕作用相同：它為選取的實體開啟或關閉這張卡片，卡片開啟時按鈕保持亮起。
+在實體上加凹槽、滾花、蜂巢或凸點，讓它更好握或更好看：在形狀設定中開啟 {{ui:inspector.surfaceTexture}}。上方 {{ui:editor.section.surface}} 群組裡的 {{ui:inspector.surfaceTexture}} 按鈕作用相同：它為選取的實體開啟或關閉這張卡片，卡片開啟時按鈕保持亮起。 與其他卡片不同，layerling 不會記住它：選取其他實體或不選取任何實體時，它會重新關閉。
 
 1. 選擇 {{ui:inspector.surfacePattern}}、它的 {{ui:inspector.surfaceSpacing}} 和 {{ui:inspector.surfaceDepth}}。{{ui:inspector.surfaceDirection}} 決定紋理是壓進實體還是凸出實體。對於 {{ui:surfaceTexture.bumps}}，{{ui:inspector.surfaceBumpShape}} 可在 {{ui:surfaceTexture.bumpDome}}、{{ui:surfaceTexture.bumpCone}}、{{ui:surfaceTexture.bumpSoft}} 和 {{ui:surfaceTexture.bumpFlat}} 之間選擇。在 {{ui:inspector.surfaceBumpGrid}} 下，它們可以 {{ui:surfaceTexture.bumpGridStaggered}}（每隔一列錯開半個間距），或排成 {{ui:surfaceTexture.bumpGridStraight}}。
 2. 在 {{ui:inspector.surfaceProjection}} 下，杯子、旋鈕或把手等圓形實體選 {{ui:surfaceTexture.cylinder}}。圖案繞 {{ui:inspector.surfaceAxis}} 一圈，間距會略作取整，使一圈正好是整數個凹槽或單元：圖案閉合，沒有接縫。{{ui:surfaceTexture.allRound}} 適合不是圓形的實體，{{ui:surfaceTexture.flatProjection}} 適合從上方看的蓋子或平板。保持 {{ui:surfaceTexture.auto}}，Layerling 會替你選擇：圓形實體以及像盒子這樣直立的稜角實體用 {{ui:surfaceTexture.cylinder}}（圖案沿外輪廓走，無接縫地繞過稜邊，凸起的圖案會順著稜邊彎過去），其他稜角實體用 {{ui:surfaceTexture.allRound}}。
@@ -208,7 +210,7 @@ layerling 的每個零件都從一個形狀開始。其餘一切都是由形狀�
 
 ## 多色上色
 
-為了多色列印，{{ui:paint.title}} 直接在設計中為實體的部分表面上色：一個面、一圈圓柱壁、孔的內壁、一個圓斑，或者你圈出的一塊區域。它和切片軟體裡的上色工具類似，但顏色會隨設計一起儲存。選取一個實體，在 {{ui:editor.group.modify}} 群組中點擊 {{ui:paint.title}}（在 {{ui:inspector.surfaceTexture}} 旁邊）。面板會列出設計中用到的顏色，{{ui:paint.customColor}} 可以調出自己的顏色。然後在檢視中用三種工具之一上色：
+為了多色列印，{{ui:paint.title}} 直接在設計中為實體的部分表面上色：一個面、一圈圓柱壁、孔的內壁、一個圓斑，或者你圈出的一塊區域。它和切片軟體裡的上色工具類似，但顏色會隨設計一起儲存。選取一個實體，在 {{ui:editor.section.surface}} 群組中點擊 {{ui:paint.title}}（在 {{ui:inspector.surfaceTexture}} 旁邊）。面板會列出設計中用到的顏色，{{ui:paint.customColor}} 可以調出自己的顏色。然後在檢視中用三種工具之一上色：
 
 - {{ui:paint.mode.fill}}：點擊一下，把面一直填色到它的銳利邊緣，就像繪圖軟體裡的油漆桶：長方體的頂面、圓柱的側壁、凹槽的底面或孔的內壁，各點一下即可。{{ui:paint.angle}} 決定邊緣要多銳利才會讓填色停下；設為 90° 時會越過長方體的稜邊。
 - {{ui:paint.mode.circle}}：點擊一下，在表面上放一個設定 {{ui:paint.diameter}} 的圓斑，圓心就在點擊處，曲面上也可以。它會在實體的銳利邊緣停下，也不會透到壁的背面。

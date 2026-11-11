@@ -77,6 +77,8 @@ export interface CustomShapesOptions {
   snapGridRef: { current: LylExport["snapGrid"] };
   projectInfoRef: { current: { projectId: string | null } };
   placementWorkplaneRef: { current: PlacementWorkplane };
+  /** Where a shape put in without a spot lands: the middle of the active build plate (#1514). */
+  newShapeOrigin?: (workplane: PlacementWorkplane) => PlacementPoint;
 }
 
 /**
@@ -239,7 +241,7 @@ export function useCustomShapes(options: CustomShapesOptions) {
     const restored = await importLylProject(await readCustomShapePackage(id));
     if (projectInfoRef.current.projectId !== sourceProjectId) throw new Error(t("status.pasteCancelled"));
     if (restored.shapes.length === 0) throw new Error(t("status.insertDesignEmpty", { name }));
-    const placed = placeCustomShape(restored, point ?? placementWorkplaneRef.current.origin, notesRef.current);
+    const placed = placeCustomShape(restored, point ?? options.newShapeOrigin?.(placementWorkplaneRef.current) ?? placementWorkplaneRef.current.origin, notesRef.current);
     return addInsertedBodies(restored.assets, placed, t("status.myShapeInserted", { name }));
   }, [commitShapes]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -372,7 +374,10 @@ export function useCustomShapes(options: CustomShapesOptions) {
     // Where it goes is asked first, while the click still counts: in Chrome and Edge a save dialog that remembers its
     // folder, elsewhere a download, as for the backups of the start page.
     const target = await pickBackupTarget(myShapesBackupFileName(new Date()));
-    if (!target) return;
+    if (!target) {
+      setNotice(t("status.saveNothingChosen"));
+      return;
+    }
     const entries = await customShapesBackupEntries();
     const count = entries.length - 1;
     if (count <= 0) {

@@ -15,7 +15,7 @@ Projeví se tři změny:
 - V jejím rohu se zobrazí název tiskárny a tiskový prostor. Pokud popisky překážejí, vypněte {{ui:workspace.showPlateLabels}} v části {{ui:workspace.workplane}}. Platí to i pro název projektu vlevo vpředu.
 - Layerling **upozorní**, když se díl nevejde.
 
-Profily tiskáren pocházejí z OrcaSliceru, takže odpovídají profilům známým ze sliceru. Pro práci bez konkrétní tiskárny zvolte {{ui:workspace.printerNone}}. Velikost pracovní roviny lze zadat i ručně.
+Většina profilů tiskáren pochází z OrcaSliceru. Pro práci bez konkrétní tiskárny zvolte {{ui:workspace.printerNone}}. Velikost pracovní roviny lze zadat i ručně.
 
 Delta tiskárny, například od FLSun nebo SeeMeCNC či Anycubic Predator, tisknou na kulatou podložku. S některou z nich je kulatá i pracovní plocha, stejně široká jako podložka, a těleso je příliš velké, jakmile přesahuje okraj. Kulaté těleso se měří podle vlastního obrysu, ne podle kvádru kolem něj, takže se vejde i válec skoro tak široký jako podložka.
 
@@ -50,7 +50,7 @@ Mezní úhel nastavíte v části {{ui:workspace.appearance}}, od 30° pro opatr
 
 Díl tištěný šikmo na hraně, třeba pod 45°, často žádné podpěry nepotřebuje: jeho plochy jsou dost strmé. Stojí ale na úzké hraně a může se převrhnout. {{ui:supportRib.title}} ho drží: pod jeho spodní plochou stojí s malou mezerou tenké žebro na oválné patce a drobné můstky díl přidržují. Díl nejdřív otočte na hranu a nechte ho stát na podložce.
 
-1. Vyberte díl a klikněte na {{ui:supportRib.title}} ve skupině {{ui:editor.group.modify}} na pásu, klikněte na díl pravým tlačítkem nebo nástroj najděte přes [[Ctrl]]+[[K]].
+1. Vyberte díl a klikněte na {{ui:supportRib.title}} ve skupině {{ui:editor.section.splitShape}} na pásu, klikněte na díl pravým tlačítkem nebo nástroj najděte přes [[Ctrl]]+[[K]].
 2. Klikněte na spodní plochu tam, kde má žebro stát. Plocha musí mířit dolů, být skloněná mezi 15° a 75° a sahat až na podložku; žebro vede od místa kliknutí rovně dolů po ploše. Je-li spodní hrana dílu zaoblená nebo sražená, smí plocha končit až 3 mm nad podložkou: klikněte na rovnou plochu nad zaoblením.
 3. Nastavte {{ui:supportRib.nozzle}}, {{ui:supportRib.layerHeight}} a {{ui:supportRib.firstLayer}} jako ve svém sliceru. Žebro je silné dvě dráhy trysky, mezera k dílu půl dráhy; každý můstek je široký jednu dráhu a vysoký přesně jednu vrstvu a leží na vrstvě tisku, takže ho slicer vytiskne jako jednu tenkou dráhu, která se čistě odlomí. {{ui:supportRib.height}} udává, jak vysoko žebro sahá po ploše (zpočátku do poloviny), {{ui:supportRib.bridgeSpacing}}, jak daleko od sebe jsou můstky, v celých vrstvách.
 4. V {{ui:supportRib.more}} lze ručně nastavit tloušťku, mezeru, šířku můstků a tloušťku patky (do té doby se řídí tryskou a vrstvami), a také šířku patky a zaoblení u patky a nahoře.
@@ -69,6 +69,8 @@ Díl tištěný šikmo na hraně, třeba pod 45°, často žádné podpěry nepo
 ## Vůle vaší tiskárny: test vůle
 
 Každá tiskárna tiskne otvory o něco menší a čepy o něco silnější, než jsou nakreslené, každá o jinou hodnotu. Vůle, kterou dva vytištěné díly potřebují, je proto zpočátku odhad. Změřte ji raději jednou: v nastavení v části {{ui:workspace.workplane}} položí {{ui:workspace.fitTestMake}} na podložku test vůle. Je to destička 60 × 20 × 4 mm se sedmi otvory pro jeden čep 5 mm, každý nakreslený jako 5 mm plus dvakrát 0,05, 0,10, 0,15, 0,20, 0,25, 0,30 nebo 0,40 mm, s vystouplou hodnotou vedle, a k tomu samotný čep 5 mm, který stojí vedle destičky a nahoře má malé sražení. Skládá se z běžných tvarů, takže se tiskne se zbytkem podložky, bez podpěr.
+
+Na tiskárně, jejíž podložka jezdí dopředu a dozadu, se vysoký tenký čep může rozkývat, uvolnit nebo vyjít dole zvlněný, s límcem i bez. Před vytvořením zkoušky lícování zaškrtněte {{ui:workspace.fitTestBase}}: čep pak stojí na malé 10mm destičce, která drží na podložce. Stěny jejího lůžka se nedotýká, stojí na malém výstupku v jeho dně; po tisku čepem zakývejte a odlomí se.
 
 Vytiskněte ho tak, jak leží, a pak zasouvejte čep sraženým koncem napřed do otvorů, od nejužšího. **Nejužší otvor, ve kterém se čep ještě otáčí,** udává vůli vaší tiskárny. Zadejte jeho číslo do pole {{ui:workspace.printerPlay}} nebo ho klikněte mezi hodnotami pod polem. Vůle platí na stranu, v milimetrech, a prohlížeč si ji pamatuje pro všechny projekty; prázdné pole znamená neměřeno.
 S více tiskárnami nejprve v {{ui:workspace.printer}} vyberte tu, na které tisknete: každá tiskárna si pamatuje vlastní vůli a nová použití vycházejí z vůle tiskárny nastavené pro návrh. Tiskárna bez vlastní vůle použije vůli nastavenou, když nebyla vybrána žádná tiskárna.

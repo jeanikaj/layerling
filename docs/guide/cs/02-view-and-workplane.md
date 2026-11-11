@@ -16,7 +16,7 @@ Ovládání myší:
 | [[Ctrl]] / [[Cmd]] a tažení levým tlačítkem | také posun pohledu |
 | dvojklik na prázdné místo pracovní roviny nebo mimo podložku | posune pohled tak, aby to místo bylo uprostřed; pohled se pak otáčí kolem něj |
 
-Rychlost přiblížení nastavuje {{ui:workspace.zoomSpeed}} v části {{ui:workspace.appearance}}. Posuvník má rozsah 1 až 14, výchozí je 5; nad 10 se zrychluje jen kolečko.
+Rychlost přiblížení nastavuje {{ui:workspace.zoomSpeed}} v části {{ui:workspace.appearance}}. Posuvník má rozsah 1 až 14, výchozí je 5; nad 10 se zrychluje jen kolečko. Hned pod ním {{ui:workspace.panSpeed}} nastavuje, jak rychle pohled při posouvání sleduje myš: posuvník od 1 do 9; na výchozí hodnotě 5 zůstává uchopený bod pod kurzorem.
 
 **Tlačítka myši jako ve sliceru.** Pokud jste zvyklí na Bambu Studio nebo OrcaSlicer, nastavte v nastavení, v {{ui:workspace.appearance}}, {{ui:workspace.mouseScheme}} na {{ui:workspace.mouseSchemeSlicer}}. Tažení levým tlačítkem po prázdném místě pak otáčí pohled, pravé tlačítko ho posouvá jako prostřední a Shift s tažením levým kreslí výběrový rámeček. Tažení tělesa ho stále posouvá a krátké kliknutí pravým stále otevře nabídku. V náčrtu posouvá pohled i pravé tlačítko.
 
@@ -100,7 +100,7 @@ Chceš-li se na pracovní rovinu podívat kolmo, stiskni [[P]] nebo klikni na {{
 Když se návrh nevejde na jednu podložku, třeba krabička s víkem a vložkami, může mít více tiskových podložek. Klikněte na {{ui:editor.tool.buildPlates}} ve skupině {{ui:editor.group.arrange}} nebo zvolte {{ui:plates.moveTo}} v nabídce pravého kliknutí na těleso. Dole v pohledu se objeví lišta s tlačítkem pro každou podložku; číslo na něm udává, kolik těles na podložce stojí.
 
 - Každá podložka je velká jako pracovní plocha a podložky leží vedle sebe vpravo od první, 20 mm od sebe. Těleso patří k podložce, na které stojí střed jeho půdorysu, takže přetažením na druhou stranu se dostane na jinou podložku. Návrh má nejvýše 12 podložek.
-- Kliknutí na podložku v liště ji ukáže a nové tvary pak přistanou na ní. {{ui:plates.showAll}} ukáže všechny. Dvojklik na podložku nebo {{ui:plates.rename}} jí dá název, třeba „Víko“, který je na podložce napsán.
+- Kliknutí na podložku v liště ji ukáže a nové tvary i importované soubory pak přistanou na ní. {{ui:plates.showAll}} ukáže všechny. Dvojklik na podložku nebo {{ui:plates.rename}} jí dá název, třeba „Víko“, který je na podložce napsán.
 - {{ui:plates.moveLeft}} a {{ui:plates.moveRight}} mění pořadí, tělesa se posouvají se svou podložkou. {{ui:plates.remove}} odebere aktivní podložku; její tělesa přejdou na první podložku na stejné místo.
 - {{ui:plates.arrange}} rozloží vybraná tělesa, nebo všechna, řadu po řadě na podložky, největší první, 5 mm od sebe, a přidává podložky, dokud jsou potřeba. Těleso větší než podložka zůstane na místě.
 - Se zvolenou tiskárnou se každé těleso kontroluje proti své podložce a výška tisku se počítá od nejnižšího tělesa na ní. Podložka s tělesem, které se nevejde, ukáže své číslo červeně.
@@ -125,11 +125,19 @@ Ozubené kolo v titulním řádku ({{ui:editor.workspaceSettings}}) otevře nast
 
 {{ui:workspace.theme}} určuje barevné schéma celého programu: {{ui:workspace.themeSystem}} se řídí počítačem, další jsou {{ui:workspace.themeLight}}, {{ui:workspace.themeDark}} a {{ui:workspace.themeGraphite}}. Změnit ho lze i vpravo nahoře v editoru.
 
-{{ui:workspace.toolbarSize}} v {{ui:workspace.appearance}} mění velikost pásu nástrojů, nabídky tvarů, lišty pohledu vlevo a panelu vlastností vpravo: {{ui:workspace.toolbarSizeSmall}}, {{ui:workspace.toolbarSizeMedium}} nebo {{ui:workspace.toolbarSizeLarge}}. Malé ovládání nechá více místa na notebooku, velké usnadňuje dotyk i použití na velké obrazovce. Nevejdou-li se velká tlačítka, skupiny pásu se zalomí do dalšího řádku. Nastavení se uchovává v tomto prohlížeči pro všechny projekty.
+{{ui:workspace.toolbarSize}} v {{ui:workspace.appearance}} mění velikost pásu nástrojů, nabídky tvarů, lišty pohledu vlevo a panelu vlastností vpravo: {{ui:workspace.toolbarSizeSmall}}, {{ui:workspace.toolbarSizeMedium}} nebo {{ui:workspace.toolbarSizeLarge}}. Malé ovládání nechá více místa na notebooku, velké usnadňuje dotyk i použití na velké obrazovce. Nevejdou-li se velká tlačítka, skupiny pásu se zalomí do dalšího řádku. Nastavení je na kartě {{ui:workspace.ribbon}} v nastavení, uchovává se v tomto prohlížeči a platí pro všechny projekty.
 
 {{ui:workspace.shapeColors}} zobrazí na obrázcích knihovny tvarů barvu, se kterou nový tvar začíná (barvu jeho druhu, nebo tu, kterou jste uložili přes {{ui:inspector.saveDefaults}}). Pokud dáváte přednost šedým obrázkům, vypněte to; prohlížeč si volbu zapamatuje.
 
 {{ui:workspace.viewCubePosition}} v {{ui:workspace.appearance}} přesune orientační krychli do jiného rohu pracovní plochy: {{ui:workspace.viewCubePositionTopLeft}} (jako dosud), {{ui:workspace.viewCubePositionTopRight}}, {{ui:workspace.viewCubePositionBottomLeft}} nebo {{ui:workspace.viewCubePositionBottomRight}}. V každém rohu kromě levého horního se lišta pohledu posune nahoru na místo, které krychle uvolnila. Vpravo dole stojí krychle těsně nad ovládáním {{ui:inspector.snapGrid}}. Dokud jsou vpravo otevřené vlastnosti tvaru, krychle na pravé straně uhne vlevo od nich. Roh se uchovává v tomto prohlížeči pro všechny projekty. V úzkém okně, třeba na telefonu, je nastavení skryté a krychle zůstává vlevo nahoře.
+
+### Vzhled: tlačítka na pásu nástrojů
+
+{{ui:workspace.ribbonButtons}} odebere z pásu nástrojů skupiny a tlačítka, které nikdy nepoužíváte. Kliknutím na skupinu otevřete její seznam: {{ui:workspace.ribbonGroupShown}} odebere celou skupinu, zaškrtnutí u tlačítka jen to tlačítko. {{ui:workspace.ribbonShowAll}} vrátí vše zpět. Skupina bez tlačítek zmizí a ostatní se posunou, takže se do jednoho řádku vejde víc pásu.
+
+Co odeberete, chybí jen na pásu: vyhledávání příkazů ([[Ctrl]]+[[K]]) to dál najde a jeho klávesa to dál spustí. Šipky u skupiny ji posouvají v seznamu nahoru nebo dolů, a tím i po pásu; {{ui:workspace.ribbonResetOrder}} vrátí pořadí z výroby. Šipky u tlačítka ho posouvají stejně uvnitř jeho skupiny. Nápověda zůstane vždy. Skupinu Tvary lze posouvat a odebrat jako každou jinou; její panel se dál otevře z vyhledávání příkazů. Volbu si pamatuje tento prohlížeč a jde i do souboru z {{ui:workspace.exportSettings}}. Platí pro 3D editor; náčrt má vlastní lištu.
+
+{{ui:workspace.ribbonFold}} pod volbou {{ui:workspace.ribbonGroupShown}} v seznamu skupiny určuje, co skupina udělá, když okno nemá místo pro všechny. {{ui:workspace.ribbonFoldAuto}} je výchozí: jako první se sbalí nejméně používané skupiny. {{ui:workspace.ribbonFoldAlways}} drží skupinu sbalenou do jednoho tlačítka i v širokém okně, takže zabírá málo místa a je stále po ruce. {{ui:workspace.ribbonFoldKeep}} ji sbalí až po všech ostatních. {{ui:workspace.ribbonResetOrder}} vrátí i tuto volbu. {{ui:editor.section.mirrorPattern}}, {{ui:editor.section.splitShape}}, {{ui:editor.section.edgesWalls}} a {{ui:editor.section.surface}} jsou čtyři samostatné skupiny: každou lze posouvat, sbalit a odebrat zvlášť.
 
 ### Vzhled: rychlý režim
 
@@ -157,6 +165,8 @@ Pohled náčrtu má vlastní barvy: {{ui:workspace.sketchBackground}} pro okno k
 
 {{ui:workspace.strongHoles}} vykreslí díry tmavší šedou, méně průhledně a s tmavou čarou kolem. Pomůže, když se díra mezi průhlednými tělesy špatně hledá. Na rozdíl od hran zůstává zapnuté i v rychlém režimu.
 
+{{ui:workspace.holeOpacity}} pod ní určuje, jak hustě se díry kreslí, od 10 do 90 procent. Menší hodnota lépe ukáže, kde se díra dotýká tělesa. Zpočátku je nastavení automatické: 52 procent, nebo 72 se zapnutou volbou {{ui:workspace.strongHoles}}; dvojklik na posuvník ho vrátí zpět.
+
 ### Vzhled: světlo a stíny
 
 {{ui:workspace.showShadows}} zapíná a vypíná vržené stíny. Dva posuvníky určují, jak jsou tělesa osvětlena. {{ui:workspace.shadowStrength}} říká, jak tmavé jsou vržené stíny, a {{ui:workspace.shadeContrast}} přesouvá světlo z rovnoměrného okolního světla na hlavní světlo: směrem k „výraznému“ jsou stinné strany tmavší a stíny výraznější, směrem k „jemnému“ je vše plošší. Úplně nahoře je kontrast velmi silný, takže stinné strany i stíny jsou opravdu tmavé. {{ui:workspace.shadowSoftness}} změkčí okraje stínů místo ostrých. {{ui:workspace.lightAzimuth}} otáčí hlavní světlo kolem podložky (0° zepředu, 90° zprava) a {{ui:workspace.lightElevation}} ho zvedá; při 90° stojí přímo nad podložkou jako v Tinkercadu a stíny padají přímo pod tělesa. {{ui:workspace.softLighting}} přivádí většinu světla odtud, odkud se díváte, a otáčí se s pohledem: žádná plocha nezůstane tmavá a plocha tmavé barvy obrácená vzhůru už se nepřepálí do bílé. Hlavní světlo zůstává trochu pro stíny a posuvník kontrastu stále funguje. Pokud je při nízkém světle ještě vidět jasný odlesk, zvedněte {{ui:workspace.lightElevation}} na 90°: pak to vypadá jako Tinkercad. {{ui:workspace.lightReset}} vše vrátí zpět.
@@ -181,9 +191,11 @@ Pohled náčrtu má vlastní barvy: {{ui:workspace.sketchBackground}} pro okno k
 
 {{ui:workspace.startWithScrollbars}}: návrh se pak otevře se zobrazenými posuvníky pohledu. Nastavení se ukládá s návrhem i pomocí {{ui:workspace.makeDefault}}.
 
+{{ui:workspace.viewBarOpensOnHover}}: sbalená lišta pohledu se otevře, když je myš nad její šipkou, a krátce poté, co ji myš opustí, se znovu sbalí, pokud se nepoužívá některý z jejích nástrojů. Klik na šipku, dokud je takto otevřená, ji nechá otevřenou. Platí jen pro myš; na dotykové obrazovce lištu otevře klepnutí jako dosud.
+
 {{ui:workspace.startView}} určuje úhel, ve kterém se otevře nový projekt a ke kterému se vrací {{ui:camera.home}}. Otočte a přibližte pohled, jak se vám líbí, a pak klikněte na {{ui:workspace.startViewUseCurrent}}; {{ui:workspace.startViewStandard}} vrátí obvyklý pohled zepředu zprava. Platí pro každý projekt v tomto prohlížeči. Projekt, který znovu otevřete, se stále otevře tak, jak jste ho opustili.
 
-{{ui:workspace.zoomSpeed}} je posuvník od pomalého po rychlé: jak rychle přibližuje kolečko a touchpad; tlačítka a klávesy přiblížení si ponechávají vlastní malé kroky. {{ui:workspace.cameraInertia}}: po puštění myši se pohled ještě chvíli otáčí a jemně zpomalí. Vypnuté znamená, že se zastaví hned, jako v Tinkercadu a Fusion 360.
+{{ui:workspace.zoomSpeed}} je posuvník od pomalého po rychlé: jak rychle přibližuje kolečko a touchpad; tlačítka a klávesy přiblížení si ponechávají vlastní malé kroky. {{ui:workspace.panSpeed}} je také posuvník od pomalého po rychlé: jak rychle pohled při posouvání sleduje myš; uprostřed zůstává uchopený bod pod kurzorem. {{ui:workspace.cameraInertia}}: po puštění myši se pohled ještě chvíli otáčí nebo posouvá a jemně zpomalí. Vypnuté znamená, že se zastaví hned, jako v Tinkercadu a Fusion 360.
 
 {{ui:workspace.overhangAngle}} je úhel, od kterého plocha platí za převis, když v nabídce viditelnosti zapnete zobrazení převisů: takové plochy jsou šrafované červeně a bíle. 30° je opatrné, 70° počítá s dobrým chlazením tisku; 45° je obvyklý začátek. Dokud se zobrazují, řádek pod pohledem uvádí nejstrmější převis a kolik cm² potřebuje podpěry.
 

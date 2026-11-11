@@ -5,6 +5,10 @@ import { setAppTheme } from "@/lib/appTheme";
 import { writeCustomShortcuts } from "@/lib/customShortcuts";
 import { t } from "@/lib/i18n";
 import { setPrinterPlayFor } from "@/lib/printerPlay";
+import { writeRibbonHidden } from "@/lib/ribbonHidden";
+import { writeRibbonOrder } from "@/lib/ribbonOrder";
+import { writeRibbonToolOrder } from "@/lib/ribbonToolOrder";
+import { writeRibbonFold } from "@/lib/ribbonFold";
 import {
   buildSettingsFile,
   parseSettingsFile,
@@ -68,6 +72,10 @@ export function SettingsFileButtons({
     for (const [printer, play] of Object.entries(parsed.browser.printerPlays)) setPrinterPlayFor(printer, play);
     // A file from before your own keys existed has none and leaves this browser's keys as they are.
     if (parsed.browser.customShortcuts) writeCustomShortcuts(parsed.browser.customShortcuts);
+    if (parsed.browser.ribbonHidden) writeRibbonHidden(parsed.browser.ribbonHidden);
+    if (parsed.browser.ribbonOrder) writeRibbonOrder(parsed.browser.ribbonOrder);
+    if (parsed.browser.ribbonToolOrder) writeRibbonToolOrder(parsed.browser.ribbonToolOrder);
+    if (parsed.browser.ribbonFold) writeRibbonFold(parsed.browser.ribbonFold);
     setMessage(t("workspace.importSettingsDone"));
   };
 

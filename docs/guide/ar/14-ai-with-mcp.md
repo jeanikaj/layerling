@@ -82,6 +82,7 @@ curl -fsSL https://raw.githubusercontent.com/henmedia/layerling/main/scripts/mac
 | الأداة | ما تفعله |
 | --- | --- |
 | `layerling_list_editors` | تسرد تبويبات المحرر المفتوحة |
+| `layerling_rename_project` | يعطي المشروع اسمًا، كما يفعل القلم بجانب اسم المشروع |
 | `layerling_open_editor` | تفتح تبويب محرر جديدًا في متصفحك الافتراضي وتنتظر حتى يتصل (على كمبيوترك الخاص فقط) |
 | `layerling_read_scene` | تقرأ المشهد والتحديد والوحدات والأبعاد الدقيقة لجميع الأجسام |
 | `layerling_list_objects` | تسرد جميع الأجسام مع الأبعاد والموضع والتدوير والمعرّف (id) |
@@ -163,6 +164,7 @@ curl -fsSL https://raw.githubusercontent.com/henmedia/layerling/main/scripts/mac
 | `layerling_insert_custom_shape` | تدرج شكلًا مخصصًا في التصميم المفتوح، في موضع x/z إذا أردت |
 | `layerling_delete_custom_shape` | تزيل شكلًا مخصصًا؛ وتبقى الأجسام المُدرجة |
 | `layerling_show_workplane` | تخفي اللوحة بشبكتها وتظهرها، لالتقاط صورة للجانب السفلي مثلًا (العرض فقط) |
+| `layerling_focus_mode` | تشغّل وضع التركيز وتوقفه: تخفي شريط العنوان والتذييل لمساحة أكبر (إطار المحرر فقط) |
 | `layerling_set_section_view` | تفتح العرض بقطعه على طول مستوى للنظر إلى الداخل (العرض فقط، لا يُقطع شيء فعليًا) |
 | `layerling_measurements` | يُظهر قياسات شريط القياس أو يخفيها ويسردها مع أطوالها، ويخفي الأبعاد حول التحديد أو يظهرها مثل [[Q]]، ويكتب طولاً لأحدها فيحرك الجسم عند طرفه كما يفعل النقر على رقمه |
 | `layerling_measure_angle` | يقيس زاوية مثل المنقلة: عند ركن ثلاث نقاط أو بين وجهين مستويين، ويعرضها في العرض |

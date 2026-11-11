@@ -129,7 +129,11 @@ export type ShapeCustomization = {
   height?: number;
   maxDimension?: number;
   cornerFillet?: number;
+  /** Rounded box with flat top and bottom: an own radius for each corner (back left, back right, front right, front left); wins over cornerFillet. */
+  cornerFillets?: [number, number, number, number];
   topBottomFillet?: number;
+  /** Rounded box only: the bottom edge on its own; left out, the bottom takes the top's radius. */
+  bottomFillet?: number;
   roundedBoxQuality?: number;
   steps?: number;
   sides?: number;
@@ -200,6 +204,10 @@ export type ShapeCustomization = {
   helixQuality?: number;
   /** A bevel gear's helix angle (Discussion #1299): its teeth turn while they taper, a spiral bevel gear; missing or 0 keeps them straight. */
   bevelHelixAngle?: number;
+  /** A ring gear's or a rack's helix angle (Discussion #1627): its teeth run at a slant; missing or 0 keeps them straight. */
+  ringRackHelixAngle?: number;
+  /** A ring gear or a rack with a helix angle: its teeth turn back at half the height, herringbone teeth (Discussion #1627). */
+  ringRackHerringbone?: boolean;
   /** Involute teeth (#201) or the straight ones every gear had before; missing means straight. */
   gearProfile?: GearProfile;
   /** Involute teeth: pressure angle in degrees (20 by default). */
@@ -433,6 +441,8 @@ export type ShapeCustomization = {
   loftOffsetZ?: number;
   /** Transition: wall thickness in mm; 0 is a solid body, more a tube open at both ends. */
   loftWall?: number;
+  /** Transition: the wall at the top end in mm, when it differs from loftWall (Forum 624069); left out, it is loftWall. */
+  loftTopWall?: number;
   /** Transition: degrees the section turns from bottom to top (#205). */
   loftTwist?: number;
   /** Transition: 0 to 1, how much of an S-curve the sides take between the ends (#271). */
@@ -458,6 +468,12 @@ export type ShapeCustomization = {
    * countersink take it while they are holes. The height still counts to the shoulder, the tip lies below it.
    */
   drillPointAngle?: number;
+  /** Counterbore, countersink and double countersink: a slotted hole (Discussion #1531), as on the shape. */
+  screwHoleSlot?: boolean;
+  /** Countersink and double countersink: how far in mm the head sits below the face (Discussion #1531), as on the shape. */
+  screwHoleRecess?: number;
+  /** Counterbore: a 45-degree chamfer in mm at the rim of the pocket (Discussion #1632), as on the shape. */
+  screwHoleChamfer?: number;
   /** Port opening: rounded corners, or the lower ones cut off as on an HDMI or DisplayPort socket. */
   portProfile?: PortProfile;
   /** Port opening: extra room in mm on every side on top of the preset's, already in width and height; it lets the preset be recognised. */
@@ -522,6 +538,11 @@ export type WorkplaneWorkspaceSettings = {
   edgeColor: string;
   /** Holes drawn darker and denser, with a line round them, so they stand out among see-through bodies (#662). */
   strongHoles: boolean;
+  /**
+   * How solid holes are drawn, 10 to 90 percent, so one can see better where a hole meets a body (#1566).
+   * 0 is automatic: 52 %, or 72 % with Show holes more clearly, as before the slider.
+   */
+  holeOpacity: number;
   showShadows: boolean;
   /** The camera keeps turning for a moment after you let go, and slows down. */
   cameraInertia: boolean;
@@ -566,6 +587,8 @@ export type WorkplaneWorkspaceSettings = {
   objectSnap: boolean;
   /** An STL leaves as a plain download each time, which the browser numbers (name (1).stl), instead of writing into one linked file (#731). */
   stlAsDownload: boolean;
+  /** Export > LYL, Ctrl+S and Save as leave as a plain download, without the browser's save dialog (Discussion #1449). */
+  lylAsDownload: boolean;
   /** The browser asks "Leave site?" when a design is open and the tab is closed or reloaded; off by default (#683 mail). */
   confirmTabClose: boolean;
   dimensionsAlwaysVisible: boolean;
@@ -573,9 +596,15 @@ export type WorkplaneWorkspaceSettings = {
   dimensionAxisColors: boolean;
   /** A turned body shows its angles about X, Y and Z beside it while it is selected. */
   showRotationAngles: boolean;
+  /** The red X and green Y arrows round the top of a selection that move it along one axis (Discussion #1434); on by default. */
+  showSlideArrows: boolean;
   /** The editor opens a design with the view's scrollbars shown (Discussion #1241); the view bar still switches them. */
   startWithScrollbars: boolean;
+  /** A folded view bar opens while the mouse is over its arrow and folds again once the mouse has left it (Discussion #1552). */
+  viewBarOpensOnHover: boolean;
   zoomSpeed: number;
+  /** How fast shifting the 3D view follows the mouse, a slider from 1 to 9; at 5 the grabbed point stays under the cursor (#1553). */
+  panSpeed: number;
   /**
    * Which mouse buttons steer the view (#1013): layerling's own (right turns, middle shifts, a left drag on empty space draws
    * a selection box) or as in Bambu Studio and OrcaSlicer (a left drag on empty space turns, the right button shifts,
@@ -787,11 +816,19 @@ export type FlatSpringEnds = "eye" | "tab" | "none";
  */
 export type ThreadProfile = "v" | "trapezoidal" | "round" | "whitworth" | "custom";
 
+/** A finer cut of an exact revolved body than the usual: see SketchRevolveSettings.smoothness. */
+export type SketchRevolveSmoothness = "fine" | "extraFine";
+
 export type SketchRevolveSettings = {
   startAngle: number;
   sweepAngle: number;
   sides: number;
   quality: number;
+  /**
+   * How finely an exact revolved body is cut into facets (Discussion #1426): left out the usual fineness of a sketch body,
+   * finer for a large round pot whose facets showed on the print. More triangles, so only where they are wanted.
+   */
+  smoothness?: SketchRevolveSmoothness;
   /**
    * How far the profile climbs per full turn, in mm. Left out or 0 the profile turns into rings; above
    * 0 it winds up as one continuous strand (a coil, a filament spool) and the sweep may run past a
@@ -922,6 +959,9 @@ export type ParametricSource = {
   slopeEnd?: number;
   slopeSide?: "back" | "front" | "left" | "right";
   slopeCurve?: number;
+  slopeFrom?: "end" | "middle" | "arch";
+  sideDrop?: number;
+  sideCurve?: number;
   narrowEnd?: number;
   narrowSide?: "back" | "front" | "left" | "right";
   narrowCurve?: number;
@@ -1053,6 +1093,12 @@ export type WorkplaneShape = {
   slopeSide?: "back" | "front" | "left" | "right";
   /** Slope along: -1 to 1, 0 a straight top, above 0 bulging up, below 0 sagging. */
   slopeCurve?: number;
+  /** Slope along: where the top line starts: at one end ("end", the default) or in the middle ("middle": both ends low, symmetric). */
+  slopeFrom?: "end" | "middle" | "arch";
+  /** Side drop: how many mm the two longer sides are lowered at their edges, evenly; missing or 0 means none. */
+  sideDrop?: number;
+  /** Side drop: -1 to 1, 0 a straight line from the middle to the edge, above 0 bulging up, below 0 sagging. */
+  sideCurve?: number;
   /**
    * Narrow along: seen from above, the width of the narrow end in mm,
    * both long sides running in evenly. Missing or the full width means no narrowing.
@@ -1087,6 +1133,10 @@ export type WorkplaneShape = {
   helixQuality?: number;
   /** A bevel gear's helix angle (Discussion #1299): its teeth turn while they taper, a spiral bevel gear; missing or 0 keeps them straight. */
   bevelHelixAngle?: number;
+  /** A ring gear's or a rack's helix angle (Discussion #1627): its teeth run at a slant; missing or 0 keeps them straight. */
+  ringRackHelixAngle?: number;
+  /** A ring gear or a rack with a helix angle: its teeth turn back at half the height, herringbone teeth (Discussion #1627). */
+  ringRackHerringbone?: boolean;
   /** Involute teeth (#201) or the straight ones every gear had before; missing means straight. */
   gearProfile?: GearProfile;
   /** Involute teeth: pressure angle in degrees (20 by default). */
@@ -1338,6 +1388,8 @@ export type WorkplaneShape = {
   loftOffsetZ?: number;
   /** Transition: wall thickness in mm; 0 is a solid body, more a tube open at both ends. */
   loftWall?: number;
+  /** Transition: the wall at the top end in mm, when it differs from loftWall (Forum 624069); left out, it is loftWall. */
+  loftTopWall?: number;
   /** Transition: degrees the section turns from bottom to top (#205). */
   loftTwist?: number;
   /** Transition: 0 to 1, how much of an S-curve the sides take between the ends (#271). */
@@ -1371,12 +1423,32 @@ export type WorkplaneShape = {
    * countersink take it while they are holes. The height still counts to the shoulder, the tip lies below it.
    */
   drillPointAngle?: number;
+  /**
+   * Counterbore, countersink and double countersink: a slotted hole (Discussion #1531). The head and the shaft run
+   * along a slot instead of standing round, so the part can still be moved a little before the screw is tightened.
+   * The shorter of width and depth is the head's diameter, the difference the slot's length, along the longer one.
+   * Missing or false: the round hole, stretched into an oval when width and depth differ, as always.
+   */
+  screwHoleSlot?: boolean;
+  /**
+   * Countersink and double countersink: how far in mm the screw head sits below the face (Discussion #1531) - a
+   * straight pocket as wide as the head above the cone, on the double countersink at both ends. Missing or 0: flush.
+   */
+  screwHoleRecess?: number;
+  /**
+   * Counterbore: a 45-degree chamfer in mm at the rim of the pocket (Discussion #1632). The rim opens by that much
+   * outside the head's diameter, so the pocket keeps its width; it stays shallower than the pocket. Missing or 0: none.
+   */
+  screwHoleChamfer?: number;
   /** Port opening: rounded corners, or the lower ones cut off as on an HDMI or DisplayPort socket. */
   portProfile?: PortProfile;
   /** Port opening: extra room in mm on every side on top of the preset's, already in width and height; it lets the preset be recognised. */
   portClearance?: number;
   cornerFillet?: number;
+  /** Rounded box with flat top and bottom: an own radius for each corner (back left, back right, front right, front left); wins over cornerFillet. */
+  cornerFillets?: [number, number, number, number];
   topBottomFillet?: number;
+  bottomFillet?: number;
   roundedBoxQuality?: number;
   bentTubeProfile?: BentTubeProfile;
   bentTubeInnerProfile?: BentTubeInnerProfile;
@@ -1579,6 +1651,12 @@ export type WorkplaneShape = {
    * lib/stencilBridgeTool.
    */
   stencilBridge?: boolean;
+  /**
+   * The body stands on a breakaway base (lib/breakawayBase), as the fit test's pin and the Split tool's loose dowels can:
+   * the pin's foot hangs a little over the socket's floor and that floor is one layer thick, on purpose, so the print
+   * check leaves both out (#1633).
+   */
+  breakawayBase?: boolean;
   /**
    * The point this body turns about, kept with the body: a fraction of its
    * width, height and depth from its centre, in its own frame, so it moves,

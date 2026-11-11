@@ -20,6 +20,7 @@ import {
   MAX_GEAR_BACKLASH,
   gearSizeForModule,
   gearToothProfile,
+  gearTypeIsModular,
   gearUsesModule,
   involuteGearDiameter,
   normalizeGearCenterHoleSize,
@@ -31,6 +32,8 @@ import {
   normalizeGearToothSize,
   normalizeGearToothWidth,
   normalizeGearType,
+  normalizeRingRackHelixAngle,
+  normalizeBevelHelixAngle,
   rackToothHeight,
 } from "@/lib/gearGeometry";
 import {
@@ -200,7 +203,7 @@ import {
   DEFAULT_ROUNDED_BOX_TOP_BOTTOM_FILLET,
   DEFAULT_ROUNDED_BOX_QUALITY,
   normalizeCornerFillet,
-  normalizeTopBottomFillet,
+  normalizeEndFillets,
   normalizeRoundedBoxQuality,
 } from "@/lib/roundedBoxGeometry";
 import {
@@ -781,6 +784,8 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     gearRim: shape.gearRim,
     helixAngle: shape.helixAngle,
     bevelHelixAngle: shape.bevelHelixAngle,
+    ringRackHelixAngle: shape.ringRackHelixAngle,
+    ringRackHerringbone: shape.ringRackHerringbone,
     helixQuality: shape.helixQuality,
     gearProfile: shape.gearProfile,
     gearPressureAngle: shape.gearPressureAngle,
@@ -927,6 +932,7 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     loftOffsetX: shape.loftOffsetX,
     loftOffsetZ: shape.loftOffsetZ,
     loftWall: shape.loftWall,
+    loftTopWall: shape.loftTopWall,
     loftTwist: shape.loftTwist,
     loftSmooth: shape.loftSmooth,
     loftSegments: shape.loftSegments,
@@ -938,10 +944,15 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     screwHoleHeadDepth: shape.screwHoleHeadDepth,
     screwHoleAngle: shape.screwHoleAngle,
     drillPointAngle: shape.drillPointAngle,
+    screwHoleSlot: shape.screwHoleSlot,
+    screwHoleRecess: shape.screwHoleRecess,
+    screwHoleChamfer: shape.screwHoleChamfer,
     portProfile: shape.portProfile,
     portClearance: shape.portClearance,
     cornerFillet: shape.cornerFillet,
+    cornerFillets: shape.cornerFillets,
     topBottomFillet: shape.topBottomFillet,
+    bottomFillet: shape.bottomFillet,
     roundedBoxQuality: shape.roundedBoxQuality,
     bentTubeProfile: shape.bentTubeProfile,
     bentTubeInnerProfile: shape.bentTubeInnerProfile,
@@ -1062,6 +1073,7 @@ export function makeShapeFromAsset(
     offsetX: customization.loftOffsetX,
     offsetZ: customization.loftOffsetZ,
     wall: customization.loftWall,
+    topWall: customization.loftTopWall,
     twist: customization.loftTwist,
     smooth: customization.loftSmooth,
     segments: customization.loftSegments,
@@ -1224,7 +1236,12 @@ export function makeShapeFromAsset(
     gearType,
     gearRim,
     helixAngle: asset.kind === "gear" ? normalizeGearHelixAngle(customization.helixAngle ?? DEFAULT_GEAR_HELIX_ANGLE) : undefined,
+    // Slanted teeth on a ring gear or a rack (Discussion #1627); straight ones keep no angle.
+    ringRackHelixAngle: asset.kind === "gear" && gearTypeIsModular(gearType) && normalizeRingRackHelixAngle(customization.ringRackHelixAngle) !== 0 ? normalizeRingRackHelixAngle(customization.ringRackHelixAngle) : undefined,
+    ringRackHerringbone: asset.kind === "gear" && gearTypeIsModular(gearType) && normalizeRingRackHelixAngle(customization.ringRackHelixAngle) !== 0 && customization.ringRackHerringbone === true ? true : undefined,
     helixQuality: asset.kind === "gear" ? normalizeGearHelixQuality(customization.helixQuality ?? DEFAULT_GEAR_HELIX_QUALITY) : undefined,
+    // A spiral bevel gear; a straight one keeps no angle, as the inspector leaves it.
+    bevelHelixAngle: asset.kind === "gear" && gearType === "bevel" && normalizeBevelHelixAngle(customization.bevelHelixAngle) !== 0 ? normalizeBevelHelixAngle(customization.bevelHelixAngle) : undefined,
     gearProfile,
     gearPressureAngle: gearProfile === "involute" ? normalizeGearPressureAngle(customization.gearPressureAngle) : undefined,
     gearBacklash: gearUsesModule(gearProfile) ? Math.max(0, Math.min(MAX_GEAR_BACKLASH, customization.gearBacklash ?? DEFAULT_GEAR_BACKLASH)) : undefined,
@@ -1357,11 +1374,22 @@ export function makeShapeFromAsset(
     screwHoleAngle: asset.kind === "countersink" || asset.kind === "doubleCountersink" || asset.kind === "finishingWasher" ? normalizeScrewHoleAngle(customization.screwHoleAngle ?? DEFAULT_SCREW_HOLE_ANGLE) : undefined,
     // A drill point saved with the defaults (Discussion #621); a new cylinder is solid and takes it once it is a hole.
     drillPointAngle: asset.kind === "cylinder" || asset.kind === "counterbore" || asset.kind === "countersink" ? normalizeDrillPointAngle(customization.drillPointAngle) : undefined,
+    // A slotted hole and a recessed head (Discussion #1531); left out when off, as the editor leaves them.
+    screwHoleSlot: (asset.kind === "counterbore" || asset.kind === "countersink" || asset.kind === "doubleCountersink") && customization.screwHoleSlot ? true : undefined,
+    screwHoleRecess: (asset.kind === "countersink" || asset.kind === "doubleCountersink") && (customization.screwHoleRecess ?? 0) > 0 ? customization.screwHoleRecess : undefined,
+    // A chamfer at the rim of a counterbore (Discussion #1632); left out when off, as the editor leaves it.
+    screwHoleChamfer: asset.kind === "counterbore" && (customization.screwHoleChamfer ?? 0) > 0 ? customization.screwHoleChamfer : undefined,
     cornerFillet: asset.kind === "roundedBox" ? normalizeCornerFillet(customization.cornerFillet ?? DEFAULT_ROUNDED_BOX_CORNER_FILLET, Math.min(width, depth) / 2)
       : asset.kind === "port" ? normalizePortCorner(customization.cornerFillet, width, height, customization.portProfile) : undefined,
     portProfile: asset.kind === "port" ? normalizePortProfile(customization.portProfile) : undefined,
     portClearance: asset.kind === "port" && normalizePortClearance(customization.portClearance) > 0 ? normalizePortClearance(customization.portClearance) : undefined,
-    topBottomFillet: asset.kind === "roundedBox" ? normalizeTopBottomFillet(customization.topBottomFillet ?? DEFAULT_ROUNDED_BOX_TOP_BOTTOM_FILLET, height / 2) : undefined,
+    ...(asset.kind === "roundedBox"
+      ? (() => {
+          // Top and bottom on their own: the two have to fit in the height together.
+          const [top, bottom] = normalizeEndFillets(customization.topBottomFillet ?? DEFAULT_ROUNDED_BOX_TOP_BOTTOM_FILLET, customization.bottomFillet, height);
+          return { topBottomFillet: top, bottomFillet: customization.bottomFillet === undefined ? undefined : bottom };
+        })()
+      : { topBottomFillet: undefined, bottomFillet: undefined }),
     roundedBoxQuality: asset.kind === "roundedBox" ? normalizeRoundedBoxQuality(customization.roundedBoxQuality ?? DEFAULT_ROUNDED_BOX_QUALITY) : undefined,
     ...(bentTube ?? {}),
     ...(loftMeasures ? loftFieldsFromMeasures(loftMeasures) : {}),

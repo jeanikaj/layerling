@@ -22,7 +22,10 @@ import {
   MAX_BAYONET_LUGS,
   MAX_BAYONET_TURN,
   MAX_CLICK_BUMP_HEIGHT,
+  LID_TOP_EDGES,
   MAX_FLIP_TOP_OPENING,
+  MAX_LID_TOP_EDGE,
+  MIN_LID_TOP_EDGE,
   MAX_HINGE_GAP,
   MAX_HINGE_KNUCKLES,
   MAX_HINGE_PIN,
@@ -36,6 +39,7 @@ import {
   MAX_MAGNET_DIAMETER,
   MAX_MAGNET_GAP,
   MAX_MAGNET_HEIGHT,
+  MAX_SLIDE_FRAME,
   MIN_BAYONET_AXIAL_GAP,
   MIN_BAYONET_DEPTH,
   MIN_BAYONET_LUGS,
@@ -58,13 +62,18 @@ import {
   lidClickBumpsFit,
   lidFlipTopFits,
   lidHandleFits,
+  lidNeckDiameter,
+  lidNeckFit,
   lidTakesExtras,
   lidTakesMagnets,
   lidStandardThread,
   lidTetherFits,
   lidThicknessForMagnets,
   lidThread,
+  lidTopEdgeFits,
+  lidTopEdgeSize,
   normalizeLidOptions,
+  slideFrameNeeded,
   type LidOptions,
 } from "@/lib/lidTool";
 import { numberLocale, t } from "@/lib/i18n";
@@ -86,7 +95,7 @@ import type { WorkplaneWorkspaceSettings } from "@/types/layerling";
  * which the panel says how to make. A screw-in lid (Discussion #1432) is the other way round: a plate with a threaded plug below it that screws into the same thread inside the body's opening. A bayonet lid (Discussion #1424) is a cap
  * for a round body too, with an L-shaped slot inside its rim for each of the lugs on the outside of the body's top: pushed
  * down and turned, it locks, as far as its lugs give or as far as set, up to a quarter turn. A slide-in lid (Discussion #1443) is a plate for a box that slides in through the wall picked,
- * its edges in grooves in the other three, like a pencil box's; its click bump and finger grip are its own. A screw or bayonet lid can have a tether that keeps the cap with the body when it is off (asked in the
+ * its edges in grooves in the other three, like a pencil box's; its click bump and finger grip are its own; with a frame it sits lower, the walls round it at their full height, and goes in through a slot. A screw or bayonet lid can have a tether that keeps the cap with the body when it is off (asked in the
  * Layerling User Group on Facebook), or be a flip-top: a flap in its plate opens a round opening to pour from.
  */
 export function LidPanel({
@@ -98,6 +107,7 @@ export function LidPanel({
   onChange,
   onApply,
   onCancel,
+  neck = null,
 }: {
   targetName: string;
   settings: LidOptions;
@@ -107,6 +117,12 @@ export function LidPanel({
   onChange: (patch: Partial<LidOptions>) => void;
   onApply: () => void;
   onCancel: () => void;
+  /**
+   * With a standard's thread (issue #1482), the body's top as Make lid measures it (`lidTopForShapes`): undefined while
+   * it is measured, null when it is not round. `fit` is the diameter "Fit the body to the neck" makes it, null for a
+   * body that button cannot resize (`lidNeckFitPatch`); `fitting` while it does.
+   */
+  neck?: { top: { outer: number; inner: number } | null | undefined; fit: number | null; fitting: boolean; onFit: () => void } | null;
 }) {
   useLanguage();
   // The gap and the pin's play say when they are still what the printer's play gave them (printerPlay.ts).
@@ -142,10 +158,16 @@ export function LidPanel({
   const slide = settings.type === "slide";
   const thread = lidThread(settings);
   // A standard's thread sets its own pitch and turns: their sliders give way to what the standard is and what it takes.
-  const standard = screw && settings.threadStandard !== "own" ? lidStandardThread(settings.threadStandard) : null;
+  const neckStandard = screw && settings.threadStandard !== "own" ? settings.threadStandard : null;
+  const standard = neckStandard ? lidStandardThread(neckStandard) : null;
   // A flip-top's flap and hinge need a plate thick enough for them: thinner, it says how thick.
   const flipTopFits = lidFlipTopFits(settings);
   const flipTopNeeds = flipTopThickness(settings);
+  // Whether the body's top is the standard's neck, said before the lid is made, as Make lid will find it (lidNeckFit).
+  const neckTop = neckStandard && neck ? neck.top : undefined;
+  const neckMiss = neckStandard && neckTop !== undefined ? lidNeckFit(neckStandard, neckTop) : null;
+  // A slide-in lid's frame must leave the wall whole above the slot: thinner, it says how much is needed.
+  const frameNeeds = slideFrameNeeded(settings);
   return (
     <MovableToolPanel className="edge-modifier-panel shell-panel offset-panel lid-panel" ariaLabel={title}>
       {(handleProps) => (<>
@@ -207,6 +229,32 @@ export function LidPanel({
             ))}
           </div>
           {settings.threadStandard === "own" ? null : <span className="shell-openings-summary">{t(`lid.threadStandardHint.${settings.threadStandard}`)}</span>}
+        </div>
+      ) : null}
+      {/* The body measured against the neck, before the lid is made, and a button that resizes it to fit (issue #1482). */}
+      {standard && neck ? (
+        <div className="lid-neck-fit">
+          <span className="shell-openings-summary" role="status">
+            {neckTop === undefined
+              ? t("lid.neckMeasuring")
+              : neckTop === null
+                ? t("lid.neckNotRound")
+                : t(neckMiss ? "lid.neckSize" : "lid.neckFits", {
+                  measured: millimetres(Math.round(200 * neckTop.outer) / 100), standard: standard.name,
+                  from: millimetres(Math.round(standard.neckFrom * 100) / 100), to: millimetres(Math.round(standard.neckTo * 100) / 100),
+                })}
+          </span>
+          {neckTop !== undefined && (neckTop === null || neckMiss) ? (
+            neck.fit !== null ? (<>
+              <button type="button" className="secondary lid-neck-fit-button" disabled={busy || neck.fitting} onClick={neck.onFit}>
+                {neck.fitting ? <LoaderCircle className="edge-modifier-spinner" size={15} /> : null}
+                {neck.fitting ? t("lid.neckFitting") : t("lid.neckFit")}
+              </button>
+              <span className="shell-openings-summary">{t("lid.neckFitHint", { diameter: millimetres(neck.fit) })}</span>
+            </>) : neckTop !== null ? (
+              <span className="shell-openings-summary">{t("lid.neckFitByHand", { diameter: millimetres(lidNeckDiameter(neckStandard!)) })}</span>
+            ) : null
+          ) : null}
         </div>
       ) : null}
 
@@ -402,7 +450,22 @@ export function LidPanel({
               ))}
             </div>
           </div>
-          <span className="shell-openings-summary">{t("lid.slideHint")}</span>
+          <span className="shell-openings-summary">{t(settings.slideFrame > 0 ? "lid.slideHintFrame" : "lid.slideHint")}</span>
+          {/* How far below the rim the lid sits, framed by the walls (Discussion #1443): 0 is flush, the wall cut down. */}
+          <EdgeModifierSlider
+            label={t("lid.slideFrame")}
+            value={settings.slideFrame}
+            min={0}
+            max={MAX_SLIDE_FRAME}
+            step={0.2}
+            workspace={workspace}
+            length
+            disabled={busy}
+            onChange={(value) => onChange({ slideFrame: value })}
+          />
+          {settings.slideFrame > 0 && settings.slideFrame < frameNeeds - 1e-9 ? (
+            <span className="shell-openings-summary" role="status">{t("lid.error.slideThinFrame", { frame: millimetres(frameNeeds) })}</span>
+          ) : <span className="shell-openings-summary">{t("lid.slideFrameHint")}</span>}
         </>) : (
           <EdgeModifierSlider
             label={t(settings.type === "cap" ? "lid.depthCap" : settings.type === "both" ? "lid.depthBoth" : "lid.depth")}
@@ -490,6 +553,44 @@ export function LidPanel({
               <span className="shell-openings-summary" role="status">{t("lid.error.flipTopThin", { thickness: millimetres(flipTopNeeds) })}</span>
             ) : null}
             <span className="shell-openings-summary">{t("lid.flipTopHint")}</span>
+          </>) : null}
+        </>) : null}
+        {/* A cap's top rim rounded or chamfered as it is made: afterwards it is one mesh with its thread, too large for the edge tool (Discussion #1426). */}
+        {lidTopEdgeFits(settings) ? (<>
+          <div className="edge-modifier-field shell-openings" role="radiogroup" aria-label={t("lid.topEdge")}>
+            <span>{t("lid.topEdge")}</span>
+            <div className="shell-opening-options">
+              {LID_TOP_EDGES.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  role="radio"
+                  aria-checked={settings.topEdge === option}
+                  className={settings.topEdge === option ? "active" : ""}
+                  disabled={busy}
+                  onClick={() => onChange({ topEdge: option })}
+                >
+                  {t(`lid.topEdge.${option}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+          {settings.topEdge !== "square" ? (<>
+            <EdgeModifierSlider
+              label={t("lid.topEdgeSize")}
+              value={settings.topEdgeSize}
+              min={MIN_LID_TOP_EDGE}
+              max={MAX_LID_TOP_EDGE}
+              step={0.1}
+              workspace={workspace}
+              length
+              disabled={busy}
+              onChange={(value) => onChange({ topEdgeSize: value })}
+            />
+            {lidTopEdgeSize(settings) < settings.topEdgeSize - 1e-9 ? (
+              <span className="shell-openings-summary" role="status">{t("lid.topEdgeThin", { size: millimetres(lidTopEdgeSize(settings)) })}</span>
+            ) : null}
+            <span className="shell-openings-summary">{t("lid.topEdgeHint")}</span>
           </>) : null}
         </>) : null}
       </>)}
@@ -721,7 +822,8 @@ export function LidPanel({
       {error ? <div className="edge-modifier-error" role="alert">{error}</div> : null}
       <div className="edge-modifier-footer">
         <button type="button" className="secondary" onClick={onCancel}>{t("common.cancel")}</button>
-        <button type="button" className="primary" disabled={busy} onClick={onApply}>
+        {/* Not while the body is fitted to the neck: the lid would be made for it as it was. */}
+        <button type="button" className="primary" disabled={busy || Boolean(neck?.fitting)} onClick={onApply}>
           {busy ? <LoaderCircle className="edge-modifier-spinner" size={17} /> : <Check size={17} />}
           {busy ? t("lid.working") : t("lid.apply")}
         </button>

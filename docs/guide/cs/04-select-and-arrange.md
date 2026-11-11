@@ -22,7 +22,7 @@ U složitého modelu pomůže seznam všech tvarů: {{ui:editor.tool.showOutline
 ![Seznam objektů: sloučený celek se dvěma částmi a vedle něj koule. Ikona složky otevře úpravu celku.](shot:object-list)
 
 - Kliknutí vybere tvar, i uvnitř sloučení. [[Shift]] přidává a odebírá položky jako v pohledu. Šipky rozbalují a sbalují vnořené části.
-- Popisek rozlišuje {{ui:outliner.solid}} a {{ui:outliner.hole}}.
+- Písmeno za názvem ukazuje, zda je díl {{ui:outliner.solid}}, nebo {{ui:outliner.hole}}: je to první písmeno slova a po najetí myší se zobrazí celé slovo.
 - Pod názvem stojí, o jaký tvar jde. Těleso, které už není jednoduchým tvarem (zaoblené, vydutěné nebo importované), ukazuje {{ui:shape.exactBody}}, když ho export STEP zapíše přesně, a {{ui:shape.mesh}}, když je jen z trojúhelníků a jde ven jako STL. Zúžení, náklon nebo zkroucení přidané až po zaoblení nebo vydutění ohne jen jeho síť, takže pak ukazuje {{ui:shape.mesh}}.
 - Zámek a oko ovládají zamknutí a skrytí jednotlivých částí.
 - {{ui:outliner.rename}} přiřadí vlastní název. Stejně funguje tužka nahoře v nastavení vybraného tvaru. Smysluplné názvy usnadňují práci ve velkém projektu.
@@ -32,7 +32,7 @@ U složitého modelu pomůže seznam všech tvarů: {{ui:editor.tool.showOutline
 - Vyhledávání používá názvy i typy, například válec nebo výřez, a prochází libovolně vnořená sloučení. Nadřazené celky zůstanou v seznamu a rozbalí cestu k nalezeným částem. Celek nalezený vlastním názvem po rozbalení ukazuje všechny části.
 - Šipka vlevo v záhlaví sbalí seznam na záhlaví a znovu jej rozbalí.
 
-Seznam je ukotvený vpravo od orientační krychle. Přetáhněte jej za záhlaví kamkoliv na plochu; může se zasunout pod krychli a lištu pohledu. Vrácení vedle krychle nebo dvojklik jej znovu ukotví. Poloha i sbalení se pamatují v tomto prohlížeči.
+Seznam je ukotvený vpravo od orientační krychle. Přetáhněte jej za záhlaví kamkoliv na plochu; může se zasunout pod krychli a lištu pohledu. Vrácení vedle krychle nebo dvojklik jej znovu ukotví. Poloha i sbalení se pamatují v tomto prohlížeči. Širší nebo užší seznam uděláte tažením za jeho pravý dolní roh, od 240 do 600 pixelů; i šířku si prohlížeč zapamatuje.
 
 ## Zadání polohy
 
@@ -96,9 +96,15 @@ Pro přiložení dvou dílů vyberte pohyblivý díl, spusťte {{ui:editor.tool.
 
 **Díry na jedné ose:** {{ui:mate.mode.concentric}} místo toho zarovná kulaté plochy: díru nad díru, čep do díry, šroub do jeho průchozí díry. Vyberte to dřív, než kliknete na plochy. Pak klikněte na kulatý vnitřek díry (nebo vnější stranu čepu) na dílu, který se pohne, a na kulatou plochu druhého dílu; celá kulatá plocha se pod ukazatelem rozsvítí. {{ui:mate.apply}} otočí díl nejkratší cestou, až jsou obě osy rovnoběžné, a posune ho napříč na druhou osu. Podél osy zůstane, kde byl, takže čep si drží výšku; zasuňte ho potom. Funguje to i u importovaných sítí, pokud je díra tvořena ploškami kolem jedné osy.
 
+**Bod na bod:** {{ui:mate.mode.point}} posune díl rovně, bez otočení, aby jeden z jeho bodů dosedl na bod jiného dílu. Na dílu, který se posouvá, klikněte na roh, místo na hraně, střed kulaté hrany nebo referenční bod, potom na bod, kam se má dostat; tečka ukazuje, který bod ukazatel právě zachytí. V části {{ui:mate.axes}} vypněte osy, podél kterých se posouvat nemá: jen s X a Y skončí bod přesně nad nebo pod druhým, jen se Z ve stejné výšce. Jedno Zpět to vrátí.
+
+**Otočení druhým a třetím párem:** po {{ui:mate.apply}} zůstane panel otevřený pro druhý pár bodů. První bod zůstane, kde dosedl, označený modře, a {{ui:mate.turn}} otočí díl kolem něj, dokud přímka skrz jeho druhý bod neprochází bodem, který jste vybrali na druhém dílu - dvě hrany tak leží na jedné přímce, i když díly nejsou stejně dlouhé. Třetí pár otočí díl kolem přímky skrz oba modré body, dokud jeho třetí bod nesměřuje k vybranému třetímu bodu, takže sedí i plochy - jako zarovnání podle tří bodů v jiných CAD programech. {{ui:mate.done}} to ukončí v kterémkoli kroku; každý krok je jedno Zpět.
+
 **Přesný úhel mezi dvěma plochami:** {{ui:editor.tool.mateFaces}} plochy zarovná rovnoběžně. Samostatný nástroj pro úhel mezi nimi není, ale můžete postupovat takto: nejprve plochy spojte přes {{ui:editor.tool.mateFaces}}, pak nastavte střed otáčení na společnou hranu pomocí {{ui:editor.tool.rotationPivot}} a kliknutí na hranu nebo roh. V kartě {{ui:inspector.rotation}} zadejte požadovaný úhel, například 15° či 30°. Díl se otočí kolem tohoto středu. Osy karty odpovídají osám podložky, takže postup funguje pro hranu ve směru X, Y nebo Z.
 
 {{ui:editor.tool.dropToWorkplane}} ([[D]]) jednoduše položí výběr na pracovní rovinu, {{ui:editor.tool.centerOnWorkplane}} jej vystředí.
+
+[[Alt]]+[[D]] položí více dílů jako jeden celek: všechny klesnou o stejnou vzdálenost, takže si zachovají výšky vůči sobě, kdežto [[D]] položí každý díl zvlášť.
 
 [[C]] výběr zvedne, jako Cruise v Tinkercadu: sleduje ukazatel myši a lehne si na plochu jiného tělesa, nad kterou jste, i na šikmou. Kliknutí ho tam položí, [[Esc]] ho nechá, kde byl. Jeho spodek pak leží na ploše, zarovnaný s okraji plochy jako nový tvar; vlastní natočení kolem svislé osy si ponechá. Více dílů putuje spolu a zachová si rozestupy. Nad prázdnou podložkou [[C]] postaví nakloněný díl zpět svisle na pracovní rovinu. Podržíte-li při přenášení [[Shift]], díl se místo toho zanoří do plochy: zůstane svislý, jeho vršek zarovnaný s plochou a těleso pod ní, takto se do tělesa dostane kuželové nebo válcové zahloubení; nový tvar z knihovny se se [[Shift]] umístí stejně. [[Shift]]+[[D]] položí výběr na pracovní rovinu vrškem místo spodkem. Bez klávesnice má nabídka dlouhého podržení pro totéž {{ui:contextMenu.carry}}.
 
@@ -127,15 +133,16 @@ Se zaškrtnutým {{ui:array.groupCopies}} sloučí {{ui:array.apply}} originál 
 
 ## Rastr otvorů na ploše
 
-{{ui:holePattern.title}} rozmístí otvory po rovinné ploše krytu, mřížky reproduktoru, košíku nebo ventilace. Nemusíte vytvářet a opakovat jednotlivý výřez. Vyberte právě jedno těleso a spusťte {{ui:holePattern.title}} v {{ui:editor.group.modify}} vedle opakování, pravým tlačítkem nebo vyhledáváním [[Ctrl]]+[[K]].
+{{ui:holePattern.title}} rozmístí otvory po rovinné ploše krytu, mřížky reproduktoru, košíku nebo ventilace. Nemusíte vytvářet a opakovat jednotlivý výřez. Vyberte právě jedno těleso a spusťte {{ui:holePattern.title}} v {{ui:editor.section.mirrorPattern}} vedle opakování, pravým tlačítkem nebo vyhledáváním [[Ctrl]]+[[K]].
 
 1. Klikněte na rovinnou plochu. Použije se celá souvislá rovinná oblast, nikoli jen trojúhelník pod ukazatelem. Funguje i kulatá stěna válce, trubky nebo díry, viz níže; jiná oblá plocha podporovaná není a nástroj vás vyzve k jinému výběru. U sloučeného celku nebo skupiny se plocha táhne přes díly, které se stýkají, jako u jednoho tělesa, u skupiny ale jen tehdy, když mezi díly není výřez. Díly se spojí krátce po otevření nástroje; do té doby se pod ukazatelem rozsvítí jen plocha jednoho dílu a kliknutí počká, až se díly spojí. U sloučeného celku nebo skupiny s textem se rozsvítí jen plocha jednoho dílu a díly spojí až kliknutí.
 2. V okně nastavte, jak otvory vypadají a jak leží:
    - **{{ui:holePattern.form}}:** {{ui:holePattern.form.round}}, {{ui:holePattern.form.square}}, {{ui:holePattern.form.rectangle}}, {{ui:holePattern.form.hexagon}} nebo {{ui:holePattern.form.slot}}.
    - **Rozměry:** {{ui:holePattern.size.diameter}} kruhu, {{ui:holePattern.size.side}} čtverce, {{ui:holePattern.size.width}} a {{ui:holePattern.size.height}} obdélníku či podlouhlého otvoru. Šestiúhelník používá {{ui:holePattern.size.corners}}.
    - **{{ui:holePattern.holeAngle}}:** jen pro obdélníkové a podlouhlé otvory: otočí každý otvor v ploše o tolik stupňů, proti směru hodinových ručiček při pohledu na plochu, od -90 do 90. Řady zůstávají rovné; pokud by se otočené otvory přiblížily příliš, i šikmo, layerling zvětší rozteč i rozteč řad, aby mezi nimi zůstala stěna.
+   - **{{ui:holePattern.holeTilt}}:** jen na rovných plochách, ne se zahloubením, kuželovým zahloubením ani vlastním tvarem: nakloní každý otvor skrz stěnu, od -60 do 60 stupňů. Na stojící stěně je při kladném sklonu vnitřní konec výš, takže déšť vyteče zpět ven. Velikost zůstává velikostí samotného otvoru, na ploše proto vypadá o něco delší; oba konce každého otvoru dodrží okraj. Výhled dovnitř sklon zakryje, jen když tloušťka stěny krát sin(úhel) je aspoň výška otvoru, na to tedy použijte nízké podlouhlé otvory nebo silnější stěnu.
    - **{{ui:holePattern.form.custom}}:** místo otvoru opakuje tvar ze scény: nýt, výstupek nebo žebro slzičkového plechu. Vyberete ho v {{ui:holePattern.customShape}}. Jeho šířka a hloubka určují místo, které zabere; stojí na ploše svisle, jak byl vytvořen, bez vlastního natočení. Těleso se postaví na plochu a spojí se s ní, díra se vyřízne tak hluboko, jak je vysoká. Samotný tvar zůstane na svém místě.
-   - **{{ui:holePattern.holeType}}:** jen u kulatých otvorů. {{ui:holePattern.holeType.plain}} je rovný otvor, {{ui:shape.counterbore}} přidá zahloubení pro hlavu šroubu s válcovou hlavou, {{ui:shape.countersink}} kužel 90° pro zápustný šroub. Velikost je pak {{ui:prop.screwHoleShaft}}; {{ui:prop.screwHoleHead}} a u válcového zahloubení {{ui:prop.screwHoleHeadDepth}} nastaví hlavu. {{ui:prop.screwHoleSize}} vše vyplní pro metrický šroub.
+   - **{{ui:holePattern.holeType}}:** jen u kulatých otvorů. {{ui:holePattern.holeType.plain}} je rovný otvor, {{ui:shape.counterbore}} přidá zahloubení pro hlavu šroubu s válcovou hlavou, {{ui:shape.countersink}} kužel 90° pro zápustný šroub. Velikost je pak {{ui:prop.screwHoleShaft}}; {{ui:prop.screwHoleHead}} a u válcového zahloubení {{ui:prop.screwHoleHeadDepth}} nastaví hlavu. {{ui:prop.screwHoleSize}} vše vyplní pro metrický šroub. U zahloubení nabízí také palcové velikosti #2 až #14, jejichž kužel má 82°.
    - **{{ui:holePattern.spacing}}:** vzdálenost středů sousedních otvorů. Je-li menší, než otvory dovolí, zvýší ji layerling na nejmenší možnou hodnotu, aby mezi otvory zůstala stěna. U obdélníků a podlouhlých otvorů se počítá podél řady, zleva doprava.
    - **{{ui:holePattern.rowSpacing}}:** jen u obdélníků a podlouhlých otvorů: vzdálenost od jedné řady k další. Úzké vysoké otvory tak stojí těsně vedle sebe, zatímco řady zůstanou od sebe. Otvor široký 2 mm a vysoký 14 mm potřebuje se stěnou 2 mm 4 mm podél řady a 16 mm od řady k řadě.
    - **{{ui:holePattern.wall}}:** stejný odstup vyjádřený jinak: stěna, která zůstane mezi dvěma sousedními otvory, tedy tloušťka stěny v tisku. Nastavíte-li ji, rozteč středů se přizpůsobí (u obdélníků a podlouhlých otvorů i rozteč řad), a naopak. U šestiúhelníků, obdélníků a podlouhlých otvorů měří layerling nejmenší vzdálenost mezi jejich hranami.
@@ -154,7 +161,7 @@ AI může provést totéž přes `layerling_perforate_face`, viz [Modelování s
 
 ## Vysunutí plochy ven nebo dovnitř
 
-Pro zesílení stěny, vyvýšenou plošku nebo vyříznutou kapsu pracuje nástroj {{ui:faceTool.title}} s jednou rovinnou plochou. Funguje i u importovaného STL, které nemá náčrt ke změně. Vyberte právě jedno těleso a spusťte {{ui:faceTool.title}} v {{ui:editor.group.modify}} vedle rastru otvorů, pravým tlačítkem nebo vyhledáváním [[Ctrl]]+[[K]].
+Pro zesílení stěny, vyvýšenou plošku nebo vyříznutou kapsu pracuje nástroj {{ui:faceTool.title}} s jednou rovinnou plochou. Funguje i u importovaného STL, které nemá náčrt ke změně. Vyberte právě jedno těleso a spusťte {{ui:faceTool.title}} v {{ui:editor.section.mirrorPattern}} vedle rastru otvorů, pravým tlačítkem nebo vyhledáváním [[Ctrl]]+[[K]].
 
 1. Klikněte na rovinnou plochu tělesa. Stejně jako u rastru otvorů se použije celá souvislá rovinná oblast; oblá plocha tu podporovaná není, ani kulatá stěna. U sloučeného celku nebo skupiny se plocha jako u rastru otvorů táhne přes díly, které se stýkají.
 2. V okně:

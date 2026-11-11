@@ -1,16 +1,858 @@
 [
   {
+    "version": "1.157.0",
+    "items": [
+      {
+        "title": {
+          "de": "Stufenbohrung mit Fase am Rand",
+          "en": "Counterbore with a chamfer at the rim",
+          "da": "Forsænkning med affasning ved kanten"
+        },
+        "body": {
+          "de": "Die Stufenbohrung hat jetzt das Feld „Fase am Rand“: Es setzt eine 45°-Fase an die Oberkante der Senkung, damit die Kante nicht scharf bleibt und die Schraube leichter hineinfindet. Die Fase liegt außerhalb des Kopfdurchmessers, der Schraubenkopf passt also weiter, und sie bleibt ein exakter Körper, auch im Langloch.",
+          "en": "The counterbore now has a Rim chamfer field: it puts a 45° chamfer on the top edge of the pocket, so the edge is not sharp and the screw finds its way in more easily. The chamfer lies outside the head diameter, so the screw head still fits, and it stays an exact body, in a slotted hole too.",
+          "da": "Forsænkningen har nu feltet „Affasning af kanten“: Det sætter en affasning på 45° på lommens øverste kant, så kanten ikke er skarp, og skruen lettere finder vej ind. Affasningen ligger uden for hoveddiameteren, så skruehovedet stadig passer, og den forbliver et eksakt legeme, også i et langhul."
+        }
+      },
+      {
+        "title": {
+          "de": "Aushöhlen: importierte flache Figuren mit leicht schrägen Seiten",
+          "en": "Hollow: imported flat figures with sides that lean a hair",
+          "da": "Hul: importerede flade figurer med en anelse skrå sider"
+        },
+        "body": {
+          "de": "Ein STL, dessen Ober- und Unterseite getrennt abgetastet wurden, hat Seiten aus vielen einzelnen, ganz leicht geneigten Dreiecken. Aushöhlen gab bei so einer Figur bei jeder Wandstärke auf. Jetzt höhlt es sie über ihren Umriss aus, wie einen geraden Körper, und die Außenseite bleibt, wie sie ist.",
+          "en": "An STL whose top and bottom were sampled apart has sides of many single triangles, each leaning a tiny bit. Hollow gave up on such a figure at any wall thickness. Now it hollows it through its outline, as it does an upright body, and the outside stays as it is.",
+          "da": "En STL, hvis top og bund er samplet hver for sig, har sider af mange enkelte trekanter, der hver hælder en lille smule. Hul gav op over for sådan en figur ved enhver vægtykkelse. Nu udhuler det den gennem dens omrids, som en lodret krop, og ydersiden forbliver, som den er."
+        }
+      },
+      {
+        "title": {
+          "de": "Werkzeuge mit CAD-Kern laufen auch bei langsamer Leitung",
+          "en": "CAD tools work on a slow connection too",
+          "da": "CAD-værktøjer virker også på en langsom forbindelse"
+        },
+        "body": {
+          "de": "Aushöhlen, Verrundung, Fase und die anderen Werkzeuge mit CAD-Kern laden den Kern (21 MB) beim ersten Gebrauch. Die Wartezeit zählte diesen Download mit: Bei langsamer Leitung lief sie ab, der Download begann von vorn, und jedes Werkzeug meldete eine Zeitüberschreitung. Jetzt lädt der Editor den Kern vorab, sobald er bereit ist, und die Wartezeit beginnt erst, wenn der Kern geladen ist.",
+          "en": "Hollow, Fillet, Chamfer and the other tools that use the CAD kernel load it (21 MB) the first time they need it. Their time limit counted that download: on a slow connection it ran out, the download began again, and every tool timed out. Now the editor loads the kernel ahead once it is ready, and the time limit starts only when the kernel is loaded.",
+          "da": "Hul, Rund, Fas og de andre værktøjer med CAD-kernen henter kernen (21 MB), første gang de skal bruge den. Ventetiden talte den download med: På en langsom forbindelse løb den ud, downloaden begyndte forfra, og hvert værktøj meldte timeout. Nu henter editoren kernen på forhånd, så snart den er klar, og ventetiden begynder først, når kernen er hentet."
+        }
+      },
+      {
+        "title": {
+          "de": "Auswahlfelder: ganze Wahl lesbar, Hinweis über die ganze Breite",
+          "en": "Drop-downs: the whole choice shows, the note runs full width",
+          "da": "Rullelister: hele valget kan ses, noten går i fuld bredde"
+        },
+        "body": {
+          "de": "Bei einer langen Beschriftung wie „Durch die Querschnitte“ im Loft war das Auswahlfeld so schmal, dass „Gerade“ abgeschnitten wurde, und der Hinweis darunter stand in einer schmalen Spalte. Jetzt bricht eine lange Beschriftung um und lässt dem Feld Platz, und Hinweise unter Auswahlfeldern nutzen die ganze Breite wie unter den Zahlenfeldern.",
+          "en": "With a long label like “Through the Sections” in the loft, the drop-down was so narrow that “Straight” was cut off, and the note below it ran in a narrow column. Now a long label wraps and leaves the field room, and notes under drop-downs use the whole width, as under the number fields.",
+          "da": "Med en lang etiket som „Gennem sektionerne“ i loftet var rullelisten så smal, at „Lige“ blev skåret af, og noten under den stod i en smal kolonne. Nu brydes en lang etiket om og giver feltet plads, og noter under rullelister bruger hele bredden ligesom under talfelterne."
+        }
+      },
+      {
+        "title": {
+          "de": "Hohlrad und Zahnstange auch schräg- und pfeilverzahnt",
+          "en": "Helical and herringbone ring gears and racks",
+          "da": "Skrå- og sildebensfortandede indvendige tandhjul og tandstænger"
+        },
+        "body": {
+          "de": "Hohlrad und Zahnstange haben jetzt einen Schrägungswinkel und die Wahl Pfeilverzahnung, damit sie mit einem Schräg- oder Pfeilzahnrad laufen. Sie bekommen denselben Winkel wie das Zahnrad, das mit ihnen läuft. Die Zahnstange behält ihre Länge, ihre schrägen Zähne werden an den Enden gerade abgeschnitten, und beide gehen als exakte Körper in den STEP-Export.",
+          "en": "Ring gears and racks now take a helix angle and herringbone teeth, so they run with a helical or herringbone gear. Give them the same angle as the gear that runs with them. The rack keeps its length, its slanted teeth cut off square at the ends, and both go to the STEP export as exact bodies.",
+          "da": "Indvendige tandhjul og tandstænger har nu en skråvinkel og valget sildebensfortanding, så de kan køre med et skrå- eller sildebenstandhjul. De får samme vinkel som det tandhjul, der kører med dem. Tandstangen beholder sin længde, dens skrå tænder skæres lige af i enderne, og begge går til STEP-eksporten som eksakte legemer."
+        }
+      }
+    ]
+  },
+  {
+    "version": "1.156.4",
+    "items": [
+      {
+        "title": {
+          "de": "Druckervorlage UltiMaker S3",
+          "en": "UltiMaker S3 printer preset",
+          "da": "Printerskabelon UltiMaker S3"
+        },
+        "body": {
+          "de": "Unter Arbeitsbereich-Einstellungen > Arbeitsebene > Drucker steht jetzt auch der UltiMaker S3. Die Arbeitsebene und die Prüfung, ob ein Teil auf den Drucker passt, nehmen dann seinen Bauraum von 230 × 190 × 200 mm.",
+          "en": "Workspace settings > Workplane > Printer now offers the UltiMaker S3. The workplane and the check whether a part fits the printer then use its build volume of 230 × 190 × 200 mm.",
+          "da": "Under Arbejdsområdeindstillinger > Arbejdsplan > Printer findes nu også UltiMaker S3. Arbejdsplanet og kontrollen af, om en del passer til printeren, bruger så dens byggevolumen på 230 × 190 × 200 mm."
+        }
+      },
+      {
+        "title": {
+          "de": "Editor-Profile für Kurse und Workshops",
+          "en": "Editor profiles for classes and workshops",
+          "da": "Editorprofiler til kurser og workshops"
+        },
+        "body": {
+          "de": "Wer layerling selbst betreibt, etwa für eine Schulklasse, kann ein Profil hinterlegen: Es wählt das einfache oder volle Layout und zeigt nur die Werkzeuge im Menüband, die der Kurs braucht. Die eigenen Menüband-Einstellungen gelten weiter für das, was das Profil lässt. Wie es geht, steht in der Doku.",
+          "en": "Whoever hosts layerling, for example for a class, can set a profile: it chooses the Simple or Full layout and shows only the ribbon tools the class needs. Each person's own Ribbon settings still apply to what the profile leaves. The docs say how.",
+          "da": "Den, der selv driver layerling, f.eks. til en skoleklasse, kan lægge en profil ind: Den vælger det enkle eller fulde layout og viser kun de værktøjer i båndet, som kurset har brug for. Ens egne båndindstillinger gælder stadig for det, profilen lader stå. Dokumentationen viser hvordan."
+        }
+      },
+      {
+        "title": {
+          "de": "Docker: ein viel kleineres Image",
+          "en": "Docker: a much smaller image",
+          "da": "Docker: et meget mindre image"
+        },
+        "body": {
+          "de": "Das Docker-Image ist von etwa 570 MB auf etwa 110 MB geschrumpft, für amd64 und arm64. Es startet jetzt mit „node apps/web/server.js“; wer den Container wie bisher startet, muss nichts ändern.",
+          "en": "The Docker image has shrunk from about 570 MB to about 110 MB, for amd64 and arm64. It now starts with “node apps/web/server.js”; if you start the container as before, nothing changes for you.",
+          "da": "Docker-imaget er skrumpet fra ca. 570 MB til ca. 110 MB, til amd64 og arm64. Det starter nu med „node apps/web/server.js“; starter du containeren som før, skal du ikke ændre noget."
+        }
+      },
+      {
+        "title": {
+          "de": "Teilen: Die durchscheinende Ebene passt zum Teil",
+          "en": "Split: the translucent plane fits the part",
+          "da": "Del: Det gennemsigtige plan passer til delen"
+        },
+        "body": {
+          "de": "Die Vorschau der Teilungsebene war immer ein Quadrat so groß wie die Diagonale des Teils. Bei einem flachen Teil ragte sie quer zu X oder Y weit über und unter die Platte und schien neben dem weißen Schnitt zu liegen. Jetzt deckt sie nur ab, was das Teil auf der Ebene einnimmt, mit etwas Rand.",
+          "en": "The split plane's preview was always a square as large as the part's diagonal. Across X or Y on a flat part it stood far above and below the plate and seemed to lie beside the white cut line. It now covers only what the part fills on the plane, with a small margin.",
+          "da": "Forhåndsvisningen af delingsplanet var altid et kvadrat så stort som delens diagonal. På tværs af X eller Y stod det ved en flad del langt over og under pladen og syntes at ligge ved siden af den hvide snitlinje. Nu dækker det kun det, delen fylder på planet, med lidt margen."
+        }
+      },
+      {
+        "title": {
+          "de": "Verrunden/Fasen: „Kantenbearbeitung zurücknehmen“ sieht nicht mehr abgeschaltet aus",
+          "en": "Fillet / Chamfer: “Undo an edge feature” no longer looks unavailable",
+          "da": "Afrunding/affasning: „Fortryd en kantfunktion“ ser ikke længere deaktiveret ud"
+        },
+        "body": {
+          "de": "Die Schrift in diesem Knopf war klein und grau wie bei einem gesperrten Knopf. Jetzt sieht er aus wie die anderen Knöpfe im Panel, und die Einträge der Liste darunter sind etwas größer.",
+          "en": "The label in this button was small and grey, like a disabled button. It now looks like the other buttons in the panel, and the entries of the list below are a little larger.",
+          "da": "Teksten i denne knap var lille og grå som på en deaktiveret knap. Nu ser den ud som de andre knapper i panelet, og posterne i listen nedenunder er lidt større."
+        }
+      },
+      {
+        "title": {
+          "de": "Orthografische Ansicht: Ein Teil folgt der Maus wieder überallhin",
+          "en": "Orthographic view: a part follows the mouse everywhere again",
+          "da": "Ortografisk visning: En del følger musen overalt igen"
+        },
+        "body": {
+          "de": "In der orthografischen Ansicht blieb ein gezogenes Teil manchmal an einer unsichtbaren Linie quer über den Bildschirm stehen, während die Maus weiterlief. Jetzt reichen Ziehen, Anklicken und das Maßband bis an alles, was die Ansicht zeigt.",
+          "en": "In the orthographic view a dragged part sometimes stopped at an invisible line across the screen while the mouse went on. Dragging, clicking and the tape measure now reach everything the view shows.",
+          "da": "I den ortografiske visning stoppede en trukket del nogle gange ved en usynlig linje på tværs af skærmen, mens musen fortsatte. Nu når træk, klik og målebåndet alt, hvad visningen viser."
+        }
+      }
+    ]
+  },
+  {
+    "version": "1.156.3",
+    "items": [
+      {
+        "title": {
+          "de": "Teilen: „Quer zu X/Y“ schneidet durch die Mitte des Teils",
+          "en": "Split: Across X/Y cut through the middle of the part",
+          "da": "Del: „På tværs af X/Y“ skærer gennem delens midte"
+        },
+        "body": {
+          "de": "Auf der Grundplatte legten „Quer zu X“ und „Quer zu Y“ die Teilungsebene durch die Mitte der Platte, bei einem Teil abseits davon also neben seine Mitte. Jetzt gehen sie durch die Mitte der Auswahl. Auf einer Arbeitsebene, die auf einer Fläche liegt, schneiden sie weiter durch deren Ursprung.",
+          "en": "On the base plate, Across X and Across Y put the split plane through the middle of the plate, so a part standing away from it was cut off-centre. They now go through the middle of the selection. On a workplane laid on a face they still cut through its origin.",
+          "da": "På grundpladen lagde „På tværs af X“ og „På tværs af Y“ delingsplanet gennem pladens midte, så en del, der stod væk fra den, blev skåret ved siden af sin midte. Nu går de gennem markeringens midte. På et arbejdsplan, der ligger på en flade, skærer de stadig gennem dets origo."
+        }
+      },
+      {
+        "title": {
+          "de": "Verrunden und Fasen bis an die Grenze",
+          "en": "Fillets and chamfers right up to the limit",
+          "da": "Afrunding og affasning helt op til grænsen"
+        },
+        "body": {
+          "de": "Eine Verrundung oder Fase genau so groß wie die Fläche daneben, etwa 2 mm an einem 2 mm hohen Zylinder, wurde abgelehnt, während 1,99 mm ging. Jetzt geht auch der volle Wert. Ist er wirklich zu groß, kommt die Meldung wie bisher.",
+          "en": "A fillet or chamfer exactly as large as the face beside it, say 2 mm on a cylinder 2 mm high, was refused while 1.99 mm went through. The full size works now. A size that is really too large is still refused as before.",
+          "da": "En afrunding eller affasning præcis så stor som fladen ved siden af, f.eks. 2 mm på en cylinder, der er 2 mm høj, blev afvist, mens 1,99 mm gik. Nu virker den fulde værdi også. Er den virkelig for stor, kommer meldingen som før."
+        }
+      },
+      {
+        "title": {
+          "de": "Die Startseite sagt, ob deine Entwürfe gesichert sind",
+          "en": "The start page says whether your designs are backed up",
+          "da": "Startsiden fortæller, om dine designs er sikkerhedskopieret"
+        },
+        "body": {
+          "de": "Statt jedes Mal derselben Warnung zeigt die Zeile über den Entwürfen dieses Browsers jetzt den Stand: noch nie gesichert, seit der letzten Sicherung mit „Alle sichern“ neu oder geändert (mit Datum und Anzahl) oder alles gesichert, dann als ruhige graue Zeile.",
+          "en": "Instead of the same warning every time, the line over this browser's designs now says where they stand: not backed up yet, added or changed since the last “Back up all” (with the date and how many), or all backed up, then as a calm grey line.",
+          "da": "I stedet for den samme advarsel hver gang viser linjen over denne browsers designs nu, hvordan de står: endnu ikke sikkerhedskopieret, nye eller ændrede siden sidste „Sikkerhedskopiér alle“ (med dato og antal), eller alle sikkerhedskopieret, så som en rolig grå linje."
+        }
+      },
+      {
+        "title": {
+          "de": "Menüband: „Alle Gruppen offen halten“ bricht sauber um",
+          "en": "Ribbon: “Keep all groups open” wraps cleanly",
+          "da": "Båndet: „Hold alle grupper åbne“ ombrydes pænt"
+        },
+        "body": {
+          "de": "Mit gesetzter Stecknadel wurden die Gruppen bei manchen Fensterbreiten zusammengedrückt, etwa mit der Tab-Leiste links in Safari: Die Knöpfe von „Sichtbarkeit“ ragten in „Formen“, und der Name war abgeschnitten. Jetzt rücken die Gruppen in eine weitere Zeile, sobald sie nicht passen.",
+          "en": "With the pin set, the groups were squeezed at some window widths, for example with Safari's tab bar on the left: Visibility's buttons spilled over Shapes and its name was cut off. The groups now move onto a further row whenever they do not fit.",
+          "da": "Med nålen sat blev grupperne klemt sammen ved nogle vinduesbredder, f.eks. med Safaris fanelinje til venstre: knapperne i „Synlighed“ stak ind i „Former“, og navnet blev skåret af. Nu rykker grupperne ned på en ekstra linje, så snart de ikke passer."
+        }
+      },
+      {
+        "title": {
+          "de": "Startskript findet ein frisch installiertes Node.js",
+          "en": "The start script finds a freshly installed Node.js",
+          "da": "Startscriptet finder et nyinstalleret Node.js"
+        },
+        "body": {
+          "de": "„Start layerling“ brach mit „npm wurde nicht gefunden“ ab, wenn Node.js gerade erst installiert war und das Fenster schon vorher offen stand. Es liest den Suchpfad jetzt neu ein, wie ein neues Fenster, und sagt deutlich, wenn Node.js wirklich fehlt.",
+          "en": "Start layerling stopped at “npm was not found” when Node.js had only just been installed and the window was open from before. It now reads the search path afresh, as a new window would, and says clearly when Node.js is really missing.",
+          "da": "„Start layerling“ stoppede ved „npm blev ikke fundet“, når Node.js lige var installeret, og vinduet allerede var åbent fra før. Det læser nu søgestien på ny, som et nyt vindue ville, og siger tydeligt, når Node.js virkelig mangler."
+        }
+      }
+    ]
+  },
+  {
+    "version": "1.156.2",
+    "items": [
+      {
+        "title": {
+          "de": "Strecken: ein Teil an einer Stelle länger machen",
+          "en": "Stretch: make a part longer in one place",
+          "da": "Stræk: gør en del længere ét sted"
+        },
+        "body": {
+          "de": "Im Teilen-Werkzeug gibt es neben „In zwei teilen“ jetzt „Strecken“: Ebene setzen, Länge eintippen, und der Körper wird genau dort länger, der Schnitt an der Ebene füllt die Lücke. So wächst ein heruntergeladenes Gehäuse durch seine geraden Wände, und Fächer und Rundungen bleiben, wie sie waren. Ein Minuswert macht es kürzer.",
+          "en": "The Split tool now has Stretch beside Split in two: place the plane, type a length, and the body gets longer right there, the cut at the plane filling the gap. A downloaded case grows through its straight walls while compartments and rounded corners stay as they were. A minus value makes it shorter.",
+          "da": "Del-værktøjet har nu Stræk ved siden af Del i to: placer planet, skriv en længde, og formen bliver længere netop dér, mens snittet ved planet fylder hullet. En hentet kasse vokser gennem sine lige vægge, mens rum og afrundinger forbliver, som de var. En negativ værdi gør den kortere."
+        }
+      },
+      {
+        "title": {
+          "de": "Drehskizze: keine Geisterform beim Bearbeiten",
+          "en": "Revolve sketch: no ghost shape when editing",
+          "da": "Drejeskitse: ingen spøgelsesform ved redigering"
+        },
+        "body": {
+          "de": "Wurde ein Drehkörper, der über der Platte beginnt, wieder bearbeitet, lag hinter der Seitenansicht eine gefüllte Form: der waagrechte Schnitt durch die Teile daneben, wie von oben gesehen. Er bleibt jetzt weg; der Körper selbst war nie betroffen.",
+          "en": "Editing a revolved body that starts above the plate showed a filled shape behind the side view: the level cut through the parts beside it, as seen from above. It stays away now; the body itself was never affected.",
+          "da": "Når et drejet legeme, der begynder over pladen, blev redigeret igen, lå der en udfyldt form bag sidevisningen: det vandrette snit gennem delene ved siden af, set ovenfra. Den bliver nu væk; selve legemet var aldrig berørt."
+        }
+      }
+    ]
+  },
+  {
+    "version": "1.156.1",
+    "items": [
+      {
+        "title": {
+          "de": "Fokusmodus: Ansicht bis ganz unten",
+          "en": "Focus mode: the view reaches the bottom",
+          "da": "Fokustilstand: visningen når helt ned"
+        },
+        "body": {
+          "de": "Im Fokusmodus reicht die 3D-Ansicht jetzt bis an den unteren Fensterrand, auch nach F11; das Raster liegt wieder in der Ansicht statt in einem eigenen Streifen. Die Symbole der kleinen Leiste sind gleich groß.",
+          "en": "In focus mode the 3D view now reaches the bottom edge of the window, also after F11; the snap grid lies in the view again instead of in a band of its own. The icons of the small bar are all one size.",
+          "da": "I fokustilstand når 3D-visningen nu helt ned til vinduets nederste kant, også efter F11; gitteret ligger igen i visningen i stedet for i sin egen stribe. Ikonerne i den lille bjælke har alle samme størrelse."
+        }
+      }
+    ]
+  },
+  {
+    "version": "1.156.0",
+    "items": [
+      {
+        "title": {
+          "de": "Übergang: Wandstärke oben",
+          "en": "Transition: wall at the top",
+          "da": "Overgang: vægtykkelse foroven"
+        },
+        "body": {
+          "de": "Ein Übergang mit Wand hat unter Eigenschaften jetzt auch „Wandstärke oben“: eine Düse, unten am Rechteck 3 mm dick, die oben am Rund mit 1 mm endet. Dazwischen ändert sich die Wand gleichmäßig; ohne eigenen Wert ist sie oben so dick wie unten.",
+          "en": "A transition with a wall now also has Wall Thickness at the Top under Properties: a nozzle 3 mm thick on the rectangle at the bottom that ends 1 mm thin on the round top. In between the wall changes evenly; without a value of its own the top is as thick as the bottom.",
+          "da": "En overgang med væg har nu også Vægtykkelse foroven under Egenskaber: en dyse, 3 mm tyk ved rektanglet forneden, som ender 1 mm tynd ved den runde top. Imellem ændrer væggen sig jævnt; uden egen værdi er toppen lige så tyk som bunden."
+        }
+      },
+      {
+        "title": {
+          "de": "Löcher durchsichtiger einstellen",
+          "en": "Set how see-through holes are",
+          "da": "Indstil, hvor gennemsigtige huller er"
+        },
+        "body": {
+          "de": "Unter Einstellungen > Darstellung stellt „Deckkraft der Löcher“ ein, wie dicht Löcher gezeichnet werden. Weniger zeigt besser, wo ein Loch einen Körper berührt; zusammen mit „Löcher deutlicher zeigen“ werden Löcher dunkel und gut durchsichtig.",
+          "en": "Hole opacity in Settings > Appearance sets how solid holes are drawn. Lower shows better where a hole touches a body; together with Show holes more clearly, holes become dark and well see-through.",
+          "da": "Hullers dækkevne under Indstillinger > Udseende bestemmer, hvor tæt huller tegnes. Lavere viser bedre, hvor et hul rører et legeme; sammen med Vis huller tydeligere bliver huller mørke og godt gennemsigtige."
+        }
+      },
+      {
+        "title": {
+          "de": "Was ist neu? auch im Editor",
+          "en": "What's new, also in the editor",
+          "da": "Hvad er nyt? også i editoren"
+        },
+        "body": {
+          "de": "Der Knopf mit den Funkeln neben der Kurzanleitung oben rechts (oder die Befehlssuche) öffnet diese Liste auch im Editor. Sie bleibt neben dem Entwurf offen, während du das Neue ausprobierst.",
+          "en": "The button with the sparkles beside the quick guide at the top right (or the command search) opens this list in the editor too. It stays open beside the design while you try out what is new.",
+          "da": "Knappen med gnisterne ved siden af hurtigguiden øverst til højre (eller kommandosøgningen) åbner også denne liste i editoren. Den bliver åben ved siden af designet, mens du prøver det nye."
+        }
+      },
+      {
+        "title": {
+          "de": "Klarere Hinweise bei großen und offenen Netzen",
+          "en": "Clearer hints for dense and open meshes",
+          "da": "Tydeligere hints ved tætte og åbne mesh"
+        },
+        "body": {
+          "de": "Versetzen, Aushöhlen und die Kantenbearbeitung sagen jetzt, was weiterhilft: Hat ein Netz zu viele Dreiecke, verweisen sie auf „Netz vereinfachen“ im Rechtsklickmenü. Ist es offen, raten sie, das Vereinfachen rückgängig zu machen oder ein importiertes Netz im Slicer zu reparieren, statt auf ein Reparaturwerkzeug zu verweisen, das es nicht gibt.",
+          "en": "Offset, Hollow and edge treatment now say what helps: when a mesh has too many triangles, they point to Simplify mesh in the right-click menu. When it is open, they suggest undoing the simplify step or repairing an imported mesh in your slicer, instead of a repair tool that does not exist.",
+          "da": "Forskyd legeme, Hul form og kantbehandling siger nu, hvad der hjælper: har et mesh for mange trekanter, henviser de til Forenkl mesh i højrekliksmenuen. Er det åbent, foreslår de at fortryde forenklingen eller reparere et importeret mesh i din slicer i stedet for at henvise til et reparationsværktøj, der ikke findes."
+        }
+      },
+      {
+        "title": {
+          "de": "Fokusmodus: mehr Platz auf kleinen Bildschirmen",
+          "en": "Focus mode: more room on small screens",
+          "da": "Fokustilstand: mere plads på små skærme"
+        },
+        "body": {
+          "de": "Der Knopf mit den zwei Pfeilen oben rechts (oder Strg+Umschalt+F) blendet Titelzeile und Fußzeile aus, und Menüband und Ansicht bekommen ihren Platz. Eine kleine verschiebbare Leiste unter dem Menüband behält Startseite, 3D-Editor und Skizze, Befehlssuche und Einstellungen. Im Browser-Vollbild (F11) kommt der Fokusmodus von selbst.",
+          "en": "The button with the two arrows at the top right (or Ctrl+Shift+F) hides the title row and the footer, and the ribbon and the view get their room. A small movable bar below the ribbon keeps Home, 3D editor and Sketch, the command search and the settings. In the browser's full screen (F11) focus mode comes by itself.",
+          "da": "Knappen med de to pile øverst til højre (eller Ctrl+Shift+F) skjuler titellinjen og sidefoden, så båndet og visningen får pladsen. En lille bjælke, der kan flyttes, under båndet beholder Hjem, 3D-editor og Skitse, kommandosøgningen og indstillingerne. I browserens fuldskærm (F11) kommer fokustilstanden af sig selv."
+        }
+      },
+      {
+        "title": {
+          "de": "Ansicht schneller verschieben",
+          "en": "Shift the view faster",
+          "da": "Flyt visningen hurtigere"
+        },
+        "body": {
+          "de": "Die Ansicht folgt beim Verschieben jetzt der Maus: der gegriffene Punkt bleibt unter dem Mauszeiger, vorher lief sie langsamer mit. Unter Einstellungen > Darstellung stellt „Verschiebetempo“ das langsamer oder schneller ein. Wer keinen Nachlauf möchte, schaltet dort „Kamera läuft nach“ aus; das gilt fürs Drehen und Verschieben.",
+          "en": "Shifting the view now keeps up with the mouse: the point you grab stays under the cursor, where it used to lag behind. Pan speed in Settings > Appearance makes it slower or faster. To have the view stop at once when you let go, turn off Camera keeps turning there; it covers turning and shifting.",
+          "da": "Når du flytter visningen, følger den nu musen: det punkt, du griber, bliver under markøren, hvor den før haltede bagefter. Flyttehastighed under Indstillinger > Udseende gør det langsommere eller hurtigere. Vil du have, at visningen stopper med det samme, når du slipper, så slå Kameraet bliver ved med at dreje fra der; det gælder både drejning og flytning."
+        }
+      },
+      {
+        "title": {
+          "de": "Menüband: vier Gruppen statt Anpassen, Einklappen nach Wahl",
+          "en": "Ribbon: four groups instead of Modify, folding your way",
+          "da": "Bånd: fire grupper i stedet for Tilpas, sammenfoldning efter valg"
+        },
+        "body": {
+          "de": "Spiegeln & Muster, Teilen & Formen, Kanten & Wände und Oberfläche sind jetzt eigene Gruppen: Jede lässt sich verschieben, einklappen und herausnehmen. Unter Einstellungen > Menüband legt „Einklappen“ für jede Gruppe fest, ob sie bei Platzmangel einklappt, immer eingeklappt bleibt oder als letzte einklappt.",
+          "en": "Mirror & pattern, Split & shape, Edges & walls and Surface are groups of their own now: each moves, folds and can be taken out by itself. In Settings > Ribbon, Folding sets for each group whether it folds when there is no room, stays folded or folds last.",
+          "da": "Spejl og mønster, Del og form, Kanter og vægge og Overflade er nu selvstændige grupper: hver kan flyttes, foldes sammen og tages ud for sig. Under Indstillinger > Bånd bestemmer Sammenfoldning for hver gruppe, om den foldes sammen ved pladsmangel, altid er foldet sammen eller foldes sammen sidst."
+        }
+      }
+    ]
+  },
+  {
+    "version": "1.155.0",
+    "items": [
+      {
+        "title": {
+          "de": "Zollgrößen für Senkbohrungen",
+          "en": "Inch sizes for countersinks",
+          "da": "Tommestørrelser til forsænkninger"
+        },
+        "body": {
+          "de": "Unter „Schraubengröße“ bietet die Senkbohrung jetzt auch #2 bis #14 nach ASME B18.6.1: Kegel 82°, Kopf und Schaft passend zur Schraube. Das sind auch die australischen Gauges (eine 6-gauge ist eine #6). Doppelsenkung und Lochmuster kennen sie ebenfalls.",
+          "en": "Under Screw size, the countersink now also offers #2 to #14 to ASME B18.6.1: a cone of 82°, head and shaft to fit the screw. These are the Australian gauges too (a 6-gauge is a #6). The double countersink and the hole pattern have them as well.",
+          "da": "Under Skruestørrelse tilbyder forsænkningen nu også #2 til #14 efter ASME B18.6.1: kegle på 82°, hoved og skaft, der passer til skruen. Det er også de australske gauges (en 6-gauge er en #6). Dobbelt forsænkning og hulmønsteret har dem også."
+        }
+      },
+      {
+        "title": {
+          "de": "Entwürfe immer als Download speichern",
+          "en": "Always save designs as a download",
+          "da": "Gem altid designs som download"
+        },
+        "body": {
+          "de": "Unter Einstellungen > Darstellung gibt es den Schalter „Entwürfe als Download speichern“: Export > LYL, Strg+S und Speichern unter legen den Entwurf dann ohne Speicherfenster in den Download-Ordner. Das hilft auf PCs, auf denen das Speicherfenster von Chrome und Edge keine Datei zurückgibt. Ein STL-Export, der dort scheitert, bietet jetzt ebenfalls „Stattdessen herunterladen“ an.",
+          "en": "Settings > Appearance has a switch, Save designs as a download: Export > LYL, Ctrl+S and Save as then put the design into the Downloads folder without the save dialog. That helps on PCs where the save dialog of Chrome and Edge hands back no file. An STL export that fails there now offers Download instead as well.",
+          "da": "Under Indstillinger > Udseende er der en kontakt, Gem designs som download: Eksport > LYL, Ctrl+S og Gem som lægger så designet i mappen Overførsler uden gem-vinduet. Det hjælper på pc'er, hvor gem-vinduet i Chrome og Edge ikke giver en fil tilbage. En STL-eksport, der fejler der, tilbyder nu også Download i stedet."
+        }
+      },
+      {
+        "title": {
+          "de": "Senkbohrung tiefer versenkt",
+          "en": "Recessed countersinks",
+          "da": "Nedsænkede undersænkninger"
+        },
+        "body": {
+          "de": "Senkbohrung und Doppelsenkung haben ein Feld „Versenkung“: Über dem Kegel sitzt dann eine gerade Senkung in Kopfbreite, sodass der Schraubenkopf so viele Millimeter unter der Oberfläche liegt statt bündig.",
+          "en": "The countersink and the double countersink have a field, Recess: a straight pocket as wide as the head then sits above the cone, so the screw head ends that many millimetres below the face instead of flush.",
+          "da": "Undersænkning og dobbelt forsænkning har et felt, Nedsænkning: Over keglen sidder der så en lige lomme i hovedets bredde, så skruehovedet ligger så mange millimeter under overfladen i stedet for at flugte."
+        }
+      },
+      {
+        "title": {
+          "de": "Das Menüband passt wieder in die Breite",
+          "en": "The ribbon fits the window again",
+          "da": "Båndet passer i bredden igen"
+        },
+        "body": {
+          "de": "Bei Fensterbreiten zwischen etwa 1900 und 2050 Pixeln (und ebenso zwischen 2215 und 2375) war das Menüband breiter als das Fenster: Gruppen wie „Fläche“ oder „Spiegeln und Muster“ rutschten unter ihre Nachbarn, und ihre Symbole waren kaum zu sehen. Die Stufen, in denen die Symbole kleiner werden, sind neu gemessen und greifen jetzt rechtzeitig.",
+          "en": "At window widths between about 1900 and 2050 pixels (and likewise between 2215 and 2375) the ribbon was wider than the window: groups such as Surface or Mirror & Pattern slipped under their neighbours, and their icons were hardly visible. The steps at which the icons shrink are measured anew and now apply in time.",
+          "da": "Ved vinduesbredder mellem omkring 1900 og 2050 pixel (og tilsvarende mellem 2215 og 2375) var båndet bredere end vinduet: grupper som Overflade eller Spejl og mønster gled ind under deres naboer, og ikonerne var næsten ikke at se. De trin, hvor ikonerne bliver mindre, er målt igen og slår nu til i tide."
+        }
+      },
+      {
+        "title": {
+          "de": "Eigene Formen: Suche und Sortierung",
+          "en": "Custom shapes: search and order",
+          "da": "Egne former: søgning og sortering"
+        },
+        "body": {
+          "de": "Die Suche in der Formenbibliothek findet jetzt auch deine eigenen Formen nach ihrem Namen, auch die in Ordnern. Sie erscheinen über den Treffern der Bibliothek. Dazu gibt es neben dem Ordnerknopf einen Knopf, der die eigenen Formen nach Namen (A bis Z) statt nach dem Tag des Speicherns ordnet; der Browser merkt sich die Wahl.",
+          "en": "The search in the shape library now finds your custom shapes by their name too, also those inside folders. They show above the library's own matches. There is also a button beside the folder button that puts the custom shapes in order by name (A to Z) instead of by the day they were saved; the browser remembers the choice.",
+          "da": "Søgningen i formbiblioteket finder nu også dine egne former på deres navn, også dem i mapper. De står over bibliotekets egne træffere. Ved siden af mappeknappen er der desuden en knap, der sorterer de egne former efter navn (A til Å) i stedet for efter den dag, de blev gemt; browseren husker valget."
+        }
+      }
+    ]
+  },
+  {
+    "version": "1.154.1",
+    "items": [
+      {
+        "title": {
+          "de": "Gruppen und Knöpfe im Menüband verschieben",
+          "en": "Move the ribbon's groups and buttons",
+          "da": "Flyt båndets grupper og knapper"
+        },
+        "body": {
+          "de": "In den Einstellungen gibt es einen eigenen Reiter „Menüband“: Dort stehen die Größe der Bedienelemente und die Knöpfe, die du herausnehmen kannst. Neben jeder Gruppe und jedem Knopf sitzen zwei Pfeile. Damit rückt „Anordnen“ etwa gleich hinter „Kombinieren“, und ein Knopf wandert an den Anfang seiner Gruppe. Nur die Gruppe Formen behält ihren Platz.",
+          "en": "The settings have a tab of their own, Ribbon: it holds the control size and the buttons you can take out. Beside every group and every button are two arrows. With them Arrange can stand right after Combine, say, and a button can move to the front of its group. Only the Shapes group keeps its place.",
+          "da": "Indstillingerne har en fane for sig, Bånd: Den rummer størrelsen på betjeningselementerne og de knapper, du kan tage ud. Ved hver gruppe og hver knap sidder to pile. Med dem kan Ordn for eksempel stå lige efter Kombiner, og en knap kan flytte forrest i sin gruppe. Kun gruppen Former beholder sin plads."
+        }
+      },
+      {
+        "title": {
+          "de": "Angeheftetes Formen-Fenster bleibt unter dem Menüband",
+          "en": "The pinned Shapes panel stays below the toolbar",
+          "da": "Det fastgjorte formvindue bliver under båndet"
+        },
+        "body": {
+          "de": "Ein verschobenes oder größer gezogenes Formen-Fenster rutschte nach dem Anheften mit Titelzeile und Suche unter das Menüband. Jetzt öffnet es dort, wo du es gelassen hast, und folgt dem Menüband, wenn es höher oder niedriger wird.",
+          "en": "A Shapes panel that had been moved or pulled larger slipped under the toolbar with its title bar and search once pinned. Now it opens where you left it, and follows the toolbar when it grows or shrinks.",
+          "da": "Et formvindue, der var flyttet eller trukket større, gled ind under båndet med titellinje og søgning, når det blev fastgjort. Nu åbner det, hvor du lod det være, og følger båndet, når det bliver højere eller lavere."
+        }
+      },
+      {
+        "title": {
+          "de": "Schraubenlöcher als Langloch",
+          "en": "Slotted screw holes",
+          "da": "Skruehuller som langhul"
+        },
+        "body": {
+          "de": "Stufenbohrung, Senkbohrung und Doppelsenkung haben einen Schalter „Langloch“: Kopf und Schaft laufen dann entlang eines Langlochs, sodass sich das Teil vor dem Festziehen der Schraube noch ausrichten lässt. Die Länge stellst du darunter ein.",
+          "en": "The counterbore, the countersink and the double countersink have a switch, Slotted: the head and the shaft then run along a slot, so the part can still be lined up before the screw is tightened. Set its length just below.",
+          "da": "Forsænkning, undersænkning og dobbelt forsænkning har en kontakt, Langhul: Hoved og skaft løber så langs et langhul, så delen stadig kan rettes ind, før skruen spændes. Længden indstiller du lige under."
+        }
+      }
+    ]
+  },
+  {
+    "version": "1.154.0",
+    "items": [
+      {
+        "title": {
+          "de": "Schraubkappe mit runder oder gefaster Oberkante",
+          "en": "Screw caps with a rounded or chamfered top edge",
+          "da": "Skruehætter med afrundet eller affaset øverste kant"
+        },
+        "body": {
+          "de": "Im Deckelfenster rundet oder fast „Obere Kante“ den oberen Rand einer Schraub- oder Bajonettkappe, gleich beim Erzeugen. Danach ginge es nicht mehr: Kappe und Gewinde sind ein Netz mit viel zu vielen Dreiecken für die Kantenbearbeitung.",
+          "en": "In the lid window, Top edge rounds or chamfers the top rim of a screw or bayonet cap as it is made. Afterwards it could not be done: cap and thread are one mesh with far too many triangles for the edge tool.",
+          "da": "I lågvinduet afrunder eller affaser Øverste kant den øverste kant på en skrue- eller bajonethætte, når den laves. Bagefter kan det ikke lade sig gøre: hætte og gevind er ét mesh med alt for mange trekanter til kantværktøjet."
+        }
+      },
+      {
+        "title": {
+          "de": "Glattere Drehkörper",
+          "en": "Smoother revolved bodies",
+          "da": "Glattere drejede legemer"
+        },
+        "body": {
+          "de": "Ein gedrehter Skizzenkörper hat in den Eigenschaften „Glätte“: Fein und Sehr fein teilen die runden Flächen in kleinere Facetten, damit sie an einem großen Topf im Druck nicht mehr zu sehen sind.",
+          "en": "A revolved sketch body has Smoothness in its properties: Fine and Extra fine cut the round faces into smaller facets, so they no longer show on the print of a large pot.",
+          "da": "Et drejet skitselegeme har Glathed i egenskaberne: Fin og Meget fin deler de runde flader i mindre facetter, så de ikke længere ses på printet af en stor krukke."
+        }
+      },
+      {
+        "title": {
+          "de": "Ungenutzte Knöpfe aus dem Menüband nehmen",
+          "en": "Take unused buttons out of the ribbon",
+          "da": "Fjern ubrugte knapper fra båndet"
+        },
+        "body": {
+          "de": "Unter Einstellungen, Darstellung, „Knöpfe im Menüband“ nimmst du einzelne Knöpfe oder ganze Gruppen aus dem Menüband. Die Befehlssuche (Strg+K) und deine eigenen Tasten rufen sie weiter auf, und die Reihenfolge bleibt gleich.",
+          "en": "Under Settings, Appearance, Buttons in the ribbon takes single buttons or whole groups out of the ribbon. The command search (Ctrl+K) and your own keys still run them, and the order stays the same.",
+          "da": "Under Indstillinger, Udseende, Knapper i båndet fjerner du enkelte knapper eller hele grupper fra båndet. Kommandosøgningen (Ctrl+K) og dine egne taster kører dem stadig, og rækkefølgen forbliver den samme."
+        }
+      },
+      {
+        "title": {
+          "de": "Importe landen auf der aktiven Platte",
+          "en": "Imports land on the plate you are on",
+          "da": "Import lander på den aktive plade"
+        },
+        "body": {
+          "de": "Mit mehreren Druckplatten kam eine importierte STL-, OBJ-, 3MF-, STEP-, SVG- oder DXF-Datei immer auf die erste. Jetzt landet sie auf der Platte, auf der du gerade bist, wie neue Formen auch.",
+          "en": "With several build plates, an imported STL, OBJ, 3MF, STEP, SVG or DXF file always came in on the first one. Now it lands on the plate you are on, as new shapes do.",
+          "da": "Med flere byggeplader kom en importeret STL-, OBJ-, 3MF-, STEP-, SVG- eller DXF-fil altid ind på den første. Nu lander den på den plade, du er på, ligesom nye former."
+        }
+      },
+      {
+        "title": {
+          "de": "Versatz und Aushöhlen bei verrundeten Kanten",
+          "en": "Offset and Hollow with rounded edges",
+          "da": "Forskydning og Hul med afrundede kanter"
+        },
+        "body": {
+          "de": "Ein Körper mit verrundeten Kanten, mit Versatz geschrumpft, ergab manchmal einen offenen, kaputten Körper. Jetzt kommt ein geschlossener Körper heraus, und ein so verrundetes Gehäuse lässt sich auch in einem Schritt aushöhlen.",
+          "en": "A body with rounded edges, shrunk with Offset, sometimes came out open and broken. Now it comes out closed, and an enclosure rounded like that can also be hollowed in one step.",
+          "da": "Et legeme med afrundede kanter, der blev skrumpet med Forskydning, blev nogle gange åbent og ødelagt. Nu bliver det lukket, og et kabinet afrundet på den måde kan også udhules i ét trin."
+        }
+      },
+      {
+        "title": {
+          "de": "Importierte STL-Teile öffnen wieder richtig",
+          "en": "Imported STL parts open right again",
+          "da": "Importerede STL-dele åbner rigtigt igen"
+        },
+        "body": {
+          "de": "Seit 1.151.0 öffneten manche früher importierten STL-Teile um 90 Grad gedreht und verzerrt. Ein Entwurf liest sie jetzt wieder so, wie sie importiert wurden, auch wenn er inzwischen so gespeichert wurde.",
+          "en": "Since 1.151.0 some STL parts imported earlier opened turned by 90 degrees and stretched. A design now reads them the way they were imported, also when it was saved again in that state.",
+          "da": "Siden 1.151.0 åbnede nogle tidligere importerede STL-dele drejet 90 grader og strakt. Et design læser dem nu, som de blev importeret, også når det siden er gemt sådan."
+        }
+      }
+    ]
+  },
+  {
+    "version": "1.153.0",
+    "items": [
+      {
+        "title": {
+          "de": "Löcher schräg durch die Wand",
+          "en": "Holes that slope through the wall",
+          "da": "Huller skråt gennem væggen"
+        },
+        "body": {
+          "de": "Das Lochmuster hat „Neigung durch die Wand“: Auf einer ebenen Fläche kippt es alle Löcher um bis zu 60°. An einer stehenden Wand liegt das innere Ende bei positiver Neigung höher, so läuft Regen wieder hinaus.",
+          "en": "The hole pattern has Slope through the wall: on a flat face it tips every hole by up to 60°. On a standing wall a positive slope puts the inner end higher, so rain runs back out.",
+          "da": "Hulmønsteret har Hældning gennem væggen: på en plan flade vipper det alle huller op til 60°. På en stående væg ligger den indre ende højere ved positiv hældning, så regn løber ud igen."
+        }
+      },
+      {
+        "title": {
+          "de": "Eigene Formen in der Befehlssuche",
+          "en": "Your custom shapes in the command search",
+          "da": "Egne former i kommandosøgningen"
+        },
+        "body": {
+          "de": "Strg+K findet jetzt auch die Formen, die du selbst unter „Eigene Formen“ gespeichert hast. Tippe einen Teil des Namens, und Enter oder ein Klick setzt die Form ein wie im Formen-Menü.",
+          "en": "Ctrl+K now also finds the shapes you saved yourself under Custom shapes. Type part of the name, and Enter or a click puts the shape in, as the shapes menu does.",
+          "da": "Ctrl+K finder nu også de former, du selv har gemt under Egne former. Skriv en del af navnet, og Enter eller et klik sætter formen ind som i formmenuen."
+        }
+      },
+      {
+        "title": {
+          "de": "Abbrechbarer Sockel für stehende Stifte",
+          "en": "Breakaway base for standing pins",
+          "da": "Afbrækkelig sokkel til stående stifter"
+        },
+        "body": {
+          "de": "Auf Druckern mit beweglichem Bett wackeln hohe, dünne Stifte. Der Stift der Passprobe (Einstellungen, „Spiel deines Druckers“) und die losen Dübel beim Teilen können jetzt auf einer dünnen Platte stehen, die nach dem Druck abbricht.",
+          "en": "On a printer whose bed moves, tall thin pins wobble. The fit test's pin (settings, printer play) and the loose dowels of the Split tool can now stand on a thin plate that snaps off once printed.",
+          "da": "På printere med bevægelig plade vakler høje, tynde stifter. Pasprøvens stift (indstillinger, printerens spillerum) og de løse dyvler fra Del-værktøjet kan nu stå på en tynd plade, der brækkes af efter print."
+        }
+      },
+      {
+        "title": {
+          "de": "Alt+D legt die Auswahl als Ganzes ab",
+          "en": "Alt+D drops the selection as one piece",
+          "da": "Alt+D lægger markeringen ned samlet"
+        },
+        "body": {
+          "de": "D legt jedes gewählte Teil einzeln auf die Ebene. Alt+D senkt alle zusammen ab, bis das unterste aufliegt, so behalten gestapelte Teile ihre Höhen zueinander.",
+          "en": "D drops every selected part on its own. Alt+D lowers them all together until the lowest one rests on the workplane, so stacked parts keep their heights to each other.",
+          "da": "D lægger hver valgt del ned for sig. Alt+D sænker dem alle sammen, til den nederste ligger på arbejdsplanet, så stablede dele beholder deres højder i forhold til hinanden."
+        }
+      },
+      {
+        "title": {
+          "de": "Deckel mit Normgewinde: passt der Hals?",
+          "en": "Lid with a standard thread: does the neck fit?",
+          "da": "Låg med standardgevind: passer halsen?"
+        },
+        "body": {
+          "de": "Das Deckel-Fenster misst jetzt vorher, wie breit der Körper oben ist, und sagt, ob er das Gewinde des Halses bekommt. Einen Zylinder, ein Rohr oder einen Ring passt der Knopf „Körper an den Hals anpassen“ gleich an.",
+          "en": "The Lid panel now measures beforehand how wide the body's top is and says whether it gets the neck's thread. A cylinder, tube or ring is resized to fit with the button Fit the body to the neck.",
+          "da": "Låg-panelet måler nu på forhånd, hvor bred kroppen er foroven, og siger, om den får halsens gevind. En cylinder, et rør eller en ring tilpasses med knappen Tilpas kroppen til halsen."
+        }
+      },
+      {
+        "title": {
+          "de": "Beim Export gleich den Namen tippen",
+          "en": "Type the export name right away",
+          "da": "Skriv eksportnavnet med det samme"
+        },
+        "body": {
+          "de": "Öffnet sich das Export-Fenster, ist der Dateiname schon markiert. Einfach lostippen, und der neue Name ersetzt ihn.",
+          "en": "When the export window opens, the file name is already selected. Just type, and the new name replaces it.",
+          "da": "Når eksportvinduet åbner, er filnavnet allerede markeret. Skriv bare, så erstatter det nye navn det."
+        }
+      },
+      {
+        "title": {
+          "de": "Speichern geht immer, notfalls als Download",
+          "en": "Saving always works, as a download if need be",
+          "da": "Gem virker altid, om nødvendigt som download"
+        },
+        "body": {
+          "de": "Auf manchen PCs gibt der Speichern-Dialog von Chrome und Edge keine Datei zurück. Die Meldung „Nichts gespeichert“ hat dann einen Knopf „Stattdessen herunterladen“, der den Entwurf in den Download-Ordner legt.",
+          "en": "On some PCs the save dialog of Chrome and Edge hands back no file. The message Nothing saved then has a button Download instead, which puts the design into the Downloads folder.",
+          "da": "På nogle pc'er giver gem-dialogen i Chrome og Edge ingen fil tilbage. Beskeden Intet gemt har så en knap Download i stedet, som lægger designet i mappen Overførsler."
+        }
+      },
+      {
+        "title": {
+          "de": "Verrundete Lochränder füllen kein Loch mehr",
+          "en": "Rounded hole rims no longer fill a hole",
+          "da": "Afrundede hulkanter fylder ikke længere et hul"
+        },
+        "body": {
+          "de": "Wer die oberen Ränder mehrerer runder Löcher nacheinander verrundete, verlor manchmal ein Loch ganz. Die Löcher bleiben jetzt echte Kreise, und eine Kantenbearbeitung, die eine fremde Fläche verschluckt, wird mit einem Hinweis abgelehnt.",
+          "en": "Rounding the top rims of several round holes one after another sometimes lost a hole completely. The holes now stay true circles, and an edge treatment that swallows a face it never touched is refused with a hint.",
+          "da": "Når man afrundede de øverste kanter af flere runde huller efter hinanden, forsvandt et hul nogle gange helt. Hullerne forbliver nu ægte cirkler, og en kantbehandling, der sluger en flade, den ikke rørte, afvises med en besked."
+        }
+      },
+      {
+        "title": {
+          "de": "Werkzeugleiste passt sich der Bediengröße an",
+          "en": "The toolbar follows the control size",
+          "da": "Værktøjslinjen følger kontrolstørrelsen"
+        },
+        "body": {
+          "de": "Nach dem Umschalten der Bediengröße in den Einstellungen ordnet sich die Werkzeugleiste sofort neu und bleibt eine Zeile, statt in zwei oder drei Reihen umzubrechen.",
+          "en": "After switching the control size in the settings, the toolbar fits itself again at once and stays one row, instead of breaking into two or three.",
+          "da": "Når kontrolstørrelsen skiftes i indstillingerne, tilpasser værktøjslinjen sig straks igen og forbliver én række i stedet for at bryde over i to eller tre."
+        }
+      },
+      {
+        "title": {
+          "de": "Keine zweite Druckplatte mehr",
+          "en": "No more second build plate",
+          "da": "Ingen anden byggeplade mere"
+        },
+        "body": {
+          "de": "Eine Arbeitsebene auf der leeren Platte trug den Druckernamen und sah aus wie eine zweite Platte neben der echten, grauen. Der Name steht jetzt nur auf der echten Platte. Alt+W legt die Arbeitsebene zurück.",
+          "en": "A workplane set on the empty plate carried the printer's name and looked like a second plate beside the real, grey one. The name now stays on the real plate. Alt+W puts the workplane back.",
+          "da": "Et arbejdsplan sat på den tomme plade bar printerens navn og lignede en anden plade ved siden af den rigtige, grå. Navnet står nu kun på den rigtige plade. Alt+W lægger arbejdsplanet tilbage."
+        }
+      }
+    ]
+  },
+  {
+    "version": "1.152.1",
+    "items": [
+      {
+        "title": {
+          "de": "Punkt auf Punkt",
+          "en": "Point to point",
+          "da": "Punkt til punkt"
+        },
+        "body": {
+          "de": "„Flächen ausrichten“ hat eine vierte Art: Klicke eine Ecke, eine Kante oder einen Bezugspunkt des Teils an, dann einen Punkt eines anderen Teils, und es springt genau dorthin, ohne sich zu drehen. Mit nur X und Y landet es genau darüber. Ein zweites und drittes Punktpaar drehen das Teil danach zurecht, wie beim Ausrichten über drei Punkte.",
+          "en": "Align faces has a fourth way: click a corner, an edge or a reference point of the part, then a point of another part, and it moves straight there without turning. With only X and Y on, it lands straight above. A second and third pair of points then turn the part into place, like aligning by three points.",
+          "da": "Justér flader har en fjerde måde: klik på et hjørne, en kant eller et referencepunkt på delen og derefter et punkt på en anden del, så flytter den lige derhen uden at dreje. Med kun X og Y lander den lige ovenover. Et andet og tredje punktpar drejer derefter delen på plads, som når man justerer efter tre punkter."
+        }
+      },
+      {
+        "title": {
+          "de": "Schiebedeckel mit Rahmen",
+          "en": "Slide-in lid with a frame",
+          "da": "Skydelåg med ramme"
+        },
+        "body": {
+          "de": "Beim Schiebedeckel gibt es „Rahmen über dem Deckel“: Der Deckel sitzt dann etwas unter dem Rand, die Wände bleiben ringsum voll hoch, und er gleitet durch einen Schlitz in der Wand hinein. Von @marcus040473.",
+          "en": "The slide-in lid has Frame above the lid: the lid then sits a little below the rim, the walls keep their full height all round, and it slides in through a slot in the wall. By @marcus040473.",
+          "da": "Skydelåget har Ramme over låget: låget sidder så lidt under kanten, væggene beholder deres fulde højde hele vejen rundt, og det glider ind gennem en slids i væggen. Af @marcus040473."
+        }
+      },
+      {
+        "title": {
+          "de": "STEP-Import sagt, was los ist",
+          "en": "STEP import says what is going on",
+          "da": "STEP-import siger, hvad der sker"
+        },
+        "body": {
+          "de": "Solange eine STEP-Datei eingelesen wird, bleibt die Meldung stehen. Bleibt der CAD-Kern an einer Datei hängen, bricht layerling nach 3 Minuten ab und sagt, dass die Datei wohl beschädigt ist und der Import als STL meist klappt; die Meldung bleibt, bis du sie schließt.",
+          "en": "While a STEP file is being read, its message stays. If the CAD kernel gets stuck on a file, layerling stops after 3 minutes and says the file is probably damaged and that importing it as STL usually works; the message stays until you close it.",
+          "da": "Mens en STEP-fil læses ind, bliver beskeden stående. Hvis CAD-kernen sidder fast i en fil, stopper layerling efter 3 minutter og siger, at filen nok er beskadiget, og at import som STL plejer at virke; beskeden bliver, til du lukker den."
+        }
+      }
+    ]
+  },
+  {
+    "version": "1.152.0",
+    "items": [
+      {
+        "title": {
+          "de": "Andere ausblenden, Auswahl umkehren",
+          "en": "Hide others, invert selection",
+          "da": "Skjul andre og inverter markeringen"
+        },
+        "body": {
+          "de": "Wähle ein paar Teile aus und nimm „Andere ausblenden“ im Rechtsklick-Menü: Alles andere verschwindet, Strg+Z holt es zurück. „Auswahl umkehren“ wählt jedes andere sichtbare Teil aus.",
+          "en": "Select a few parts and choose \"Hide others\" in the right-click menu: everything else goes, Ctrl+Z brings it back. \"Invert selection\" selects every other visible part.",
+          "da": "Vælg nogle få dele og tag „Skjul andre“ i højrekliksmenuen: alt andet forsvinder, og Ctrl+Z bringer det tilbage. „Inverter markering“ vælger alle andre synlige dele."
+        }
+      },
+      {
+        "title": {
+          "de": "Farbige Ausrichten-Punkte",
+          "en": "Align dots in colour",
+          "da": "Justeringsprikker i farve"
+        },
+        "body": {
+          "de": "Die Punkte des Ausrichtens sind jetzt rot, grün und blau wie die Griffe beim Verschieben, so siehst du auch bei überlappenden Punkten, welcher was tut.",
+          "en": "The align dots are now red, green and blue like the move handles, so you can tell which does what even where they overlap.",
+          "da": "Justeringsprikkerne er nu røde, grønne og blå som de håndtag, der flytter formen, så du kan se, hvad der gør hvad, også hvor de lapper over hinanden."
+        }
+      },
+      {
+        "title": {
+          "de": "Texte bis 250 Zeichen",
+          "en": "Texts up to 250 characters",
+          "da": "Tekster på op til 250 tegn"
+        },
+        "body": {
+          "de": "Ein Text fasst jetzt 250 statt 24 Zeichen. Die Buchstaben behalten ihre Größe, und die Zeile wird so lang wie nötig. Abgerundete oder gefaste Buchstabenkanten gibt es bis 40 Zeichen.",
+          "en": "A text now takes 250 characters instead of 24. The letters keep their size and the line gets as long as it needs to be. A rounded or chamfered letter edge works up to 40 characters.",
+          "da": "En tekst kan nu have 250 tegn i stedet for 24. Bogstaverne beholder deres størrelse, og linjen bliver så lang, som den skal være. En afrundet eller affaset bogstavkant virker på en tekst på op til 40 tegn."
+        }
+      },
+      {
+        "title": {
+          "de": "Aushöhlen klappt bei mehr Formen",
+          "en": "Hollow works on more shapes",
+          "da": "Udhuling virker på flere former"
+        },
+        "body": {
+          "de": "Ein Körper, der oben und unten flach ist und gerade Seiten hat, wird jetzt über seinen Umriss ausgehöhlt. So gehen auch Formen mit spitzen Ecken in einem runden Umriss und importierte STL-Dateien, an denen das Aushöhlen vorher scheiterte oder hängen blieb.",
+          "en": "A body that is flat at its top and bottom with upright sides is now hollowed through its outline. Shapes with a sharp corner in a round outline and imported STL files, where Hollow failed or got stuck before, now work.",
+          "da": "Et legeme, der er fladt i top og bund og har lodrette sider, udhules nu gennem sit omrids. Også former med et skarpt hjørne i et rundt omrids og importerede STL-filer, hvor udhulingen førhen fejlede eller hang, virker nu."
+        }
+      },
+      {
+        "title": {
+          "de": "Abgerundeter Quader: mehr Freiheit",
+          "en": "Rounded box: more freedom",
+          "da": "Rundet kasse: mere frihed"
+        },
+        "body": {
+          "de": "Ein Punkt auf der Oberkante zieht den Eckenradius, auch am normalen Quader. „Ecken einzeln“ gibt jeder Ecke ihren eigenen Radius, und „Oben/unten getrennt“ rundet oben und unten verschieden, etwa oben flach und unten rund.",
+          "en": "A dot on the top edge drags the corner radius, on a plain box too. \"Corners Separately\" gives each corner its own radius, and \"Top/Bottom Separately\" rounds the top and the bottom differently, say flat on top and round below.",
+          "da": "En prik på overkanten trækker hjørneradius med, også på en almindelig kasse. „Hjørner hver for sig“ giver hvert hjørne sin egen radius, og „Top og bund hver for sig“ runder toppen og bunden forskelligt, for eksempel fladt foroven og rundt forneden."
+        }
+      },
+      {
+        "title": {
+          "de": "Neigung entlang: Mitte, Bogen und Seiten",
+          "en": "Slope along: middle, arch and sides",
+          "da": "Hældning på langs: midt, buet og sider"
+        },
+        "body": {
+          "de": "„Bogen beginnt bei“ lässt die Neigung auch aus der Mitte zu beiden Enden abfallen oder wölbt eine schräge Fläche gleichmäßig. „Seiten abgesenkt“ senkt die beiden langen Seiten ab, gerade oder gewölbt wie eine Kuppel.",
+          "en": "\"Curve Starts At\" can let the slope fall from the middle to both ends, or arch a slanted top evenly. \"Sides Lowered\" lowers the two long sides, straight or domed.",
+          "da": "„Kurven starter ved“ kan lade hældningen falde fra midten til begge ender, eller bue en skrå overside jævnt. „Sider sænket“ sænker de to lange sider, lige eller hvælvet."
+        }
+      },
+      {
+        "title": {
+          "de": "Verrundung sagt, wo es klemmt",
+          "en": "Fillet says where it gets stuck",
+          "da": "Afrunding siger, hvor den klemmer"
+        },
+        "body": {
+          "de": "Lässt sich eine gebogene Kante nicht verrunden, nennt layerling jetzt die engste Biegung und markiert die Kanten rot. Wähle dann einen kleineren Radius als diese Biegung.",
+          "en": "When a curved edge cannot be filleted, layerling now names its tightest bend and marks those edges red. Choose a radius smaller than that bend.",
+          "da": "Når en buet kant ikke kan afrundes, siger layerling nu, hvor den skarpeste bøjning er, og markerer de kanter rødt. Vælg en radius mindre end den bøjning."
+        }
+      },
+      {
+        "title": {
+          "de": "Kegel bleibt rund",
+          "en": "Cone stays round",
+          "da": "Keglen forbliver rund"
+        },
+        "body": {
+          "de": "Der Basisradius des Kegels ändert Breite und Länge zusammen, der Kegel wird also nicht mehr oval. Ist der obere Radius größer, sagt ein Hinweis, wie du einen oben breiteren Kegel baust.",
+          "en": "A cone's base radius now changes width and length together, so the cone no longer goes oval. When the top radius is the larger one, a hint says how to make a cone wider at the top.",
+          "da": "En kegles grundradius ændrer nu bredde og længde sammen, så keglen ikke længere bliver oval. Når toppens radius er den største, siger et tip, hvordan du laver en kegle, der er bredere foroven."
+        }
+      },
+      {
+        "title": {
+          "de": "Durchmesser über 160 mm",
+          "en": "Diameters past 160 mm",
+          "da": "Diameter over 160 mm"
+        },
+        "body": {
+          "de": "Durchmesser und Radien von Zylinder und Kegel lassen sich jetzt größer eintippen, als der Schieberegler reicht, so wie Breite und Höhe.",
+          "en": "A cylinder's or cone's diameter and radius can now be typed larger than the slider goes, like width and height.",
+          "da": "En cylinders eller kegles diameter og radius kan nu skrives større, end skyderen rækker, ligesom bredde og højde."
+        }
+      },
+      {
+        "title": {
+          "de": "Auf Platten verteilen geht wieder",
+          "en": "Arrange on plates works again",
+          "da": "Fordeling på plader virker igen"
+        },
+        "body": {
+          "de": "Der Knopf „Auf Platten verteilen“ in der Plattenleiste tat nichts. Jetzt verteilt er die Auswahl oder alle Teile wieder an.",
+          "en": "The \"Arrange on plates\" button in the plate bar did nothing. It now arranges the selection, or every part, again.",
+          "da": "Knappen „Fordel på plader“ i pladelinjen gjorde ingenting. Nu fordeler den igen markeringen, eller alle dele."
+        }
+      },
+      {
+        "title": {
+          "de": "Speichern sagt, wenn nichts gespeichert wurde",
+          "en": "Saving says when nothing was saved",
+          "da": "Gem siger, når intet blev gemt"
+        },
+        "body": {
+          "de": "Schließt sich das Speicherfenster ohne gewählte Datei, sagt die Statuszeile jetzt „Nichts gespeichert“ bzw. „Keine Sicherung erstellt“, für Strg+S, Speichern unter und die Sicherungen.",
+          "en": "When the save window closes without a chosen file, the status line now says \"Nothing saved\" or \"No backup made\", for Ctrl+S, Save as and the backups.",
+          "da": "Når gem-vinduet lukker uden en valgt fil, siger statuslinjen nu „Intet gemt“ eller „Ingen sikkerhedskopi lavet“, både for Ctrl+S, Gem som og sikkerhedskopierne."
+        }
+      },
+      {
+        "title": {
+          "de": "KI kann das Projekt benennen",
+          "en": "The AI can name the project",
+          "da": "AI’en kan navngive projektet"
+        },
+        "body": {
+          "de": "Über MCP kann eine KI dem Projekt jetzt einen Namen geben, wie der Stift neben dem Projektnamen, statt es „Unbenannter Entwurf“ zu lassen.",
+          "en": "Through MCP an AI can now give the project a name, as the pencil beside its name does, instead of leaving it \"Untitled design\".",
+          "da": "Via MCP kan en AI nu give projektet et navn, ligesom blyanten ved siden af navnet gør, i stedet for at det står som „Unavngivet design“."
+        }
+      }
+    ]
+  },
+  {
     "version": "1.151.0",
     "items": [
       {
         "title": {
           "de": "Winkellineal so lang wie die Platte",
           "en": "A framing square as long as the plate",
+          "da": "Vinkelmåleren så lang som printpladen",
           "ar": "زاوية النجار بطول سرير الطباعة"
         },
         "body": {
           "de": "Die Arme des Winkellineals lassen sich jetzt an ihrem Ende länger oder kürzer ziehen. Ein Knopf unter dem Griff macht sie so lang wie die Druckplatte deines Druckers.",
           "en": "The framing square's arms can now be dragged longer or shorter at their ends. A button under the handle makes them as long as your printer's build plate.",
+          "da": "Vinkelmålerens arme kan nu trækkes længere eller kortere i deres ender. En knap under håndtaget gør dem lige så lange som printpladen på printeren.",
           "ar": "يمكن الآن سحب ذراعي زاوية النجار من الأطراف لتطويلهما أو تقصيرهما. ويتيح لك الزر الموجود أسفل المقبض ضبط طولهما ليكون مساويًا لطول سرير الطباعة في طابعتك."
         }
       },
@@ -18,11 +860,13 @@
         "title": {
           "de": "Deckel zum Einschrauben",
           "en": "A lid that screws in",
+          "da": "Et låg, der skrues ind",
           "ar": "غطاء يُلفّ إلى الداخل"
         },
         "body": {
           "de": "Das Deckel-Werkzeug hat eine neue Art „Eingeschraubt“: Der Körper bekommt das Gewinde innen in seiner Öffnung, der Deckel einen Gewindezapfen darunter. Außen bleibt der Körper glatt, etwa bei einem runden Stiftehalter. Beide Teile drucken ohne Stützen.",
           "en": "The Lid tool has a new kind, Screw in: the body gets the thread inside its opening and the lid a threaded plug below it. The outside of the body stays smooth, for a round pen holder, say. Both parts print without support.",
+          "da": "Lågværktøjet har en ny slags, Skrues i: legemet får gevindet inden i sin åbning, og låget en prop med gevind nedenunder. Legemets yderside bliver glat, som på et rundt penneglas. Begge dele printes uden støtte.",
           "ar": "لأداة «الغطاء» نوع جديد: «لولبي للداخل». يحصل الجسم على السن داخل فتحته، والغطاء على سدادة ملولبة تحته. ويبقى السطح الخارجي للجسم أملس، لحامل أقلام مستدير مثلًا. ويُطبع الجزءان دون دعامات."
         }
       },
@@ -30,11 +874,13 @@
         "title": {
           "de": "Gedrehte Langlöcher im Lochmuster",
           "en": "Turned slots in a hole pattern",
+          "da": "Drejede slidser i et hulmønster",
           "ar": "شقوق مُدارة في نمط الثقوب"
         },
         "body": {
           "de": "Langlöcher und Rechtecke im Lochmuster lassen sich jetzt drehen: Mit „Winkel der Löcher“ steht jedes Loch schräg, etwa Lüftungsschlitze auf 45°, und das Raster bleibt gerade. Die Wand zwischen den Löchern bleibt dabei erhalten.",
           "en": "Slots and rectangles in a hole pattern can now be turned: with Angle of the holes each hole stands at a slant, ventilation slots at 45° for example, while the grid stays straight. The wall between the holes is kept.",
+          "da": "Slidser og rektangler i et hulmønster kan nu drejes: med Vinkel på hullerne står hvert hul på skrå, ventilationsslidser for eksempel på 45°, mens rækkerne forbliver lige. Væggen mellem hullerne bevares.",
           "ar": "يمكن الآن تدوير الشقوق والمستطيلات في «نمط الثقوب»: مع «زاوية الثقوب» يقف كل ثقب مائلًا، كشقوق التهوية بزاوية 45° مثلًا، بينما تبقى الشبكة مستقيمة. ويبقى الجدار بين الثقوب محفوظًا."
         }
       },
@@ -56,11 +902,13 @@
         "title": {
           "de": "Einschub-Deckel",
           "en": "A slide-in lid",
+          "da": "Et låg, der skydes ind",
           "ar": "غطاء منزلق"
         },
         "body": {
           "de": "Das Deckel-Werkzeug hat eine neue Art „Einschub“, wie der Deckel einer Holz-Federmappe: Er gleitet mit Zungen in Nuten dreier Wände und wird durch die vierte hineingeschoben. Die Box druckt aufrecht, der Deckel umgedreht, beide ohne Stützen.",
           "en": "The Lid tool has a new kind, Slide-in, like a wooden pencil box's lid: it runs on tongues in grooves in three walls and slides in over the fourth. The box prints upright and the lid turned over, both without support.",
+          "da": "Lågværktøjet har en ny slags, Skydes ind, som låget på et penalhus af træ: det løber i noter i tre vægge og skydes ind over den fjerde. Kassen printes stående og låget med pladen ned, begge uden støtte.",
           "ar": "لأداة «الغطاء» نوع جديد: «منزلق»، كغطاء مقلمة خشبية: تجري حوافه في مجارٍ في ثلاثة جدران وينزلق إلى الداخل فوق الرابع. يُطبع الصندوق قائمًا والغطاء مقلوبًا، كلاهما دون دعامات."
         }
       },
@@ -68,11 +916,13 @@
         "title": {
           "de": "Klappdeckel und Halteband",
           "en": "Flip-top and tether",
+          "da": "Klaplåg og holdebånd",
           "ar": "غطاء قلّاب ورباط"
         },
         "body": {
           "de": "Schraub- und Bajonettdeckel können eine Ausgießöffnung mit angedruckter Klappe bekommen, wie bei einer Shampooflasche, und ein Halteband, das den Deckel am Körper hält. Beides druckt ohne Stützen.",
           "en": "Screw and bayonet caps can get a pouring opening with a printed flap, like a shampoo bottle's, and a tether that keeps the cap on the body. Both print without support.",
+          "da": "Skruelåg og bajonetlåg kan få en hældningsåbning med en printet klap, som på en flaske shampoo, og et holdebånd, der holder låget ved legemet. Begge dele printes uden støtte.",
           "ar": "يمكن أن تحصل الأغطية اللولبية وأغطية البايونيت على فتحة صبّ بلسان مطبوع، كما في قارورة الشامبو، وعلى رباط يُبقي الغطاء مع الجسم. ويُطبع كلاهما دون دعامات."
         }
       },
@@ -80,11 +930,13 @@
         "title": {
           "de": "Normgewinde für Flaschen und Gläser",
           "en": "Standard bottle and jar threads",
+          "da": "Standardgevind på flasker og glas",
           "ar": "أسنان قياسية للزجاجات والبرطمانات"
         },
         "body": {
           "de": "Der Schraubdeckel kann das Gewinde einer Norm bekommen (PCO 1881, PCO 1810, GL 45, Einmachglas), damit er auf eine gekaufte Flasche passt. Beim Bajonettdeckel lässt sich außerdem die Drehung einstellen, und ein abgerundeter Rand wird nicht mehr abgelehnt.",
           "en": "The screw lid can take a standard's thread (PCO 1881, PCO 1810, GL 45, mason jars) so it fits a bottle from the shop. The bayonet lid's turn can be set, and a rounded rim is no longer refused.",
+          "da": "Skruelåget kan tage gevindet på en standardflaske eller et standardglas (PCO 1881, PCO 1810, GL 45, Mason-glas), så det passer til en flaske fra butikken. Bajonetlågets drejning kan indstilles, og en afrundet kant afvises ikke længere.",
           "ar": "يمكن للغطاء اللولبي أن يأخذ سنّ معيار (PCO 1881 وPCO 1810 وGL 45 وبرطمانات Mason) فيناسب زجاجة من المتجر. ويمكن ضبط دوران غطاء البايونيت، ولم تعد الحافة المستديرة تُرفض."
         }
       },
@@ -92,11 +944,13 @@
         "title": {
           "de": "Bildtextur glatter",
           "en": "Smoother image textures",
+          "da": "Glattere billedteksturer",
           "ar": "أنسجة صور أنعم"
         },
         "body": {
           "de": "Ein Bild auf einer großen oder runden Vase kommt nicht mehr in Stufen des Rasters heraus, und „Fein“ ist wirklich feiner als „Mittel“.",
           "en": "A picture on a large or round vase no longer comes out in steps of the grid, and Fine is really finer than Medium.",
+          "da": "Et billede på en stor eller rund vase kommer ikke længere ud i trin af gitteret, og Fin er virkelig finere end Mellem.",
           "ar": "الصورة على مزهرية كبيرة أو مستديرة لم تعد تخرج بدرجات الشبكة، و«ناعم» أصبح فعلًا أنعم من «متوسط»."
         }
       }

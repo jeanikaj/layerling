@@ -78,6 +78,7 @@ De AI werkt met dezelfde functies als jij, via dezelfde weg als jouw bediening i
 | Gereedschap | Wat het doet |
 | --- | --- |
 | `layerling_list_editors` | somt de geopende editortabbladen op |
+| `layerling_rename_project` | geeft het project een naam, zoals het potlood naast de projectnaam |
 | `layerling_open_editor` | opent een nieuw editortabblad in je standaardbrowser en wacht tot het verbonden is (alleen op je eigen computer) |
 | `layerling_read_scene` | leest scène, selectie, eenheden en de exacte maten van alle objecten |
 | `layerling_list_objects` | somt alle objecten op met maten, positie, rotatie en id |
@@ -159,6 +160,7 @@ De AI werkt met dezelfde functies als jij, via dezelfde weg als jouw bediening i
 | `layerling_insert_custom_shape` | voegt een eigen vorm in het geopende ontwerp in, desgewenst op een plek x/z |
 | `layerling_delete_custom_shape` | verwijdert een eigen vorm; ingevoegde lichamen blijven staan |
 | `layerling_show_workplane` | verbergt en toont de plaat met zijn raster, bijvoorbeeld voor een afbeelding van de onderkant (alleen de weergave) |
+| `layerling_focus_mode` | zet de focusmodus aan en uit: verbergt de titelregel en de voettekst voor meer ruimte (alleen het kader van de editor) |
 | `layerling_set_section_view` | snijdt de weergave open langs een vlak om naar binnen te kijken (alleen de weergave, er wordt niets doorgesneden) |
 | `layerling_measurements` | toont of verbergt de metingen van het meetlint en somt ze op met hun lengtes, en verbergt of toont de maten rond de selectie zoals [[Q]], en typt een lengte voor een ervan, die het lichaam aan het uiteinde verschuift zoals een klik op het getal |
 | `layerling_measure_angle` | meet een hoek zoals de gradenboog: in het hoekpunt van drie punten of tussen twee platte vlakken, en toont hem in de weergave |

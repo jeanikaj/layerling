@@ -7,7 +7,8 @@ import { createLocalId } from "@/lib/localIds";
 import { splitShapeFromWorldPositions } from "@/lib/modelSplit";
 import { printerPlayStart } from "@/lib/printerPlay";
 import { sceneShape } from "@/lib/shapeCatalog";
-import { canonicalizeShape, isNonSolidShape } from "@/lib/workplaneShapes";
+import { roundSideCount } from "@/lib/roundSideCount";
+import { canonicalizeShape, isNonSolidShape, shapeHasShapeDeform, shellRebuildEntry } from "@/lib/workplaneShapes";
 import type { WorkplaneShape } from "@/types/layerling";
 
 /**
@@ -30,7 +31,8 @@ import type { WorkplaneShape } from "@/types/layerling";
  * - slide: a plate that slides in through one wall of a box (Discussion #1443), like a wooden pencil box's: its edges are
  *   tongues that run in grooves in the other three walls, and the wall it slides in through is cut down to its
  *   underside, so it goes in over that wall; its end then fills the cut, flush with that wall's outside, and its top is
- *   flush with the rim (see `slidePlan`).
+ *   flush with the rim (see `slidePlan`). With a frame, the lid sits lower, the walls keep their full height round it,
+ *   and it slides in through a slot in that wall instead (Discussion #1443).
  * A screw or bayonet cap can have a tether (asked in the Layerling User Group on Facebook), so it stays with the body
  * when it is off, as a drinks bottle's cap does: two open rings joined by a strap, printed flat beside the cap, one
  * turning round the cap under a collar, the other round the body below the cap on a bead (see `tetherPlan`).
@@ -80,6 +82,8 @@ export type LidHingeStyle = "outside" | "flush" | "pivot";
  * as thick as the plate; `notch` a finger recess in the body's outer wall just below the lid's edge.
  */
 export type LidHandle = "none" | "tab" | "notch";
+/** How the top rim of a screw or bayonet cap ends: square, rounded or chamfered (Discussion #1426). */
+export type LidTopEdge = "square" | "round" | "chamfer";
 
 /**
  * The kind of lid; the plate's thickness, the gap per side, how deep the lip or rim reaches down and how thick its wall
@@ -107,12 +111,16 @@ export type LidHandle = "none" | "tab" | "notch";
  * A slide-in lid slides in through the `slideSide` wall, the front unless another is picked; its gap is the play per side
  * in the grooves and in the cut it slides in through, its thickness the plate's, and depth and wall do not count. Its
  * click bumps are one bump under its end at that wall, which clicks past the wall's inner edge, and its finger notch is
- * a row of grooves across its top there, for a thumb.
+ * a row of grooves across its top there, for a thumb. With `slideFrame` above 0, the lid's top sits that many mm below the
+ * rim, the walls standing their full height round it as a frame, and the wall it slides in through keeps its full height
+ * above a slot the lid passes through, rather than being cut down (Discussion #1443).
  * `bayonetTurn` is how far the cap turns to lock, in degrees: 0 leaves it to the lugs (the function `bayonetTurn`), a
  * turn set by hand is held to what fits round the body (`bayonetPlan`).
  * With `tether`, a screw or bayonet cap comes with a tether that keeps it on the body (see `tetherPlan`).
  * With `flipTop`, a screw or bayonet cap's plate has a round opening `flipTopOpening` mm across, closed by a flap printed
  * in it, the gap round it, and joined to the plate by a thin strip that bends as a hinge.
+ * `topEdge` rounds or chamfers the outer top rim of a screw or bayonet cap by `topEdgeSize` mm, at most the plate's
+ * thickness (Discussion #1426): the cap is one mesh with its thread, far too many triangles for the edge tool afterwards.
  */
 export type LidOptions = {
   type: LidType;
@@ -166,7 +174,10 @@ export type LidOptions = {
   tether: boolean;
   flipTop: boolean;
   flipTopOpening: number;
+  topEdge: LidTopEdge;
+  topEdgeSize: number;
   slideSide: LidHingeSide;
+  slideFrame: number;
 };
 
 export const LID_TYPES: readonly LidType[] = ["plug", "cap", "both", "flat", "screw", "screwIn", "bayonet", "slide", "sliding"];
@@ -175,7 +186,7 @@ export const LID_DEFAULTS: LidOptions = {
   hinge: false, hingePin: 1.75, hingeGap: 0.3, hingePinPlay: 0.2, hingeKnuckles: 0, hingePrintPin: false, hingeSide: "back", hingeTeardrop: true, hingeStyle: "outside", hingeEndPlugs: false,
   clickBumps: false, clickBumpHeight: 0.4, handle: "none", threadPitch: 3, threadTurns: 2, threadStandard: "own",
   bayonetLugs: 3, bayonetDepth: 8, bayonetAxialGap: 0.3, bayonetDetent: 0.3, bayonetTurn: 0, tether: false,
-  flipTop: false, flipTopOpening: 8, slideSide: "front",
+  flipTop: false, flipTopOpening: 8, topEdge: "square", topEdgeSize: 1, slideSide: "front", slideFrame: 0,
 };
 /**
  * What a lid starts from with this printer's play (printerPlay.ts): the gap per side and the hinge pin's play take it,
@@ -278,6 +289,7 @@ const END_PLUG_DEPTH = 4;
 const MIN_END_PLUG_DEPTH = 2;
 const END_PLUG_KEEP = 1.5;
 export const LID_HANDLES: readonly LidHandle[] = ["none", "tab", "notch"];
+export const LID_TOP_EDGES: readonly LidTopEdge[] = ["square", "round", "chamfer"];
 /** A click bump's radius, in mm: a piece of a ball standing out of the lip's or the rim's face. */
 const BUMP_RADIUS = 1.5;
 /**
@@ -540,6 +552,28 @@ export const SLIDE_MIN_HOLD = 0.4;
  * opening's sides: a box hollowed in the editor does not at all.
  */
 const SLIDE_UPRIGHT = 0.1;
+/**
+ * A slide-in lid's frame (Discussion #1443): how far its top may sit below the rim at most, in mm, and how much of the wall
+ * it slides in through stays above the slot it passes through at least: the slot's top is a bridge across the lid's width
+ * as the box prints upright, and five layers over it keep that wall whole and stiff.
+ */
+export const MAX_SLIDE_FRAME = 5;
+export const SLIDE_FRAME_KEEP = 1;
+/**
+ * How much room a slide-in lid with a frame has above its top in the slot it passes through, in mm: the gap, and with
+ * click bumps their height, so the plate can bow up over the slot's floor as its bump goes out through the slot.
+ */
+export function slideSlotRoom(options: Pick<LidOptions, "gap" | "clickBumps" | "clickBumpHeight">) {
+  return options.gap + (options.clickBumps ? options.clickBumpHeight : 0);
+}
+
+/**
+ * The least frame a slide-in lid takes, in mm, a tenth rounded up: the room over the lid in the slot (`slideSlotRoom`),
+ * and SLIDE_FRAME_KEEP of the wall above it.
+ */
+export function slideFrameNeeded(options: Pick<LidOptions, "gap" | "clickBumps" | "clickBumpHeight">) {
+  return Math.ceil((slideSlotRoom(options) + SLIDE_FRAME_KEEP) * 10 - 1e-6) / 10;
+}
 /** How far below the grooves' floor the opening must still be whole, in mm, so the lid's underside does not lie on it. */
 const SLIDE_BELOW = 0.05;
 /**
@@ -594,6 +628,9 @@ const TETHER_SLACK = 3;
  */
 export const MIN_FLIP_TOP_OPENING = 4;
 export const MAX_FLIP_TOP_OPENING = 40;
+/** A cap's rounded or chamfered top rim, in mm (Discussion #1426); it is held to the plate's thickness when the cap is made. */
+export const MIN_LID_TOP_EDGE = 0.2;
+export const MAX_LID_TOP_EDGE = 5;
 /**
  * How deep the flap's seat reaches into the plate, in mm: the flap narrows at 45 degrees from the plate's top down to the
  * opening, the plate's edge round it alike the gap further out, so pressed down it rests there and cannot be pushed in.
@@ -715,6 +752,8 @@ export function normalizeLidOptions(value?: Partial<Record<keyof LidOptions, unk
   if (bayonetDetent !== null) result.bayonetDetent = clamp(bayonetDetent, 0, MAX_BAYONET_DETENT);
   const slideSide = typeof value?.slideSide === "string" ? value.slideSide.trim().toLowerCase() : "";
   if ((LID_HINGE_SIDES as readonly string[]).includes(slideSide)) result.slideSide = slideSide as LidHingeSide;
+  const slideFrame = finiteNumber(value?.slideFrame);
+  if (slideFrame !== null) result.slideFrame = clamp(slideFrame, 0, MAX_SLIDE_FRAME);
   // Whole degrees; 0 leaves the turn to the lugs, and one set by hand is MIN_BAYONET_TURN at least.
   const turn = finiteNumber(value?.bayonetTurn);
   if (turn !== null) {
@@ -725,6 +764,10 @@ export function normalizeLidOptions(value?: Partial<Record<keyof LidOptions, unk
   if (value?.flipTop === true || value?.flipTop === "true") result.flipTop = true;
   const flipTopOpening = finiteNumber(value?.flipTopOpening);
   if (flipTopOpening !== null) result.flipTopOpening = clamp(flipTopOpening, MIN_FLIP_TOP_OPENING, MAX_FLIP_TOP_OPENING);
+  const topEdge = typeof value?.topEdge === "string" ? value.topEdge.trim().toLowerCase() : "";
+  if ((LID_TOP_EDGES as readonly string[]).includes(topEdge)) result.topEdge = topEdge as LidTopEdge;
+  const topEdgeSize = finiteNumber(value?.topEdgeSize);
+  if (topEdgeSize !== null) result.topEdgeSize = clamp(topEdgeSize, MIN_LID_TOP_EDGE, MAX_LID_TOP_EDGE);
   if (result.type === "sliding") {
     result.cornerMode = value?.cornerMode === "custom" ? "custom" : "match";
     result.lidCornerRadius = clamp(finiteNumber(value?.lidCornerRadius) ?? 6, 0, 50);
@@ -777,6 +820,41 @@ export function lidTakesMagnets(options: Pick<LidOptions, "type">) {
   return lidTakesExtras(options) && options.type !== "slide" && options.type !== "sliding";
 }
 
+
+/** Whether the top rim can be rounded or chamfered: a screw or bayonet cap, round as it is (Discussion #1426). */
+export function lidTopEdgeFits(options: Pick<LidOptions, "type">) {
+  return options.type === "screw" || options.type === "bayonet";
+}
+
+/** How far a cap's top rim is rounded or chamfered: the size asked for, at most the plate's thickness so the rim stays whole. */
+export function lidTopEdgeSize(options: Pick<LidOptions, "topEdgeSize" | "thickness">) {
+  return Math.min(options.topEdgeSize, options.thickness);
+}
+
+/**
+ * A screw or bayonet cap with its outer top rim rounded or chamfered (`topEdge`, Discussion #1426), in the frame where z
+ * is up and the plate's top is `plateTop`: a ring turned about the cap's axis cuts the corner away, `size` down the side
+ * and in across the top. It reaches no deeper than the plate, so the cap's thread and rim are left as they are; turned
+ * over to print, that rim lies on the plate, where a chamfer prints cleanly and a small rounding does too.
+ */
+function capWithTopEdge(runtime: ManifoldToplevel, cap: ManifoldSolid, centre: Point, capRadius: number, plateTop: number, options: LidOptions, created: { delete?: () => void }[]) {
+  if (options.topEdge === "square") return cap;
+  const size = lidTopEdgeSize(options);
+  if (!(size > 0)) return cap;
+  const sides = Math.min(512, Math.max(96, 4 * Math.ceil((2 * Math.PI * capRadius) / SCREW_STEP / 4)));
+  const out = capRadius + 1;
+  // From the plate's top, round the corner and down the side, in (distance from the axis, height).
+  const corner: [number, number][] = options.topEdge === "chamfer"
+    ? [[capRadius, plateTop - size], [capRadius - size, plateTop]]
+    : Array.from({ length: 17 }, (_unused, index): [number, number] => {
+        const angle = (index / 16) * (Math.PI / 2);
+        return [capRadius - size + size * Math.cos(angle), plateTop - size + size * Math.sin(angle)];
+      });
+  const points: [number, number][] = [[capRadius - size, plateTop + 1], [out, plateTop + 1], [out, plateTop - size], ...corner];
+  const profile = keep(created, new runtime.CrossSection([points], "NonZero"));
+  const ring = keep(created, keep(created, profile.revolve(sides)).translate([centre[0], centre[1], 0]));
+  return keep(created, cap.subtract(ring));
+}
 
 /**
  * Whether a flip-top goes with this kind of lid: a cap that stays on while the flap in its plate opens, a screw lid's or
@@ -843,6 +921,55 @@ export function lidNeckFit(standard: Exclude<LidThreadStandard, "own">, round: {
   const { neckFrom, neckTo } = lidStandardThread(standard);
   if (2 * round.inner >= neckFrom - 1e-9 && 2 * round.outer <= neckTo + 1e-9) return null;
   return { reason: "size", diameter: Math.round(20 * round.outer) / 10 };
+}
+
+/**
+ * The size "Fit the body to the neck" makes a body's top, across, in mm (issue #1482): the middle of what counts as the
+ * standard's neck (`neckFrom` to `neckTo`), 0.4 mm under the neck itself, so that a body a little off - a cylinder's
+ * flat sides, a hollowed body's walls rebuilt by the CAD kernel - still lies well inside it. Its thread's ring is then
+ * filled up to the neck's size, and the thread is the standard's all the same.
+ */
+export function lidNeckDiameter(standard: Exclude<LidThreadStandard, "own">) {
+  const { neckFrom, neckTo } = lidStandardThread(standard);
+  return Math.round(((neckFrom + neckTo) / 2) * 100) / 100;
+}
+
+/** The kinds "Fit the body to the neck" resizes: round across, as tall as they are, and sized by their width and depth. */
+const NECK_FIT_KINDS: readonly WorkplaneShape["kind"][] = ["cylinder", "ellipse", "tube", "ring"];
+
+/**
+ * Whether a body stands upright, its top where the workplane's top is: turned about the vertical only, or upside down.
+ */
+function standsUpright(shape: WorkplaneShape) {
+  return [shape.rotationX ?? 0, shape.rotationZ ?? 0].every((degrees) => Math.abs(Math.sin((degrees * Math.PI) / 180)) < 1e-6);
+}
+
+/** A round primitive the editor resizes exactly: not turned over on its side, not tapered, twisted or sloped. */
+function neckFitPrimitive(shape: WorkplaneShape) {
+  return NECK_FIT_KINDS.includes(shape.kind) && !shape.importedMesh && !shape.groupedShapes?.length && standsUpright(shape) && !shapeHasShapeDeform(shape);
+}
+
+/**
+ * How "Fit the body to the neck" resizes a body (issue #1482), so that Make lid gives it the standard's thread: its
+ * width and depth made the neck's (`lidNeckDiameter`), its height kept. Only a body the editor resizes exactly is
+ * fitted: a cylinder, an elliptic cylinder (which comes out round), a tube or a ring, standing upright and not
+ * tapered, or one of these hollowed with nothing else done to its edges, which the editor hollows again at its new size,
+ * the walls as thick as they were. Its sides must leave it round at that size, as `lidNeckFit` measures it (a cylinder
+ * of six sides is not). Null for anything else - a mesh, a group, a cone, a body with a fillet round its rim - which the
+ * panel only measures.
+ */
+export function lidNeckFitPatch(shape: WorkplaneShape, standard: Exclude<LidThreadStandard, "own">): { width: number; depth: number; size: number } | null {
+  if (shape.hole || isNonSolidShape(shape)) return null;
+  const history = shape.edgeTreatmentHistory ?? [];
+  const hollowed = shape.importedMesh && history.length === 1 && history[0].feature.kind === "shell" && shellRebuildEntry(shape) === history[0];
+  const source = hollowed ? history[0].before : shape;
+  if (!neckFitPrimitive(source) || (hollowed && (!standsUpright(shape) || shape.groupedShapes?.length)) || (!hollowed && history.length)) return null;
+  const diameter = lidNeckDiameter(standard);
+  // A polygon's corners lie on the circle, the middles of its sides inside it.
+  const sides = roundSideCount(source.sides, diameter, diameter);
+  const inner = (diameter / 2) * Math.cos(Math.PI / sides);
+  if (diameter / 2 - inner > SCREW_ROUND || lidNeckFit(standard, { outer: diameter / 2, inner })) return null;
+  return { width: diameter, depth: diameter, size: diameter };
 }
 
 /**
@@ -1281,7 +1408,7 @@ export function lidThicknessForMagnets(options: Pick<LidOptions, "magnetHeight">
 }
 
 export type LidError =
-  | { code: "notClosed" | "notOpen" | "tooSmall" | "tooShallow" | "empty" | "magnetsNoRoom" | "hingeLidType" | "hingeNoBack" | "hingeTooLow" | "hingeStyleStraight" | "hingeStyleMagnets" | "pivotNoSides" }
+  | { code: "notClosed" | "notOpen" | "rimNotLevel" | "tooSmall" | "tooShallow" | "empty" | "magnetsNoRoom" | "hingeLidType" | "hingeNoBack" | "hingeTooLow" | "hingeStyleStraight" | "hingeStyleMagnets" | "pivotNoSides" }
   | { code: "endPlugsFlush" | "endPlugsShort" }
   | { code: "clickBumpsNoLip" | "clickBumpsNoRoom" | "handlePivot" | "handleSideShort" | "handleNotchNoRoom" }
   | { code: "screwExtras" | "screwNotRound" | "screwThinWall" }
@@ -1299,7 +1426,8 @@ export type LidError =
   | { code: "slideExtras" | "slideNotBox" }
   | { code: "slideThinWall"; wall: number }
   | { code: "slideThinLid"; thickness: number }
-  | { code: "slideShallow"; depth: number }
+  | { code: "slideShallow" | "slideFrameShallow"; depth: number }
+  | { code: "slideThinFrame"; frame: number }
   | { code: "tetherType" | "tetherThinWall" }
   | { code: "tetherNoNeck"; length: number }
   | { code: "tetherCapShort"; depth: number }
@@ -2103,7 +2231,13 @@ export type SlidePlan = {
   /** How thick the thinnest of the three walls with grooves is, and how deep the grooves go into them from their inner faces. */
   wall: number;
   depth: number;
-  /** The lid's underside, flat under its plate and tongues alike; and the grooves' floor, the gap lower: the cut wall's top. */
+  /**
+   * The lid's top: the rim, or with a frame (`frame`, how far below the rim it sits) that much lower. The lid's underside,
+   * flat under its plate and tongues alike, its thickness lower; and the grooves' floor, the gap lower still: the top of
+   * the wall it slides in through where it is cut down, or with a frame the floor of the slot through that wall.
+   */
+  lidTop: number;
+  frame: number;
   underside: number;
   floor: number;
 };
@@ -2147,6 +2281,40 @@ export function slideWall(outline: readonly (readonly Point[])[], hull: readonly
 }
 
 /**
+ * How far a box stands turned on the plate about the up axis, in degrees from -45 to 45 (Discussion #1443): the turn of
+ * the smallest rectangle round its opening seen from above, which lies along a box's straight walls, rounded corners or
+ * not. A slide-in lid is worked out with the box turned back square by it, so a box set down at an angle takes one as a
+ * square one does, and its walls facing most nearly the front, back, right and left are the sides to slide in through.
+ * 0 for a box standing square, and for an opening of fewer than three corners.
+ */
+export function slideBoxTurn(opening: readonly (readonly Point[])[]) {
+  const points = opening.flat();
+  if (points.length < 3) return 0;
+  const hull = convexHull(points);
+  let best = { area: Infinity, angle: 0 };
+  hull.forEach((start, index) => {
+    const end = hull[(index + 1) % hull.length];
+    if (Math.hypot(end[0] - start[0], end[1] - start[1]) < 1e-9) return;
+    const angle = Math.atan2(end[1] - start[1], end[0] - start[0]);
+    const along = hull.map(([x, y]) => x * Math.cos(angle) + y * Math.sin(angle));
+    const across = hull.map(([x, y]) => -x * Math.sin(angle) + y * Math.cos(angle));
+    const area = (Math.max(...along) - Math.min(...along)) * (Math.max(...across) - Math.min(...across));
+    if (area < best.area - 1e-9) best = { area, angle };
+  });
+  // A box's walls are a quarter turn apart: the turn to the nearest of them, either way.
+  const quarter = ((((best.angle * 180) / Math.PI) % 90) + 90) % 90;
+  const turn = quarter > 45 ? quarter - 90 : quarter;
+  return Math.abs(turn) < 1e-6 ? 0 : turn;
+}
+
+/** `polygons` turned `degrees` anticlockwise about the origin by any angle, where `turnedPolygons` takes quarter turns exactly. */
+function turnedByAngle(polygons: readonly (readonly Point[])[], degrees: number): Point[][] {
+  const cos = Math.cos((degrees * Math.PI) / 180);
+  const sin = Math.sin((degrees * Math.PI) / 180);
+  return polygons.map((polygon) => polygon.map(([x, y]): Point => [x * cos - y * sin, x * sin + y * cos]));
+}
+
+/**
  * A slide-in lid for a box (Discussion #1443), like a wooden pencil box's, worked out with the wall it slides in through
  * at the front (the least y; `sliceAt` gives the body turned so). The lid is a plate in the opening, its top flush with
  * the rim, the gap from the walls; along its sides and back its lower part reaches on into the walls as a tongue, which
@@ -2156,6 +2324,11 @@ export function slideWall(outline: readonly (readonly Point[])[], hull: readonly
  * tall, and its top sloping up at 45 degrees to the plate's edge, so the lid prints turned over on its top. Above the
  * groove the wall keeps SLIDE_LIP at its inner face. The front wall is cut down to the grooves' floor where the lid passes
  * (`slideSolids`), and the lid's end fills that cut.
+ * With a frame (`slideFrame`), all of that sits so much lower: the lid's top is that far below the rim, and the walls
+ * stand their full height above the grooves, a frame round the lid. The front wall then keeps its full height too, but
+ * for a slot the lid passes through, from the grooves' floor up to the gap above the lid's top (with click bumps, their
+ * height more, `slideSlotRoom`); at least SLIDE_FRAME_KEEP of the wall must stay above that, or the frame is refused as
+ * too low, with the frame it needs (`slideFrameNeeded`).
  * The body must be a box. Its opening is taken as its convex hull, so walls inside it are cut down under the lid too;
  * that must be as wide as it gets from at most a quarter of its length behind its front on to its back, so the walls the
  * lid slides along run straight (rounded corners at the front are filled by the lid's end, and round ones at the back
@@ -2171,11 +2344,15 @@ export function slidePlan(sliceAt: LidSlicer, options: LidOptions, top: number, 
   if (points.length < 3) return { error: { code: "notOpen" } };
   const opening = convexHull(points);
   const gap = options.gap;
-  const underside = top - options.thickness;
+  const frame = options.slideFrame;
+  const tenthUp = (value: number) => Math.ceil(value * 10 - 1e-6) / 10;
+  if (frame > 0 && frame < slideFrameNeeded(options) - 1e-9) return { error: { code: "slideThinFrame", frame: slideFrameNeeded(options) } };
+  const lidTop = top - frame;
+  const underside = lidTop - options.thickness;
   const floor = underside - gap;
   const low = sliceAt(floor - SLIDE_BELOW);
   const lowPoints = low.opening.flat();
-  if (lowPoints.length < 3) return { error: { code: "slideShallow", depth: Math.ceil((top - floor + SLIDE_BELOW) * 10 - 1e-6) / 10 } };
+  if (lowPoints.length < 3) return { error: { code: frame > 0 ? "slideFrameShallow" : "slideShallow", depth: tenthUp(top - floor + SLIDE_BELOW) } };
   const near = (a: readonly number[], b: readonly number[]) => a.every((value, index) => Math.abs(value - b[index]) <= SLIDE_UPRIGHT);
   if (!near(boundsOf([opening]), boundsOf([convexHull(lowPoints)])) || !near(boundsOf(atRim.outline), boundsOf(low.outline))) return { error: { code: "slideNotBox" } };
   const [left, front, right, back] = boundsOf([opening]);
@@ -2189,12 +2366,11 @@ export function slidePlan(sliceAt: LidSlicer, options: LidOptions, top: number, 
   const onSlope = gap * (Math.SQRT2 - 1);
   const fromWall = wall - SLIDE_WALL_KEEP;
   const fromPlate = options.thickness - SLIDE_EDGE - onSlope - SLIDE_LIP;
-  const tenthUp = (value: number) => Math.ceil(value * 10 - 1e-6) / 10;
   // The walls first: a thicker plate does not help them.
   if (fromWall - gap < SLIDE_MIN_HOLD - SLIDE_MESH_SLACK) return { error: { code: "slideThinWall", wall: tenthUp(gap + SLIDE_MIN_HOLD + SLIDE_WALL_KEEP) } };
   if (fromPlate - gap < SLIDE_MIN_HOLD - SLIDE_MESH_SLACK) return { error: { code: "slideThinLid", thickness: tenthUp(gap + SLIDE_MIN_HOLD + SLIDE_EDGE + onSlope + SLIDE_LIP) } };
   const depth = Math.min(SLIDE_MAX_GROOVE, fromWall, fromPlate);
-  return { outline: atRim.outline.map((polygon) => [...polygon]), opening, wall, depth, underside, floor };
+  return { outline: atRim.outline.map((polygon) => [...polygon]), opening, wall, depth, lidTop, frame, underside, floor };
 }
 
 /**
@@ -2535,12 +2711,18 @@ function bayonetSolids(runtime: ManifoldToplevel, plan: BayonetPlan, options: Li
  * - The cut: the same, the gap larger all round (the opening itself, and grown by the grooves' depth; each SLIDE_HAIR
  *   larger still), from the grooves' floor up past the rim. Within the walls it is the grooves; swept to the front, it cuts the front wall down to the
  *   floor where the lid passes, and walls inside the box under the lid. It ends a millimetre in front of the body.
+ * - With a frame, the lid's top lies `plan.lidTop`, below the rim, and the cut is swept to the front only up to the gap
+ *   above it (`slideSlotRoom`: with click bumps their height above that too, so the plate can bow up as its bump goes out):
+ *   through the front wall that is a slot as tall as the lid where it passes and that room, with the wall whole above
+ *   it, whose top is a level bridge across the lid's width as the box prints upright. Above the slot the cut is the
+ *   opening where it stands, so walls inside the box are cut down there too and the walls round it keep their height.
  * - With click bumps, one bump under the lid's end, in the middle across, just behind the front wall's inner face: a piece
  *   of a ball standing the gap and `clickBumpHeight` out of the underside, the gap from the wall's top inner edge. To come
  *   out, the lid must go up over that edge, which the plate gives by bending a little, and in it clicks back down. The
  *   ball is at least as large as it stands out, so it narrows all the way and prints on the lid turned over.
- * - With a finger notch, SLIDE_GRIP_GROOVES grooves across the plate's top near its end, at 45 degrees to both sides, so
- *   they print on the plate without support; with a pull tab, the tab on its end, as thick as the plate.
+ * - With a finger notch, SLIDE_GRIP_GROOVES grooves across the plate's top near its end (with a frame, behind the front
+ *   wall, which covers its end), at 45 degrees to both sides, so they print on the plate without support; with a pull
+ *   tab, the tab on its end, as thick as the plate.
  */
 function slideSolids(runtime: ManifoldToplevel, plan: SlidePlan, options: LidOptions, top: number, created: { delete?: () => void }[]):
   | { lid: ManifoldSolid; cuts: ManifoldSolid; bumps: number }
@@ -2579,10 +2761,15 @@ function slideSolids(runtime: ManifoldToplevel, plan: SlidePlan, options: LidOpt
   const shoulder = tip + depth;
   const grooveEnd = floor + SLIDE_EDGE + gap * Math.SQRT2;
   const ceiling = grooveEnd + depth;
+  const lidTop = plan.lidTop;
   const column = keep(created, keep(created, outline.extrude(top - floor + 2)).translate([0, 0, floor - 1]));
-  let lid = keep(created, keep(created, runtime.Manifold.union([swept([[tongue, underside], [tongue, tip], [plate, shoulder]]), sweptUpright(plate, shoulder, top)])).intersect(column));
+  let lid = keep(created, keep(created, runtime.Manifold.union([swept([[tongue, underside], [tongue, tip], [plate, shoulder]]), sweptUpright(plate, shoulder, lidTop)])).intersect(column));
   const front = keep(created, keep(created, runtime.Manifold.cube([grooveBounds.max[0] - grooveBounds.min[0] + 2, grooveBounds.max[1] - outlineFront + 2, top - floor + 3])).translate([grooveBounds.min[0] - 1, outlineFront - 1, floor - 1]));
-  const cuts = keep(created, keep(created, runtime.Manifold.union([swept([[groove, floor], [groove, grooveEnd], [room, ceiling]]), sweptUpright(room, ceiling, top + 1)])).intersect(front));
+  // With a frame, swept to the front only as high as the slot; above it, the opening where it stands, up past the rim.
+  const framed = plan.frame > 0;
+  const standing = framed ? [keep(created, keep(created, room.extrude(top + 1 - ceiling)).translate([0, 0, ceiling]))] : [];
+  const cutPieces = [swept([[groove, floor], [groove, grooveEnd], [room, ceiling]]), sweptUpright(room, ceiling, framed ? lidTop + slideSlotRoom(options) : top + 1), ...standing];
+  const cuts = keep(created, keep(created, runtime.Manifold.union(cutPieces)).intersect(front));
   const openingBounds = opening.bounds();
   const middle = (openingBounds.min[0] + openingBounds.max[0]) / 2;
   let bumps = 0;
@@ -2602,13 +2789,14 @@ function slideSolids(runtime: ManifoldToplevel, plan: SlidePlan, options: LidOpt
     const width = Math.min(SLIDE_GRIP_WIDTH, plateBounds.max[0] - plateBounds.min[0] - 4);
     const grip = Math.min(SLIDE_GRIP_DEPTH, options.thickness / 3);
     const pitch = 2 * grip + 1;
-    const first = (frontAt(plan.outline, middle) ?? outlineFront) + SLIDE_GRIP_START;
+    // From the lid's end; with a frame from behind the front wall's inner face, for over the slot the wall covers the lid.
+    const first = (framed ? frontAt([plan.opening], middle) ?? openingBounds.min[1] : frontAt(plan.outline, middle) ?? outlineFront) + SLIDE_GRIP_START;
     if (width < MIN_SLIDE_GRIP_WIDTH || first + SLIDE_GRIP_GROOVES * pitch > plateBounds.max[1] - SLIDE_GRIP_START) return { error: { code: "handleSideShort" } };
     // Each a (y, z) profile drawn out along x over the grip's width: extruded along its own z, then turned so that z runs
     // along x (its x becomes -z, its y stays y).
     const grooves = Array.from({ length: SLIDE_GRIP_GROOVES }, (_, index) => {
       const y = first + grip + index * pitch;
-      const points: [number, number][] = [[y - grip - 1, top + 1], [y, top - grip], [y + grip + 1, top + 1]];
+      const points: [number, number][] = [[y - grip - 1, lidTop + 1], [y, lidTop - grip], [y + grip + 1, lidTop + 1]];
       const profile = keep(created, new runtime.CrossSection([points.map(([py, pz]): [number, number] => [-pz, py])], "NonZero"));
       return keep(created, keep(created, keep(created, profile.extrude(width)).rotate([0, 90, 0])).translate([middle - width / 2, 0, 0]));
     });
@@ -2776,9 +2964,10 @@ export type LidBayonet = { lugs: ManifoldSolid; count: number; turn: number; hei
 /**
  * A slide-in lid's: the cut for the body (the grooves and where its wall is cut down, one solid to cut out of it, in the
  * scene's frame), the side the lid slides in through, how deep the grooves go into the walls and how thick the thinnest
- * of those is, in mm, and how many click bumps the lid has (one, or none).
+ * of those is, in mm, and how many click bumps the lid has (one, or none); how far below the rim the lid's top sits, 0 without a
+ * frame.
  */
-export type LidSlide = { cuts: ManifoldSolid; side: LidHingeSide; depth: number; wall: number; bumps: number };
+export type LidSlide = { cuts: ManifoldSolid; side: LidHingeSide; depth: number; wall: number; bumps: number; frame: number };
 
 /**
  * With a tether: the tether itself, lying flat beside the cap, and the bead for the body, standing where it goes (to be
@@ -2794,6 +2983,30 @@ export type LidTether = { part: ManifoldSolid; bead: ManifoldSolid; strap: numbe
 export type LidFlipTop = { opening: number; flap: number; hingeWidth: number; hingeLength: number; hingeThickness: number };
 
 export type LidResult = { lid: ManifoldSolid; magnets?: LidMagnets; hinge?: LidHinge; clickBumps?: LidClickBumps; handle?: LidHandleResult; screw?: LidScrew; bayonet?: LidBayonet; slide?: LidSlide; tether?: LidTether; flipTop?: LidFlipTop } | { error: LidError };
+
+/** Where a lid cuts the body to find its top: just below the rim, so a rim that is a hair uneven still counts as the top. */
+function lidRimHeight(top: number, height: number) {
+  return top - Math.min(0.3, height * 0.02);
+}
+
+/**
+ * The top of `body` (in the scene's frame, y up) as a standard's screw lid measures it (`standardScrewPlan`), before the
+ * lid is made (issue #1482): cut where `lidForSolid` cuts it, below the rim, its outline with the openings filled, and
+ * `roundOutline` of that - how far it reaches from its middle at most (`outer`) and at least (`inner`) - or null when it
+ * is not round. `lidNeckFit` of it says whether Make lid gives the body the neck's thread.
+ */
+export function lidTopRound(runtime: ManifoldToplevel, body: ManifoldSolid): { outer: number; inner: number } | null {
+  const created: { delete?: () => void }[] = [];
+  try {
+    const up = keep(created, body.transform(SCENE_TO_UP));
+    const box = up.boundingBox();
+    const outline = filled(runtime, keep(created, up.slice(lidRimHeight(box.max[2], box.max[2] - box.min[2]))), created);
+    const round = roundOutline(outline.toPolygons() as Point[][]);
+    return round ? { outer: round.outer, inner: round.inner } : null;
+  } finally {
+    Array.from(new Set(created)).forEach((value) => value.delete?.());
+  }
+}
 
 /**
  * The lid for `body` (in the scene's frame, y up), lying turned over beside it: its plate on the workplane at the
@@ -2813,15 +3026,19 @@ export function lidForSolid(runtime: ManifoldToplevel, body: ManifoldSolid, give
     const box = up.boundingBox();
     const top = box.max[2];
     const height = top - box.min[2];
-    // Just below the rim, so a rim that is a hair uneven still counts as the top.
-    const rim = top - Math.min(0.3, height * 0.02);
+    const rim = lidRimHeight(top, height);
     let section = keep(created, up.slice(rim));
     const outline = filled(runtime, section, created);
     let opening = keep(created, outline.subtract(section));
     const hasOpening = opening.area() >= MIN_OPENING_AREA;
     // A standard's cap is made to the standard whatever the body: a stand-in for a bottle from the shop may be solid.
     const standardCap = options.type === "screw" && options.threadStandard !== "own";
-    if (options.type !== "flat" && !hasOpening && !standardCap) return { error: { code: "notOpen" } };
+    if (options.type !== "flat" && !hasOpening && !standardCap) {
+      // Open lower down, under a rim that slopes (a top cut off at an angle, Discussion #1544): a lid follows a level rim.
+      const middle = keep(created, up.slice(box.min[2] + height / 2));
+      const openBelow = keep(created, filled(runtime, middle, created).subtract(middle)).area() >= MIN_OPENING_AREA;
+      return { error: { code: openBelow ? "rimNotLevel" : "notOpen" } };
+    }
     // A screw lid's rim and a screw-in lid's plug reach down as far as their thread does, a bayonet's by its own depth, not by `depth`; a slide-in lid has neither lip nor rim.
     if (options.type !== "flat" && options.type !== "screw" && options.type !== "screwIn" && options.type !== "bayonet" && options.type !== "slide" && options.depth >= height) return { error: { code: "tooShallow" } };
     // A screw lid holds by its thread alone, screwed on or in, and a bayonet lid by its lugs, all turned to close.
@@ -2934,7 +3151,7 @@ export function lidForSolid(runtime: ManifoldToplevel, body: ManifoldSolid, give
       const plan = screwPlan(sliceAt, options, top, box.min[2], rim);
       if ("error" in plan) return { error: plan.error };
       const solids = screwSolids(runtime, plan, options, top, created);
-      parts.push(solids.cap);
+      parts.push(capWithTopEdge(runtime, solids.cap, plan.centre, plan.capRadius, top + options.thickness, options, created));
       screw = { plan, thread: solids.thread };
     } else if (options.type === "screwIn") {
       const plan = screwInPlan(sliceAt, options, top, box.min[2], rim);
@@ -2946,21 +3163,23 @@ export function lidForSolid(runtime: ManifoldToplevel, body: ManifoldSolid, give
       const plan = bayonetPlan(sliceAt, options, top, box.min[2], rim);
       if ("error" in plan) return { error: plan.error };
       const solids = bayonetSolids(runtime, plan, options, top, created);
-      parts.push(solids.cap);
+      parts.push(capWithTopEdge(runtime, solids.cap, plan.centre, plan.capRadius, top + options.thickness, options, created));
       bayonet = { plan, lugs: solids.lugs };
     } else if (options.type === "slide") {
-      // Worked out with the wall it slides in through at the front, then turned back: the side's turn to the back, and
-      // half a turn more.
+      // Worked out with the box turned back square, if it stands turned on the plate (`slideBoxTurn`), and the wall it
+      // slides in through at the front, then turned back: the side's turn to the back and half a turn more, and the box's.
+      const boxTurn = slideBoxTurn(sliceAt(rim).opening);
       const slideTurn = (HINGE_SIDE_TURN[options.slideSide] + 180) % 360;
+      const square = (polygons: readonly (readonly Point[])[]) => turnedPolygons(boxTurn ? turnedByAngle(polygons, -boxTurn) : polygons, slideTurn);
       const turnedSlice: LidSlicer = (z) => {
         const level = sliceAt(z);
-        return { outline: turnedPolygons(level.outline, slideTurn), opening: turnedPolygons(level.opening, slideTurn) };
+        return { outline: square(level.outline), opening: square(level.opening) };
       };
       const plan = slidePlan(turnedSlice, options, top, rim);
       if ("error" in plan) return { error: plan.error };
       const solids = slideSolids(runtime, plan, options, top, created);
       if ("error" in solids) return { error: solids.error };
-      const back = (solid: ManifoldSolid) => (slideTurn ? keep(created, solid.rotate([0, 0, -slideTurn])) : solid);
+      const back = (solid: ManifoldSolid) => (slideTurn || boxTurn ? keep(created, solid.rotate([0, 0, boxTurn - slideTurn])) : solid);
       parts.push(back(solids.lid));
       slide = { plan, cuts: back(solids.cuts), bumps: solids.bumps };
     } else if (options.type === "flat") {
@@ -3371,7 +3590,7 @@ export function lidForSolid(runtime: ManifoldToplevel, body: ManifoldSolid, give
     if (slide) {
       const cuts = slide.cuts.transform(UP_TO_SCENE);
       handed.add(cuts);
-      slideResult = { cuts, side: options.slideSide, depth: slide.plan.depth, wall: slide.plan.wall, bumps: slide.bumps };
+      slideResult = { cuts, side: options.slideSide, depth: slide.plan.depth, wall: slide.plan.wall, bumps: slide.bumps, frame: slide.plan.frame };
     }
     const extras = { ...(hinge ? { hinge } : {}), ...(clickBumps ? { clickBumps } : {}), ...(handle ? { handle } : {}), ...(screwResult ? { screw: screwResult } : {}), ...(bayonetResult ? { bayonet: bayonetResult } : {}), ...(slideResult ? { slide: slideResult } : {}), ...(tetherResult ? { tether: tetherResult } : {}), ...(flipTopResult ? { flipTop: flipTopResult } : {}) };
     if (!options.magnets) return { lid, ...extras };
@@ -3401,6 +3620,8 @@ export function lidErrorMessage(error: LidError) {
       return t("lid.error.notClosed");
     case "notOpen":
       return t("lid.error.notOpen");
+    case "rimNotLevel":
+      return t("lid.error.rimNotLevel");
     case "tooSmall":
       return t("lid.error.tooSmall");
     case "tooShallow":
@@ -3489,6 +3710,10 @@ export function lidErrorMessage(error: LidError) {
       return t("lid.error.slideThinLid", { thickness: error.thickness.toLocaleString(numberLocale()) });
     case "slideShallow":
       return t("lid.error.slideShallow", { depth: error.depth.toLocaleString(numberLocale()) });
+    case "slideFrameShallow":
+      return t("lid.error.slideFrameShallow", { depth: error.depth.toLocaleString(numberLocale()) });
+    case "slideThinFrame":
+      return t("lid.error.slideThinFrame", { frame: error.frame.toLocaleString(numberLocale()) });
     case "tetherType":
       return t("lid.error.tetherType");
     case "tetherThinWall":
@@ -3552,7 +3777,7 @@ export type LidShapeBayonet = { lugs: WorkplaneShape; count: number; turn: numbe
  * With a slide-in lid, the cut for the body (a hole grouped with it, as a flush hinge's slots are), the side the lid slides
  * in through, the grooves' depth and the thinnest wall they are in, and how many click bumps the lid has.
  */
-export type LidShapeSlide = { cuts: WorkplaneShape; side: LidHingeSide; depth: number; wall: number; bumps: number };
+export type LidShapeSlide = { cuts: WorkplaneShape; side: LidHingeSide; depth: number; wall: number; bumps: number; frame: number };
 
 /**
  * With a tether, the tether (a body of its own beside the cap, as a hinge pin printed apart is) and the bead for the body
@@ -3563,34 +3788,62 @@ export type LidShapeTether = { part: WorkplaneShape; bead: WorkplaneShape; strap
 export type LidShapeResult = { sliding?: { cutters: WorkplaneShape[]; posts?: WorkplaneShape[] }; lid: WorkplaneShape; magnets?: LidShapeMagnets; hinge?: LidShapeHinge; clickBumps?: LidShapeClickBumps; handle?: LidShapeHandle; screw?: LidShapeScrew; bayonet?: LidShapeBayonet; slide?: LidShapeSlide; tether?: LidShapeTether; flipTop?: LidFlipTop } | { lid: null; error: string };
 
 /**
+ * The body a lid is made for, in the kernel: the solids among `targets` joined and the holes among them cut away. Null
+ * when one of them is not a closed solid. What it makes goes into `created`, to be let go with the rest.
+ */
+function lidBody(runtime: ManifoldToplevel, targets: readonly WorkplaneShape[], created: ManifoldSolid[]): ManifoldSolid | null {
+  const solids = targets.filter((shape) => !shape.hole && !isNonSolidShape(shape));
+  const holes = targets.filter((shape) => shape.hole);
+  const closed = (part: ManifoldSolid | null): part is ManifoldSolid => Boolean(part && part.status() === "NoError" && part.numTri() > 0);
+  const builtParts = solids.map((shape) => shapeToManifoldSolid(runtime, shape, created));
+  const builtCutters = holes.map((shape) => shapeToManifoldSolid(runtime, shape, created));
+  const parts = builtParts.filter(closed);
+  const cutters = builtCutters.filter(closed);
+  if (!parts.length || parts.length !== builtParts.length || cutters.length !== builtCutters.length) return null;
+  let body = parts.length === 1 ? parts[0] : runtime.Manifold.union(parts);
+  created.push(body);
+  if (cutters.length) {
+    // The holes joined into one are a body of their own in the kernel's memory, let go with the rest.
+    const holesTogether = runtime.Manifold.union(cutters);
+    created.push(holesTogether);
+    body = body.subtract(holesTogether);
+    created.push(body);
+  }
+  return body;
+}
+
+/**
+ * The top of the selected bodies as Make lid measures it for a standard's thread (`lidTopRound`), the solids joined and
+ * their holes cut away as `lidForShapes` does: the lid panel says with it, before the lid is made, whether the body gets
+ * the neck's thread (issue #1482). `round` is null for a top that is not round; null for no body, or one that is not closed.
+ */
+export async function lidTopForShapes(targets: readonly WorkplaneShape[]): Promise<{ round: { outer: number; inner: number } | null } | null> {
+  if (!targets.some((shape) => !shape.hole && !isNonSolidShape(shape))) return null;
+  const created: ManifoldSolid[] = [];
+  try {
+    const runtime = await getManifoldRuntime();
+    const body = lidBody(runtime, targets, created);
+    return body ? { round: lidTopRound(runtime, body) } : null;
+  } catch {
+    return null;
+  } finally {
+    Array.from(new Set(created)).forEach(disposeManifold);
+  }
+}
+
+/**
  * The lid for the selected bodies: the solids joined and the holes among them cut away, then the lid made for what is
  * left. It is a mesh named after the first body, in its colour. With magnets, the posts and pockets for the body come
  * with it, standing where they go: grouped with the bodies, they cut the pockets into them.
  */
 export async function lidForShapes(targets: readonly WorkplaneShape[], given: LidOptions): Promise<LidShapeResult> {
   const solids = targets.filter((shape) => !shape.hole && !isNonSolidShape(shape));
-  const holes = targets.filter((shape) => shape.hole);
   if (!solids.length) return { lid: null, error: t("lid.error.needsBody") };
   const created: ManifoldSolid[] = [];
   try {
     const runtime = await getManifoldRuntime();
-    const closed = (part: ManifoldSolid | null): part is ManifoldSolid => Boolean(part && part.status() === "NoError" && part.numTri() > 0);
-    const builtParts = solids.map((shape) => shapeToManifoldSolid(runtime, shape, created));
-    const builtCutters = holes.map((shape) => shapeToManifoldSolid(runtime, shape, created));
-    const parts = builtParts.filter(closed);
-    const cutters = builtCutters.filter(closed);
-    if (parts.length !== builtParts.length || cutters.length !== builtCutters.length) {
-      return { lid: null, error: lidErrorMessage({ code: "notClosed" }) };
-    }
-    let body = parts.length === 1 ? parts[0] : runtime.Manifold.union(parts);
-    created.push(body);
-    if (cutters.length) {
-      // The holes joined into one are a body of their own in the kernel's memory, let go with the rest.
-      const holesTogether = runtime.Manifold.union(cutters);
-      created.push(holesTogether);
-      body = body.subtract(holesTogether);
-      created.push(body);
-    }
+    const body = lidBody(runtime, targets, created);
+    if (!body) return { lid: null, error: lidErrorMessage({ code: "notClosed" }) };
     if (given.type === "sliding") {
       const options = normalizeLidOptions(given);
       const parts = slidingLidParts(runtime, body, solids[0], options);
@@ -3678,8 +3931,8 @@ export async function lidForShapes(targets: readonly WorkplaneShape[], given: Li
     if (result.slide) {
       const cuts = holeShape(result.slide.cuts, "slide-grooves", t("lid.slideGroovesName", { name: source.name }));
       if (!cuts) return { lid: null, error: lidErrorMessage({ code: "empty" }) };
-      const { side, depth, wall, bumps } = result.slide;
-      slide = { cuts, side, depth, wall, bumps };
+      const { side, depth, wall, bumps, frame } = result.slide;
+      slide = { cuts, side, depth, wall, bumps, frame };
     }
     const extras = { ...(hinge ? { hinge } : {}), ...(clickBumps ? { clickBumps } : {}), ...(handle ? { handle } : {}), ...(screw ? { screw } : {}), ...(bayonet ? { bayonet } : {}), ...(slide ? { slide } : {}), ...(tether ? { tether } : {}), ...(result.flipTop ? { flipTop: result.flipTop } : {}) };
     if (!result.magnets) return { lid, ...extras };

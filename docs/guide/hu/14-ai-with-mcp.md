@@ -78,6 +78,7 @@ Az MI ugyanazokkal a funkciókkal dolgozik, mint te, ugyanazon az úton, mint a 
 | Eszköz | Mit csinál |
 | --- | --- |
 | `layerling_list_editors` | felsorolja a nyitott szerkesztőlapokat |
+| `layerling_rename_project` | nevet ad a projektnek, mint a projekt neve melletti ceruza |
 | `layerling_open_editor` | új szerkesztőlapot nyit az alapértelmezett böngésződben, és megvárja, amíg csatlakozik (csak a saját számítógépeden) |
 | `layerling_read_scene` | beolvassa a jelenetet, a kijelölést, a mértékegységeket és az összes objektum pontos méreteit |
 | `layerling_list_objects` | felsorolja az összes objektumot méretekkel, helyzettel, elforgatással és azonosítóval |
@@ -159,6 +160,7 @@ Az MI ugyanazokkal a funkciókkal dolgozik, mint te, ugyanazon az úton, mint a 
 | `layerling_insert_custom_shape` | beilleszt egy saját alakzatot a nyitott tervbe, ha kell, egy x/z helyre |
 | `layerling_delete_custom_shape` | eltávolít egy saját alakzatot; a beillesztett testek megmaradnak |
 | `layerling_show_workplane` | elrejti és megmutatja a tárgyasztalt a rácsával, például az alsó oldalról készülő képhez (csak a nézet) |
+| `layerling_focus_mode` | be- és kikapcsolja a fókusz módot: elrejti a címsort és a láblécet, hogy több hely legyen (csak a szerkesztő kerete) |
 | `layerling_set_section_view` | egy sík mentén felnyitja a nézetet, hogy belenézz (csak a nézet, semmi sem vágódik szét) |
 | `layerling_measurements` | megjeleníti vagy elrejti a mérőszalag méréseit, és felsorolja őket a hosszukkal, és elrejti vagy megjeleníti a kijelölés körüli méreteket, mint a [[Q]], és hosszt ír be az egyikhez, ami a végén lévő testet úgy mozdítja el, mint a számra kattintás |
 | `layerling_measure_angle` | szöget mér, mint a szögmérő: három pont csúcsánál vagy két sík lap között, és megmutatja a nézetben |

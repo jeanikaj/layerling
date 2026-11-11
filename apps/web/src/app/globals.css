@@ -468,7 +468,7 @@ html[data-toolbar-size="small"] {
 }
 
 html[data-toolbar-size="large"],
-html[data-simple-mode="on"]:not([data-toolbar-size]) {
+html[data-simple-mode="on"]:not([data-toolbar-size], [data-simple-mode-enlarge="off"]) {
   --toolbar-scale: 1.25;
   --editor-toolbar-tools-height: 87px;
   --editor-toolbar-height: 131px;
@@ -478,8 +478,8 @@ html[data-simple-mode="on"]:not([data-toolbar-size]) {
    so the groups wrap onto a further row at any width rather than being cut off. */
 html[data-toolbar-size="large"] .toolbar-mode-content,
 html[data-toolbar-size="large"] .sketch-toolbar-ribbon,
-html[data-simple-mode="on"]:not([data-toolbar-size]) .toolbar-mode-content,
-html[data-simple-mode="on"]:not([data-toolbar-size]) .sketch-toolbar-ribbon {
+html[data-simple-mode="on"]:not([data-toolbar-size], [data-simple-mode-enlarge="off"]) .toolbar-mode-content,
+html[data-simple-mode="on"]:not([data-toolbar-size], [data-simple-mode-enlarge="off"]) .sketch-toolbar-ribbon {
   flex-wrap: wrap;
   height: auto;
 }
@@ -710,34 +710,36 @@ button {
   transform: translate(-50%, -50%);
 }
 
+/* No rounding: the shimmer's radius only showed on the corners the faces share with their boxes, not on the top. */
 .editor-loading-model span {
   position: absolute;
-  border-radius: 8px;
+  border-radius: 0;
   box-shadow: 0 10px 24px rgba(94, 72, 48, 0.08);
 }
 
+/* A 2:1 isometric box, 66 px from its middle to each side, the faces 6 px apart with even seams. */
 .editor-loading-model-top {
-  top: 9px;
+  top: 10px;
   left: 24px;
   width: 132px;
   height: 66px;
-  clip-path: polygon(50% 0, 100% 44%, 50% 100%, 0 44%);
+  clip-path: polygon(66px 0, 132px 33px, 66px 66px, 0 33px);
 }
 
 .editor-loading-model-front {
-  top: 66px;
+  top: 49px;
   left: 24px;
-  width: 66px;
-  height: 78px;
-  clip-path: polygon(0 0, 100% 27%, 100% 100%, 0 72%);
+  width: 63px;
+  height: 103.5px;
+  clip-path: polygon(0 0, 63px 31.5px, 63px 103.5px, 0 72px);
 }
 
 .editor-loading-model-side {
-  top: 66px;
-  left: 90px;
-  width: 66px;
-  height: 78px;
-  clip-path: polygon(0 27%, 100% 0, 100% 72%, 0 100%);
+  top: 49px;
+  left: 93px;
+  width: 63px;
+  height: 103.5px;
+  clip-path: polygon(0 31.5px, 63px 0, 63px 72px, 0 103.5px);
 }
 
 .editor-loading-viewport-controls {
@@ -3200,14 +3202,15 @@ html[data-theme="dark"] .shell-openings-summary {
   color: #a8957f;
 }
 
-.offset-copy {
+/* Both classes: .edge-modifier-field comes later and would turn the row back into a block, so the box sat against its label (#1536). */
+.edge-modifier-field.offset-copy {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   font-weight: 600;
 }
 
-.offset-copy input {
+.edge-modifier-field.offset-copy input {
   flex: none;
   margin-top: 2px;
 }
@@ -3252,7 +3255,9 @@ html[data-theme="dark"] .shell-openings-summary {
   cursor: not-allowed;
 }
 
-.edge-modifier-history-actions span {
+/* Only the note beside the toggle: the labels inside the buttons keep the button's size and colour,
+   so "Undo an edge feature" no longer looks small and greyed out like a disabled button (#1600). */
+.edge-modifier-history-actions > span {
   color: #7a6851;
   font-size: 10px;
   line-height: 1.35;
@@ -3330,12 +3335,12 @@ html[data-theme="dark"] .shell-openings-summary {
 
 .edge-modifier-history-item strong {
   color: #6d4310;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .edge-modifier-history-item small {
   color: #7a6851;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -3402,6 +3407,42 @@ html[data-theme="dark"] .shell-openings-summary {
   gap: 6px;
   padding: 0 12px;
   font-weight: 700;
+}
+
+/* The lid panel's button that fits the body to a standard's neck (issue #1482), under the line that measures its top. */
+.lid-neck-fit-button {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 0 12px;
+  color: #9f5508;
+  background: #fff1e0;
+  border: 1px solid #e08a2c;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.lid-neck-fit-button:hover:not(:disabled) {
+  background: #fde3c4;
+}
+
+.lid-neck-fit-button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+html[data-theme="dark"] .lid-neck-fit-button {
+  color: #f3a452;
+  background: #3a2c16;
+  border-color: #b9741f;
+}
+
+html[data-theme="dark"] .lid-neck-fit-button:hover:not(:disabled) {
+  background: #4a3719;
 }
 
 .cable-channel-picking {
@@ -3612,8 +3653,9 @@ html[data-theme="dark"] .cable-channel-status.warning {
   border-color: #b35f07;
 }
 
-/* Four kinds of connector, two to a row, so "Schwalbenschwanz" and the like fit (Discussion #832). */
-.split-connector-control > div {
+/* Four kinds of connector, two to a row, so "Schwalbenschwanz" and the like fit (Discussion #832); Split and Stretch side by side. */
+.split-connector-control > div,
+.split-mode-control > div {
   grid-template-columns: repeat(2, 1fr);
 }
 
@@ -4182,7 +4224,11 @@ html[data-theme="dark"] .toolbar-title-help .action-icon-button.active {
 .toolbar-section[data-group="shapes"] { --group-color: var(--group-shapes); }
 .toolbar-section[data-group="visibility"] { --group-color: var(--group-visibility); }
 .toolbar-section[data-group="combine"] { --group-color: var(--group-combine); }
-.toolbar-section[data-group="modify"] { --group-color: var(--group-modify); }
+/* Modify's four groups (#1551) keep its colour: they belong together. */
+.toolbar-section[data-group="mirrorPattern"],
+.toolbar-section[data-group="splitShape"],
+.toolbar-section[data-group="edgesWalls"],
+.toolbar-section[data-group="surface"] { --group-color: var(--group-modify); }
 .toolbar-section[data-group="arrange"] { --group-color: var(--group-arrange); }
 .toolbar-section[data-group="manage"] { --group-color: var(--group-manage); }
 .toolbar-section[data-group="help"] { --group-color: var(--group-help); }
@@ -4314,61 +4360,6 @@ html[data-theme="dark"] .toolbar-title-help .action-icon-button.active {
   border-radius: 11px;
 }
 
-/* "Modify" is cut into named sections (MODIFY_SECTIONS, Stefan 31.10.2026): a fine line in the group's colour between
-   them, and each section's name in the label row above it instead of the group's, which stays on the folded button. */
-.toolbar-subgroup {
-  position: relative;
-  display: flex;
-  align-self: stretch;
-  align-items: center;
-}
-
-.toolbar-subgroup + .toolbar-subgroup {
-  margin-left: 4px;
-  padding-left: 5px;
-}
-
-.toolbar-subgroup + .toolbar-subgroup::before {
-  position: absolute;
-  top: 7px;
-  bottom: 7px;
-  left: 0;
-  width: 1px;
-  content: "";
-  background: color-mix(in srgb, var(--group-color) 55%, transparent);
-}
-
-.toolbar-subgroup-label {
-  position: absolute;
-  bottom: calc(100% + 2px);
-  left: 50%;
-  color: var(--group-color);
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 16px;
-  text-transform: uppercase;
-  white-space: nowrap;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.86);
-  transform: translateX(-50%);
-  pointer-events: none;
-  user-select: none;
-}
-
-.toolbar-section:not([data-collapsed]):has(.toolbar-subgroup-label) > .toolbar-section-label {
-  visibility: hidden;
-}
-
-/* Opened from the folded button, the tools hang below it: the section names go inside, above their tools. */
-.toolbar-section[data-collapsed][data-open] > .toolbar-section-tools:not(.toolbar-collapse-box):has(.toolbar-subgroup) {
-  padding-top: 18px;
-}
-
-.toolbar-section[data-collapsed][data-open] .toolbar-subgroup-label {
-  bottom: auto;
-  top: -16px;
-}
-
 /* A group the window has no room for folds into one button under its name (useToolbarCollapse, Stefan 29.10.2026):
    resting the pointer on it, or a tap, opens its tools beneath it, over the workplane. */
 .toolbar-collapse-box {
@@ -4423,15 +4414,16 @@ html[data-theme="dark"] .toolbar-title-help .action-icon-button.active {
 
 /* History's folded button is Undo itself (#1148): the tab is then a button of its own under it, a little larger than it
    looks so it is easy to hit, and only it opens the group. */
-.toolbar-collapse-box:has(.toolbar-collapse-tab) {
+.toolbar-collapse-anchor {
   position: relative;
+  display: flex;
 }
 
 /* It stays above the opened tools, whose frame it touches, so a second click on it closes them; it ends above the first
-   tool's top edge. */
+   tool's top edge. It hangs from Undo's bottom edge like the other tabs from their buttons (#1506). */
 .toolbar-section[data-collapsed] .toolbar-collapse-tab {
   position: absolute;
-  bottom: -9px;
+  bottom: -14px;
   left: 50%;
   z-index: 71;
   width: 30px;
@@ -4443,8 +4435,9 @@ html[data-theme="dark"] .toolbar-title-help .action-icon-button.active {
   transform: translateX(-50%);
 }
 
+/* The chevron starts 2px above the hit area, a pixel above Undo's bottom edge, where the other groups' tabs start. */
 .toolbar-section[data-collapsed] .toolbar-collapse-tab::before {
-  top: 1px;
+  top: -2px;
   bottom: auto;
 }
 
@@ -4748,6 +4741,13 @@ html[data-theme="dark"] .toolbar-title-help .action-icon-button.active {
   min-width: 82px;
 }
 
+/* Shapes taken out of the ribbon (#1550): the section stays, without width, so its panel still opens from the command
+   search at the spot where the group would stand. */
+.toolbar-shapes-section.out-of-ribbon {
+  min-width: 0;
+  width: 0;
+}
+
 .shape-menu-trigger {
   position: relative;
   display: grid;
@@ -4772,6 +4772,30 @@ html[data-theme="dark"] .toolbar-title-help .action-icon-button.active {
 .shape-menu-trigger .vector-toolbar-sprite-icon {
   width: var(--toolbar-icon-size);
   height: var(--toolbar-icon-size);
+}
+
+/* The shapes button opens a menu like a folded group, so it carries the same tab with a chevron in the group's colour
+   under it, turned up while the menu is open (Discussion #1506). It lies above the cube, which would hide its top, and
+   a pixel lower than there for the button's 1px border, so it meets the frame where the folded groups' tabs do. */
+.shape-menu-trigger::before {
+  position: absolute;
+  z-index: 1;
+  bottom: -11px;
+  left: 50%;
+  width: 18px;
+  height: 11px;
+  content: "";
+  background-color: var(--group-color);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 11'%3E%3Cpath d='M5.5 3.5 9 7l3.5-3.5' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  border-radius: 0 0 6px 6px;
+  transform: translateX(-50%);
+  transition: transform 0.15s ease;
+}
+
+.shape-menu-trigger.active::before {
+  transform: translateX(-50%) scaleY(-1);
 }
 
 .shape-menu-dropdown {
@@ -4944,7 +4968,7 @@ html[data-toolbar-size="small"] .shape-menu-dropdown:not(.sketch-shape-menu-drop
 }
 
 html[data-toolbar-size="large"] .shape-menu-dropdown:not(.sketch-shape-menu-dropdown),
-html[data-simple-mode="on"]:not([data-toolbar-size]) .shape-menu-dropdown:not(.sketch-shape-menu-dropdown) {
+html[data-simple-mode="on"]:not([data-toolbar-size], [data-simple-mode-enlarge="off"]) .shape-menu-dropdown:not(.sketch-shape-menu-dropdown) {
   --shape-menu-columns: 3;
 }
 
@@ -9572,6 +9596,9 @@ html[data-theme="dark"] .rotation-angle-badge {
   width: 320px;
   max-height: none;
   overflow-y: auto;
+  /* The snap dock sticks to the bottom and covers the last ~55px of the view; the browser counts a field behind it
+     as visible and does not scroll to it on Tab. This keeps a focused field above the dock (Issue #1547). */
+  scroll-padding-bottom: 64px;
   /* A thin bar that shows: on a laptop's touchpad the panel is easier to scroll by its bar. */
   scrollbar-color: #cdbfa9 transparent;
   scrollbar-width: thin;
@@ -10439,13 +10466,20 @@ html[data-theme="dark"] .property-defaults-actions button {
 
 .select-property {
   display: grid;
-  /* A long label (German "Buchstabenkanten") takes the room it needs instead of running under the field. */
-  grid-template-columns: minmax(92px, max-content) minmax(0, 1fr);
+  /* A long label (German "Buchstabenkanten") takes the room it needs instead of running under the field,
+     but at most a little over half the row: past that it wraps, and the field keeps room for its choice
+     ("Through the Sections" left "Straight" cut off, Discussion #1614). */
+  grid-template-columns: fit-content(55%) minmax(0, 1fr);
   align-items: center;
   gap: 10px;
   color: #867563;
   font-size: 15px;
   font-weight: 650;
+}
+
+/* Short labels still start their fields at the same place. */
+.select-property > span:first-child {
+  min-width: 92px;
 }
 
 /* The board's number fields keep their width and a long label wraps instead: "Reach through the wall (mm)" squeezed its field until the last digit was cut off (#1344). */
@@ -11337,8 +11371,9 @@ html[data-theme="dark"] .shape-inspector .name-tag-start .name-tag-start-button:
   border-color: #f0a65a;
 }
 
+/* Across the whole row, as under the number fields: under the field alone it was a narrow column (Discussion #1614). */
 .select-property-hint {
-  grid-column: 2;
+  grid-column: 1 / -1;
   margin-top: -5px;
   color: #8d7b68;
   font-size: 12px;
@@ -12213,7 +12248,8 @@ html[data-theme="dark"] .pattern-picker-empty {
   border-color: #cf710f;
 }
 
-.workspace-printer-play-make {
+.workspace-printer-play-make,
+.workspace-printer-play-base {
   grid-column: 2;
 }
 
@@ -14127,7 +14163,7 @@ html[data-theme="dark"] .edge-modifier-history-edit:hover {
   background: #3f301f;
 }
 
-html[data-theme="dark"] .edge-modifier-history-actions span,
+html[data-theme="dark"] .edge-modifier-history-actions > span,
 html[data-theme="dark"] .edge-modifier-history-hint,
 html[data-theme="dark"] .edge-modifier-history-item small {
   color: #a79078;
@@ -14654,8 +14690,7 @@ html[data-theme="dark"] .toolbar-section {
   border-color: #645546;
 }
 
-html[data-theme="dark"] .toolbar-section-label,
-html[data-theme="dark"] .toolbar-subgroup-label {
+html[data-theme="dark"] .toolbar-section-label {
   color: #d4c6b7;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.72);
 }
@@ -15014,8 +15049,11 @@ html[data-theme="dark"] .grid-settings {
    "Huelle" passten 2081, 1765 und 1615 px. Ohne "Flaeche loeschen" waren es
    2038, 1728 und 1582 px, ohne den Knopf der Interaktiven Hilfe 1990, 1688
    und 1544 px: Jeder neue Knopf verschiebt alle drei Schwellen um das, was
-   er braucht - neu messen. */
-@media (max-width: 2215px) {
+   er braucht - neu messen.
+   Neu gemessen am 09.11.2026 (1.154.1, #1533): voll 2369 px, mittel 2045 px,
+   klein 1732 px; die alten Schwellen 2215/1897 lagen so tief, dass bei 1898 bis
+   2045 px die Gruppe Flaeche vom Band daneben verdeckt wurde. */
+@media (max-width: 2375px) {
   :root {
     --toolbar-icon-size: calc(37px * var(--toolbar-scale));
   }
@@ -15036,7 +15074,7 @@ html[data-theme="dark"] .grid-settings {
   }
 }
 
-@media (max-width: 1897px) {
+@media (max-width: 2050px) {
   :root {
     --toolbar-icon-size: calc(34px * var(--toolbar-scale));
   }
@@ -15069,6 +15107,22 @@ html[data-theme="dark"] .grid-settings {
   .toolbar-mode-content .tool-group {
     display: contents;
   }
+}
+
+/* "Keep all groups open" folds nothing, so the widths above, worked out for a ribbon that folds, do not hold: between
+   them and the width the open groups need, the browser squeezed the groups below their buttons instead, and Visibility's
+   buttons spilled over Shapes with its name cut off (Jürgen Keller by mail, 10.11.2026, in Safari with its tab bar on
+   the left). Pinned, the groups wrap onto a further row whenever they do not fit, at any width. */
+.toolbar-mode-content.ribbon-pinned {
+  flex-wrap: wrap;
+  height: auto;
+}
+
+/* The 3D ribbon's two wrappers of groups lay their sections out as if they were not there, at every width: each section
+   carries its own CSS order (the order set in the settings, lib/ribbonOrder.ts), and a group may stand in either wrapper's
+   place. */
+.toolbar-mode-content.geometry .tool-group {
+  display: contents;
 }
 
 /* Die Kurzanleitung teilt sich die Karte mit der Kuerzelliste; nur die
@@ -15240,7 +15294,10 @@ html[data-theme="dark"] .theme-check {
   display: flex;
   flex-direction: column;
   width: 300px;
-  max-width: calc(100vw - 120px);
+  /* Wider or narrower at the lower right corner (Discussion #1636); MIN/MAX_PANEL_WIDTH in ObjectListPanel.tsx. */
+  min-width: min(240px, calc(100vw - 120px));
+  max-width: min(600px, calc(100vw - 120px));
+  resize: horizontal;
   max-height: calc(100% - 96px);
   background: rgba(254, 253, 252, 0.96);
   backdrop-filter: blur(12px);
@@ -15605,14 +15662,18 @@ html[data-theme="dark"] .theme-check {
   flex: none;
 }
 
+/* One letter for Solid or Hole, the word as its tooltip (Discussion #1636). */
 .outliner-badge {
   display: inline-block;
-  padding: 1px 6px;
+  min-width: 18px;
+  padding: 1px 4px;
   font-size: 10px;
   font-weight: 700;
+  line-height: 14px;
+  text-align: center;
   border-radius: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  cursor: default;
 }
 
 .outliner-badge.badge-solid {
@@ -15628,8 +15689,10 @@ html[data-theme="dark"] .theme-check {
 }
 
 .outliner-badge.small {
-  padding: 0 4px;
+  min-width: 15px;
+  padding: 0 3px;
   font-size: 9px;
+  line-height: 12px;
 }
 
 .outliner-row-actions {
@@ -16136,6 +16199,11 @@ html[data-theme="dark"] .shape-menu-pin.active {
 /* Collapsed: the title bar alone, without the line that separates it from the list. */
 .outliner-panel.collapsed .outliner-header {
   border-bottom: none;
+}
+
+/* The title bar alone has no corner to drag the width at. */
+.outliner-panel.collapsed {
+  resize: none;
 }
 
 .guide-modal h3 {
@@ -17401,4 +17469,445 @@ html[data-theme="dark"] .plate-bar-separator {
   width: 32px;
   height: 32px;
   color: inherit;
+}
+
+/* Tinted tiles for the inspector cards: each fold-away section keeps its own colour, in both themes. */
+.property-card:has(> .property-card-header[aria-controls^="properties-"]) {
+  background: rgba(217, 118, 28, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(217, 118, 28, 0.45);
+}
+.property-card:has(> .property-card-header[aria-controls^="properties-"]) > .property-card-header {
+  color: #9A520F;
+  font-weight: 650;
+}
+.property-card:has(> .property-card-header[aria-controls^="properties-"]) > .property-card-header:hover {
+  background: rgba(217, 118, 28, 0.2);
+}
+.property-card:has(> .property-card-header[aria-controls^="properties-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(217, 118, 28) 0 var(--slider-pos), rgba(217, 118, 28, 0.24) var(--slider-pos) 100%);
+}
+.property-card:has(> .property-card-header[aria-controls^="properties-"]) .range-control input[type="range"]::-webkit-slider-thumb {
+  border-color: rgb(217, 118, 28);
+}
+.property-card:has(> .property-card-header[aria-controls^="properties-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(217, 118, 28, 0.24);
+}
+.property-card:has(> .property-card-header[aria-controls^="properties-"]) .range-control input[type="range"]::-moz-range-progress {
+  background: rgb(217, 118, 28);
+}
+.property-card:has(> .property-card-header[aria-controls^="properties-"]) .range-control input[type="range"]::-moz-range-thumb {
+  border-color: rgb(217, 118, 28);
+}
+.property-card:has(> .property-card-header[aria-controls^="properties-"]) .check-property input {
+  accent-color: rgb(217, 118, 28);
+  --sw: rgb(217, 118, 28);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="properties-"]) {
+  background: rgba(217, 118, 28, 0.17);
+  box-shadow: inset 0 0 0 1px rgba(217, 118, 28, 0.5);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="properties-"]) > .property-card-header {
+  color: #F2A453;
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="properties-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(217, 118, 28) 0 var(--slider-pos), rgba(255, 255, 255, 0.16) var(--slider-pos) 100%);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="properties-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.16);
+}
+.property-card:has(> .property-card-header[aria-controls^="position-"]) {
+  background: rgba(70, 130, 200, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(70, 130, 200, 0.45);
+}
+.property-card:has(> .property-card-header[aria-controls^="position-"]) > .property-card-header {
+  color: #245C99;
+  font-weight: 650;
+}
+.property-card:has(> .property-card-header[aria-controls^="position-"]) > .property-card-header:hover {
+  background: rgba(70, 130, 200, 0.2);
+}
+.property-card:has(> .property-card-header[aria-controls^="position-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(70, 130, 200) 0 var(--slider-pos), rgba(70, 130, 200, 0.24) var(--slider-pos) 100%);
+}
+.property-card:has(> .property-card-header[aria-controls^="position-"]) .range-control input[type="range"]::-webkit-slider-thumb {
+  border-color: rgb(70, 130, 200);
+}
+.property-card:has(> .property-card-header[aria-controls^="position-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(70, 130, 200, 0.24);
+}
+.property-card:has(> .property-card-header[aria-controls^="position-"]) .range-control input[type="range"]::-moz-range-progress {
+  background: rgb(70, 130, 200);
+}
+.property-card:has(> .property-card-header[aria-controls^="position-"]) .range-control input[type="range"]::-moz-range-thumb {
+  border-color: rgb(70, 130, 200);
+}
+.property-card:has(> .property-card-header[aria-controls^="position-"]) .check-property input {
+  accent-color: rgb(70, 130, 200);
+  --sw: rgb(70, 130, 200);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="position-"]) {
+  background: rgba(70, 130, 200, 0.17);
+  box-shadow: inset 0 0 0 1px rgba(70, 130, 200, 0.5);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="position-"]) > .property-card-header {
+  color: #9CC4F2;
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="position-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(70, 130, 200) 0 var(--slider-pos), rgba(255, 255, 255, 0.16) var(--slider-pos) 100%);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="position-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.16);
+}
+.property-card:has(> .property-card-header[aria-controls^="rotation-"]) {
+  background: rgba(40, 170, 140, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(40, 170, 140, 0.45);
+}
+.property-card:has(> .property-card-header[aria-controls^="rotation-"]) > .property-card-header {
+  color: #17705D;
+  font-weight: 650;
+}
+.property-card:has(> .property-card-header[aria-controls^="rotation-"]) > .property-card-header:hover {
+  background: rgba(40, 170, 140, 0.2);
+}
+.property-card:has(> .property-card-header[aria-controls^="rotation-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(40, 170, 140) 0 var(--slider-pos), rgba(40, 170, 140, 0.24) var(--slider-pos) 100%);
+}
+.property-card:has(> .property-card-header[aria-controls^="rotation-"]) .range-control input[type="range"]::-webkit-slider-thumb {
+  border-color: rgb(40, 170, 140);
+}
+.property-card:has(> .property-card-header[aria-controls^="rotation-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(40, 170, 140, 0.24);
+}
+.property-card:has(> .property-card-header[aria-controls^="rotation-"]) .range-control input[type="range"]::-moz-range-progress {
+  background: rgb(40, 170, 140);
+}
+.property-card:has(> .property-card-header[aria-controls^="rotation-"]) .range-control input[type="range"]::-moz-range-thumb {
+  border-color: rgb(40, 170, 140);
+}
+.property-card:has(> .property-card-header[aria-controls^="rotation-"]) .check-property input {
+  accent-color: rgb(40, 170, 140);
+  --sw: rgb(40, 170, 140);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="rotation-"]) {
+  background: rgba(40, 170, 140, 0.17);
+  box-shadow: inset 0 0 0 1px rgba(40, 170, 140, 0.5);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="rotation-"]) > .property-card-header {
+  color: #7FDEC6;
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="rotation-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(40, 170, 140) 0 var(--slider-pos), rgba(255, 255, 255, 0.16) var(--slider-pos) 100%);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="rotation-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.16);
+}
+.property-card:has(> .property-card-header[aria-controls^="taper-"]) {
+  background: rgba(140, 110, 210, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(140, 110, 210, 0.45);
+}
+.property-card:has(> .property-card-header[aria-controls^="taper-"]) > .property-card-header {
+  color: #5B3FA8;
+  font-weight: 650;
+}
+.property-card:has(> .property-card-header[aria-controls^="taper-"]) > .property-card-header:hover {
+  background: rgba(140, 110, 210, 0.2);
+}
+.property-card:has(> .property-card-header[aria-controls^="taper-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(140, 110, 210) 0 var(--slider-pos), rgba(140, 110, 210, 0.24) var(--slider-pos) 100%);
+}
+.property-card:has(> .property-card-header[aria-controls^="taper-"]) .range-control input[type="range"]::-webkit-slider-thumb {
+  border-color: rgb(140, 110, 210);
+}
+.property-card:has(> .property-card-header[aria-controls^="taper-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(140, 110, 210, 0.24);
+}
+.property-card:has(> .property-card-header[aria-controls^="taper-"]) .range-control input[type="range"]::-moz-range-progress {
+  background: rgb(140, 110, 210);
+}
+.property-card:has(> .property-card-header[aria-controls^="taper-"]) .range-control input[type="range"]::-moz-range-thumb {
+  border-color: rgb(140, 110, 210);
+}
+.property-card:has(> .property-card-header[aria-controls^="taper-"]) .check-property input {
+  accent-color: rgb(140, 110, 210);
+  --sw: rgb(140, 110, 210);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="taper-"]) {
+  background: rgba(140, 110, 210, 0.17);
+  box-shadow: inset 0 0 0 1px rgba(140, 110, 210, 0.5);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="taper-"]) > .property-card-header {
+  color: #C3AFF2;
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="taper-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(140, 110, 210) 0 var(--slider-pos), rgba(255, 255, 255, 0.16) var(--slider-pos) 100%);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="taper-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.16);
+}
+.property-card:has(> .property-card-header[aria-controls^="twist-"]) {
+  background: rgba(210, 90, 120, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(210, 90, 120, 0.45);
+}
+.property-card:has(> .property-card-header[aria-controls^="twist-"]) > .property-card-header {
+  color: #A02B52;
+  font-weight: 650;
+}
+.property-card:has(> .property-card-header[aria-controls^="twist-"]) > .property-card-header:hover {
+  background: rgba(210, 90, 120, 0.2);
+}
+.property-card:has(> .property-card-header[aria-controls^="twist-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(210, 90, 120) 0 var(--slider-pos), rgba(210, 90, 120, 0.24) var(--slider-pos) 100%);
+}
+.property-card:has(> .property-card-header[aria-controls^="twist-"]) .range-control input[type="range"]::-webkit-slider-thumb {
+  border-color: rgb(210, 90, 120);
+}
+.property-card:has(> .property-card-header[aria-controls^="twist-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(210, 90, 120, 0.24);
+}
+.property-card:has(> .property-card-header[aria-controls^="twist-"]) .range-control input[type="range"]::-moz-range-progress {
+  background: rgb(210, 90, 120);
+}
+.property-card:has(> .property-card-header[aria-controls^="twist-"]) .range-control input[type="range"]::-moz-range-thumb {
+  border-color: rgb(210, 90, 120);
+}
+.property-card:has(> .property-card-header[aria-controls^="twist-"]) .check-property input {
+  accent-color: rgb(210, 90, 120);
+  --sw: rgb(210, 90, 120);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="twist-"]) {
+  background: rgba(210, 90, 120, 0.17);
+  box-shadow: inset 0 0 0 1px rgba(210, 90, 120, 0.5);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="twist-"]) > .property-card-header {
+  color: #F29DB4;
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="twist-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(210, 90, 120) 0 var(--slider-pos), rgba(255, 255, 255, 0.16) var(--slider-pos) 100%);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="twist-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.16);
+}
+.property-card:has(> .property-card-header[aria-controls^="slope-"]) {
+  background: rgba(130, 170, 50, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(130, 170, 50, 0.45);
+}
+.property-card:has(> .property-card-header[aria-controls^="slope-"]) > .property-card-header {
+  color: #4F6B12;
+  font-weight: 650;
+}
+.property-card:has(> .property-card-header[aria-controls^="slope-"]) > .property-card-header:hover {
+  background: rgba(130, 170, 50, 0.2);
+}
+.property-card:has(> .property-card-header[aria-controls^="slope-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(130, 170, 50) 0 var(--slider-pos), rgba(130, 170, 50, 0.24) var(--slider-pos) 100%);
+}
+.property-card:has(> .property-card-header[aria-controls^="slope-"]) .range-control input[type="range"]::-webkit-slider-thumb {
+  border-color: rgb(130, 170, 50);
+}
+.property-card:has(> .property-card-header[aria-controls^="slope-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(130, 170, 50, 0.24);
+}
+.property-card:has(> .property-card-header[aria-controls^="slope-"]) .range-control input[type="range"]::-moz-range-progress {
+  background: rgb(130, 170, 50);
+}
+.property-card:has(> .property-card-header[aria-controls^="slope-"]) .range-control input[type="range"]::-moz-range-thumb {
+  border-color: rgb(130, 170, 50);
+}
+.property-card:has(> .property-card-header[aria-controls^="slope-"]) .check-property input {
+  accent-color: rgb(130, 170, 50);
+  --sw: rgb(130, 170, 50);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="slope-"]) {
+  background: rgba(130, 170, 50, 0.17);
+  box-shadow: inset 0 0 0 1px rgba(130, 170, 50, 0.5);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="slope-"]) > .property-card-header {
+  color: #BFE070;
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="slope-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(130, 170, 50) 0 var(--slider-pos), rgba(255, 255, 255, 0.16) var(--slider-pos) 100%);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="slope-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.16);
+}
+.property-card:has(> .property-card-header[aria-controls^="narrow-"]) {
+  background: rgba(196, 150, 30, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(196, 150, 30, 0.45);
+}
+.property-card:has(> .property-card-header[aria-controls^="narrow-"]) > .property-card-header {
+  color: #7A5C06;
+  font-weight: 650;
+}
+.property-card:has(> .property-card-header[aria-controls^="narrow-"]) > .property-card-header:hover {
+  background: rgba(196, 150, 30, 0.2);
+}
+.property-card:has(> .property-card-header[aria-controls^="narrow-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(196, 150, 30) 0 var(--slider-pos), rgba(196, 150, 30, 0.24) var(--slider-pos) 100%);
+}
+.property-card:has(> .property-card-header[aria-controls^="narrow-"]) .range-control input[type="range"]::-webkit-slider-thumb {
+  border-color: rgb(196, 150, 30);
+}
+.property-card:has(> .property-card-header[aria-controls^="narrow-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(196, 150, 30, 0.24);
+}
+.property-card:has(> .property-card-header[aria-controls^="narrow-"]) .range-control input[type="range"]::-moz-range-progress {
+  background: rgb(196, 150, 30);
+}
+.property-card:has(> .property-card-header[aria-controls^="narrow-"]) .range-control input[type="range"]::-moz-range-thumb {
+  border-color: rgb(196, 150, 30);
+}
+.property-card:has(> .property-card-header[aria-controls^="narrow-"]) .check-property input {
+  accent-color: rgb(196, 150, 30);
+  --sw: rgb(196, 150, 30);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="narrow-"]) {
+  background: rgba(196, 150, 30, 0.17);
+  box-shadow: inset 0 0 0 1px rgba(196, 150, 30, 0.5);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="narrow-"]) > .property-card-header {
+  color: #E8C660;
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="narrow-"]) .range-control input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, rgb(196, 150, 30) 0 var(--slider-pos), rgba(255, 255, 255, 0.16) var(--slider-pos) 100%);
+}
+html[data-theme="dark"] .property-card:has(> .property-card-header[aria-controls^="narrow-"]) .range-control input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* A symbol before each section title, so the sections are told apart by more than their colour. */
+.property-card-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.property-card-title svg {
+  flex: 0 0 auto;
+}
+
+/* A switch that belongs to the slider above it: a little in, with a small line up to that slider. */
+.check-property-sub {
+  position: relative;
+  margin-left: 6px;
+  padding-left: 24px;
+}
+.check-property-sub::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: -12px;
+  width: 11px;
+  height: 21px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  border-bottom-left-radius: 4px;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Sliding switches instead of tick boxes inside the inspector cards: the label on the left, the switch on the right, in the colour of its section. */
+.property-card .check-property {
+  flex-direction: row-reverse;
+  justify-content: space-between;
+}
+.property-card .check-property > span {
+  flex: 1 1 auto;
+}
+.property-card .check-property input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  flex: none;
+  box-sizing: border-box;
+  width: 40px;
+  height: 22px;
+  margin: 0;
+  border: 1.5px solid #8a7b6a;
+  border-radius: 11px;
+  background: rgba(0, 0, 0, 0.06);
+  transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.property-card .check-property input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #8a7b6a;
+  transition: left 0.15s, background-color 0.15s;
+}
+.property-card .check-property input[type="checkbox"]:checked {
+  border-color: var(--sw, #b3711f);
+  background: var(--sw, #b3711f);
+}
+.property-card .check-property input[type="checkbox"]:checked::after {
+  left: 21px;
+  background: #fff;
+}
+.property-card .check-property input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--sw, #b3711f);
+  outline-offset: 2px;
+}
+.property-card .check-property input[type="checkbox"]:disabled {
+  opacity: 0.5;
+}
+html[data-theme="dark"] .property-card .check-property input[type="checkbox"] {
+  border-color: #7d7d7d;
+  background: rgba(0, 0, 0, 0.25);
+}
+html[data-theme="dark"] .property-card .check-property input[type="checkbox"]::after {
+  background: #989898;
+}
+html[data-theme="dark"] .property-card .check-property input[type="checkbox"]:checked {
+  border-color: var(--sw, #b3711f);
+  background: color-mix(in srgb, var(--sw, #b3711f) 22%, #0a0a0a);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--sw, #b3711f) 50%, transparent);
+}
+html[data-theme="dark"] .property-card .check-property input[type="checkbox"]:checked::after {
+  background: color-mix(in srgb, var(--sw, #b3711f) 65%, white);
+}
+
+/* The other cards of the inspector (Wrap around a cylinder, Surface texture, ...) are tiles of the same shape in a
+   neutral colour, so that the colours stay the signs of the object's own sections. The coloured sections above are
+   more specific and keep theirs. */
+.property-card {
+  background: rgba(93, 71, 49, 0.07);
+  box-shadow: inset 0 0 0 1px rgba(93, 71, 49, 0.24);
+}
+html[data-theme="dark"] .property-card {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+/* Choice fields in the dark theme: the closed field is dark like the number fields beside it. The list that opens
+   keeps the light colour scheme (see .select-property select above, the Chrome-on-Linux hover fix), and its
+   options say their colours outright, dark text on a light ground, so the row under the pointer stays readable. */
+html[data-theme="dark"] .select-property select {
+  color: #f1eee9;
+  background-color: rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: none;
+}
+html[data-theme="dark"] .select-property select option {
+  color: #3b2f22;
+  background-color: #fff;
+}
+
+/* The title bar of a card reaches the edges of its tile, so the shade under the pointer fills the whole bar. The shade
+   is a lighter touch of the tile's own colour (coloured sections above), or a neutral one for the other cards. */
+.property-card > button.property-card-header {
+  width: calc(100% + 28px);
+  margin: 0 -14px;
+  padding: 0 14px;
+  border-radius: 8px 8px 0 0;
+}
+.property-card.collapsed > button.property-card-header {
+  border-radius: 8px;
+}
+.property-card > button.property-card-header:hover {
+  background: rgba(93, 71, 49, 0.1);
+}
+html[data-theme="dark"] .property-card > button.property-card-header:hover {
+  background: rgba(255, 255, 255, 0.1);
 }

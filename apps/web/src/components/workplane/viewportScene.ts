@@ -13,13 +13,13 @@ import { CAMERA_FOV, CAMERA_MAX_DISTANCE, CAMERA_MIN_DISTANCE, CAMERA_TARGET, up
 import { horizontalPlacementWorkplane, placementWorkplaneIsBase, placementWorkplaneLiesOnBase, placementWorkplaneQuaternion, type PlacementWorkplane } from "@/lib/placementWorkplane";
 import { printerPresetById } from "@/lib/printBed";
 import { plateCenterX, plateCount } from "@/lib/buildPlates";
-import { DEFAULT_WORKPLANE_WORKSPACE, effectiveViewSettings, viewPixelRatio, orbitControlsZoomSpeed } from "@/lib/workplaneSettings";
+import { DEFAULT_WORKPLANE_WORKSPACE, effectiveViewSettings, viewPixelRatio, orbitControlsZoomSpeed, orbitControlsPanSpeed } from "@/lib/workplaneSettings";
 import { workplaneGridBandWidths, AXIS_ARROW_COLORS, axisArrowLayout, fillLightPosition, keyLightPosition, sceneLightLevels, shadowBlurRadius, softSceneLightLevels, workplaneGridLayout, workplaneGridLines, workplaneGridPalette, workplaneLabelLayout, workplaneThemePalette, WORKPLANE_LABEL_ASPECT, WORKPLANE_LINE_ELEVATION, type WorkplaneGridLayout } from "@/lib/workplaneGrid";
 import type { WorkplaneWorkspaceSettings } from "@/types/layerling";
 import { pivotKeptAhead, ZOOM_PIVOT_REACH_MM } from "@/lib/zoomPivot";
 import { RENDER_LAYER_SHAPES } from "@/components/workplane/viewportPicking";
 import { RENDER_LAYER_HELPERS, type ShapeRenderRecord, type ThreeState, setObjectRenderLayer, freezeStaticObjectMatrices, disposeChildren, disposeObject } from "@/components/workplane/ViewportOverlays";
-import { RENDER_LAYER_MODIFIERS, RENDER_LAYER_PREVIEWS, clamp, WORKPLANE_LABEL_FONT_STACK } from "./viewportShapeObjects";
+import { RENDER_LAYER_MODIFIERS, RENDER_LAYER_PREVIEWS, clamp, pullModifierEdgeTowardCamera, WORKPLANE_LABEL_FONT_STACK } from "./viewportShapeObjects";
 import { CAMERA_DAMPING_PER_60HZ_FRAME } from "@/lib/cameraInertia";
 
 export const WORKPLANE_WIDTH = 200;
@@ -96,7 +96,7 @@ export function createThreeScene(host: HTMLDivElement): ThreeState {
   controls.dampingFactor = CAMERA_DAMPING_PER_60HZ_FRAME;
   controls.rotateSpeed = 0.58;
   controls.zoomSpeed = orbitControlsZoomSpeed(DEFAULT_WORKPLANE_WORKSPACE.zoomSpeed);
-  controls.panSpeed = 0.65;
+  controls.panSpeed = orbitControlsPanSpeed(DEFAULT_WORKPLANE_WORKSPACE.panSpeed);
   controls.screenSpacePanning = true;
   controls.zoomToCursor = true;
   controls.mouseButtons = {
@@ -431,6 +431,7 @@ export function rebuildWorkplane(
   state.lights.fill.position.set(fillPosition.x, fillPosition.y, fillPosition.z);
   state.needsRender = true;
   state.controls.zoomSpeed = orbitControlsZoomSpeed(workspace.zoomSpeed);
+  state.controls.panSpeed = orbitControlsPanSpeed(workspace.panSpeed);
   state.mouseScheme = workspace.mouseScheme;
   Object.assign(state.controls.mouseButtons, cameraButtonsFor(workspace.mouseScheme));
 
@@ -516,8 +517,10 @@ export function rebuildWorkplane(
       if (label) {
         group.add(label);
       }
-      // Only on the real plate, and hidden together with the design name.
-      const printer = muted || extraPlate || workspace.showPlateLabels === false ? null : printerPresetById(workspace.printer);
+      // Only on the real plate, and hidden together with the design name. A workplane set on a face or on the
+      // empty plate (the one with the normal marker) leaves it off: with the printer's name it looked like a
+      // second build plate beside the real, greyed one (Issue #1512).
+      const printer = muted || extraPlate || showMarker || workspace.showPlateLabels === false ? null : printerPresetById(workspace.printer);
       if (printer) {
         const printerLabel = createWorkplaneLabel(
           cornerWidth,
@@ -1117,38 +1120,53 @@ export function syncSplitPlane(state: ThreeState | null, plane: ModelSplitPlane 
   }
 
   const size = Math.max(10, plane.size);
+  // The rectangle fits the part on the plane (Issue #1606); its middle carries the arrow.
+  const { center, u, v, width, height } = plane.preview;
   const root = new THREE.Group();
-  root.position.set(...plane.origin);
-  root.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...plane.normal).normalize());
+  root.position.set(...center);
+  root.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(
+    new THREE.Vector3(...u),
+    new THREE.Vector3(...v),
+    new THREE.Vector3(...plane.normal).normalize(),
+  ));
 
+  // The part hides the plane behind and inside it, as a slicer's cut does (Issue #1606): drawn over everything, the plane,
+  // its lines and the cut line on the far side piled up into a jumble when seen almost along the plane, close up. Only
+  // the plane's outline shows faintly through, so it stays clear how far the plane reaches.
   const surface = new THREE.Mesh(
-    new THREE.PlaneGeometry(size, size),
+    new THREE.PlaneGeometry(width, height),
     new THREE.MeshBasicMaterial({
       color: "#d07313",
       transparent: true,
       opacity: 0.24,
       side: THREE.DoubleSide,
-      depthTest: false,
       depthWrite: false,
     }),
   );
   surface.renderOrder = 900;
   root.add(surface);
 
+  const borderGeometry = new THREE.EdgesGeometry(surface.geometry);
+  const borderBehind = new THREE.LineSegments(
+    borderGeometry,
+    new THREE.LineBasicMaterial({ color: "#b35f07", transparent: true, opacity: 0.3, depthTest: false }),
+  );
+  borderBehind.renderOrder = 900;
+  root.add(borderBehind);
   const border = new THREE.LineSegments(
-    new THREE.EdgesGeometry(surface.geometry),
-    new THREE.LineBasicMaterial({ color: "#b35f07", transparent: true, opacity: 0.95, depthTest: false }),
+    borderGeometry,
+    new THREE.LineBasicMaterial({ color: "#b35f07", transparent: true, opacity: 0.95 }),
   );
   border.renderOrder = 901;
   root.add(border);
 
   const crossGeometry = new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(-size / 2, 0, 0), new THREE.Vector3(size / 2, 0, 0),
-    new THREE.Vector3(0, -size / 2, 0), new THREE.Vector3(0, size / 2, 0),
+    new THREE.Vector3(-width / 2, 0, 0), new THREE.Vector3(width / 2, 0, 0),
+    new THREE.Vector3(0, -height / 2, 0), new THREE.Vector3(0, height / 2, 0),
   ]);
   const cross = new THREE.LineSegments(
     crossGeometry,
-    new THREE.LineBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.8, depthTest: false }),
+    new THREE.LineBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.8 }),
   );
   cross.renderOrder = 902;
   root.add(cross);
@@ -1188,7 +1206,18 @@ export function syncSplitPlane(state: ThreeState | null, plane: ModelSplitPlane 
   if (outlinePoints.length) {
     const outlineGeometry = new THREE.BufferGeometry();
     outlineGeometry.setAttribute("position", new THREE.Float32BufferAttribute(outlinePoints, 3));
-    const outline = new THREE.LineSegments(outlineGeometry, new THREE.LineBasicMaterial({ color: "#ffffff", transparent: true, opacity: 1, depthTest: false }));
+    // Bright where it can be seen, faint where it runs behind the part (Issue #1606): seen close up, the near and the far
+    // line were equally bright, and which of them was the cut could not be told. The bright one is pulled a hair towards
+    // the camera, as the edges of the edge tool are, so the face it lies on does not hide it.
+    const behindMaterial = new THREE.LineBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.28, depthTest: false });
+    const behind = new THREE.LineSegments(outlineGeometry, behindMaterial);
+    behind.name = "SplitCutLineBehind";
+    behind.renderOrder = 904;
+    behind.layers.set(RENDER_LAYER_PREVIEWS);
+    state.splitLayer.add(behind);
+    const outlineMaterial = new THREE.LineBasicMaterial({ color: "#ffffff", transparent: true, opacity: 1 });
+    pullModifierEdgeTowardCamera(outlineMaterial);
+    const outline = new THREE.LineSegments(outlineGeometry, outlineMaterial);
     outline.name = "SplitCutLine";
     outline.renderOrder = 905;
     outline.layers.set(RENDER_LAYER_PREVIEWS);
