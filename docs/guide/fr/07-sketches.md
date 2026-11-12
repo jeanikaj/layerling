@@ -136,7 +136,7 @@ Vous pouvez également définir le trait sans ouvrir l'esquisse : dans les propr
 
 {{ui:prop.sketchSilhouette}} laisse de côté tous les contours qui se trouvent à l'intérieur d'un autre : les trous et tout ce qui s'y trouve. Seul le contour extérieur reste. Avec {{ui:prop.sketchFill.outside}}, cela crée un emporte-pièce : importez un SVG deux fois, une fois avec la silhouette comme zone pour la base et une fois avec la silhouette et 1 à 2 mm de trait à l'extérieur comme mur. Le commutateur se trouve également dans la fenêtre {{ui:sketch.stroke}} en mode esquisse.
 
-Les congés et les chanfreins sur les arêtes disparaissent lorsque le corps est reconstruit, comme lorsque l'esquisse est modifiée.
+Les congés et les chanfreins sur les arêtes disparaissent lorsque le corps est reconstruit, comme lorsque l'esquisse est modifiée. {{ui:inspector.taper}} et {{ui:inspector.twist}} restent ; un galbage grandit ou diminue avec le contour.
 
 ## Murs inclinés, pour les tampons
 
@@ -186,6 +186,7 @@ L'arbre à côté d'une maison, une figure devant un fond chargé – là où au
 | [[Ctrl]]+[[A]] | sélectionner tous les points et toutes les lignes |
 | [[Ctrl]]+[[I]] | {{ui:sketch.addImage}} |
 | [[Shift]] | pendant le dessin : tracez la ligne par pas de 15° ; tout en faisant glisser : conserver le mouvement sur un axe |
+| [[Alt]] | en posant ou en faisant glisser un point : uniquement sur la grille, sans accrochage aux coins et aux milieux |
 | chiffre, [[<]], [[Tab]], [[Enter]] | pendant le dessin : tapez et définissez la longueur et l'angle de la ligne suivante |
 | [[R]] | faire pivoter l'esquisse fermée de 45° |
 | [[Ctrl]]+[[L]] | verrouiller ou déverrouiller l'image du modèle |

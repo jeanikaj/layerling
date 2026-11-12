@@ -138,7 +138,7 @@ También puedes fijar el trazo sin abrir el boceto: en las propiedades de un cue
 
 {{ui:prop.sketchSilhouette}} deja fuera todos los contornos que quedan dentro de otro: los orificios y lo que haya dentro de ellos. Solo queda el contorno exterior. Junto con {{ui:prop.sketchFill.outside}} sirve para hacer un cortador de galletas: importa un SVG dos veces, una con la silueta como superficie para la base y otra con la silueta y entre 1 y 2 mm de trazo exterior para la pared. Esta opción también está en la ventana {{ui:sketch.stroke}} del modo de boceto.
 
-Los redondeos y chaflanes de las aristas se pierden cuando el cuerpo se vuelve a construir, igual que al editar el boceto.
+Los redondeos y chaflanes de las aristas se pierden cuando el cuerpo se vuelve a construir, igual que al editar el boceto. {{ui:inspector.taper}} y {{ui:inspector.twist}} se mantienen; un estrechamiento crece o se reduce con el contorno.
 
 ## Paredes inclinadas, para sellos
 
@@ -188,6 +188,7 @@ El árbol junto a una casa, una figura ante un fondo recargado: donde ningún co
 | [[Ctrl]]+[[A]] | seleccionar todos los puntos y líneas |
 | [[Ctrl]]+[[I]] | {{ui:sketch.addImage}} |
 | [[Mayús]] | al dibujar: ajustar la línea en pasos de 15°; al arrastrar: limitar el movimiento a un eje |
+| [[Alt]] | al poner o arrastrar un punto: solo en la cuadrícula, sin ajustarse a esquinas ni puntos medios |
 | cifra, [[<]], [[Tab]], [[Intro]] | al dibujar: escribir y fijar la longitud y el ángulo de la línea siguiente |
 | [[R]] | girar 45° el boceto cerrado |
 | [[Ctrl]]+[[L]] | bloquear o desbloquear el contorno seleccionado o la imagen de plantilla |

@@ -110,7 +110,7 @@ Válec, kužel, trubka, elipsa a otvory mají {{ui:prop.sidesFollowSize}} a {{ui
 Vedle číselných polí jsou úchyty přímo na tvaru:
 
 - **Rohy a hrany** mění velikost. [[Shift]] při tažení rohu zachovává poměr šířky, hloubky a výšky, [[Alt]] mění velikost vůči středu místo protějšího rohu. Bez držení klávesy zapněte {{ui:inspector.keepProportions}}. Rohy pak zachovávají poměry vždy a zadání jednoho rozměru přepočítá zbývající. Volba se pamatuje.
-- Černá **šipka nad** tvarem ho zvedá nebo spouští; s [[Alt]] drženým od začátku vznikne tam, kde pustíte, kopie, takže můžete skládat nad sebe. Bílý úchyt **na horní stěně** mění výšku.
+- Modrá **šipka nad** tvarem ho zvedá nebo spouští; s [[Alt]] drženým od začátku vznikne tam, kde pustíte, kopie, takže můžete skládat nad sebe. Bílý úchyt **na horní stěně** mění výšku.
 - Červená a zelená **šipka nahoře** posouvají tvar jen ve směru X nebo jen ve směru Y. Tvar pak sleduje myš po této přímce, i když se na podložku díváte z nízkého úhlu, kde volné tažení uteče daleko. Přichytává se k jiným tvarům jako při tažení a ujetou vzdálenost pak můžete kliknout a zadat přesně. Pokud překážejí, vypněte v nastavení {{ui:workspace.showSlideArrows}}.
 - **Obloukové šipky** otáčejí.
 - **Čísla** vedle tělesa umožňují přímé zadání. [[Enter]] mění rozměr od protějšího okraje jako tažení; [[Alt]]+[[Enter]] souměrně vůči středu, aby se zachovalo zarovnání. Platí pro délku a šířku. Výška roste vždy od spodní strany vzhůru. Pravý panel zachovává střed i bez klávesy. [[Tab]] převezme číslo a otevře další pole (šířka, hloubka, výška); [[Shift]]+[[Tab]] jde zpět. V poli vlastností, na které jste klikli, mění hodnotu i kolečko myši: jednotku na zub, desetinásobek s [[Shift]], desetinu s [[Ctrl]] a setinu s [[Alt]]. Pole, na které jste neklikli, nechává kolečko panelu, který se posouvá.
@@ -126,7 +126,7 @@ Krok přichytávání vpravo dole můžete měnit kdykoliv.
 
 ## Kopírování a duplikování
 
-{{ui:editor.tool.copy}}, {{ui:editor.tool.paste}} a {{ui:editor.tool.duplicate}} jsou v {{ui:editor.group.clipboard}}. [[Ctrl]]+[[D]] duplikuje výběr. Další duplikování zopakuje poslední posun nebo natočení kopie, takže několika stisky vytvoříte řadu otvorů či schodů. Pro pravidelné sestavy je také opakování, viz [Výběr a uspořádání](chapter:select-and-arrange). Pokud jste kopii také zvětšili nebo zmenšili, každá další kopie se změní znovu o stejný poměr, jako v Tinkercadu.
+{{ui:editor.tool.copy}}, {{ui:editor.tool.paste}} a {{ui:editor.tool.duplicate}} jsou v {{ui:editor.group.clipboard}}. [[Ctrl]]+[[D]] duplikuje výběr. Další duplikování zopakuje poslední posun nebo natočení kopie, takže několika stisky vytvoříte řadu otvorů či schodů. Funguje to i s více díly najednou: zduplikujte celou vrstvu, kopii zvedněte a každé další [[Ctrl]]+[[D]] položí další vrstvu ve stejné vzdálenosti. Pro pravidelné sestavy je také opakování, viz [Výběr a uspořádání](chapter:select-and-arrange). Pokud jste kopii také zvětšili nebo zmenšili, každá další kopie se změní znovu o stejný poměr, jako v Tinkercadu.
 
 > **Tip:** Pokud tvar odmítá požadovaný rozměr, zkontrolujte limity nových tvarů v {{ui:workspace.shapeDefaults}}. Určují jejich výchozí i maximální rozměry.
 

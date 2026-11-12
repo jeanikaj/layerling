@@ -303,7 +303,7 @@ Obrys możesz też ustawić bez otwierania szkicu: we właściwościach bryły z
 
 {{ui:prop.sketchSilhouette}} pomija każdy kontur leżący wewnątrz innego: otwory i wszystko, co w nich leży. Zostaje tylko kontur zewnętrzny. Razem z {{ui:prop.sketchFill.outside}} daje to foremkę do ciastek: zaimportuj SVG dwa razy, raz z sylwetką jako powierzchnią na podstawę, a raz z sylwetką i obrysem 1 do 2 mm na zewnątrz jako ściankę. Przełącznik jest też w oknie {{ui:sketch.stroke}} w trybie szkicu.
 
-Zaokrąglenia i fazki na krawędziach znikają, gdy bryła jest budowana ponownie, tak jak przy edycji szkicu.
+Zaokrąglenia i fazki na krawędziach znikają, gdy bryła jest budowana ponownie, tak jak przy edycji szkicu. {{ui:inspector.taper}} i {{ui:inspector.twist}} zostają; zwężenie rośnie lub maleje razem z konturem.
 
 ## Skośne ścianki do stempli
 
@@ -353,6 +353,7 @@ Drzewo obok domu, postać na pstrokatym tle: tam, gdzie żaden kolor nie odróż
 | [[Ctrl]]+[[A]] | zaznacza wszystkie punkty i linie |
 | [[Ctrl]]+[[I]] | {{ui:sketch.addImage}} |
 | [[Shift]] | podczas rysowania: przyciąga linię co 15°, podczas przeciągania: utrzymuje ruch na jednej osi |
+| [[Alt]] | przy stawianiu lub przeciąganiu punktu: tylko na siatkę, bez przyciągania do narożników i środków |
 | cyfra, [[<]], [[Tab]], [[Enter]] | podczas rysowania: wpisuje i ustawia długość i kąt następnej linii |
 | [[R]] | obraca zamknięty szkic o 45° |
 | [[Ctrl]]+[[L]] | blokuje lub odblokowuje zaznaczony kontur albo obraz wzorcowy |

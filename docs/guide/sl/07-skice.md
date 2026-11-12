@@ -138,7 +138,7 @@ Konturo nastaviš tudi, ne da bi odprl skico: v lastnostih skiciranega telesa po
 
 {{ui:prop.sketchSilhouette}} izpusti vse obrise, ki ležijo v drugem: luknje in kar je v njih. Ostane samo zunanji obris. Skupaj z {{ui:prop.sketchFill.outside}} iz tega nastane modelček za izrezovanje: uvozi SVG dvakrat, enkrat s silhueto kot ploskev za dno in enkrat s silhueto in 1 do 2 mm konture zunaj kot steno. Stikalo je tudi v oknu {{ui:sketch.stroke}} v skicirnem načinu.
 
-Zaokrožitve in posnetja na robovih se pri ponovni gradnji izgubijo, kot pri urejanju skice.
+Zaokrožitve in posnetja na robovih se pri ponovni gradnji izgubijo, kot pri urejanju skice. {{ui:inspector.taper}} in {{ui:inspector.twist}} ostaneta; zožitev se poveča ali zmanjša skupaj z obrisom.
 
 ## Poševne stene, za štampiljke
 
@@ -188,6 +188,7 @@ Drevo ob hiši, figura pred nemirnim ozadjem – kjer nobena barva ne loči obli
 | [[Ctrl]]+[[A]] | izberi vse točke in črte |
 | [[Ctrl]]+[[I]] | {{ui:sketch.addImage}} |
 | [[Shift]] | pri risanju: črta se zaskoči v korakih po 15°; pri vlečenju: gibanje omejeno na eno os |
+| [[Alt]] | pri postavljanju ali vlečenju točke: samo na mrežo, brez pripenjanja na vogale in sredine |
 | številka, [[<]], [[Tab]], [[Enter]] | pri risanju: vpiši dolžino in kot naslednje črte in jo postavi |
 | [[R]] | zavrti sklenjeno skico za 45° |
 | [[Ctrl]]+[[L]] | zakleni ali odkleni sliko predloge |

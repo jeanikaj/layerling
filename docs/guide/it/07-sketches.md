@@ -139,7 +139,7 @@ Puoi impostare la traccia anche senza aprire lo schizzo: nelle proprietà di un 
 
 {{ui:prop.sketchSilhouette}} esclude tutti i contorni interamente contenuti in un altro, quindi i fori e tutto ciò che si trova al loro interno. Rimane solo il contorno esterno. Insieme a {{ui:prop.sketchFill.outside}}, permette di creare un tagliabiscotti: importa due volte lo stesso SVG, una con la sagoma come area per la base e l’altra con la sagoma e una traccia esterna da 1 a 2 mm per le pareti. L’interruttore è disponibile anche nella finestra {{ui:sketch.stroke}} in modalità Schizzo.
 
-Quando il corpo viene ricreato, i raccordi e gli smussi applicati agli spigoli vengono rimossi, come quando modifichi lo schizzo.
+Quando il corpo viene ricreato, i raccordi e gli smussi applicati agli spigoli vengono rimossi, come quando modifichi lo schizzo. {{ui:inspector.taper}} e {{ui:inspector.twist}} restano; una rastremazione cresce o si riduce con il contorno.
 
 ## Pareti inclinate per stampi
 
@@ -189,6 +189,7 @@ L'albero accanto a una casa, una figura davanti a uno sfondo affollato – dove 
 | [[Ctrl]]+[[A]] | seleziona tutti i punti e le linee |
 | [[Ctrl]]+[[I]] | {{ui:sketch.addImage}} |
 | [[Shift]] | durante il disegno: aggancia la linea a incrementi di 15°; durante il trascinamento: vincola il movimento a un asse |
+| [[Alt]] | mentre metti o trascini un punto: solo sulla griglia, senza agganciarsi ad angoli e punti medi |
 | cifra, [[<]], [[Tab]], [[Enter]] | durante il disegno: inserisce e conferma lunghezza e angolo della linea successiva |
 | [[R]] | ruota lo schizzo chiuso di 45° |
 | [[Ctrl]]+[[L]] | blocca o sblocca il contorno selezionato o l’immagine di riferimento |
