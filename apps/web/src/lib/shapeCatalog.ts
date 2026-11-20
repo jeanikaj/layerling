@@ -1,5 +1,6 @@
 import { canonicalizeShape } from "@/lib/workplaneShapes";
 import { regularPolygonAspect } from "@/lib/regularPolygonFootprint";
+import { normalizePolygonCornerRadius } from "@/lib/roundedPolygonGeometry";
 import { normalizePyramidTop } from "@/lib/pyramidGeometry";
 import { createLocalId } from "@/lib/localIds";
 import { DEFAULT_CURVED_CONE_BEND, DEFAULT_CURVED_CONE_TOP, normalizeCurvedConeBend, normalizeCurvedConeTop } from "@/lib/curvedCone";
@@ -109,6 +110,7 @@ import {
   normalizeCrescentThickness,
   normalizeCrescentTipFillet,
 } from "@/lib/crescentGeometry";
+import { DEFAULT_SECTOR_ANGLE, DEFAULT_SECTOR_DIAMETER, DEFAULT_SECTOR_END_RADIUS, DEFAULT_SECTOR_HEIGHT, DEFAULT_SECTOR_INNER_DIAMETER, normalizeSectorAngle, normalizeSectorEndRadius, normalizeSectorInnerDiameter } from "@/lib/sectorGeometry";
 import {
   DEFAULT_SLOT_WIDTH,
   DEFAULT_SLOT_DEPTH,
@@ -168,8 +170,9 @@ import {
   normalizeHingePinDiameter,
   normalizeHingeScrewDiameter,
   normalizeHingeScrewHoles,
+  normalizeHingeSnapGrip,
 } from "@/lib/hingeGeometry";
-import { DEFAULT_GRIDFINITY_LIP, DEFAULT_GRIDFINITY_MAGNETS, DEFAULT_GRIDFINITY_TRAY_SIZE, DEFAULT_GRIDFINITY_TYPE, DEFAULT_GRIDFINITY_UNITS, gridfinityFootprintPatch, gridfinityPadding, gridfinitySize, normalizeGridfinityType } from "@/lib/gridfinityGeometry";
+import { DEFAULT_GRIDFINITY_LIP, DEFAULT_GRIDFINITY_MAGNETS, DEFAULT_GRIDFINITY_TRAY_SIZE, DEFAULT_GRIDFINITY_TYPE, DEFAULT_GRIDFINITY_UNITS, gridfinityFootprintPatch, gridfinityGrowth, gridfinityPadding, gridfinitySize, normalizeGridfinityType } from "@/lib/gridfinityGeometry";
 import {
   DEFAULT_KNURL_ANGLE,
   DEFAULT_KNURL_CHAMFER,
@@ -246,6 +249,7 @@ const SHAPE_LABEL_KEYS: Record<string, MessageKey> = {
   star: "shape.star",
   heart: "shape.heart",
   crescent: "shape.crescent",
+  sector: "shape.sector",
   gear: "shape.gear",
   hirth: "shape.hirth",
   pulley: "shape.pulley",
@@ -289,6 +293,7 @@ export const toolbarShapeAssets: ToolbarShapeAsset[] = [
   { id: "paraboloid", name: "Paraboloid", src: "assets/editor/shape-icons-gray/paraboloid.png", menuIcon: "assets/editor/shape-icons-gray/paraboloid.png", kind: "paraboloid", color: "#8fdc5a" },
   { id: "curvedCone", name: "Curved Cone", src: "assets/editor/shape-icons-gray/curvedCone.png", menuIcon: "assets/editor/shape-icons-gray/curvedCone.png", kind: "curvedCone", color: "#9b59b6" },
   { id: "torus", name: "Torus", src: "assets/editor/shape-icons-gray/torus.png", menuIcon: "assets/editor/shape-icons-gray/torus.png", kind: "torus", color: "#0098c7" },
+  { id: "sector", name: "Sector", src: "assets/editor/shape-icons-gray/sector.png", menuIcon: "assets/editor/shape-icons-gray/sector.png", kind: "sector", color: "#2f9e6e" },
   { id: "loft", name: "Loft", src: "assets/editor/shape-icons-gray/loft.png", menuIcon: "assets/editor/shape-icons-gray/loft.png", kind: "loft", color: "#c0703a" },
   { id: "vase", name: "Vase", src: "assets/editor/shape-icons-gray/vase.png", menuIcon: "assets/editor/shape-icons-gray/vase.png", kind: "vase", color: "#2e8b8b" },
   { id: "tube", name: "Tube", src: "assets/editor/shape-icons-gray/tube.png", menuIcon: "assets/editor/shape-icons-gray/tube.png", kind: "tube", color: "#ce7013" },
@@ -376,7 +381,16 @@ export const sbcBoardAsset: ToolbarShapeAsset = {
  * The double countersink is not listed on its own: it is the countersink with "Both sides" switched on (#621). The
  * kind stays in the catalogue, so bodies that already are one, and the MCP, keep working.
  */
-export const libraryShapeAssets: ToolbarShapeAsset[] = toolbarShapeAssets.flatMap((asset) => (asset.id === "text" ? [asset, nameTagAsset, iconTagAsset, qrCodeAsset] : asset.id === "port" ? [asset, sbcBoardAsset] : asset.id === "doubleCountersink" ? [] : [asset]));
+export const threadInsertLibraryAsset: ToolbarShapeAsset = {
+  id: "threadInsert",
+  name: "Thread insert",
+  src: "assets/editor/shape-icons-gray/threadInsert.svg",
+  menuIcon: "assets/editor/shape-icons-gray/threadInsert.svg",
+  kind: "counterbore",
+  color: "#b69b46",
+};
+
+export const libraryShapeAssets: ToolbarShapeAsset[] = [threadInsertLibraryAsset, ...toolbarShapeAssets.flatMap((asset) => (asset.id === "text" ? [asset, nameTagAsset, iconTagAsset, qrCodeAsset] : asset.id === "port" ? [asset, sbcBoardAsset] : asset.id === "doubleCountersink" ? [] : [asset]))];
 
 /**
  * The colour a new shape of this asset starts with: the asset's own, unless the shape
@@ -460,6 +474,9 @@ export function shapeAssetDefaultDimensions(kind: ShapeKind) {
   }
   if (kind === "heart") {
     return { width: DEFAULT_HEART_WIDTH, depth: DEFAULT_HEART_DEPTH, height: DEFAULT_HEART_HEIGHT };
+  }
+  if (kind === "sector") {
+    return { width: DEFAULT_SECTOR_DIAMETER, depth: DEFAULT_SECTOR_DIAMETER, height: DEFAULT_SECTOR_HEIGHT };
   }
   if (kind === "crescent") {
     return { width: DEFAULT_CRESCENT_WIDTH, depth: DEFAULT_CRESCENT_DEPTH, height: DEFAULT_CRESCENT_HEIGHT };
@@ -597,6 +614,9 @@ export function shapeAssetSpecialDefaults(kind: ShapeKind, dimensions = shapeAss
       heartTipFillet: DEFAULT_HEART_TIP_FILLET,
       heartQuality: DEFAULT_HEART_QUALITY,
     };
+  }
+  if (kind === "sector") {
+    return { sectorAngle: DEFAULT_SECTOR_ANGLE, sectorInnerDiameter: DEFAULT_SECTOR_INNER_DIAMETER, sectorEndRadius: DEFAULT_SECTOR_END_RADIUS };
   }
   if (kind === "crescent") {
     return {
@@ -831,6 +851,9 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     crescentThickness: shape.crescentThickness,
     crescentTipFillet: shape.crescentTipFillet,
     crescentQuality: shape.crescentQuality,
+    sectorAngle: shape.sectorAngle,
+    sectorInnerDiameter: shape.sectorInnerDiameter,
+    sectorEndRadius: shape.sectorEndRadius,
     honeycombCellSize: shape.honeycombCellSize,
     honeycombWallThickness: shape.honeycombWallThickness,
     honeycombFrameWidth: shape.honeycombFrameWidth,
@@ -838,6 +861,7 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     hingeKnuckleWidth: shape.hingeKnuckleWidth,
     hingeConeSize: shape.hingeConeSize,
     hingeStyle: shape.hingeStyle,
+    hingeSnapGrip: shape.hingeSnapGrip,
     hingePinDiameter: shape.hingePinDiameter,
     hingeLeafThickness: shape.hingeLeafThickness,
     hingeClearance: shape.hingeClearance,
@@ -900,11 +924,19 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     gridfinityPaddingFront: shape.gridfinityPaddingFront,
     gridfinityPaddingLeft: shape.gridfinityPaddingLeft,
     gridfinityPaddingRight: shape.gridfinityPaddingRight,
+    gridfinityOverhangBack: shape.gridfinityOverhangBack,
+    gridfinityOverhangFront: shape.gridfinityOverhangFront,
+    gridfinityOverhangLeft: shape.gridfinityOverhangLeft,
+    gridfinityOverhangRight: shape.gridfinityOverhangRight,
+    gridfinityOverhangChamfer: shape.gridfinityOverhangChamfer,
+    gridfinityOverhangSolid: shape.gridfinityOverhangSolid,
+    gridfinityOverhangLipOnGrid: shape.gridfinityOverhangLipOnGrid,
     gridfinityCornerRadius: shape.gridfinityCornerRadius,
     gridfinityBinCornerRadius: shape.gridfinityBinCornerRadius,
     gridfinityCompartmentsX: shape.gridfinityCompartmentsX,
     gridfinityCompartmentsZ: shape.gridfinityCompartmentsZ,
     gridfinityDividerThickness: shape.gridfinityDividerThickness,
+    gridfinityDividerHeight: shape.gridfinityDividerHeight,
     gridfinityDividerPositionsX: shape.gridfinityDividerPositionsX,
     gridfinityDividerPositionsZ: shape.gridfinityDividerPositionsZ,
     gridfinityCompartmentLabels: shape.gridfinityCompartmentLabels,
@@ -1089,8 +1121,16 @@ export function makeShapeFromAsset(
     gridfinityPaddingFront: customization.gridfinityPaddingFront,
     gridfinityPaddingLeft: customization.gridfinityPaddingLeft,
     gridfinityPaddingRight: customization.gridfinityPaddingRight,
+    gridfinityOverhangBack: customization.gridfinityOverhangBack,
+    gridfinityOverhangFront: customization.gridfinityOverhangFront,
+    gridfinityOverhangLeft: customization.gridfinityOverhangLeft,
+    gridfinityOverhangRight: customization.gridfinityOverhangRight,
+    gridfinityOverhangChamfer: customization.gridfinityOverhangChamfer,
+    gridfinityOverhangSolid: customization.gridfinityOverhangSolid,
+    gridfinityOverhangLipOnGrid: customization.gridfinityOverhangLipOnGrid,
   };
-  const gridfinityPaddingSize = gridfinityPadding(gridfinityPaddingFields);
+  // An overhung bin's overhang likewise (gridfinityGrowth).
+  const gridfinityPaddingSize = gridfinityGrowth(gridfinityPaddingFields);
   // A new tray (#837) has a tray's size, not the bin's.
   const gridfinityDefaults = normalizeGridfinityType(customization.gridfinityType) === "tray" ? DEFAULT_GRIDFINITY_TRAY_SIZE : defaults;
   const gridfinityFootprint = asset.kind === "gridfinity" ? gridfinityFootprintPatch({
@@ -1278,6 +1318,9 @@ export function makeShapeFromAsset(
     crescentThickness: asset.kind === "crescent" ? normalizeCrescentThickness(customization.crescentThickness ?? DEFAULT_CRESCENT_THICKNESS, width) : undefined,
     crescentTipFillet: asset.kind === "crescent" ? normalizeCrescentTipFillet(customization.crescentTipFillet ?? DEFAULT_CRESCENT_TIP_FILLET) : undefined,
     crescentQuality: asset.kind === "crescent" ? normalizeCrescentQuality(customization.crescentQuality ?? DEFAULT_CRESCENT_QUALITY) : undefined,
+    sectorAngle: asset.kind === "sector" ? normalizeSectorAngle(customization.sectorAngle ?? DEFAULT_SECTOR_ANGLE) : undefined,
+    sectorInnerDiameter: asset.kind === "sector" ? normalizeSectorInnerDiameter(customization.sectorInnerDiameter ?? DEFAULT_SECTOR_INNER_DIAMETER, width) : undefined,
+    sectorEndRadius: asset.kind === "sector" ? normalizeSectorEndRadius(customization.sectorEndRadius ?? DEFAULT_SECTOR_END_RADIUS, width, customization.sectorInnerDiameter ?? DEFAULT_SECTOR_INNER_DIAMETER, customization.sectorAngle ?? DEFAULT_SECTOR_ANGLE) : undefined,
     honeycombCellSize: asset.kind === "honeycomb" ? normalizeHoneycombCellSize(customization.honeycombCellSize ?? DEFAULT_HONEYCOMB_CELL_SIZE) : undefined,
     honeycombWallThickness: asset.kind === "honeycomb" ? normalizeHoneycombWallThickness(customization.honeycombWallThickness ?? DEFAULT_HONEYCOMB_WALL_THICKNESS) : undefined,
     honeycombFrameWidth: asset.kind === "honeycomb" ? normalizeHoneycombFrameWidth(customization.honeycombFrameWidth ?? DEFAULT_HONEYCOMB_FRAME_WIDTH) : undefined,
@@ -1327,16 +1370,25 @@ export function makeShapeFromAsset(
     gridfinityPaddingFront: asset.kind === "gridfinity" ? customization.gridfinityPaddingFront : undefined,
     gridfinityPaddingLeft: asset.kind === "gridfinity" ? customization.gridfinityPaddingLeft : undefined,
     gridfinityPaddingRight: asset.kind === "gridfinity" ? customization.gridfinityPaddingRight : undefined,
+    gridfinityOverhangBack: asset.kind === "gridfinity" ? customization.gridfinityOverhangBack : undefined,
+    gridfinityOverhangFront: asset.kind === "gridfinity" ? customization.gridfinityOverhangFront : undefined,
+    gridfinityOverhangLeft: asset.kind === "gridfinity" ? customization.gridfinityOverhangLeft : undefined,
+    gridfinityOverhangRight: asset.kind === "gridfinity" ? customization.gridfinityOverhangRight : undefined,
+    gridfinityOverhangChamfer: asset.kind === "gridfinity" ? customization.gridfinityOverhangChamfer : undefined,
+    gridfinityOverhangSolid: asset.kind === "gridfinity" ? customization.gridfinityOverhangSolid : undefined,
+    gridfinityOverhangLipOnGrid: asset.kind === "gridfinity" ? customization.gridfinityOverhangLipOnGrid : undefined,
     gridfinityCornerRadius: asset.kind === "gridfinity" ? customization.gridfinityCornerRadius : undefined,
     gridfinityBinCornerRadius: asset.kind === "gridfinity" ? customization.gridfinityBinCornerRadius : undefined,
     gridfinityCompartmentsX: asset.kind === "gridfinity" ? customization.gridfinityCompartmentsX : undefined,
     gridfinityCompartmentsZ: asset.kind === "gridfinity" ? customization.gridfinityCompartmentsZ : undefined,
     gridfinityDividerThickness: asset.kind === "gridfinity" ? customization.gridfinityDividerThickness : undefined,
+    gridfinityDividerHeight: asset.kind === "gridfinity" ? customization.gridfinityDividerHeight : undefined,
     hingeClearance: asset.kind === "hinge" ? normalizeHingeClearance(customization.hingeClearance ?? DEFAULT_HINGE_CLEARANCE) : undefined,
     hingePinless: asset.kind === "hinge" ? customization.hingePinless === true : undefined,
     hingeKnuckleWidth: asset.kind === "hinge" ? normalizeHingeKnuckleWidth(customization.hingeKnuckleWidth) : undefined,
-    hingeStyle: asset.kind === "hinge" && (customization.hingeStyle === "cone" || customization.hingeStyle === "pinless" || customization.hingeStyle === "liftOff") ? customization.hingeStyle : undefined,
+    hingeStyle: asset.kind === "hinge" && (customization.hingeStyle === "cone" || customization.hingeStyle === "pinless" || customization.hingeStyle === "liftOff" || customization.hingeStyle === "snap") ? customization.hingeStyle : undefined,
     hingeConeSize: asset.kind === "hinge" && customization.hingeStyle === "cone" && Number.isFinite(customization.hingeConeSize) ? customization.hingeConeSize : undefined,
+    hingeSnapGrip: asset.kind === "hinge" && customization.hingeStyle === "snap" && Number.isFinite(customization.hingeSnapGrip) ? normalizeHingeSnapGrip(customization.hingeSnapGrip) : undefined,
     // Screw holes and round corners only when the defaults ask for them; the geometry fits them to the leaf.
     hingeScrewHoles: asset.kind === "hinge" && normalizeHingeScrewHoles(customization.hingeScrewHoles) > 0 ? normalizeHingeScrewHoles(customization.hingeScrewHoles) : undefined,
     hingeScrewDiameter: asset.kind === "hinge" && Number.isFinite(customization.hingeScrewDiameter) ? normalizeHingeScrewDiameter(customization.hingeScrewDiameter) : undefined,
@@ -1380,7 +1432,9 @@ export function makeShapeFromAsset(
     // A chamfer at the rim of a counterbore (Discussion #1632); left out when off, as the editor leaves it.
     screwHoleChamfer: asset.kind === "counterbore" && (customization.screwHoleChamfer ?? 0) > 0 ? customization.screwHoleChamfer : undefined,
     cornerFillet: asset.kind === "roundedBox" ? normalizeCornerFillet(customization.cornerFillet ?? DEFAULT_ROUNDED_BOX_CORNER_FILLET, Math.min(width, depth) / 2)
-      : asset.kind === "port" ? normalizePortCorner(customization.cornerFillet, width, height, customization.portProfile) : undefined,
+      : asset.kind === "port" ? normalizePortCorner(customization.cornerFillet, width, height, customization.portProfile)
+        // A polygon's rounded corners (roundedPolygonGeometry.ts); left out while they are sharp.
+        : asset.kind === "polygon" && (customization.cornerFillet ?? 0) > 0 ? normalizePolygonCornerRadius(customization.cornerFillet, width, depth, customization.sides ?? 6) : undefined,
     portProfile: asset.kind === "port" ? normalizePortProfile(customization.portProfile) : undefined,
     portClearance: asset.kind === "port" && normalizePortClearance(customization.portClearance) > 0 ? normalizePortClearance(customization.portClearance) : undefined,
     ...(asset.kind === "roundedBox"
@@ -1466,6 +1520,7 @@ const SHAPE_MENU_LABEL_KEYS: Record<string, MessageKey> = {
 };
 
 export function shapeAssetMenuLabel(asset: Pick<ShapeAsset, "id" | "name">): string {
+  if (asset.id === "threadInsert") return t("threadInsert.title");
   const key = SHAPE_MENU_LABEL_KEYS[asset.id];
   return key ? t(key) : shapeAssetLabel(asset);
 }

@@ -14,6 +14,7 @@ import { createFinishingWasherGeometry } from "@/lib/finishingWasherGeometry";
 import { createStarGeometry } from "@/lib/starGeometry";
 import { createHeartGeometry } from "@/lib/heartGeometry";
 import { createCrescentGeometry } from "@/lib/crescentGeometry";
+import { createSectorGeometry } from "@/lib/sectorGeometry";
 import { createSlotGeometry } from "@/lib/slotGeometry";
 import { createDovetailGeometry } from "@/lib/dovetailGeometry";
 import { createParaboloidGeometry } from "@/lib/roundBodyGeometry";
@@ -25,7 +26,7 @@ import { createLoftGeometry } from "@/lib/loftGeometry";
 import { createHingeGeometry } from "@/lib/hingeGeometry";
 import { createGridfinityGeometry, gridfinityLabelTextGiven } from "@/lib/gridfinityGeometry";
 import { gridfinityLabelLetters } from "@/lib/gridfinityLabelText";
-import { gridfinityLabelColor, gridfinityLetterGroups } from "@/lib/gridfinityLetterColor";
+import { gridfinityLabelColor, gridfinityLetterGroups, gridfinityLettersInBox } from "@/lib/gridfinityLetterColor";
 import { createKnurlGeometry } from "@/lib/knurlGeometry";
 import { createVaseGeometry, fittedVaseMesh } from "@/lib/vaseShape";
 import { createTeardropGeometry } from "@/lib/teardropGeometry";
@@ -47,6 +48,7 @@ import { rulerTicks } from "@/lib/rulerDimensions";
 import { horizontalPlacementWorkplane, placementWorkplaneIsBase, placementWorkplaneQuaternion, type PlacementWorkplane } from "@/lib/placementWorkplane";
 import { groundFootprintForFrame, type SelectionFrame } from "@/lib/liftGeometry";
 import { regularPolygonFootprintScale } from "@/lib/regularPolygonFootprint";
+import { createRoundedPolygonGeometry } from "@/lib/roundedPolygonGeometry";
 import { roundSideCount } from "@/lib/roundSideCount";
 import { createPyramidGeometry } from "@/lib/pyramidGeometry";
 import { bandLevels, positionsForTwist, twistBandCount, twistEdgeLength } from "@/lib/heightSlices";
@@ -380,6 +382,9 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     crescentThickness: shape.crescentThickness,
     crescentTipFillet: shape.crescentTipFillet,
     crescentQuality: shape.crescentQuality,
+    sectorAngle: shape.sectorAngle,
+    sectorInnerDiameter: shape.sectorInnerDiameter,
+    sectorEndRadius: shape.sectorEndRadius,
     honeycombCellSize: shape.honeycombCellSize,
     honeycombWallThickness: shape.honeycombWallThickness,
     honeycombFrameWidth: shape.honeycombFrameWidth,
@@ -387,6 +392,7 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     hingeKnuckleWidth: shape.hingeKnuckleWidth,
     hingeConeSize: shape.hingeConeSize,
     hingeStyle: shape.hingeStyle,
+    hingeSnapGrip: shape.hingeSnapGrip,
     hingePinDiameter: shape.hingePinDiameter,
     hingeLeafThickness: shape.hingeLeafThickness,
     hingeClearance: shape.hingeClearance,
@@ -449,11 +455,19 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     gridfinityPaddingFront: shape.gridfinityPaddingFront,
     gridfinityPaddingLeft: shape.gridfinityPaddingLeft,
     gridfinityPaddingRight: shape.gridfinityPaddingRight,
+    gridfinityOverhangBack: shape.gridfinityOverhangBack,
+    gridfinityOverhangFront: shape.gridfinityOverhangFront,
+    gridfinityOverhangLeft: shape.gridfinityOverhangLeft,
+    gridfinityOverhangRight: shape.gridfinityOverhangRight,
+    gridfinityOverhangChamfer: shape.gridfinityOverhangChamfer,
+    gridfinityOverhangSolid: shape.gridfinityOverhangSolid,
+    gridfinityOverhangLipOnGrid: shape.gridfinityOverhangLipOnGrid,
     gridfinityCornerRadius: shape.gridfinityCornerRadius,
     gridfinityBinCornerRadius: shape.gridfinityBinCornerRadius,
     gridfinityCompartmentsX: shape.gridfinityCompartmentsX,
     gridfinityCompartmentsZ: shape.gridfinityCompartmentsZ,
     gridfinityDividerThickness: shape.gridfinityDividerThickness,
+    gridfinityDividerHeight: shape.gridfinityDividerHeight,
     gridfinityDividerPositionsX: shape.gridfinityDividerPositionsX,
     gridfinityDividerPositionsZ: shape.gridfinityDividerPositionsZ,
     gridfinityCompartmentLabels: shape.gridfinityCompartmentLabels,
@@ -638,7 +652,7 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
   // before the twist stays on screen.
   // A slope along (slopeAlong.ts) rebuilds the mesh per vertex too, worked out in millimetres.
   const slope = shapeHasAlongDeform(shape)
-    ? { end: shape.slopeEnd, side: shape.slopeSide, curve: shape.slopeCurve, from: shape.slopeFrom, sides: [shape.sideDrop, shape.sideCurve], narrow: [shape.narrowEnd, shape.narrowSide, shape.narrowCurve, shape.narrowStart] }
+    ? { end: shape.slopeEnd, side: shape.slopeSide, curve: shape.slopeCurve, from: shape.slopeFrom, sides: [shape.sideDrop, shape.sideCurve], narrow: [shape.narrowEnd, shape.narrowSide, shape.narrowCurve, shape.narrowStart], span: shape.slopeSpan }
     : null;
   const deform = shapeHasExtrudeDeform(shape) || slope
     ? { twist: shape.extrudeTwist, offsetX: shape.extrudeTopOffsetX, offsetZ: shape.extrudeTopOffsetZ, slope, pivot: extrudeTwistPivot(shape) }
@@ -688,6 +702,10 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     return JSON.stringify({ kind: shape.kind, sides: polygonSidesForShape(shape), segments: shape.segments, taper, deform, size: drillPoint === undefined ? size : [shapeWidth(shape), shapeDepth(shape), shape.height], drillPoint });
   }
   if (shape.kind === "polygon") {
+    // Rounded corners are built in millimetres, so the size is part of the geometry.
+    if ((shape.cornerFillet ?? 0) > 0) {
+      return JSON.stringify({ kind: "polygon", sides: shape.sides, cornerFillet: shape.cornerFillet, taper, deform, size: [shapeWidth(shape), shapeDepth(shape), shape.height] });
+    }
     return JSON.stringify({ kind: "polygon", sides: shape.sides, segments: shape.segments, taper, deform, size });
   }
   if (shape.kind === "sphere") {
@@ -818,6 +836,9 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     crescentThickness: shape.crescentThickness,
     crescentTipFillet: shape.crescentTipFillet,
     crescentQuality: shape.crescentQuality,
+    sectorAngle: shape.sectorAngle,
+    sectorInnerDiameter: shape.sectorInnerDiameter,
+    sectorEndRadius: shape.sectorEndRadius,
     honeycombCellSize: shape.honeycombCellSize,
     honeycombWallThickness: shape.honeycombWallThickness,
     honeycombFrameWidth: shape.honeycombFrameWidth,
@@ -825,6 +846,7 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     hingeKnuckleWidth: shape.hingeKnuckleWidth,
     hingeConeSize: shape.hingeConeSize,
     hingeStyle: shape.hingeStyle,
+    hingeSnapGrip: shape.hingeSnapGrip,
     hingePinDiameter: shape.hingePinDiameter,
     hingeLeafThickness: shape.hingeLeafThickness,
     hingeClearance: shape.hingeClearance,
@@ -889,11 +911,19 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     gridfinityPaddingFront: shape.gridfinityPaddingFront,
     gridfinityPaddingLeft: shape.gridfinityPaddingLeft,
     gridfinityPaddingRight: shape.gridfinityPaddingRight,
+    gridfinityOverhangBack: shape.gridfinityOverhangBack,
+    gridfinityOverhangFront: shape.gridfinityOverhangFront,
+    gridfinityOverhangLeft: shape.gridfinityOverhangLeft,
+    gridfinityOverhangRight: shape.gridfinityOverhangRight,
+    gridfinityOverhangChamfer: shape.gridfinityOverhangChamfer,
+    gridfinityOverhangSolid: shape.gridfinityOverhangSolid,
+    gridfinityOverhangLipOnGrid: shape.gridfinityOverhangLipOnGrid,
     gridfinityCornerRadius: shape.gridfinityCornerRadius,
     gridfinityBinCornerRadius: shape.gridfinityBinCornerRadius,
     gridfinityCompartmentsX: shape.gridfinityCompartmentsX,
     gridfinityCompartmentsZ: shape.gridfinityCompartmentsZ,
     gridfinityDividerThickness: shape.gridfinityDividerThickness,
+    gridfinityDividerHeight: shape.gridfinityDividerHeight,
     gridfinityDividerPositionsX: shape.gridfinityDividerPositionsX,
     gridfinityDividerPositionsZ: shape.gridfinityDividerPositionsZ,
     gridfinityCompartmentLabels: shape.gridfinityCompartmentLabels,
@@ -1137,7 +1167,7 @@ export function syncShapeObjectDimensions(object: THREE.Group, shape: WorkplaneS
     );
   } else if (shape.kind === "box" && !(shape.radius && shape.radius > 0)) {
     scale = new THREE.Vector3(width, shape.height, depth);
-  } else if ((shape.kind === "cylinder" && shapeDrillPointLength(shape) === 0) || shape.kind === "ellipse" || shape.kind === "polygon") {
+  } else if ((shape.kind === "cylinder" && shapeDrillPointLength(shape) === 0) || shape.kind === "ellipse" || (shape.kind === "polygon" && !((shape.cornerFillet ?? 0) > 0))) {
     // A drilled hole is no unit body (Discussion #621): it was built at its size and is built again when that changes.
     const fit = regularPolygonFootprintScale(width, depth, polygonSidesForShape(shape));
     scale = new THREE.Vector3(fit.x, shape.height, fit.z);
@@ -2136,6 +2166,11 @@ export function createShapeObject(
         addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createPrismGeometry(width, height, depth, sides, shape.segments ?? 1, drillPoint)), material, shape);
         break;
       }
+      if (shape.kind === "polygon" && (shape.cornerFillet ?? 0) > 0) {
+        // Rounded corners: built at its size, the rounding stays round when the polygon is stretched.
+        addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createRoundedPolygonGeometry(width, height, depth, sides, shape.cornerFillet ?? 0)), material, shape);
+        break;
+      }
       const fit = regularPolygonFootprintScale(width, depth, sides);
       addMesh(
         group,
@@ -2177,6 +2212,7 @@ export function createShapeObject(
         hingeKnuckleWidth: shape.hingeKnuckleWidth,
         hingeConeSize: shape.hingeConeSize,
         hingeStyle: shape.hingeStyle,
+        hingeSnapGrip: shape.hingeSnapGrip,
         hingePinDiameter: shape.hingePinDiameter,
         hingeLeafThickness: shape.hingeLeafThickness,
         hingeClearance: shape.hingeClearance,
@@ -2223,6 +2259,10 @@ export function createShapeObject(
         gridfinityLabelRightOffset: shape.gridfinityLabelRightOffset,
         gridfinityLabelCorner: shape.gridfinityLabelCorner,
         gridfinityLabelCornerSize: shape.gridfinityLabelCornerSize,
+        gridfinityLabelBackText: shape.gridfinityLabelBackText,
+        gridfinityLabelFrontText: shape.gridfinityLabelFrontText,
+        gridfinityLabelLeftText: shape.gridfinityLabelLeftText,
+        gridfinityLabelRightText: shape.gridfinityLabelRightText,
         gridfinityScoopBack: shape.gridfinityScoopBack,
         gridfinityScoopFront: shape.gridfinityScoopFront,
         gridfinityScoopLeft: shape.gridfinityScoopLeft,
@@ -2239,11 +2279,19 @@ export function createShapeObject(
         gridfinityPaddingFront: shape.gridfinityPaddingFront,
         gridfinityPaddingLeft: shape.gridfinityPaddingLeft,
         gridfinityPaddingRight: shape.gridfinityPaddingRight,
+        gridfinityOverhangBack: shape.gridfinityOverhangBack,
+        gridfinityOverhangFront: shape.gridfinityOverhangFront,
+        gridfinityOverhangLeft: shape.gridfinityOverhangLeft,
+        gridfinityOverhangRight: shape.gridfinityOverhangRight,
+        gridfinityOverhangChamfer: shape.gridfinityOverhangChamfer,
+        gridfinityOverhangSolid: shape.gridfinityOverhangSolid,
+        gridfinityOverhangLipOnGrid: shape.gridfinityOverhangLipOnGrid,
         gridfinityCornerRadius: shape.gridfinityCornerRadius,
         gridfinityBinCornerRadius: shape.gridfinityBinCornerRadius,
         gridfinityCompartmentsX: shape.gridfinityCompartmentsX,
         gridfinityCompartmentsZ: shape.gridfinityCompartmentsZ,
         gridfinityDividerThickness: shape.gridfinityDividerThickness,
+        gridfinityDividerHeight: shape.gridfinityDividerHeight,
         gridfinityDividerPositionsX: shape.gridfinityDividerPositionsX,
         gridfinityDividerPositionsZ: shape.gridfinityDividerPositionsZ,
         gridfinityCompartmentLabels: shape.gridfinityCompartmentLabels,
@@ -2255,7 +2303,7 @@ export function createShapeObject(
       const geometry = sharedShapeGeometry(geometryCacheKey, () => {
         const letters = gridfinityLabelLetters({ ...shape, width, depth, height });
         // Letters in a colour of their own (#1308): their faces come last, as a group drawn in that colour.
-        return gridfinityLetterGroups(createGridfinityGeometry(fields, letters), gridfinityLabelColor(shape) ? letters : []);
+        return gridfinityLetterGroups(createGridfinityGeometry(fields, letters), gridfinityLabelColor(shape) ? gridfinityLettersInBox({ ...shape, width, depth, height }, letters) : []);
       });
       addMesh(group, geometry, gridfinityMaterials(shape, material, geometry), shape);
       break;
@@ -2351,6 +2399,16 @@ export function createShapeObject(
         height,
         heartTipFillet: shape.heartTipFillet,
         heartQuality: shape.heartQuality,
+      })), material, shape);
+      break;
+    case "sector":
+      addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createSectorGeometry({
+        width,
+        depth,
+        height,
+        sectorAngle: shape.sectorAngle,
+        sectorInnerDiameter: shape.sectorInnerDiameter,
+        sectorEndRadius: shape.sectorEndRadius,
       })), material, shape);
       break;
     case "crescent":
@@ -3005,7 +3063,7 @@ export function addShapeEdgeDecorations(group: THREE.Group, mesh: THREE.Mesh, pr
   const complexEdges =
     shape.kind === "mesh" ||
     Boolean(shape.importedMesh) ||
-    ["cone", "pyramid", "roof", "roundRoof", "halfSphere", "paraboloid", "curvedCone", "torus", "tube", "ring", "star", "gear", "hirth", "pulley", "wedge", "polygon", "heart", "crescent", "slot", "dovetail", "screwBoss", "snapFit", "rib", "hinge", "gridfinity", "knurl", "teardrop", "port", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "honeycomb", "loft"].includes(shape.kind);
+    ["cone", "pyramid", "roof", "roundRoof", "halfSphere", "paraboloid", "curvedCone", "torus", "tube", "ring", "star", "gear", "hirth", "pulley", "wedge", "polygon", "heart", "crescent", "sector", "slot", "dovetail", "screwBoss", "snapFit", "rib", "hinge", "gridfinity", "knurl", "teardrop", "port", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "honeycomb", "loft"].includes(shape.kind);
   const importedTriangleCount = shape.importedMesh?.triangleCount ?? 0;
   // A vase's relief has an edge at every rib: drawn like a heavy imported mesh, without the lines.
   const skipHeavyImportedEdges = (Boolean(shape.importedMesh) && importedTriangleCount > IMPORTED_SELECTED_EDGE_TRIANGLE_LIMIT)
@@ -3033,7 +3091,7 @@ export function addShapeEdgeDecorations(group: THREE.Group, mesh: THREE.Mesh, pr
       // A slope along folds its curved top in short pieces the same way.
       // A part of a twisted group or bundle is cut into the group's bands (applyGroupedContentTaper) and folds the same way.
       const twisted = Math.abs(shape.extrudeTwist ?? 0) > 1e-6 || shapeHasAlongDeform(shape) || Boolean(prepared.userData.twistBanded);
-      const selectedThreshold = shape.importedMesh ? NORMAL_IMPORTED_SELECTION_EDGE_ANGLE : shape.kind === "thread" || twisted || (shape.transparent && !shape.hole) ? 25 : 1;
+      const selectedThreshold = shape.importedMesh ? NORMAL_IMPORTED_SELECTION_EDGE_ANGLE : shape.kind === "thread" || shape.kind === "sector" || (shape.kind === "polygon" && (shape.cornerFillet ?? 0) > 0) || twisted || (shape.transparent && !shape.hole) ? 25 : 1;
       // A part-coloured group's surface can carry extra corners for its colour boundaries; its lines follow the plain mesh.
       const edgeSource = (prepared.userData.edgesSource as THREE.BufferGeometry | undefined) ?? prepared;
       const edgesGeometry = !selectedOutline && allEdgeLines

@@ -21,7 +21,7 @@
     <a href="#layerling-mcp-skill"><img alt="Drivable by AI" src="https://img.shields.io/badge/AI--drivable-MCP%20server-16c0d4"></a>
   </p>
 
-  <p><strong>English</strong> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <a href="README.nl.md">Nederlands</a> · <a href="README.sv.md">Svenska</a> · <a href="README.ar.md">العربية</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh-cn.md">简体中文</a> · <a href="README.zh-tw.md">繁體中文</a></p>
+  <p><strong>English</strong> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <a href="README.nl.md">Nederlands</a> · <a href="README.pl.md">Polski</a> · <a href="README.sv.md">Svenska</a> · <a href="README.ar.md">العربية</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh-cn.md">简体中文</a> · <a href="README.zh-tw.md">繁體中文</a></p>
 </div>
 
 <p align="center">
@@ -46,7 +46,8 @@ layerling sits a step beyond Tinkercad towards Fusion 360: it is operated the sa
 - **Hollow, split, sketch, thread.** Hollow a body to an even wall, split it with a plane or stretch it there, draw sketches with exact lengths and angles and extrude or revolve them, and add screws, nuts and tapped holes.
 - **Patterns and wrapping.** Repeat a shape in a row, a grid of columns and rows, a circle or a spiral, or wrap a pattern or text around a cylinder.
 - **Hole patterns.** Click a flat face, or the round wall of a cylinder or tube, and spread round, square, rectangular, hexagonal or slot holes over it, in a grid or staggered, with spacing, margin and depth - vents, speaker grilles and baskets in one step. Or set a ring of screw holes along its edge, with counterbores or countersinks if you like, or repeat a shape of your own over it, rivets or a diamond plate.
-- **Scale by percent.** Make one or many parts larger or smaller by a percentage - together, so the layout grows with them, or each in place.
+- **Thread inserts.** Click a spot on a flat face or a round wall and get the hole for a heat-set insert (M2 to M8, 1/4-20 or a size of your own). The tool first checks that the wall beside the hole and the depth behind it are enough, and blocks the hole if not - a green ring means go, a red one means stop.
+- **Scale by percent.** Make one or many parts larger or smaller by a percentage - together, so the layout grows with them, or each in place. Or bring them to a model scale such as 1:87 for H0, from the original's real size if you like (a tree 16 m tall becomes 184 mm).
 - **Match sizes.** Hold Alt on an align dot and the parts stretch instead of moving: to the side of another part, or to its width, length or height - to swap a box for a cylinder of the same size, for instance.
 - **Equal gaps.** Spread parts of different sizes so the space between them is the same everywhere - between the outer two, on a board with the same gap at its edges, or row by row, as for a peg puzzle; or type the gap.
 - **Measure and look inside.** Tape measure, rulers, a section view that cuts the model open, and a history slider to look back at earlier states.
@@ -79,7 +80,7 @@ It is not a full CAD package: there is no parametric timeline and no assemblies.
 - **Command search** – press Ctrl+K and type a tool, a shape or a command ("fillet", "mirror", "cylinder") to jump straight to it; it understands English and German words and shows the keyboard shortcuts beside each entry.
 - **Your own keys** – put any command of the command search on a key you choose, in the keyboard shortcuts window: Center on workplane, the shapes panel or your favourite shape is then one key away.
 - **Your own ribbon** – take the groups and buttons you never use out of the ribbon in the settings (Appearance); the command search and the keys still run them, and the order of the ribbon stays the same.
-- **Focus mode** – on a small laptop screen, hide the editor's title row and footer with one button or Ctrl+Shift+F; a small bar over the view keeps the tabs, Home, the command search and the settings. It also comes by itself while the browser is in full screen (F11).
+- **Focus mode** – on a small laptop screen, hide the editor's title row and footer with one button or Ctrl+Shift+F; a small bar over the view keeps the tabs, Home, the design's name, the command search and the settings. It also comes by itself while the browser is in full screen (F11).
 - **History view** – look back at any earlier state of the project with a slider, without changing anything; export that state or start a new project from it. By @rmpel. Undo and Redo name the step they take back in their tooltip, with its measure ("Rounded the edges of Box (5 mm)"), and a list in the History view names every step, to jump to any of them with one click.
 - **Millimetres or inches** – with Imperial units every measure is shown in inches, as fractions like Tinkercad (1 5/8) or as decimals, the snap grid steps from 1/64 to 1 inch, and the plate's grid is drawn in inches.
 - **Your printer's plate** – pick one of more than 230 common printers and the plate takes its size - round for a delta printer such as an FLSun. Its name and build volume show in the corner of the workplane (a switch in the settings hides this and the design's name), and a warning appears when a body reaches past the edge.
@@ -117,6 +118,7 @@ It is not a full CAD package: there is no parametric timeline and no assemblies.
 - **Delete face** – click the faces of a fillet, a hole or a boss and delete them: the faces around them grow to close the gap, and the body stays exact for more fillets and the STEP export.
 - **Custom shapes** – keep bodies you need again and again at the top of the shape library and insert them into any design with a click or by dragging; in the browser, or with the shared store on the server for every device. "Back up all" takes them along.
 - **Hole pattern** – perforate a flat face of a body or the round wall of a cylinder, tube or bore (every hole pointing at the axis, the rows going all the way round): pick the face, choose round, square, rectangular, hexagonal or slot holes, set size, spacing, grid, staggered or a ring along the edge (by spacing or by number, a hole on every corner), plain holes, counterbores or countersinks (with metric screw sizes) or a shape of your own from the scene (rivets, a diamond plate, raised or cut in), the margin to the edge and the depth (through the whole part or a set depth), and see the holes as a preview before creating them. They stay ordinary holes grouped with the body, so ungrouping frees them again.
+- **Thread insert** – the hole for a heat-set insert: choose the size, click the spot on a flat face or the round wall of a cylinder or tube, and a ring shows whether the part has the wall beside the hole and the depth behind it that the insert needs. The hole is made as an exact cylinder grouped with the body.
 - **Face** – push a flat face of a body out or cut a pocket into it: pick the face, choose Out or In, set an inset from the edge, a corner radius and the depth, and see the result as a preview. It works on imported STLs too, and what it adds stays an ordinary sketch body grouped with the body.
 - **Wrap around a cylinder** – lay an SVG pattern, a logo or lettering onto the wall of a cup or tube, raised or engraved, and centre it on the cylinder.
 
@@ -361,6 +363,9 @@ under a free name, picture and all – nothing is repacked, so the copy carries 
 your browser the copy becomes a design of its own, with the same shapes, the same history and its own preview picture,
 and it belongs to nobody on the server.
 
+**Open a copy** in the same menu does the same and opens the copy right away, for trying something out: the original
+stays as it was, whatever you do in the copy.
+
 A design that lives on the server saves itself back there, five seconds after the last change and when you leave the
 editor. Thumbnails land beside the files in `.thumbnails`. Designs that are only in your browser stay there, untouched.
 
@@ -486,7 +491,7 @@ server switches it on with an access token ([see below](#letting-an-ai-client-re
 
 The main tool names are `layerling_list_editors`, `layerling_read_scene`, `layerling_list_objects`,
 `layerling_create_shape`, `layerling_update_object`, `layerling_list_edges`, `layerling_apply_edge_treatment`,
-`layerling_hollow_object`, `layerling_make_lid`, `layerling_offset_object`, `layerling_cut_out`, `layerling_punch`, `layerling_array_objects`, `layerling_set_section_view` and `layerling_capture_image`.
+`layerling_hollow_object`, `layerling_make_lid`, `layerling_make_mold`, `layerling_offset_object`, `layerling_cut_out`, `layerling_punch`, `layerling_array_objects`, `layerling_set_section_view` and `layerling_capture_image`.
 
 ### Claude Code
 

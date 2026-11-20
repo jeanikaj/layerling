@@ -21,7 +21,7 @@
     <a href="#layerling-mcp-skill"><img alt="Von einer KI steuerbar" src="https://img.shields.io/badge/KI--steuerbar-MCP--Server-16c0d4"></a>
   </p>
 
-  <p><a href="README.md">English</a> · <strong>Deutsch</strong> · <a href="README.es.md">Español</a> · <a href="README.nl.md">Nederlands</a> · <a href="README.sv.md">Svenska</a> · <a href="README.ar.md">العربية</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh-cn.md">简体中文</a> · <a href="README.zh-tw.md">繁體中文</a></p>
+  <p><a href="README.md">English</a> · <strong>Deutsch</strong> · <a href="README.es.md">Español</a> · <a href="README.nl.md">Nederlands</a> · <a href="README.pl.md">Polski</a> · <a href="README.sv.md">Svenska</a> · <a href="README.ar.md">العربية</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh-cn.md">简体中文</a> · <a href="README.zh-tw.md">繁體中文</a></p>
 </div>
 
 <p align="center">
@@ -46,7 +46,8 @@ layerling ist ein Stück weiter als Tinkercad in Richtung Fusion 360 und wird ge
 - **Aushöhlen, Teilen, Skizzen, Gewinde.** Körper mit gleichmäßiger Wand aushöhlen, mit einer Ebene teilen oder dort strecken, Skizzen mit genauen Längen und Winkeln ziehen oder drehen, dazu Schrauben, Muttern und Gewindelöcher.
 - **Muster und Wickeln.** Eine Form in Reihe, im Raster aus Spalten und Reihen, im Kreis oder als Spirale wiederholen, oder ein Muster und Schrift um einen Zylinder wickeln.
 - **Lochmuster.** Eine ebene Fläche oder die runde Wand eines Zylinders oder Rohrs anklicken und runde, quadratische, rechteckige, sechseckige oder Langlöcher darauf verteilen, im Raster oder versetzt, mit Abstand, Rand und Tiefe - Lüftungsgitter, Lautsprecher und Körbe in einem Schritt. Oder einen Kranz von Schraubenlöchern entlang der Kante setzen, auf Wunsch mit Stufen- oder Senkbohrung, oder eine eigene Form darüber wiederholen, Nieten oder ein Riffelblech.
-- **Um Prozent skalieren.** Ein oder viele Teile um einen Prozentwert größer oder kleiner machen - zusammen, so dass die Anordnung mitwächst, oder jedes an seinem Platz.
+- **Gewindeeinsätze.** Eine Stelle auf einer ebenen Fläche oder einer runden Wand anklicken und das Loch für einen Einschmelz-Gewindeeinsatz erhalten (M2 bis M8, 1/4-20 oder eine eigene Größe). Das Werkzeug prüft zuerst, ob die Wand neben dem Loch und die Tiefe dahinter reichen, und blockiert das Loch, wenn nicht - ein grüner Ring heißt los, ein roter heißt stopp.
+- **Um Prozent skalieren.** Ein oder viele Teile um einen Prozentwert größer oder kleiner machen - zusammen, so dass die Anordnung mitwächst, oder jedes an seinem Platz. Oder auf einen Modellbau-Maßstab wie 1:87 für H0 bringen, auf Wunsch von der echten Größe des Vorbilds aus (ein 16 m hoher Baum wird 184 mm hoch).
 - **Größe angleichen.** Mit Alt auf einem Ausrichtungspunkt werden die Teile gestreckt statt verschoben: bis an die Kante eines anderen Teils oder auf seine Breite, Länge oder Höhe - etwa um einen Quader gegen einen gleich großen Zylinder zu tauschen.
 - **Gleiche Abstände.** Verschieden große Teile so verteilen, dass zwischen ihnen überall derselbe Abstand ist - zwischen den beiden äußeren, auf einem Brett mit demselben Abstand zum Rand oder Reihe für Reihe, etwa für ein Steckpuzzle; oder den Abstand eintippen.
 - **Messen und hineinschauen.** Maßband, Lineale, eine Schnittansicht, die das Modell aufschneidet, und ein Verlauf-Schieber zum Zurückschauen.
@@ -80,7 +81,7 @@ Ein vollständiges CAD-Paket ist es nicht: Es gibt keine parametrische Zeitleist
 - **Befehlssuche** – mit Strg+K ein Werkzeug, eine Form oder einen Befehl eintippen („Verrunden“, „Spiegeln“, „Zylinder“) und direkt dorthin springen; sie versteht deutsche und englische Wörter und zeigt die Tastenkürzel dazu.
 - **Eigene Tasten** – jeden Befehl der Befehlssuche im Fenster „Tastenkürzel“ auf eine eigene Taste legen: Zentrieren, die Formenauswahl oder die Lieblingsform liegen dann eine Taste entfernt.
 - **Eigenes Menüband** – Gruppen und Knöpfe, die du nie brauchst, in den Einstellungen (Darstellung) aus dem Menüband nehmen; Befehlssuche und Tasten führen sie weiter aus, und die Reihenfolge des Menübands bleibt gleich.
-- **Fokusmodus** – auf einem kleinen Laptop-Bildschirm Titelzeile und Fußzeile des Editors mit einem Knopf oder Strg+Umschalt+F ausblenden; eine kleine Leiste über der Ansicht behält Reiter, Startseite, Befehlssuche und Einstellungen. Er kommt auch von selbst, solange der Browser im Vollbild ist (F11).
+- **Fokusmodus** – auf einem kleinen Laptop-Bildschirm Titelzeile und Fußzeile des Editors mit einem Knopf oder Strg+Umschalt+F ausblenden; eine kleine Leiste über der Ansicht behält Reiter, Startseite, den Namen des Entwurfs, Befehlssuche und Einstellungen. Er kommt auch von selbst, solange der Browser im Vollbild ist (F11).
 - **Verlaufsansicht** – mit einem Schieber auf jeden früheren Stand des Projekts zurückschauen, ohne etwas zu ändern; diesen Stand exportieren oder als neues Projekt anlegen. Von @rmpel. Rückgängig und Wiederholen nennen im Tooltip den Schritt, den sie zurücknehmen, mit seinem Maß („Kanten von Box gerundet (5 mm)“), und eine Liste in der Verlaufsansicht nennt jeden Schritt, um mit einem Klick zu einem davon zu springen.
 - **Millimeter oder Zoll** – mit Imperial erscheinen alle Maße in Zoll, als Bruch wie in Tinkercad (1 5/8) oder als Dezimalzahl, das Raster rastet von 1/64 bis 1 Zoll, und das Gitter der Platte ist in Zoll gezeichnet.
 - **Die Platte deines Druckers** – wähl einen von über 230 gängigen Druckern, dann bekommt die Platte seine Größe – rund bei einem Delta-Drucker wie einem FLSun. Name und Bauraum stehen in der Ecke der Arbeitsfläche (ein Schalter in den Einstellungen blendet das und den Namen des Entwurfs aus), und eine Warnung erscheint, wenn ein Körper über den Rand ragt.
@@ -118,6 +119,7 @@ Ein vollständiges CAD-Paket ist es nicht: Es gibt keine parametrische Zeitleist
 - **Fläche löschen** – die Flächen einer Verrundung, eines Lochs oder eines Zapfens anklicken und löschen: Die Flächen ringsum wachsen und schließen die Lücke, und der Körper bleibt exakt für weitere Verrundungen und den STEP-Export.
 - **Eigene Formen** – Körper, die du immer wieder brauchst, oben in der Formenliste ablegen und per Klick oder Ziehen in jeden Entwurf setzen; im Browser oder, mit dem Serverspeicher, auf dem Server für jedes Gerät. „Alle sichern“ nimmt sie mit.
 - **Lochmuster** – eine ebene Fläche eines Körpers oder die runde Wand eines Zylinders, Rohrs oder einer Bohrung perforieren (jedes Loch zeigt auf die Achse, die Reihen gehen ganz herum): Fläche anklicken, runde, quadratische, rechteckige, sechseckige oder Langlöcher wählen, Größe, Abstand, Raster, versetzt oder als Kranz am Rand (nach Abstand oder Anzahl, ein Loch auf jeder Ecke), einfache Löcher, Stufen- oder Senkbohrungen (mit metrischen Schraubengrößen) oder eine eigene Form aus der Szene (Nieten, Riffelblech, aufgesetzt oder eingeschnitten), Rand zur Kante und Tiefe (durch das ganze Teil oder ein Maß) einstellen und die Löcher vor dem Erzeugen als Vorschau sehen. Sie bleiben normale Aussparungen, mit dem Körper gruppiert, und lassen sich durch Auflösen der Gruppe wieder freigeben.
+- **Gewindeeinsatz** – das Loch für einen Einschmelz-Gewindeeinsatz: Größe wählen, die Stelle auf einer ebenen Fläche oder der runden Wand eines Zylinders oder Rohrs anklicken, und ein Ring zeigt, ob das Teil die Wand neben dem Loch und die Tiefe dahinter hat, die der Einsatz braucht. Das Loch entsteht als exakter Zylinder, mit dem Körper gruppiert.
 - **Fläche** – eine ebene Fläche eines Körpers herausziehen oder eine Tasche hineinschneiden: Fläche anklicken, Heraus oder Hinein wählen, Rand zur Kante, Eckenradius und Tiefe einstellen und das Ergebnis als Vorschau sehen. Das geht auch bei importierten STL-Dateien, und was das Werkzeug anlegt, bleibt ein normaler Skizzenkörper, mit dem Körper gruppiert.
 - **Um einen Zylinder wickeln** – ein SVG-Muster, ein Logo oder einen Schriftzug auf die Wand eines Bechers oder Rohrs legen, erhaben oder als Gravur, und mittig am Zylinder ausrichten.
 
@@ -367,6 +369,9 @@ viele Treffer dort drüben liegen.
 Original und unter einem freien Namen, das Vorschaubild inbegriffen – es wird nichts neu gepackt, die Kopie trägt also
 genau die Geometrie des Originals. Im Browser entsteht ein eigener Entwurf mit denselben Formen, demselben Verlauf und
 einem eigenen Vorschaubild, und er gehört niemandem auf dem Server.
+
+**Kopie öffnen** im selben Menü tut dasselbe und öffnet gleich die Kopie, zum Ausprobieren: Das Original bleibt, wie
+es war, was du in der Kopie auch tust.
 
 Ein Entwurf, der auf dem Server liegt, sichert sich von selbst dorthin zurück – fünf Sekunden nach der letzten Änderung
 und beim Verlassen des Editors. Vorschaubilder landen daneben in `.thumbnails`. Was nur im Browser liegt, bleibt dort

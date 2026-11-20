@@ -21,7 +21,7 @@ U složitého modelu pomůže seznam všech tvarů: {{ui:editor.tool.showOutline
 
 ![Seznam objektů: sloučený celek se dvěma částmi a vedle něj koule. Ikona složky otevře úpravu celku.](shot:object-list)
 
-- Kliknutí vybere tvar, i uvnitř sloučení. [[Shift]] přidává a odebírá položky jako v pohledu. Šipky rozbalují a sbalují vnořené části.
+- Kliknutí vybere tvar, i uvnitř sloučení. Jako ve správci souborů [[Ctrl]] ([[Cmd]] na Macu) přidá nebo odebere jednu položku a [[Shift]] vybere všechny položky od naposledy kliknuté až po tuto, v pořadí seznamu; [[Ctrl]]+[[Shift]] je přidá k výběru. V pohledu naopak přidává a odebírá [[Shift]]. Šipky rozbalují a sbalují vnořené části.
 - Písmeno za názvem ukazuje, zda je díl {{ui:outliner.solid}}, nebo {{ui:outliner.hole}}: je to první písmeno slova a po najetí myší se zobrazí celé slovo.
 - Pod názvem stojí, o jaký tvar jde. Těleso, které už není jednoduchým tvarem (zaoblené, vydutěné nebo importované), ukazuje {{ui:shape.exactBody}}, když ho export STEP zapíše přesně, a {{ui:shape.mesh}}, když je jen z trojúhelníků a jde ven jako STL. Zúžení, náklon nebo zkroucení přidané až po zaoblení nebo vydutění ohne jen jeho síť, takže pak ukazuje {{ui:shape.mesh}}.
 - Zámek a oko ovládají zamknutí a skrytí jednotlivých částí.
@@ -72,7 +72,7 @@ Je-li mezi vybranými tvary deska, která je v tomto směru delší než všechn
 
 Bez desky nejdřív se stisknutým [[Shift]] klikněte na volné místo podložky: podložka je pak pevný tvar, stejné mezery rozmístí tvary po celé podložce se stejnou mezerou k jejím okrajům a ostatní body je zarovnají k jejím okrajům nebo středu. Další klik se [[Shift]] na volnou podložku ji uvolní. Klik do prázdna bez [[Shift]] zarovnání ukončí, stejně jako [[L]] a [[Esc]].
 
-Podržte [[Alt]] a klikněte na bod, chcete-li mezeru zadat sami, třeba 5 mm: tvary se seřadí v této vzdálenosti, od prvního tvaru nebo od toho, na který jste klikli jako první; na desce přijde řada doprostřed. Zamčený tvar zůstane na místě, takže jeden mezi krajními tvary stejným mezerám zabrání.
+Podržte [[Alt]] a klikněte na bod, chcete-li mezeru zadat sami, třeba 5 mm: tvary se seřadí v této vzdálenosti, od prvního tvaru nebo od toho, na který jste klikli jako první; na desce přijde řada doprostřed. Zamčený tvar zůstane na místě, takže jeden mezi krajními tvary stejným mezerám zabrání. Na tabletu, který nemá klávesu Alt, dělá totéž přepínač {{ui:align.sizeSwitch}} vedle teček: když ho zapnete, tečky zůstanou čtverečky a tečka rozestupu otevře své pole, dokud přepínač nevypnete.
 
 ## Zrcadlení
 
@@ -161,6 +161,19 @@ Otvory přijme i kulatá stěna válce, trubky nebo díry: stojánek na tužky, 
 
 AI může provést totéž přes `layerling_perforate_face`, viz [Modelování s AI](chapter:ai-with-mcp).
 
+U desky nebo víka s výřezy v bocích rozloží {{ui:holePattern.arrangement.perimeter}} otvory nerovnoměrně. Proto má {{ui:holePattern.title}} vedle {{ui:holePattern.mode.pattern}} druhou kartu, {{ui:holePattern.mode.mounting}}: umístí otvory do rohů nejmenšího obdélníku kolem vybrané plochy, vždy ve stejné vzdálenosti od jeho stran, i na otočené nebo vyříznuté desce. {{ui:holePattern.mounting.distance}} se měří k okraji otvoru včetně hlavy šroubu, nebo s {{ui:holePattern.mounting.toCenter}} k jeho středu. S {{ui:holePattern.mounting.count}} jdou čtyři do rohů a zbytek po dvojicích, rovnoměrně rozmístěný podél stran, například pro vodotěsné víko. Na kulaté ploše, třeba na víku kulaté krabičky, se rozmístí rovnoměrně po kružnici, tři nebo více. Typ a velikosti otvorů jsou stejné jako u vzoru: obyčejný, se zahloubením pro válcovou nebo zápustnou hlavu, průchozí nebo do hloubky. Vzniknou jako běžné tvary otvorů seskupené s tělesem, takže na ně působí i {{ui:inspector.groupHoleDiameter}} skupiny.
+
+## Otvor pro závitovou vložku
+
+Zalisovací závitová vložka se zatlačí do plastového dílu páječkou a šroubům dá závit, který se neopotřebuje. {{ui:threadInsert.title}} vytvoří otvor pro ni tam, kam kliknete, a nejprve vám řekne, zda má díl na tom místě dost materiálu. Vyberte právě jedno těleso, otevřete knihovnu tvarů a klikněte na {{ui:threadInsert.title}} v sekci {{ui:library.section.holes}}. Najdete ho také pomocí [[Ctrl]]+[[K]]. Na rozdíl od ostatních tvarů ho nelze přetáhnout do návrhu, protože pracuje s vybraným tělesem.
+
+1. V okně zvolte {{ui:threadInsert.size}}: M2 až M8, krátké M3, M4 a M5, nebo 1/4-20. U {{ui:threadInsert.custom}} zadáte průměr otvoru a délku vložky; stěna, která musí kolem otvoru zůstat, vyplyne z průměru. Okno ukazuje průměr a hloubku otvoru a tuto stěnu.
+2. Klikněte na místo na dílu. Funguje rovná plocha i vnější stěna válce nebo trubky; jakákoli jiná křivka se odmítne s nápovědou. Kroužek ukazuje otvor: zelený tam, kde má díl stěnu vedle otvoru a hloubku za ním, které vložka potřebuje, červený tam, kde jedno z toho chybí. Červená barva říká, které a o kolik, a jak široký musí být díl kolem otvoru.
+3. Kroužek posunete tažením po dílu, nebo u rovné plochy zadáte vzdálenost od levého a dolního okraje v části {{ui:threadInsert.position}}. {{ui:threadInsert.center}} ho umístí na střed plochy, který ukazuje fialová značka. Každý posun se změří znovu.
+4. {{ui:threadInsert.repick}} vybere jiné místo a [[Esc]] nástroj zavře. Otvor vytvoří teprve {{ui:threadInsert.apply}}, a to jen tam, kde je kroužek zelený.
+
+Otvor je běžný tvar otvoru sloučený s tělesem, stejně jako otvory z rastru otvorů, a jádro CAD ho řeže jako pravý válec, takže vývrt je přesný. {{ui:editor.tool.ungroup}} otvor opět uvolní. Je tak hluboký, jak je vložka dlouhá, a o kousek vyčnívá z plochy, aby se čistě otevřel. AI může provést totéž přes most MCP pomocí `layerling_thread_insert`, viz [Modelování s AI](chapter:ai-with-mcp).
+
 ## Vysunutí plochy ven nebo dovnitř
 
 Pro zesílení stěny, vyvýšenou plošku nebo vyříznutou kapsu pracuje nástroj {{ui:faceTool.title}} s jednou rovinnou plochou. Funguje i u importovaného STL, které nemá náčrt ke změně. Vyberte právě jedno těleso a spusťte {{ui:faceTool.title}} v {{ui:editor.section.mirrorPattern}} vedle rastru otvorů, pravým tlačítkem nebo vyhledáváním [[Ctrl]]+[[K]].
@@ -189,6 +202,8 @@ Pro stejné zvětšení či zmenšení jednoho nebo více dílů použijte {{ui:
 
 {{ui:scalePercent.percent}} zadává novou velikost v procentech původní. 120 % znamená zvětšení o pětinu, 50 % poloviční velikost. Všechny tři rozměry se mění stejně a zachovají proporce. Spodek zůstává na místě, takže se díl nezanoří do podložky.
 
+Pro modelářství zvolte nahoře {{ui:scalePercent.by.scale}} místo {{ui:scalePercent.by.percent}}. {{ui:scalePercent.scalePresets}} nabízí obvyklé velikosti od Z (1:220) po 16mm (1:19,05) a do {{ui:scalePercent.ratio}} zadáte jakékoli jiné měřítko, třeba 35 pro 1:35. Je-li model postavený ve skutečné velikosti předlohy, nechte {{ui:scalePercent.original.fullSize}}: 1:87 ho zmenší 87krát. Pokud jste ho postavili v libovolné velikosti, zvolte {{ui:scalePercent.original.realSize}}, pak {{ui:scalePercent.axis.height}} nebo {{ui:scalePercent.axis.length}} (nejdelší strana na desce) a do {{ui:scalePercent.realSize}} zadejte, jak velká je předloha doopravdy, v metrech (při palcových jednotkách ve stopách). Strom, který je ve skutečnosti 16 m vysoký, bude v H0 vysoký 16 000 mm / 87 = 184 mm, ať byl předtím jakkoli velký. Nová velikost se ukáže pod poli dřív, než stisknete {{ui:scalePercent.apply}}. Měřítko zůstane nastavené, dokud je editor otevřený.
+
 Pro více dílů zvolte:
 
 - **{{ui:scalePercent.mode.together}}:** růst kolem společného středu včetně mezer, jako jeden celek.
@@ -209,3 +224,5 @@ Ze staršího stavu můžete vytvořit {{ui:historyView.createProject}}. Nový p
 Do návrhu můžete vrátit i jednotlivé objekty. Klikněte na objekt v zobrazeném stavu - [[Shift]]+klik přidá další nebo jeden odebere, klik do prázdna nevybere nic - a zvolte {{ui:historyView.bringBack}}. Pohled se zavře a kopie každého objektu přibude do současného návrhu přesně tak, jak byl v tomto stavu, a na místě, kde tehdy stál, vybraná, vedle všeho, co návrh obsahuje teď; nic jiného se nemění. Je to jeden krok, Zpět ho vrátí. Hodí se pro starší verzi dílu, který jste mezitím změnili nebo smazali. Skupina se vrátí celá; poznámky a referenční body objektu zůstanou. Jeho název nese čas daného stavu, například „Kvádr (12:32)“, aby se snadno odlišil od současné verze. Chcete-li vrátit díl ze skupiny, vyberte skupinu a zvolte {{ui:historyView.openGroup}} nebo stiskněte [[E]], stejně jako v návrhu: její díly se rozloží tam, kam by je dala úprava skupiny, připravené k výběru, a lišta ukáže, ve které skupině jste. {{ui:historyView.backOut}} ji znovu zavře. Slouží jen k prohlížení - skupina, návrh i historie zůstanou beze změny.
 
 {{ui:historyView.delete}} vlevo dole po potvrzení trvale vymaže všechny minulé kroky. Zachová skutečný současný stav, nikoli právě prohlížený. Zpět už nemá kam přejít a později uložený soubor neobsahuje historii. Použijte pro nový začátek historie nebo sdílení bez minulosti. Nelze vrátit. Chcete-li sdílet soubor bez zásahu do vlastního projektu, zvolte při exportu {{ui:export.historyNone}}.
+
+Chcete-li velký projekt odlehčit, aniž byste přišli o celou historii, smažte jednotlivé kroky. Při otevřeném seznamu ukazuje každý krok vpravo, kolik místa by jeho smazání přibližně uvolnilo, počítáno tak, jak se projekt ukládá: síť, kterou sdílí více kroků, se nepočítá žádnému z nich samotnému, a kroky, které uvolní méně než 10 KB, neukazují nic. Otočené těleso se po každém otočení uloží jako nová síť, proto bývají tyto kroky ty velké. Koš vedle kroku smaže po dotazu jen tento krok: projekt zůstane, jak je, a Zpět skočí z kroku za ním rovnou na krok před ním. Krok, na kterém projekt stojí, smazat nelze. Nad seznamem je vidět, kolik zabírá celá historie, a {{ui:historyView.deleteLargest}} vybere každý krok, který sám uvolní 1 MB nebo více, a před jejich společným smazáním se zeptá. Když je projekt příliš velký na to, aby ho prohlížeč uložil s celou historií, má upozornění na to tlačítko {{ui:notice.projectHistoryTrimmedOpen}}, které tento seznam otevře.

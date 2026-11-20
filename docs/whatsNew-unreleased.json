@@ -1,1 +1,47 @@
-[]
+[
+  {
+    "title": {
+      "de": "Scharnier-Deckel: Filament passt leichter",
+      "en": "Hinged lid: filament fits more easily",
+      "da": "Hængslet låg: filamentet passer lettere"
+    },
+    "body": {
+      "de": "Beim Scharnier-Deckel saß der Stift aus Filament in den Löchern des Körpers oft zu stramm oder ging gar nicht hinein. Die Löcher sind jetzt etwas größer: bei den Standardwerten 0,1 mm pro Seite statt 0,05 mm. Braucht dein Drucker mehr Luft, folgt das Loch dem Spiel aus dem Passungstest. Der Stift sitzt im Körper weiter fester als im Deckel, rutscht also nicht heraus.",
+      "en": "With a hinged lid, the pin made from a piece of filament often sat too tight in the body's holes, or would not go in at all. The holes are now a little larger: 0.1 mm per side with the default settings instead of 0.05 mm. If your printer needs more room, the hole follows the play from the fit test. The pin still sits tighter in the body than in the lid, so it does not slide out.",
+      "da": "Med et hængslet låg sad stiften, der er lavet af et stykke filament, ofte for stramt i kroppens huller, eller den ville slet ikke gå ind. Hullerne er nu lidt større: 0,1 mm pr. side med standardindstillingerne i stedet for 0,05 mm. Hvis din printer skal have mere plads, følger hullet spillerummet fra pasprøven. Stiften sidder stadig strammere i kroppen end i låget, så den glider ikke ud."
+    },
+    "guide": {
+      "section": "lid"
+    }
+  },
+  {
+    "title": {
+      "de": "19-Zoll-Rack-Löcher",
+      "en": "19″ rack holes",
+      "da": "Huller til 19″-rack"
+    },
+    "body": {
+      "de": "Bei den Befestigungslöchern gibt es jetzt neben „Schrauben“ auch „19″-Rack“: vier Langlöcher in den Ecken einer Frontplatte, genau im Abstand der Rack-Schienen. Die Höhe passt sich der Platte an oder folgt einer Normplatte von 1U bis 6U. Eine Zeile zeigt, wo die Löcher gelandet sind.",
+      "en": "The mounting holes now offer \"19″ rack\" next to \"Screws\": four slots in the corners of a front panel, exactly where a rack's rails have their holes. The height is fitted to the panel or follows a standard 1U to 6U panel. A line shows where the holes came out.",
+      "da": "Fanen Monteringshuller har nu \"19″-rack\" ved siden af \"Skruer\": fire aflange huller i hjørnerne af en frontplade, lige dér hvor rackets skinner har deres huller. Højden tilpasses pladen eller følger en standardpanel fra 1U til 6U. En linje viser, hvor hullerne kom ud."
+    },
+    "guide": {
+      "section": "holePattern"
+    }
+  },
+  {
+    "title": {
+      "de": "Nur die Auswahl als LYL speichern",
+      "en": "Save only the selection as LYL",
+      "da": "Gem kun de valgte objekter som LYL"
+    },
+    "body": {
+      "de": "Im Exportfenster kann die LYL-Datei jetzt nur die ausgewählten Objekte enthalten, als neuen Entwurf ohne Verlauf, Notizen und Anhänge. Dein Entwurf bleibt mit seiner Datei verbunden. Praktisch für Teile, die du in einer Bibliothek aufhebst und mit „Aus Design einfügen“ wieder holst.",
+      "en": "In the export window, the LYL file can now hold only the selected objects, as a new design without history, notes or attachments. Your design stays tied to its own file. Handy for parts you keep in a library and bring back with Insert from design.",
+      "da": "I eksportvinduet kan LYL-filen nu rumme kun de valgte objekter, som et eget design uden historik, noter eller vedhæftede filer. Dit design forbliver knyttet til sin egen fil. Praktisk for dele, du opbevarer i et bibliotek og henter frem igen med \"Indsæt i dette design\"."
+    },
+    "guide": {
+      "chapter": "files"
+    }
+  }
+]

@@ -64,7 +64,7 @@ export const LYL_FILE_TYPES_FORMAT_VERSION = 4;
 /** The newest format this layerling reads. */
 export const LYL_NEWEST_READABLE_FORMAT_VERSION = LYL_FILE_TYPES_FORMAT_VERSION;
 export const LYL_OLDEST_READABLE_FORMAT_VERSION = 1;
-export const LYL_CREATED_WITH_VERSION = "1.159.1";
+export const LYL_CREATED_WITH_VERSION = "1.166.0";
 export const LYL_MEDIA_TYPE = "application/vnd.layerling.project+zip";
 
 export const LYL_LIMITS = {
@@ -82,7 +82,7 @@ export const LYL_LIMITS = {
 
 const SHAPE_KINDS = new Set([
   "box", "roundedBox", "cylinder", "slot", "ellipse", "sphere", "sketch", "scribble", "cone", "pyramid", "roof", "text", "roundRoof",
-  "halfSphere", "paraboloid", "curvedCone", "torus", "tube", "bentTube", "star", "heart", "crescent", "gear", "hirth", "pulley", "honeycomb", "hinge", "knurl", "dovetail", "screwBoss", "snapFit", "rib", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "teardrop", "port", "loft", "vase", "thread", "spring", "gridfinity", "ring", "wedge", "polygon", "icosahedron", "ruler", "mesh",
+  "halfSphere", "paraboloid", "curvedCone", "torus", "tube", "bentTube", "star", "heart", "crescent", "sector", "gear", "hirth", "pulley", "honeycomb", "hinge", "knurl", "dovetail", "screwBoss", "snapFit", "rib", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "teardrop", "port", "loft", "vase", "thread", "spring", "gridfinity", "ring", "wedge", "polygon", "icosahedron", "ruler", "mesh",
 ]);
 
 const FEATURE_TYPES = new Set([
@@ -1418,6 +1418,12 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
     if (definition[field] !== undefined && typeof definition[field] !== "boolean") throw new Error(`${label}.${field} must be true or false`);
   }
   if (definition.supportRibFor !== undefined && typeof definition.supportRibFor !== "string") throw new Error(`${label}.supportRibFor must be an id`);
+  // A mold part's master, group and settings (lib/moldTool).
+  if (definition.moldOf !== undefined) {
+    const mold = objectRecord(definition.moldOf, `${label}.moldOf`);
+    if (typeof mold.master !== "string" || typeof mold.group !== "string") throw new Error(`${label}.moldOf must name its master and group`);
+    objectRecord(mold.settings, `${label}.moldOf.settings`);
+  }
   // What a group does with its parts when it is resized (Discussion #526).
   if (definition.groupResize !== undefined && definition.groupResize !== "stretch" && definition.groupResize !== "keepParts") {
     throw new Error(`${label}.groupResize must be stretch or keepParts`);
@@ -1732,6 +1738,18 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
       }
     }
   }
+  if (kind === "sector") {
+    if (definition.sectorAngle !== undefined) {
+      const sectorAngle = finiteNumber(definition.sectorAngle, `${label}.sectorAngle`);
+      if (sectorAngle < 1 || sectorAngle > 360) throw new Error(`${label}.sectorAngle is outside the supported range`);
+    }
+    for (const field of ["sectorInnerDiameter", "sectorEndRadius"] as const) {
+      if (definition[field] !== undefined) {
+        const value = finiteNumber(definition[field], `${label}.${field}`);
+        if (value < 0 || value > 1e6) throw new Error(`${label}.${field} is outside the supported range`);
+      }
+    }
+  }
   if (kind === "crescent") {
     if (definition.crescentThickness !== undefined) {
       const crescentThickness = finiteNumber(definition.crescentThickness, `${label}.crescentThickness`);
@@ -1807,10 +1825,10 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
     if (definition.gridfinityType !== undefined && definition.gridfinityType !== "bin" && definition.gridfinityType !== "baseplate" && definition.gridfinityType !== "tray") {
       throw new Error(`${label}.gridfinityType is invalid`);
     }
-    for (const key of ["gridfinityLip", "gridfinityMagnets", "gridfinityHalfGrid", "gridfinityLargePlate", "gridfinitySwallowtail", "gridfinityLabelBack", "gridfinityLabelFront", "gridfinityLabelLeft", "gridfinityLabelRight", "gridfinityScoopBack", "gridfinityScoopFront", "gridfinityScoopLeft", "gridfinityScoopRight", "gridfinityOpenBack", "gridfinityOpenFront", "gridfinityOpenLeft", "gridfinityOpenRight", "hingePinless"] as const) {
+    for (const key of ["gridfinityLip", "gridfinityMagnets", "gridfinityHalfGrid", "gridfinityLargePlate", "gridfinitySwallowtail", "gridfinityLabelBack", "gridfinityLabelFront", "gridfinityLabelLeft", "gridfinityLabelRight", "gridfinityScoopBack", "gridfinityScoopFront", "gridfinityScoopLeft", "gridfinityScoopRight", "gridfinityOpenBack", "gridfinityOpenFront", "gridfinityOpenLeft", "gridfinityOpenRight", "gridfinityOverhangSolid", "gridfinityOverhangLipOnGrid", "hingePinless"] as const) {
       if (definition[key] !== undefined && typeof definition[key] !== "boolean") throw new Error(`${label}.${key} must be true or false`);
     }
-    for (const key of ["gridfinityLabelBackWidth", "gridfinityLabelBackLength", "gridfinityLabelBackOffset", "gridfinityLabelFrontWidth", "gridfinityLabelFrontLength", "gridfinityLabelFrontOffset", "gridfinityLabelLeftWidth", "gridfinityLabelLeftLength", "gridfinityLabelLeftOffset", "gridfinityLabelRightWidth", "gridfinityLabelRightLength", "gridfinityLabelRightOffset", "gridfinityLabelCornerSize", "gridfinityLabelTextSize", "gridfinityScoopRadius", "gridfinityFloorHeight", "gridfinityLipChamfer", "gridfinityWallThickness", "gridfinityOpeningCornerSize", "gridfinityPaddingBack", "gridfinityPaddingFront", "gridfinityPaddingLeft", "gridfinityPaddingRight", "gridfinityCornerRadius", "gridfinityBinCornerRadius", "gridfinitySwallowtailClearance", "gridfinityCompartmentsX", "gridfinityCompartmentsZ", "gridfinityDividerThickness"] as const) {
+    for (const key of ["gridfinityLabelBackWidth", "gridfinityLabelBackLength", "gridfinityLabelBackOffset", "gridfinityLabelFrontWidth", "gridfinityLabelFrontLength", "gridfinityLabelFrontOffset", "gridfinityLabelLeftWidth", "gridfinityLabelLeftLength", "gridfinityLabelLeftOffset", "gridfinityLabelRightWidth", "gridfinityLabelRightLength", "gridfinityLabelRightOffset", "gridfinityLabelCornerSize", "gridfinityLabelTextSize", "gridfinityOverhangBack", "gridfinityOverhangFront", "gridfinityOverhangLeft", "gridfinityOverhangRight", "gridfinityOverhangChamfer", "gridfinityScoopRadius", "gridfinityFloorHeight", "gridfinityLipChamfer", "gridfinityWallThickness", "gridfinityOpeningCornerSize", "gridfinityPaddingBack", "gridfinityPaddingFront", "gridfinityPaddingLeft", "gridfinityPaddingRight", "gridfinityCornerRadius", "gridfinityBinCornerRadius", "gridfinitySwallowtailClearance", "gridfinityCompartmentsX", "gridfinityCompartmentsZ", "gridfinityDividerThickness", "gridfinityDividerHeight"] as const) {
       if (definition[key] === undefined) continue;
       const value = finiteNumber(definition[key], `${label}.${key}`);
       // Only an offset runs both ways along a wall.
@@ -1896,7 +1914,7 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
   }
   if (kind === "hinge") {
     // Lenient on purpose: the geometry clamps the values itself; only nonsense is refused.
-    for (const key of ["hingeKnuckles", "hingeKnuckleWidth", "hingeConeSize", "hingePinDiameter", "hingeLeafThickness", "hingeClearance", "hingeAngle", "hingeScrewHoles", "hingeScrewDiameter", "hingeScrewSpacing", "hingeScrewAcross", "hingeCornerRadius", "hingeNutWidth"] as const) {
+    for (const key of ["hingeKnuckles", "hingeKnuckleWidth", "hingeConeSize", "hingeSnapGrip", "hingePinDiameter", "hingeLeafThickness", "hingeClearance", "hingeAngle", "hingeScrewHoles", "hingeScrewDiameter", "hingeScrewSpacing", "hingeScrewAcross", "hingeCornerRadius", "hingeNutWidth"] as const) {
       if (definition[key] === undefined) continue;
       const value = finiteNumber(definition[key], `${label}.${key}`);
       // The opening angle may fold the leaf down below lying flat (#1259).
@@ -1981,7 +1999,7 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
     const portClearance = finiteNumber(definition.portClearance, `${label}.portClearance`);
     if (portClearance < 0 || portClearance > 2) throw new Error(`${label}.portClearance is outside the supported range`);
   }
-  if (kind === "port" && definition.cornerFillet !== undefined) {
+  if ((kind === "port" || kind === "polygon") && definition.cornerFillet !== undefined) {
     const cornerFillet = finiteNumber(definition.cornerFillet, `${label}.cornerFillet`);
     if (cornerFillet < 0 || cornerFillet > 1e6) throw new Error(`${label}.cornerFillet is outside the supported range`);
   }

@@ -91,7 +91,11 @@ A partir daí, os novos usos partem da folga em vez do valor embutido: {{ui:lid.
 
 ![Uma bandeja cuja parede direita tem só 0,6 mm: Verificar impressão a pinta de vermelho e a aponta na janela.](shot:print-check)
 
-{{ui:printCheck.show}} numa linha leva a câmera até lá; seleciona as peças flutuantes, as que se apoiam em pouco e as malhas abertas, e nas saliências liga **Mostrar saliências**. Corpos que se sobrepõem são verificados unidos, como o fatiador os une. Se você mudar o desenho com a janela aberta, aparece {{ui:printCheck.stale}}; clique ali ou em {{ui:printCheck.checkAgain}}. [[Esc]] fecha a janela. Nada no desenho muda. Uma IA faz a mesma verificação com `layerling_check_print`.
+{{ui:printCheck.show}} numa linha leva a câmera até lá; seleciona as peças flutuantes, as que se apoiam em pouco e as malhas abertas, e nas saliências liga **Mostrar saliências**. Corpos que se sobrepõem são verificados unidos, como o fatiador os une. Se você mudar o desenho com a janela aberta, aparece {{ui:printCheck.stale}}; clique ali ou em {{ui:printCheck.checkAgain}}. [[Esc]] fecha a janela. Nada no desenho muda. Uma IA faz a mesma verificação com `layerling_check_print`. A janela só verifica, não imprime nem salva nada: para imprimir, exporte o desenho para o seu fatiador com {{ui:editor.export}} no grupo {{ui:editor.group.file}}. {{ui:printCheck.openExport}} na janela fecha a verificação e abre a exportação.
+
+### Análise de impressão e visualização de camadas
+
+{{ui:editor.tool.layerCheck}}, ao lado de {{ui:editor.tool.printCheck}}, corta os objetos selecionados (ou todos os visíveis) nas camadas que a impressora deposita e compara cada camada com a de baixo, de uma só vez. A janela lista as **constatações**: primeiro os problemas (vermelho), depois as dicas (amarelo), de baixo para cima, cada uma com onde, quão grave e o que ajuda. Clique numa constatação: a **visualização de camadas** abre na primeira camada afetada, a câmera vai até o local e ele é colorido na camada. [[↑]] e [[↓]] mudam uma camada, [[Space]] reproduz, [[N]] vai para a próxima constatação. Ao fechar, a câmera volta. Não é uma pré-visualização do fatiador: suportes, preenchimento e tempo de impressão vêm do fatiador.
 
 ## Quando estiver pronto
 

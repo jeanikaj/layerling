@@ -242,6 +242,43 @@ export function cornerRulerTicks(length: number, unitLabel = "mm"): CornerRulerT
   return ticks;
 }
 
+/** Width of one character of a framing square's number on screen (px), and the room around the number. */
+const CORNER_RULER_LABEL_CHAR_PX = 7.5;
+const CORNER_RULER_LABEL_PAD_PX = 10;
+const CORNER_RULER_LABEL_HEIGHT_PX = 16;
+const CORNER_RULER_LABEL_GAP_PX = 4;
+const CORNER_RULER_LABEL_STRIDES = [1, 2, 5, 10, 20, 50, 100];
+
+/**
+ * The numbers along one arm of the framing square, thinned so they do not run into each
+ * other (Discussion #1704): each number has a small plate behind it, so the grid does not
+ * cross its digits, and zoomed out the plates would cover their neighbours. Kept is every
+ * number, every 2nd, 5th, 10th ... (counted from the corner: 10, 20, 30 mm or 1, 2, 3"),
+ * the first step at which neighbours stand apart by a plate and a gap along the arm.
+ * The labels come in order from the corner outwards, in screen pixels.
+ */
+export function thinCornerRulerLabels<T extends { x: number; y: number; text: string }>(labels: T[]): T[] {
+  if (labels.length < 2) return labels;
+  const longest = labels.reduce((most, label) => Math.max(most, label.text.length), 0);
+  const width = longest * CORNER_RULER_LABEL_CHAR_PX + CORNER_RULER_LABEL_PAD_PX;
+  // The closest two neighbours, and the room a plate needs in their direction.
+  let closest = Infinity;
+  let needed = width + CORNER_RULER_LABEL_GAP_PX;
+  for (let index = 1; index < labels.length; index += 1) {
+    const dx = labels[index].x - labels[index - 1].x;
+    const dy = labels[index].y - labels[index - 1].y;
+    const distance = Math.hypot(dx, dy);
+    if (distance < closest) {
+      closest = distance;
+      needed = distance > 1e-6
+        ? (Math.abs(dx) / distance) * width + (Math.abs(dy) / distance) * CORNER_RULER_LABEL_HEIGHT_PX + CORNER_RULER_LABEL_GAP_PX
+        : width + CORNER_RULER_LABEL_GAP_PX;
+    }
+  }
+  const stride = CORNER_RULER_LABEL_STRIDES.find((step) => closest * step >= needed) ?? CORNER_RULER_LABEL_STRIDES[CORNER_RULER_LABEL_STRIDES.length - 1];
+  return stride === 1 ? labels : labels.filter((_, index) => (index + 1) % stride === 0);
+}
+
 export type CornerRulerMode = "endpoint" | "midpoint";
 
 /** The three numbers a framing square gives a body: along its two arms and in height. */
@@ -318,6 +355,23 @@ export function cornerRulerFrameForWorkplane(workplane: { xAxis: CornerRulerVect
 /** An arm dragged at its end stays this long at least and this long at most, in whole millimetres (Discussion #1469). */
 export const CORNER_RULER_MIN_ARM = 10;
 export const CORNER_RULER_MAX_ARM = 5000;
+
+/**
+ * The mouse pointer over an arm's end: a double arrow along the arm as it runs on the screen, from the corner `from`
+ * to the end `to` (screen pixels, y down). The arm running up and down shows the up-and-down arrows, a slanted one
+ * the slanted arrows (Discussion #1743: every end showed the left-right arrows).
+ */
+export function cornerRulerArmCursor(from: { x: number; y: number }, to: { x: number; y: number }) {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  if (Math.hypot(dx, dy) < 1e-6) return "ew-resize";
+  // The direction folded onto 0..180 degrees, since both ways of an arm show the same double arrow.
+  const angle = ((Math.atan2(dy, dx) * 180) / Math.PI + 180) % 180;
+  if (angle < 22.5 || angle >= 157.5) return "ew-resize";
+  if (angle < 67.5) return "nwse-resize";
+  if (angle < 112.5) return "ns-resize";
+  return "nesw-resize";
+}
 
 /**
  * How long an arm becomes when its end is dragged to `point`: the distance from the corner along that arm, rounded

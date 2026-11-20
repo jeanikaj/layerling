@@ -399,6 +399,10 @@ export type CadModifierGridfinityPart = {
   gridfinityLabelRightOffset?: number;
   gridfinityLabelCorner?: GridfinityLabelCorner;
   gridfinityLabelCornerSize?: number;
+  gridfinityLabelBackText?: string;
+  gridfinityLabelFrontText?: string;
+  gridfinityLabelLeftText?: string;
+  gridfinityLabelRightText?: string;
   gridfinityScoopBack?: boolean;
   gridfinityScoopFront?: boolean;
   gridfinityScoopLeft?: boolean;
@@ -415,11 +419,19 @@ export type CadModifierGridfinityPart = {
   gridfinityPaddingFront?: number;
   gridfinityPaddingLeft?: number;
   gridfinityPaddingRight?: number;
+  gridfinityOverhangBack?: number;
+  gridfinityOverhangFront?: number;
+  gridfinityOverhangLeft?: number;
+  gridfinityOverhangRight?: number;
+  gridfinityOverhangChamfer?: number;
+  gridfinityOverhangSolid?: boolean;
+  gridfinityOverhangLipOnGrid?: boolean;
   gridfinityCornerRadius?: number;
   gridfinityBinCornerRadius?: number;
   gridfinityCompartmentsX?: number;
   gridfinityCompartmentsZ?: number;
   gridfinityDividerThickness?: number;
+  gridfinityDividerHeight?: number;
   gridfinityDividerPositionsX?: number[];
   gridfinityDividerPositionsZ?: number[];
   gridfinityCompartmentLabels?: GridfinityCompartmentLabel[];
@@ -557,6 +569,15 @@ export type CadModifierWorkerRequest =
       // Only for "shell": which faces stay open; `amount` is the wall thickness.
       shellOpenings?: ShellOpenings;
       shellEdges?: ShellEdges;
+      // Only for "shell" with the top open: the collar round the top and the groove under the wall, this high (mm).
+      shellStack?: number;
+      shellStackFoot?: { hollow?: boolean; grip?: number; gripDepth?: number };
+      // Only for "shell" with the top open: a Gridfinity floor with at most this many cells, the walls fitted to them, and dividers.
+      shellGrid?: { cells: number; fit?: boolean; magnets?: boolean };
+      shellDividers?: { x: number; z: number; height?: number; thickness?: number };
+      // Only for "shell" with the top open (#1663): a ledge round the inside of the wall, this wide (mm), its top this high (mm) above the inside of the floor.
+      shellShelf?: number;
+      shellShelfHeight?: number;
       // Only for "offset" (#919): `amount` is the distance, moved inward when this is set.
       offsetShrink?: boolean;
       // Only for "offset" (#1057): only the sides move, the body keeps its height.

@@ -97,10 +97,11 @@ AI:n arbetar med samma funktioner som du, via samma väg som din användning i r
 | `layerling_import_mesh` | tar in ett triangelnät i designen |
 | `layerling_update_object` | ändrar mått, position, färg, namn, solid eller hål och allt annat som utgör formen, inklusive en texts bokstavskant |
 | `layerling_align_objects` | riktar in objekt mot varandra |
-| `layerling_scale_objects` | skalar objekt med en procentsats, tillsammans eller vart och ett på sin plats |
+| `layerling_scale_objects` | skalar objekt med en procentsats, tillsammans eller vart och ett på sin plats, eller till en modellskala som 1:87 |
 | `layerling_lay_flat` | lägger ett objekt med en yta mot plattan |
 | `layerling_place_on_face` | sätter ner objekt på en yta av ett annat objekt, även lutande ytor, som C-tangenten |
 | `layerling_perforate_face` | skär ut ett hålmönster i en plan yta eller runt väggen på en cylinder, ett rör eller ett borrhål; hålen stannar kvar som hål grupperade med kroppen |
+| `layerling_thread_insert` | gör hålet för en värmeinsatt gänginsats (M2 till M8, 1/4-20 eller din egen storlek) i en plan yta eller på utsidan av väggen på en cylinder eller ett rör, efter att ha kontrollerat att väggen bredvid hålet och djupet bakom det räcker; hålet stannar kvar som hål grupperat med kroppen |
 | `layerling_sweep_sketch` | drar ett rektangulärt eller runt tvärsnitt längs en bana av punkter som en enda exakt kropp; en sluten bana ger en ring |
 | `layerling_push_face` | skjuter ut en plan yta eller skär in en ficka i den, med indrag från kanten och hörnradie; den nya delen blir en skisskropp grupperad med kroppen, eller en egen fri kropp med `separate` |
 | `layerling_paint` | målar delar av en kropp i egna färger för flerfärgsutskrift (Måla): fyll en yta ända ut till dess skarpa kanter, en rund fläck eller en lasso ritad i en platt vy; sudda, rensa allt; sparas med kroppen och skrivs till en 3MF som målade ytor |
@@ -120,6 +121,7 @@ AI:n arbetar med samma funktioner som du, via samma väg som din användning i r
 | `layerling_flexi_joints` | skär upp en platt kropp i länkar med leder som skrivs ut på plats och svänger åt sidorna (Flexileder) |
 | `layerling_make_lid` | gör ett lock till en kropp som är öppen upptill: intryckt, utanpå eller platt, med den passning du väljer och magneter om du vill (Lock) |
 | `layerling_add_container_grid` | lägger till ett anpassat rutnät av avdelare i en tom låda, med olika avstånd, borttagbara sektioner och spel under skjutlockets styrspår (Lådans rutnät) |
+| `layerling_make_mold` | skapar en form eller en stans från ett original: en tvådelad form att gjuta i, en gjutlåda för silikon, en öppen form eller en stämpel och en matris för tunt material (Gjutform & stans) |
 | `layerling_make_cable_channel` | drar en rund kanal för en kabel genom en kropp från en ingång till en utgång och letar själv upp vägen med mjuka böjar (Kabelkanal) |
 | `layerling_loft_sketches` | förenar två skisskroppar till en övergång från ena konturen till den andra (Lofta skisser) |
 | `layerling_separate_parts` | delar upp en form i dess lösa delar, en skisskropp i en kropp per kontur |
@@ -146,6 +148,8 @@ AI:n arbetar med samma funktioner som du, via samma väg som din användning i r
 | `layerling_check_clearance` | kontrollerar före utskrift vilka delar som överlappar, nuddar varandra eller kommer närmare än ett minsta mellanrum (Kontrollera spelrum), även de lösa delarna i ett och samma objekt |
 | `layerling_printer_play` | läser av, ställer in eller rensar skrivarens spel ({{ui:workspace.printerPlay}} i inställningarna) och placerar passningstestet som mäter upp det |
 | `layerling_check_print` | kontrollerar före utskrift vad som skulle gå fel: väggar som är för tunna för munstycket, svävande delar, för liten kontaktyta mot plattan, överhäng och öppna nät (Utskriftskontroll) |
+| `layerling_check_layers` | delar utskriften i lager och listar lager för lager vad som skulle gå fel: överhäng, ställen utan stöd, broar, tunna väggar, små öar, en del i bädden (Utskriftsanalys) |
+| `layerling_split_bolt` | delar en skruv eller gängstång på längden genom axeln och lägger båda halvorna på snittytan för utskrift, valfritt med styrpinnar |
 | `layerling_add_reference_points` | markerar referenspunkter – på objekts mittpunkt, hörn eller kanters mittpunkter, eller vid exakta koordinater – som former fäster mot |
 | `layerling_list_reference_points` | listar referenspunkterna med sina id:n och positioner |
 | `layerling_remove_reference_points` | tar bort referenspunkter efter id, eller alla tillsammans |
@@ -171,6 +175,7 @@ AI:n arbetar med samma funktioner som du, via samma väg som din användning i r
 | `layerling_saved_view` | sparar den aktuella vyn under tangenten 7, 8, 9 eller 0 och går tillbaka till den, som Skift+tangent och själva tangenten (endast vyn); anger också startvyn för nya designer |
 | `layerling_build_plates` | listar, lägger till, namnger, ordnar och tar bort byggplattorna, flyttar objekt till en platta och ordnar dem på plattorna, som plattraden |
 | `layerling_clear_history` | raderar alla ångra-steg för gott, precis som historikvyns knapp ”Ta bort historik”; kräver `confirm: true` |
+| `layerling_delete_history_steps` | tar bort enskilda tillstånd i historiken för gott, aldrig det aktuella, som papperskorgen bredvid ett steg i historikvyns lista; kräver `steps` och `confirm: true` |
 | `layerling_list_backups` | listar de automatiska säkerhetskopiorna (Tidigare versioner) av den öppna designen, eller med `all: true` av alla designer i den här webbläsaren |
 | `layerling_open_backup` | öppnar en säkerhetskopia via dess `id` som en ny design, aldrig kopplad till den ursprungliga filen |
 | `layerling_set_history_view` | blickar tillbaka på ett tidigare tillstånd i projektet, som historikvyn (den riktiga designen förblir orörd; verktyg som ändrar modellen väntar tills den stängs) |
