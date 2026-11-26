@@ -5,16 +5,17 @@
  * hexagon with one's measures shows that size.
  *
  * The hexagon stands with two flats facing the sides: its width is the width across flats, its length the width
- * across corners.
+ * across corners. With a flat side in front (polygonFlat, Discussion #1787) the two change places.
  */
 
-export type NutPocketSize = "M2" | "M2.5" | "M3" | "M4" | "M5" | "M6" | "M8" | "M10" | "M12" | "M14" | "M16" | "M20" | "M24" | "M30";
+export type NutPocketSize = "M2" | "M2.5" | "M3" | "M3.5" | "M4" | "M5" | "M6" | "M8" | "M10" | "M12" | "M14" | "M16" | "M20" | "M24" | "M30";
 
 /** Width across flats and height of the nut, ISO 4032. */
 const NUTS: Record<NutPocketSize, { acrossFlats: number; height: number }> = {
   M2: { acrossFlats: 4, height: 1.6 },
   "M2.5": { acrossFlats: 5, height: 2 },
   M3: { acrossFlats: 5.5, height: 2.4 },
+  "M3.5": { acrossFlats: 6, height: 2.8 },
   M4: { acrossFlats: 7, height: 3.2 },
   M5: { acrossFlats: 8, height: 4.7 },
   M6: { acrossFlats: 10, height: 5.2 },
@@ -38,18 +39,19 @@ export function isNutPocketSize(value: unknown): value is NutPocketSize {
 }
 
 /** The pocket as the hexagon's own fields: across flats as width, across corners as length, the nut's height. */
-export function nutPocketFields(size: NutPocketSize) {
+export function nutPocketFields(size: NutPocketSize, flat = false) {
   const nut = NUTS[size];
-  const width = nut.acrossFlats + NUT_POCKET_ROOM;
-  return { width, depth: width / Math.cos(Math.PI / 6), height: nut.height + NUT_POCKET_ROOM };
+  const acrossFlats = nut.acrossFlats + NUT_POCKET_ROOM;
+  const acrossCorners = acrossFlats / Math.cos(Math.PI / 6);
+  return { width: flat ? acrossCorners : acrossFlats, depth: flat ? acrossFlats : acrossCorners, height: nut.height + NUT_POCKET_ROOM };
 }
 
 /** The size whose pocket this hexagon is, or null. Only a six-sided prism can be one. */
-export function nutPocketSizeFor(sides: number, width: number, depth: number, height: number): NutPocketSize | null {
+export function nutPocketSizeFor(sides: number, width: number, depth: number, height: number, flat = false): NutPocketSize | null {
   if (Math.round(sides) !== 6) return null;
   const near = (a: number, b: number) => Math.abs(a - b) < 0.005;
   return NUT_POCKET_SIZE_ORDER.find((size) => {
-    const pocket = nutPocketFields(size);
+    const pocket = nutPocketFields(size, flat);
     return near(width, pocket.width) && near(depth, pocket.depth) && near(height, pocket.height);
   }) ?? null;
 }

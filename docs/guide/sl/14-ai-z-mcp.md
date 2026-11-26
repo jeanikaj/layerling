@@ -63,7 +63,11 @@ Claude Desktop ne bere datotek projekta. Strežnik vpiši v njegovo lastno konfi
 
 Veščino iz `docs/skills/layerling-mcp-skill` kopiraj v svojo mapo veščin Codex, strežnik vpiši v svojo konfiguracijo Codex po `docs/mcp/codex-config.example.toml` in Codex znova zaženi.
 
-Podrobna navodila za vse tri so v [README na GitHubu](https://github.com/henmedia/layerling/blob/main/README.de.md#layerling-mcp-skill).
+### Gemini & Antigravity
+
+Antigravity samodejno najde veščino delovnega prostora v `.agents/skills/layerling-mcp-skill`. Za Gemini CLI kopiraj veščino iz `docs/skills/layerling-mcp-skill` v svojo globalno mapo veščin (`~/.gemini/skills/`), strežnik dodaj v svoje nastavitve po `docs/mcp/gemini-config.example.json` in odjemalca znova zaženi.
+
+Podrobna navodila za vsak odjemalec so v [README na GitHubu](https://github.com/henmedia/layerling/blob/main/README.de.md#layerling-mcp-skill).
 
 ## Kopija na NAS ali strežniku
 
@@ -98,6 +102,7 @@ Umetna inteligenca dela z istimi funkcijami kot ti, teče po isti poti kot tvoje
 | `layerling_place_on_face` | postavi objekte na ploskev drugega, tudi poševno, kot tipka C |
 | `layerling_perforate_face` | vreže vzorec lukenj v ravno ploskev ali okrog stene valja, cevi ali izvrtine, luknje ostanejo kot luknje, združene v skupino s telesom |
 | `layerling_thread_insert` | naredi luknjo za vtisnjeni navojni vložek (M2 do M8, 1/4-20 ali lastna velikost) v ravno ploskev ali v zunanjo steno valja ali cevi, potem ko preveri, da sta stena ob luknji in globina za njo dovolj veliki; luknja ostane kot luknja, združena v skupino s telesom |
+| `layerling_magnet_pocket` | izreže ležišče za okrogel magnet (od 2 × 1 do 12 × 3 mm ali lastna velikost) z ožjo jamico za lepilo pod njim v ravno ploskev ali zunanjo steno valja ali cevi, po enakem preverjanju, in enako ležišče nasproti v delu, ki se tam dotika; vsako ostane luknja, združena s svojim delom |
 | `layerling_sweep_sketch` | povleče pravokoten ali okrogel prerez vzdolž poti iz točk kot eno natančno telo; sklenjena pot da obroč |
 | `layerling_push_face` | ravno ploskev potegne navzven ali vanjo izreže žep, z odmikom od roba in polmerom vogalov; nov del je telo iz skice, združeno v skupino s telesom |
 | `layerling_paint` | pobarva dele telesa v lastnih barvah za tisk v več barvah (Barvanje): zapolni ploskev do ostrih robov, okrogla lisa ali laso v ravnem pogledu; radiranje, odstrani vse; shrani se s telesom in se v 3MF zapiše kot pobarvane ploskve |
@@ -132,11 +137,12 @@ Umetna inteligenca dela z istimi funkcijami kot ti, teče po isti poti kot tvoje
 | `layerling_delete_faces` | izbriše ploskve in zapre vrzel |
 | `layerling_array_objects` | pomnoži v vrsti, v mreži ali na krogu |
 | `layerling_bundle_objects` | poveže objekte v sveženj kot Ctrl+B: premikajo se skupaj, obdržijo barvo in vrsto ter gredo posamezno v izvoz |
-| `layerling_layer_text` | iz besedila naredi sklad plasti za večbarvni tisk (črke, širši robovi, plošča brez lukenj) ali sklad zgradi znova, z luknjo za obesek za ključe, vogali za vsako plast in zaobljenim ali poševno odrezanim robom črk; s seznamom imen en napis na ime |
+| `layerling_layer_text` | iz besedila naredi sklad plasti za večbarvni tisk (črke, širši robovi, plošča brez lukenj) ali sklad zgradi znova, z luknjo za obesek za ključe, vogali za vsako plast in zaobljenim ali poševno odrezanim robom črk; s seznamom imen en napis na ime; `flush` potopi plasti v spodnjo, tako da se vse barve končajo na eni ravni ploskvi (true, false ali globina od 0,2 do 5 mm) |
 | `layerling_text_block` | naredi blok besedila: besedilo postane prva od več vrstic, vsaka samostojno besedilo pod zgornjo, poravnane levo, na sredino ali desno, vsaka vrstica enako velika ali manjša |
-| `layerling_layer_icon` | iz simbola SVG (besedilo datoteke ali iztisnjeno telo skice) naredi simbolno oznako v plasteh za večbarvni tisk – simbol, širši robovi, plošča brez lukenj – ali jo zgradi znova z novo širino ali plastmi; s številom napolni ploščo s kopijami |
+| `layerling_layer_icon` | iz simbola SVG (besedilo datoteke ali iztisnjeno telo skice) naredi simbolno oznako v plasteh za večbarvni tisk – simbol, širši robovi, plošča brez lukenj – ali jo zgradi znova z novo širino ali plastmi; s številom napolni ploščo s kopijami; `flush` potopi plasti v spodnjo, tako da se vse barve končajo na eni ravni ploskvi (true, false ali globina od 0,2 do 5 mm) |
 | `layerling_create_qr_code` | iz besedila ali spletnega naslova naredi kodo QR kot {{ui:shape.qrCode}} v knjižnici oblik – samo kodo, dvignjeno na plošči ali vgravirano, s popravkom napak, širino, višino, tihim območjem in po želji kot luknjo; opozori, ko je modul manjši od 0,8 mm |
 | `layerling_create_sbc_board` | postavi ploščo SBC v pravi velikosti kot {{ui:shape.sbcBoard}} v knjižnici oblik – Raspberry Pi 5, 4, 3 B+, Zero 2 W ali BIGTREETECH Pi, z luknjami in priključki, zračnostjo okoli robnih priključkov, položajem in kot luknjo za izrez ohišja |
+| `layerling_create_fan` | postavi ventilator v pravi velikosti kot {{ui:shape.fan}} v knjižnici oblik – radialni 5015 ali aksialni 30 x 10; vstop, izstop in luknje za vijake lahko segajo ven, da prerežejo steno |
 | `layerling_reference_image` | doda referenčno sliko iz slike kot {{ui:import.referenceImage}} ali eno premakne, zavrti, umeri (dve točki slike in njuna prava razdalja), zbledi ali zaklene - pomoč, ki se nikoli ne izvozi ali natisne; `trace` iz temnega ali svetlega dela naredi telo skice, ki stoji na njej |
 | `layerling_measure_section` | meri na ravnini prereza med dvema točkama, ki se zaskočita na obris – debeline sten, reže, prileganja |
 | `layerling_show_overhangs` | vklopi ali izklopi šrafuro previsov, nastavi kot in za vsako telo navede ploskev, ki bi potrebovala podpore |
@@ -156,6 +162,7 @@ Umetna inteligenca dela z istimi funkcijami kot ti, teče po isti poti kot tvoje
 | `layerling_remove_notes` | izbriše zapiske po id |
 | `layerling_inspect_errors` | pokaže zadnje sporočilo in zadnjo napako, poleg tega sporočila in napake seje |
 | `layerling_wrap_around_cylinder` | ovije ležeče telo, na primer SVG ali besedilo, okoli valja, navzven ali kot gravuro navznotraj |
+| `layerling_take_rotation_as_zero` | vzame trenutno lego zasukane mreže kot 0: telo ostane na mestu, njegovi koti so 0 |
 | `layerling_texture_surface` | nanese na telo površinsko teksturo: utore, narebričenje, satovje ali izbokline, za boljši oprijem ali za videz, pozneje pa jo tudi spremeni ali odstrani |
 | `layerling_simplify_mesh` | zmanjša število trikotnikov uvožene mreže, na delež v odstotkih ali na število trikotnikov |
 | `layerling_make_exact` | uvoženo mrežo spremeni v natančno telo CAD: ravnine, valji, stožci, krogle in torusi postanejo prave ploskve, da se robovi čisto zaokrožijo in jih STEP nosi |
@@ -165,6 +172,7 @@ Umetna inteligenca dela z istimi funkcijami kot ti, teče po isti poti kot tvoje
 | `layerling_delete_custom_shape` | odstrani lastno obliko; vstavljena telesa ostanejo |
 | `layerling_show_workplane` | skrije ploščo z njeno mrežo in jo spet prikaže, na primer za sliko spodnje strani (samo pogled) |
 | `layerling_focus_mode` | vklopi in izklopi način osredotočenja: skrije naslovno vrstico in nogo za več prostora (le okvir urejevalnika) |
+| `layerling_detail_level` | prebere ali nastavi raven podrobnosti urejevalnika ali skice: koliko pomožnih prikazov se riše okoli modela (samo pogled) |
 | `layerling_set_section_view` | prereže pogled vzdolž ravnine, da se vidi notranjost (samo pogled, nič se ne razreže) |
 | `layerling_measurements` | prikaže ali skrije meritve merilnega traku in jih našteje z njihovimi dolžinami, ter skrije ali prikaže mere okoli izbora kot [[Q]], in vnese dolžino za eno od njih, kar premakne telo na njenem koncu kot klik na število |
 | `layerling_measure_angle` | izmeri kot, kakor kotomer: v oglišču treh točk ali med dvema ravnima ploskvama, in ga pokaže v pogledu |
@@ -179,6 +187,7 @@ Umetna inteligenca dela z istimi funkcijami kot ti, teče po isti poti kot tvoje
 | `layerling_export_drawing` | naredi delavniško risbo izvoza »2D«: trije pogledi v merilu 1:1 na listu ISO s skupnimi merami in tabelo okroglih izvrtin, kot besedilo SVG ali PDF |
 | `layerling_export_mesh` | zapiše datoteko izvoznega okna kot STL, 3MF, OBJ, SVG (tloris, odtis ali vidni robovi) ali DXF za lasersko rezanje iz istih teles; na pot v tem računalniku ali kot base64 |
 | `layerling_save_project` | shrani celoten urejevalni načrt kot datoteko .lyl na pot v računalniku, na katerem teče strežnik MCP, brez pogovornega okna; obstoječa datoteka se zamenja le z `overwrite`, piše se prek začasne datoteke, cilj Ctrl+S v urejevalniku pa ostane, kakršen je bil |
+| `layerling_open_project` | odpre shranjeno datoteko .lyl s poti v računalniku, na katerem teče strežnik MCP, kot nov načrt, tako kot če datoteko odpreš sam; nov načrt ni povezan z datoteko, spremembe zapiše nazaj `layerling_save_project` na isto pot z `overwrite` |
 | `layerling_list_attachments` | našteje datoteke, priložene načrtu (ime, vrsta, velikost), kot jih kaže plošča Priloge |
 | `layerling_get_attachment` | prebere eno priloženo datoteko, njene bajte kot base64, kot Prenesi na plošči |
 | `layerling_add_attachment` | priloži datoteko, podano kot base64, s preverjanji plošče; že priloženo ime prepiše le z `replace` |

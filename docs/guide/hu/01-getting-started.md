@@ -23,7 +23,7 @@ A terveid később előnézeti képpel jelennek meg a kezdőlapon. A böngésző
 - **Középen** van a munkasík. Itt helyezed el az alakzatokat, itt alakítod őket, és itt látod az eredményt.
 - **Jobbra** jelennek meg a kijelölt alakzat **tulajdonságai**: szín, méretek, helyzet és minden, ami még az alakzathoz tartozik. A számok begépelése pontosabb, mint a húzás.
 - **Balra** van a nézetsáv, fölötte a nézetkocka. Ezekkel mozogsz a jelenetben, bővebben a [Nézet és munkasík](chapter:view-and-workplane) fejezetben.
-- **A nézetsáv mellett** nyílik meg az **objektumlista** ([[Ctrl]]+[[U]]) a terv összes alakzatával. Bővebben a [Kijelölés és elrendezés](chapter:select-and-arrange) fejezetben.
+- **A nézetsáv mellett** nyílik meg az **objektumlista** ([[Ctrl]]+[[Shift]]+[[O]]) a terv összes alakzatával. Bővebben a [Kijelölés és elrendezés](chapter:select-and-arrange) fejezetben.
 - **A nézetkockától jobbra** jelenik meg az **állapotüzenet**, ha a layerlingnek mondanivalója van, például hogy mit vár tőled egy eszköz. Ha nincs mit mondani, nincs ott. Egy lépés, például egyesítés után röviden elmondja, mi történt, és felajánlja a(z) {{ui:shortcuts.undo}} lehetőséget; a beállításokban a(z) {{ui:workspace.showStepNotices}} kikapcsolja ezeket az üzeneteket.
 - Az **eszközablakok** a munkasík fölött nyílnak meg, amikor elindítasz egy eszközt, például: {{ui:editor.tool.fillet}}, {{ui:editor.tool.array}} vagy {{ui:editor.tool.hollow}}. A címsoruknál fogva félrehúzhatod őket, ha eltakarnak valamit.
 - **Legfelül** váltasz a {{ui:editor.modeGeometry}} és a {{ui:editor.modeSketch}} között, itt nevezed át a tervet, és itt választod ki a nyelvet és a színsémát.
@@ -34,7 +34,7 @@ Vidd az egeret egy gomb fölé, és látod a nevét. Ha nem vagy biztos benne, m
 
 ### Beillesztés
 
-{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) beteszi a tervbe, amit a {{ui:editor.tool.copy}} gombbal másoltál. A {{ui:common.duplicate}} egy lépésben másol és beilleszt. A beillesztés minden részt kicsit arrébb tesz attól, ahol volt. Egy másik programból jövő részek messze a tárgyasztaltól is landolhatnak; ezekhez a beállításokban, a(z) {{ui:workspace.appearance}} alatt ott van a(z) {{ui:workspace.pasteCentered}}: a beillesztés ilyenkor a részeket együtt a munkasík közepére teszi, és ráejti őket.
+{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) beteszi a tervbe, amit a {{ui:editor.tool.copy}} gombbal másoltál. A {{ui:common.duplicate}} egy lépésben másol és beilleszt. A beillesztés minden részt kicsit arrébb tesz attól, ahol volt. Egy másik programból jövő részek messze a tárgyasztaltól is landolhatnak; ezekhez a beállításokban, a(z) {{ui:workspace.controls}} alatt ott van a(z) {{ui:workspace.pasteCentered}}: a beillesztés ilyenkor a részeket együtt a munkasík közepére teszi, és ráejti őket.
 
 ### Törlés
 

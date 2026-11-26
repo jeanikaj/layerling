@@ -23,7 +23,7 @@ Tous vos designs apparaissent ensuite sur la page d'accueil avec une image d'ape
 - **Au milieu** se trouve le plan de travail. C'est ici que vous placez les formes, les modifiez et visualisez le résultat.
 - **À droite** apparaissent les **propriétés** de la forme sélectionnée : couleur, dimensions, position et tout ce qui compose la forme. Saisir des valeurs numériques est plus précis que de glisser à la souris.
 - **À gauche** se trouve la **barre de vue**, surmontée du **cube de vue**. Elles permettent de se déplacer dans la scène, voir plus en détail dans [Vue et plan de travail](chapter:view-and-workplane).
-- **À côté de la barre de vue** s'ouvre la **liste des objets** ([[Ctrl]]+[[U]]), avec toutes les formes du design. Plus de détails dans [Choisir et organiser](chapter:select-and-arrange).
+- **À côté de la barre de vue** s'ouvre la **liste des objets** ([[Ctrl]]+[[Shift]]+[[O]]), avec toutes les formes du design. Plus de détails dans [Choisir et organiser](chapter:select-and-arrange).
 - **À droite du cube de vue** apparaît le **message d'état** quand layerling a quelque chose à vous dire, par exemple ce qu'un outil attend de vous. Quand il n'y a rien à dire, il n'est pas là. Après une étape comme une union, il dit brièvement ce qui a été fait et propose {{ui:shortcuts.undo}} ; {{ui:workspace.showStepNotices}} dans les paramètres désactive ces messages.
 - Les **fenêtres d'outils** s'ouvrent au-dessus du plan de travail quand vous lancez un outil comme {{ui:editor.tool.fillet}}, {{ui:editor.tool.array}} ou {{ui:editor.tool.hollow}}. Écartez-les par leur barre de titre quand elles cachent quelque chose.
 - **Tout en haut**, vous basculez entre {{ui:editor.modeGeometry}} et {{ui:editor.modeSketch}}, renommez le design et choisissez la langue et le thème visuel.
@@ -34,7 +34,7 @@ Passez la souris sur un bouton pour voir son nom. Si vous ne savez pas ce que fa
 
 ### Coller
 
-{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) ajoute à la conception ce que vous avez copié avec {{ui:editor.tool.copy}}. {{ui:common.duplicate}} copie et colle en une étape. Un collage place chaque pièce un peu à côté de l'endroit où elle était. Les pièces venant d'un autre programme peuvent atterrir loin du plateau ; pour elles, il y a {{ui:workspace.pasteCentered}} dans les réglages, sous {{ui:workspace.appearance}} : un collage pose alors les pièces ensemble au milieu du plan de travail et les y dépose.
+{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) ajoute à la conception ce que vous avez copié avec {{ui:editor.tool.copy}}. {{ui:common.duplicate}} copie et colle en une étape. Un collage place chaque pièce un peu à côté de l'endroit où elle était. Les pièces venant d'un autre programme peuvent atterrir loin du plateau ; pour elles, il y a {{ui:workspace.pasteCentered}} dans les réglages, sous {{ui:workspace.controls}} : un collage pose alors les pièces ensemble au milieu du plan de travail et les y dépose.
 
 ### Supprimer
 

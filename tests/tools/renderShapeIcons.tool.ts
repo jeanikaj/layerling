@@ -31,6 +31,7 @@ import { bentTubeNaturalDimensions, createBentTubeGeometry } from "@/lib/bentTub
 import { createGearGeometry } from "@/lib/gearGeometry";
 import { createHirthGeometry } from "@/lib/hirthGeometry";
 import { createPulleyGeometry } from "@/lib/pulleyGeometry";
+import { createPattiesGeometry } from "@/lib/pattiesGeometry";
 import { createFinishingWasherGeometry } from "@/lib/finishingWasherGeometry";
 import manifoldModule from "manifold-3d";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
@@ -356,6 +357,25 @@ describe("palette icons", () => {
         return prism;
       },
     });
+    // The roof (#1931): the three-sided polygon lying on one flat side, as the library tile puts it in.
+    render({
+      name: "apps/web/public/assets/editor/shape-icons-gray/roof.png",
+      height: 17,
+      lay: false,
+      azimuth: 35,
+      elevation: 26,
+      build: () => {
+        const aspect = regularPolygonAspect(3);
+        const longest = Math.max(aspect.width, aspect.depth);
+        const prism = createPrismGeometry((22 * aspect.width) / longest, 26, (22 * aspect.depth) / longest, 3).toNonIndexed();
+        prism.rotateX(-Math.PI / 2);
+        prism.computeBoundingBox();
+        const box = prism.boundingBox!;
+        prism.translate(-(box.min.x + box.max.x) / 2, -box.min.y, -(box.min.z + box.max.z) / 2);
+        prism.computeVertexNormals();
+        return prism;
+      },
+    });
     render({
       name: "apps/web/public/assets/editor/shape-icons-gray/star.png",
       height: 10,
@@ -422,6 +442,16 @@ describe("palette icons", () => {
       azimuth: 35,
       elevation: 42,
       build: () => createHirthGeometry(30, 10, 30, { teeth: 12, toothSize: 4.5, centerHoleSize: 9 }),
+    });
+    render({
+      // Patties, the pattern plate: the warp grid with few, large figures and a thick plate, so the pattern and
+      // the plate both show at the icon's size.
+      name: "apps/web/public/assets/editor/shape-icons-gray/patties.png",
+      height: 3,
+      lay: false,
+      azimuth: 28,
+      elevation: 52,
+      build: () => createPattiesGeometry(40, 3, 40, { patties: { pattern: "warp", count: 5, gap: 2.4, frame: 2.6, bulge: 28, roundness: 100 } }),
     });
     render({
       // A GT2 pulley (Discussion #1319) with few teeth, so the grooves show at the icon's size; from above, for the hub and bore.
@@ -613,6 +643,24 @@ describe("palette icons", () => {
       azimuth: 30,
       elevation: 20,
       build: () => createVaseGeometry({ width: 90, depth: 90, height: 180, vase: { ribCount: 24, ribDepth: 2.4, quality: "entwurf" } }),
+    });
+    render({
+      // The plant pot the library puts down: the classic pot, as it stands.
+      name: "apps/web/public/assets/editor/shape-icons-gray/planter.png",
+      height: 120,
+      lay: false,
+      azimuth: 30,
+      elevation: 24,
+      build: () => createVaseGeometry({ width: 140, depth: 140, height: 120, vase: { profile: "topfKlassik", body: "hohl", wall: 4, bottom: 4, quality: "entwurf" } }),
+    });
+    render({
+      // The lampshade the library puts down, as it hangs: turned over, with grooves, seen a little from below its rim.
+      name: "apps/web/public/assets/editor/shape-icons-gray/lampshade.png",
+      height: 160,
+      lay: false,
+      azimuth: 30,
+      elevation: 14,
+      build: () => createVaseGeometry({ width: 180, depth: 180, height: 160, vase: { profile: "schirmGlocke", body: "hohl", wall: 3, lamp: "haengend", effect: "rillen", ribCount: 28, ribDepth: 3, quality: "entwurf" } }).rotateX(Math.PI).translate(0, 160, 0),
     });
     render({
       name: "apps/web/public/assets/editor/shape-icons-gray/roundedBox.png",

@@ -9,6 +9,7 @@ import { torusTessellation } from "@/lib/torusTessellation";
 import { torusRadii, torusTubeRatio } from "@/lib/torusShape";
 import { createGearGeometry } from "@/lib/gearGeometry";
 import { createHirthGeometry } from "@/lib/hirthGeometry";
+import { createPattiesGeometry } from "@/lib/pattiesGeometry";
 import { createPulleyGeometry } from "@/lib/pulleyGeometry";
 import { createFinishingWasherGeometry } from "@/lib/finishingWasherGeometry";
 import { createStarGeometry } from "@/lib/starGeometry";
@@ -32,6 +33,7 @@ import { createHoneycombGeometry } from "@/lib/honeycombGeometry";
 import { createRoundedBoxGeometry } from "@/lib/roundedBoxGeometry";
 import { createBentTubeGeometry } from "@/lib/bentTubeGeometry";
 import { createPrismGeometry } from "@/lib/prismGeometry";
+import { polygonFlatAngle } from "@/lib/regularPolygonFootprint";
 import { createRoundedPolygonGeometry } from "@/lib/roundedPolygonGeometry";
 import { shapeHasAlongDeform, slopeMesh } from "@/lib/slopeAlong";
 import { createBooleanHalfSphereGeometry, createBooleanHollowCylinderGeometry, createBooleanRoundRoofGeometry, createParaboloidGeometry } from "@/lib/roundBodyGeometry";
@@ -601,6 +603,10 @@ function geometryMeshForShape(shape: WorkplaneShape): MeshData | null {
         gridfinityHalfGrid: shape.gridfinityHalfGrid,
         gridfinityLargePlate: shape.gridfinityLargePlate,
         gridfinitySwallowtail: shape.gridfinitySwallowtail,
+        gridfinityClipNotches: shape.gridfinityClipNotches,
+        gridfinityPuzzle: shape.gridfinityPuzzle,
+        gridfinityPuzzleSides: shape.gridfinityPuzzleSides,
+        gridfinityPuzzleFit: shape.gridfinityPuzzleFit,
         gridfinityLabelBack: shape.gridfinityLabelBack,
         gridfinityLabelFront: shape.gridfinityLabelFront,
         gridfinityLabelLeft: shape.gridfinityLabelLeft,
@@ -655,6 +661,7 @@ function geometryMeshForShape(shape: WorkplaneShape): MeshData | null {
         gridfinityDividerPositionsX: shape.gridfinityDividerPositionsX,
         gridfinityDividerPositionsZ: shape.gridfinityDividerPositionsZ,
         gridfinityCompartmentLabels: shape.gridfinityCompartmentLabels,
+        gridfinityCompartmentSplits: shape.gridfinityCompartmentSplits,
         gridfinityOpenings: shape.gridfinityOpenings,
         gridfinityOpeningCorner: shape.gridfinityOpeningCorner,
         gridfinityOpeningCornerSize: shape.gridfinityOpeningCornerSize,
@@ -697,6 +704,9 @@ function geometryMeshForShape(shape: WorkplaneShape): MeshData | null {
       break;
     case "hirth":
       geometry = createHirthGeometry(width, height, depth, shape);
+      break;
+    case "patties":
+      geometry = createPattiesGeometry(width, height, depth, shape);
       break;
     case "pulley":
       geometry = createPulleyGeometry(shape);
@@ -779,6 +789,7 @@ function geometryMeshForShape(shape: WorkplaneShape): MeshData | null {
         springForm: shape.springForm,
         springPattern: shape.springPattern,
         springEnds: shape.springEnds,
+        springInner: shape.springInner,
       });
       break;
     case "wedge":
@@ -786,8 +797,8 @@ function geometryMeshForShape(shape: WorkplaneShape): MeshData | null {
       break;
     case "polygon":
       geometry = (shape.cornerFillet ?? 0) > 0
-        ? createRoundedPolygonGeometry(width, height, depth, shape.sides ?? 6, shape.cornerFillet ?? 0)
-        : createPrismGeometry(width, height, depth, shape.sides ?? 6);
+        ? createRoundedPolygonGeometry(width, height, depth, shape.sides ?? 6, shape.cornerFillet ?? 0, Boolean(shape.polygonFlat))
+        : createPrismGeometry(width, height, depth, shape.sides ?? 6, 1, 0, polygonFlatAngle(shape.sides, shape.polygonFlat));
       break;
     case "icosahedron":
       geometry = new THREE.IcosahedronGeometry(size / 2, 1);

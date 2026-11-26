@@ -23,7 +23,7 @@ Todos tus diseños aparecen después en la página de inicio, con una imagen de 
 - **En el centro** está el plano de trabajo. Ahí colocas las formas, las ajustas a tu gusto y ves el resultado.
 - **A la derecha** está el **panel de propiedades** de la forma seleccionada: color, medidas, posición y todo lo demás que define la forma. Escribir números es más exacto que arrastrar.
 - **A la izquierda** está la **barra de vista**, con el **cubo de vista** encima. Con ellos te mueves por la escena; tienes más detalles en [Vista y plano de trabajo](chapter:view-and-workplane).
-- **Junto a la barra de vista** se abre la **lista de objetos** ([[Ctrl]]+[[U]]), con todas las formas del diseño. Más en [Seleccionar y organizar](chapter:select-and-arrange).
+- **Junto a la barra de vista** se abre la **lista de objetos** ([[Ctrl]]+[[Mayús]]+[[O]]), con todas las formas del diseño. Más en [Seleccionar y organizar](chapter:select-and-arrange).
 - **A la derecha del cubo de vista** aparece el **mensaje de estado** cuando layerling tiene algo que decirte, por ejemplo qué espera de ti una herramienta. Si no hay nada que decir, no está. Tras un paso como una unión dice brevemente qué se hizo y ofrece {{ui:shortcuts.undo}}; {{ui:workspace.showStepNotices}} en los ajustes desactiva estos mensajes.
 - Las **ventanas de herramientas** se abren sobre el plano de trabajo cuando empiezas una herramienta como el redondeo, el patrón o el vaciado. Apártalas por su barra de título cuando tapen algo.
 - **Arriba del todo** cambias entre {{ui:editor.modeGeometry}} y {{ui:editor.modeSketch}}, cambias el nombre del diseño y eliges el idioma y el tema.
@@ -34,7 +34,7 @@ Pasa el ratón por encima de un botón para ver su nombre. Si no tienes claro qu
 
 ### Pegar
 
-{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) añade al diseño lo que hayas copiado con {{ui:editor.tool.copy}}. {{ui:common.duplicate}} copia y pega en un solo paso. Al pegar, cada pieza queda un poco al lado de donde estaba. Las piezas que vienen de otro programa pueden caer lejos de la placa, y para ellas está {{ui:workspace.pasteCentered}} en los ajustes, dentro de {{ui:workspace.appearance}}: al pegar, las piezas se juntan en el centro del plano de trabajo y bajan hasta él.
+{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) añade al diseño lo que hayas copiado con {{ui:editor.tool.copy}}. {{ui:common.duplicate}} copia y pega en un solo paso. Al pegar, cada pieza queda un poco al lado de donde estaba. Las piezas que vienen de otro programa pueden caer lejos de la placa, y para ellas está {{ui:workspace.pasteCentered}} en los ajustes, dentro de {{ui:workspace.controls}}: al pegar, las piezas se juntan en el centro del plano de trabajo y bajan hasta él.
 
 ### Eliminar
 

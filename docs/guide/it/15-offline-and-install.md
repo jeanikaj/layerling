@@ -12,7 +12,7 @@ Se il browser lo consente, nella pagina iniziale compare l’avviso {{ui:install
 - **Chrome ed Edge:** fai clic sull’icona di installazione a destra della barra degli indirizzi oppure scegli «Installa come app» dal menu del browser.
 - **Safari su Mac:** apri il menu «File» e scegli «Aggiungi al Dock».
 - **Safari su iPhone e iPad:** tocca l’icona di condivisione e poi «Aggiungi alla schermata Home».
-- **Firefox:** non consente di installare app. layerling può comunque funzionare offline in una scheda.
+- **Firefox:** su Windows, dalla versione 143, fai clic sull’icona «Aggiungi scheda alla barra delle applicazioni» a destra nella barra degli indirizzi; in una finestra anonima non c’è. I tuoi progetti restano come sono. Altrove layerling funziona offline in una scheda.
 
 Puoi chiudere l’avviso nella pagina iniziale con {{ui:installHint.dismiss}}. Se avvii una seconda volta layerling installato in Chrome o Edge, la finestra già aperta torna in primo piano invece di aprirne un’altra.
 
@@ -38,11 +38,11 @@ layerling è software libero (AGPL-3.0) e puoi usarlo sul tuo computer o server,
 - **Docker:** per dispositivi NAS e server domestici, senza bisogno di installare Node.js. Ogni versione viene pubblicata su Docker Hub come immagine pronta all’uso `henmedia/layerling` (disponibile anche come `ghcr.io/henmedia/layerling`) per amd64 e arm64. Per avviarla, usa `docker run -d -p 3000:3000 -v layerling-thumbnails:/app/.codex/project-thumbnails henmedia/layerling:latest`; su un NAS puoi cercarla nel registro del gestore dei container. Il volume `layerling-thumbnails` conserva le immagini di anteprima della pagina iniziale quando aggiorni il programma. Senza il volume, le anteprime scompaiono ogni volta che viene ricreato il container e ricompaiono solo dopo aver aperto il progetto.
 - **Esportazione statica:** il risultato è composto da normali file che qualsiasi server web può pubblicare. Devono trovarsi nella radice dell’indirizzo (`https://layerling.example.com/` oppure `http://192.168.0.5:8080/`), non in una sottocartella e non possono essere aperti direttamente dal disco; nel README trovi i passaggi. Se sul server è presente una cartella `store` scrivibile accanto a `index.html` e PHP è attivo, la cartella diventa anche lo spazio condiviso per i progetti.
 
-Il collegamento MCP per gli assistenti IA è disponibile solo nel server di sviluppo; vedi [Progettare con un’IA](chapter:ai-with-mcp).
+Il collegamento MCP per gli assistenti IA è disponibile solo nel server di sviluppo o in una copia ospitata da te che lo attiva; vedi [Progettare con un’IA](chapter:ai-with-mcp).
 
 ## Aiuto e commenti
 
-- Nell’editor, l’area {{ui:editor.group.help}} contiene {{ui:editor.guide}}, con i movimenti principali e la panoramica delle [scorciatoie da tastiera](chapter:shortcuts). Ogni sezione della guida rapida ha un punto interrogativo che rimanda al capitolo corrispondente di questa guida.
+- Nell’editor, l’area {{ui:editor.group.help}} contiene {{ui:editor.guide}}, con i movimenti principali e la panoramica delle [scorciatoie da tastiera](chapter:shortcuts). Ogni sezione della guida rapida ha un punto interrogativo che rimanda al capitolo corrispondente di questa guida. In cima alla guida rapida, {{ui:guide.fullGuide}} apre questa guida; la trova anche la ricerca dei comandi ([[Ctrl]]+[[K]]).
 
 ![La guida rapida nell’editor. In alto sono elencati i video realizzati da altri e ogni sezione ha un punto interrogativo.](shot:quick-guide)
 

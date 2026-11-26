@@ -3,7 +3,7 @@ title: Sneltoetsen
 summary: Alle toetsen in één overzicht, rechtstreeks uit het programma gehaald, zodat de lijst altijd klopt.
 ---
 
-De sneltoetsen werken zolang het werkvlak de focus heeft. Terwijl je in een veld typt, houden ze zich afzijdig. Op de Mac geldt [[Cmd]] overal waar hier [[Ctrl]] staat.
+De sneltoetsen werken zolang het werkvlak de focus heeft. Terwijl je in een veld typt, houden ze zich afzijdig. Op de Mac geldt [[Cmd]] overal waar hier [[Ctrl]] staat. De toetsen heten zoals op het toetsenbord van je taal. Een letter is de letter op je toetsenbord; op een toetsenbord met een ander schrift (Cyrillisch, Grieks, Arabisch, Hebreeuws) telt de toets op de plaats van de Latijnse letter.
 
 In de editor opent {{ui:editor.keyboardShortcuts}} in het gebied {{ui:editor.group.help}} dezelfde lijst als venster. De printerknop in het venster ({{ui:shortcuts.print}}) drukt de lijst apart af, zwart op wit en in grote letters; het afdrukvenster van de browser biedt ook aan om hem als pdf op te slaan.
 
@@ -19,7 +19,7 @@ Kun je een gereedschap niet vinden? Druk op [[Ctrl]]+[[K]] of klik op het vergro
 - Elk item toont de toetsen die hetzelfde doen en de groep van het lint waarin het staat, zodat je leert waar het zit.
 - Uitgegrijsde items kunnen op dit moment niet worden uitgevoerd, meestal omdat er niets geselecteerd is. Ze blijven in de lijst staan, zodat de zoekfunctie je toch vertelt waar het gereedschap zit.
 
-Ook deze handleiding heeft een zoekveld, bovenaan elke pagina: typ een of twee woorden en het toont de onderdelen waarin ze allemaal voorkomen, met de gevonden woorden gemarkeerd. Klik op een ervan, of druk op [[Enter]] voor het eerste, om er direct heen te springen. De pagina die opent, markeert elke plek waar je woorden staan en scrolt naar de eerste in dat onderdeel; [[Esc]] of een klik op een markering haalt ze weer weg.
+Ook deze handleiding heeft een zoekveld, bovenaan elke pagina: typ een of twee woorden en het toont de onderdelen waarin ze allemaal voorkomen, met de gevonden woorden gemarkeerd. Klik op een ervan, of druk op [[Enter]] voor het eerste, om er direct heen te springen. De pagina die opent, markeert elke plek waar je woorden staan en scrolt naar de eerste in dat onderdeel; [[Esc]] of een klik op een markering haalt ze weer weg. Woorden tussen aanhalingstekens worden als exacte woordgroep gezocht: alleen de onderdelen waarin ze precies zo achter elkaar staan verschijnen, en één woord tussen aanhalingstekens wordt alleen als heel woord gevonden, niet als deel van een langer woord.
 - De naam van een vorm zet die vorm op het werkvlak, net als een klik erop in het vormenmenu.
 - Met een leeg veld toont de zoekfunctie bovenaan de opdrachten die je het laatst hebt gebruikt.
 - De naam van een lichaam in je ontwerp vindt dat lichaam en selecteert het, handig in een ontwerp met veel onderdelen. Lichamen verschijnen pas zodra je iets typt.

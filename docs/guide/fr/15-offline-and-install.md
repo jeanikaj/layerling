@@ -14,7 +14,7 @@ Sur la page de démarrage, un indice {{ui:installHint.install}} apparaît si vot
 - **Chrome et Edge :** Cliquez sur l'icône d'installation à droite de la barre d'adresse ou choisissez « Installer en tant qu'application » dans le menu du navigateur.
 - **Safari sur Mac :** Menu "Fichier", puis "Ajouter au Dock".
 - **Safari sur iPhone et iPad :** Icône Partager, puis « Ajouter à l'écran d'accueil ».
-- **Firefox :** ne peut pas installer d'applications. layerling démarre toujours hors ligne dans un onglet.
+- **Firefox :** sous Windows, à partir de la version 143, cliquez sur l’icône « Ajouter l’onglet à la barre des tâches » à droite de la barre d’adresse ; elle n’existe pas en navigation privée. Vos conceptions restent telles quelles. Ailleurs, layerling démarre hors ligne dans un onglet.
 
 Vous pouvez fermer l'indice sur la page de démarrage avec {{ui:installHint.dismiss}}. Le fait de démarrer une deuxième fois l'application installée dans Chrome ou Edge amène la fenêtre ouverte au premier plan au lieu d'en ouvrir une autre.
 
@@ -38,11 +38,11 @@ layerling est un logiciel libre (AGPL-3.0) et peut être exécuté sur votre pro
 - **Docker :** Pour les appareils NAS et les serveurs domestiques, sans qu'il soit nécessaire d'installer Node.js. Chaque version se présente sous la forme d'une image prête à l'emploi `henmedia/layerling` sur Docker Hub (également `ghcr.io/henmedia/layerling`) pour amd64 et arm64 ; `docker run -d -p 3000:3000 -v layerling-thumbnails:/app/.codex/project-thumbnails henmedia/layerling:latest` le démarre et sur un NAS, vous le recherchez dans le registre du gestionnaire de conteneurs.
 - **Exportation statique :** Le résultat est des fichiers simples que n'importe quel serveur Web peut servir. Ils appartiennent à la racine d'une adresse (`https://layerling.example.com/` ou `http://192.168.0.5:8080/`), pas dans un sous-dossier et non ouverts depuis le disque ; le README contient les étapes. Avec un dossier inscriptible `store` à côté de `index.html` et PHP sur le serveur, il devient également le stockage partagé pour les conceptions.
 
-Le pont MCP pour les assistants IA existe uniquement dans le serveur de développement, voir [Construire avec une IA](chapter:ai-with-mcp).
+Le pont MCP pour les assistants IA existe uniquement dans le serveur de développement ou dans une copie que tu héberges toi-même et qui l’active, voir [Construire avec une IA](chapter:ai-with-mcp).
 
 ## Aide et commentaires
 
-- Dans l'éditeur, la zone {{ui:editor.group.help}} contient le {{ui:editor.guide}} avec les mouvements les plus importants et l'aperçu des [raccourcis clavier] (chapter:shortcuts). Chaque section du guide rapide comporte un point d'interrogation qui mène au chapitre correspondant ici.
+- Dans l'éditeur, la zone {{ui:editor.group.help}} contient le {{ui:editor.guide}} avec les mouvements les plus importants et l'aperçu des [raccourcis clavier] (chapter:shortcuts). Chaque section du guide rapide comporte un point d'interrogation qui mène au chapitre correspondant ici. En haut du guide rapide, {{ui:guide.fullGuide}} ouvre ce guide ; la recherche de commandes ([[Ctrl]]+[[K]]) le trouve aussi.
 
 ![Le guide rapide dans l'éditeur. Les vidéos réalisées par d'autres sont répertoriées en haut et chaque section comporte un point d'interrogation.](shot:quick-guide)
 

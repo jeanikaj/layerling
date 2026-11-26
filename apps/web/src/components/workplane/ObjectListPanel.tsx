@@ -1,8 +1,10 @@
 "use client";
 
 import { GuideHelpLink } from "@/components/GuideHelpLink";
+import { SelectionSetsSection } from "@/components/workplane/SelectionSetsSection";
+import type { SelectionSet } from "@/lib/selectionSets";
 import { useMemo, useState, useRef, useEffect, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactElement } from "react";
-import { ArrowDownAZ, ChevronDown, ChevronRight, ChevronUp, Eye, EyeOff, FolderOpen, GripVertical, ListTree, Lock, Pencil, Search, Shield, ShieldCheck, Unlock, X } from "lucide-react";
+import { ArrowDownAZ, ChevronDown, ChevronRight, ChevronUp, Eye, EyeOff, FolderOpen, GripVertical, LayoutGrid, ListTree, Lock, Pencil, Search, Shield, ShieldCheck, Unlock, X } from "lucide-react";
 import { ToolbarBundleIcon, ToolbarGroupIcon } from "@/components/toolbarIcons";
 import { useLanguage } from "@/lib/useLanguage";
 import { useMovablePanel, type MovablePanelOptions } from "@/lib/useMovablePanel";
@@ -19,6 +21,7 @@ import {
   type ObjectListOrder,
 } from "@/lib/objectListSearch";
 import { objectListAnchor, objectListClickSelection } from "@/lib/objectListSelection";
+import { shapesOnPlate, type PlateWorkspace } from "@/lib/buildPlates";
 import type { WorkplaneShape } from "@/types/layerling";
 
 export interface ObjectListPanelProps {
@@ -27,6 +30,12 @@ export interface ObjectListPanelProps {
   shapes: WorkplaneShape[];
   selectedIds: string[];
   onSelectShape: (id: string | string[], mode?: "replace" | "toggle") => void;
+  /** Select multiple is on (the menu item or the round button of a touch screen): a tap on a row adds it or takes it out, as Ctrl-click does. */
+  multiSelect?: boolean;
+  /** A long press on a row with a finger or pen turns Select multiple on; the row is added to the selection. */
+  onStartMultiSelect?: () => void;
+  /** A click on a row's colour swatch selects every visible shape of that colour; `add` keeps the selection (Discussion #1839). */
+  onSelectSameColor?: (id: string, add: boolean) => void;
   onToggleLock: (id: string) => void;
   /** Puts the shape lock on a part or takes it off with the shield in its row (#1277). */
   onToggleShapeLock?: (id: string) => void;
@@ -44,6 +53,18 @@ export interface ObjectListPanelProps {
   onTakeOutOfGroup?: (groupId: string, partId: string, beforeId: string | null) => Promise<{ ok: boolean; partIds?: string[] }>;
   /** The loose parts of the innermost group being edited; only groups among them can be edited next. */
   openGroupPartIds?: string[];
+  /** The build plates of a design with several: the list can show only what stands on the active one. */
+  plates?: { workspace: PlateWorkspace; active: number };
+  /** The named selections of the design (Discussion #1472). */
+  selectionSets?: {
+    sets: SelectionSet[];
+    renaming: string | null;
+    onSave: () => void;
+    onSelect: (name: string, add: boolean) => void;
+    onRename: (name: string, next: string) => void;
+    onRemove: (name: string) => void;
+    onRenameStarted: () => void;
+  };
   onClose: () => void;
 }
 
@@ -52,11 +73,15 @@ type DropTarget = { before: string | null } | { into: string };
 
 const COLLAPSED_STORAGE_KEY = "layerling.editor.objectListCollapsed";
 const ORDER_STORAGE_KEY = "layerling.editor.objectListOrder";
+const PLATE_ONLY_STORAGE_KEY = "layerling.editor.objectListPlateOnly";
 
 const WIDTH_STORAGE_KEY = "layerling.editor.objectListWidth";
 /** The width the panel can be dragged to at its lower right corner (Discussion #1636); min-width in globals.css. */
 const MIN_PANEL_WIDTH = 240;
 const MAX_PANEL_WIDTH = 600;
+/** A finger held this long (ms) on a row without moving more than this (px) starts Select multiple, as in the view. */
+const LONG_PRESS_MS = 550;
+const LONG_PRESS_SLOP_PX = 8;
 
 /**
  * Solid or hole as one letter, the first of the word, with the word as its tooltip (Discussion #1636): the
@@ -81,6 +106,9 @@ export function ObjectListPanel({
   shapes,
   selectedIds,
   onSelectShape,
+  multiSelect = false,
+  onStartMultiSelect,
+  onSelectSameColor,
   onToggleLock,
   onToggleShapeLock,
   onToggleHidden,
@@ -91,6 +119,8 @@ export function ObjectListPanel({
   onAddToGroup,
   onTakeOutOfGroup,
   openGroupPartIds,
+  plates,
+  selectionSets,
   onClose,
 }: ObjectListPanelProps) {
   const openParts = useMemo(() => new Set(openGroupPartIds ?? []), [openGroupPartIds]);
@@ -106,6 +136,8 @@ export function ObjectListPanel({
   const movable = useMovablePanel("layerling.editor.objectListPosition", OBJECT_LIST_PANEL);
   const [collapsed, setCollapsed] = useState(false);
   const [order, setOrder] = useState<ObjectListOrder>("added");
+  /** Only the objects on the active build plate; without several plates it has no effect. */
+  const [plateOnly, setPlateOnly] = useState(false);
   /** The width dragged at the lower right corner (Discussion #1636); null keeps the 300 px of globals.css. */
   const [width, setWidth] = useState<number | null>(null);
   const widthRef = useRef(width);
@@ -117,6 +149,7 @@ export function ObjectListPanel({
       setCollapsed(window.localStorage.getItem(COLLAPSED_STORAGE_KEY) === "true");
       const storedOrder = window.localStorage.getItem(ORDER_STORAGE_KEY);
       if (isObjectListOrder(storedOrder)) setOrder(storedOrder);
+      setPlateOnly(window.localStorage.getItem(PLATE_ONLY_STORAGE_KEY) === "true");
       const storedWidth = Number(window.localStorage.getItem(WIDTH_STORAGE_KEY));
       if (storedWidth >= MIN_PANEL_WIDTH && storedWidth <= MAX_PANEL_WIDTH) setWidth(Math.round(storedWidth));
     } catch {
@@ -150,6 +183,16 @@ export function ObjectListPanel({
     setOrder(next);
     try {
       window.localStorage.setItem(ORDER_STORAGE_KEY, next);
+    } catch {
+      // Blocked storage: the choice holds until the panel closes.
+    }
+  };
+
+  const togglePlateOnly = () => {
+    const next = !plateOnly;
+    setPlateOnly(next);
+    try {
+      window.localStorage.setItem(PLATE_ONLY_STORAGE_KEY, String(next));
     } catch {
       // Blocked storage: the choice holds until the panel closes.
     }
@@ -206,6 +249,8 @@ export function ObjectListPanel({
 
   const startRename = (shape: WorkplaneShape, e: MouseEvent) => {
     e.stopPropagation();
+    // Lock shape (#1836): the name is held with the shape, so no field opens that would refuse what is typed into it.
+    if (shape.shapeLocked) return;
     setEditingId(shape.id);
     setEditingDraft(getShapeDisplayName(shape));
   };
@@ -236,7 +281,7 @@ export function ObjectListPanel({
   // entries from the last clicked one, in the order the list shows them; Ctrl+Shift adds that run.
   const handleRowClick = (shapeId: string, e: MouseEvent) => {
     const listedIds = listedShapes.map((shape) => shape.id);
-    const click = { toggle: e.ctrlKey || e.metaKey, range: e.shiftKey };
+    const click = { toggle: e.ctrlKey || e.metaKey || multiSelect, range: e.shiftKey };
     const anchor = objectListAnchor(listedIds, selectedIds, lastClickedRef.current);
     const { ids, mode } = objectListClickSelection(listedIds, selectedIds, anchor, shapeId, click);
     // A run keeps its start, so the next Shift-click measures from the same entry.
@@ -244,23 +289,72 @@ export function ObjectListPanel({
     onSelectShape(ids, mode);
   };
 
+  // A long press on a row: a tablet has no Ctrl, and a body inside another one can often only be reached in the list.
+  const longPressRef = useRef<{ pointerId: number; x: number; y: number; timer: number } | null>(null);
+  // The click that follows the release of a long press, which would take the row straight out again.
+  const swallowClickRef = useRef(false);
+  const cancelLongPress = () => {
+    if (longPressRef.current) window.clearTimeout(longPressRef.current.timer);
+    longPressRef.current = null;
+  };
+  useEffect(() => cancelLongPress, []);
+  const longPressHandlers = (shapeId: string) => onStartMultiSelect ? {
+    onPointerDown: (e: PointerEvent<HTMLElement>) => {
+      cancelLongPress();
+      swallowClickRef.current = false;
+      if (e.pointerType === "mouse" || !(e.target instanceof Element)) return;
+      // Not on a control in the row, and not on a part of an expanded group, whose own row lies inside this one.
+      if (e.target.closest("button, input, textarea, select, a") || e.target.closest("li") !== e.currentTarget) return;
+      const timer = window.setTimeout(() => {
+        longPressRef.current = null;
+        swallowClickRef.current = true;
+        onStartMultiSelect();
+        if (!selectedIds.includes(shapeId)) onSelectShape(shapeId, "toggle");
+      }, LONG_PRESS_MS);
+      longPressRef.current = { pointerId: e.pointerId, x: e.clientX, y: e.clientY, timer };
+    },
+    onPointerMove: (e: PointerEvent<HTMLElement>) => {
+      const press = longPressRef.current;
+      if (press && e.pointerId === press.pointerId && Math.hypot(e.clientX - press.x, e.clientY - press.y) >= LONG_PRESS_SLOP_PX) cancelLongPress();
+    },
+    onPointerUp: cancelLongPress,
+    onPointerCancel: cancelLongPress,
+    onClickCapture: (e: MouseEvent) => {
+      if (!swallowClickRef.current) return;
+      swallowClickRef.current = false;
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    // The browser's own menu for a long press (Android) does not belong here.
+    onContextMenu: (e: MouseEvent) => {
+      if (longPressRef.current || swallowClickRef.current) e.preventDefault();
+    },
+  } : {};
+
   useEffect(() => setSearchExpandedGroups({}), [query]);
 
   const searchLabels = (shape: WorkplaneShape) => [getShapeDisplayName(shape), getShapeKindSubtitle(shape)];
   const shapeMatches = (shape: WorkplaneShape) => shapeMatchesSearch(shape, query, searchLabels);
   const hasMatchingPart = (shape: WorkplaneShape) => partMatchesSearch(shape, query, searchLabels);
 
+  const plateFilter = plateOnly && plates ? plates : null;
+  const plateWorkspace = plateFilter?.workspace ?? null;
+  const plateIndex = plateFilter?.active ?? 0;
+  const plateShapes = useMemo(
+    () => (plateWorkspace ? shapesOnPlate(plateWorkspace, shapes, plateIndex) : shapes),
+    [shapes, plateWorkspace, plateIndex],
+  );
   const filteredShapes = useMemo(() => {
-    if (!query) return shapes;
-    return shapes.filter((shape) => showInObjectList(shape, query, searchLabels));
-  }, [shapes, query]);
+    if (!query) return plateShapes;
+    return plateShapes.filter((shape) => showInObjectList(shape, query, searchLabels));
+  }, [plateShapes, query]);
 
   // Sorted on every render, as the shown names follow the interface language.
   const sortShapes = (list: WorkplaneShape[]) => sortObjectList(list, order, hasOwnShapeName, getShapeDisplayName, getLanguage());
   const listedShapes = sortShapes(filteredShapes);
 
   // The handle on each row puts a shape elsewhere in the design's own order; a sorted or filtered list has no such order to change.
-  const canReorder = Boolean(onMoveShape) && order === "added" && !query && listedShapes.length > 1;
+  const canReorder = Boolean(onMoveShape) && order === "added" && !query && !plateFilter && listedShapes.length > 1;
   const [draggedId, setDraggedId] = useState<string | null>(null);
   // The group a dragged part comes from: dropped back on it, it stays where it is.
   const [draggedFrom, setDraggedFrom] = useState<string | undefined>(undefined);
@@ -362,7 +456,7 @@ export function ObjectListPanel({
       const openPart = group && onOpenGroupPart && child.id ? () => onOpenGroupPart(group.id, child.id) : undefined;
       const openTitle = group ? t(group.groupOperation === "bundle" ? "group.editBundle" : "group.edit") : undefined;
       // A part of an editable group has a handle too: dragged out, it lies loose again (Discussion #1338).
-      const canTakeOut = Boolean(group && order === "added" && !query && onTakeOutOfGroup && child.id && !depth && !openParts.size && !group.shapeLocked);
+      const canTakeOut = Boolean(group && order === "added" && !query && !plateFilter && onTakeOutOfGroup && child.id && !depth && !openParts.size && !group.shapeLocked);
       const row = (
         <li
           key={child.id || `${depth}-${index}`}
@@ -436,9 +530,21 @@ export function ObjectListPanel({
           </button>
           <ListTree size={16} aria-hidden="true" className="outliner-header-icon" />
           <strong>{t("outliner.title")}</strong>
-          <span className="outliner-count-badge">{shapes.length}</span>
+          <span className="outliner-count-badge">{plateFilter ? `${plateShapes.length}/${shapes.length}` : shapes.length}</span>
         </div>
         <div className="outliner-header-actions">
+          {collapsed || !plates ? null : (
+            <button
+              className={`outliner-close-button outliner-sort-button ${plateOnly ? "active" : ""}`}
+              type="button"
+              aria-pressed={plateOnly}
+              aria-label={t(plateOnly ? "outliner.allPlates" : "outliner.plateOnly")}
+              title={t(plateOnly ? "outliner.allPlates" : "outliner.plateOnly")}
+              onClick={togglePlateOnly}
+            >
+              <LayoutGrid size={16} />
+            </button>
+          )}
           {collapsed ? null : (
             <button
               className={`outliner-close-button outliner-sort-button ${order === "name" ? "active" : ""}`}
@@ -463,6 +569,19 @@ export function ObjectListPanel({
         </div>
       </header>
 
+      {!collapsed && selectionSets ? (
+        <SelectionSetsSection
+          sets={selectionSets.sets}
+          shapes={shapes}
+          selectedIds={selectedIds}
+          renaming={selectionSets.renaming}
+          onSave={selectionSets.onSave}
+          onSelect={selectionSets.onSelect}
+          onRename={selectionSets.onRename}
+          onRemove={selectionSets.onRemove}
+          onRenameStarted={selectionSets.onRenameStarted}
+        />
+      ) : null}
       {!collapsed && shapes.length > 4 ? (
         <div className="outliner-search-wrap">
           <Search size={14} className="outliner-search-icon" aria-hidden="true" />
@@ -490,7 +609,7 @@ export function ObjectListPanel({
         <div className="outliner-list-wrap">
           {listedShapes.length === 0 ? (
             <div className="outliner-empty-state">
-              <span>{filterText ? t("outliner.noMatches") : t("outliner.empty")}</span>
+              <span>{t(filterText ? "outliner.noMatches" : plateFilter && shapes.length > 0 ? "outliner.emptyPlate" : "outliner.empty")}</span>
             </div>
           ) : (
             <ul ref={listRef} className="outliner-list" role="listbox" aria-multiselectable="true">
@@ -519,6 +638,7 @@ export function ObjectListPanel({
                       if ((e.shiftKey || e.ctrlKey || e.metaKey) && !(e.target instanceof HTMLInputElement)) e.preventDefault();
                     }}
                     onClick={(e) => handleRowClick(shape.id, e)}
+                    {...longPressHandlers(shape.id)}
                   >
                     <div className="outliner-row-main">
                       {canReorder ? (
@@ -550,11 +670,27 @@ export function ObjectListPanel({
                         <span className="outliner-expand-spacer" />
                       )}
 
-                      <span
-                        className={`outliner-swatch ${shape.hole ? "swatch-hole" : ""}`}
-                        style={{ backgroundColor: shape.hole ? undefined : shape.color }}
-                        title={shape.hole ? t("outliner.hole") : t("outliner.solid")}
-                      />
+                      {onSelectSameColor ? (
+                        // The swatch selects every visible shape of its colour; Ctrl, Cmd or Shift adds them (Discussion #1839).
+                        <button
+                          type="button"
+                          className={`outliner-swatch ${shape.hole ? "swatch-hole" : ""}`}
+                          style={{ backgroundColor: shape.hole ? undefined : shape.color }}
+                          title={t("outliner.selectSameColor")}
+                          aria-label={t("outliner.selectSameColor")}
+                          data-testid="outliner-same-colour"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectSameColor(shape.id, e.ctrlKey || e.metaKey || e.shiftKey);
+                          }}
+                        />
+                      ) : (
+                        <span
+                          className={`outliner-swatch ${shape.hole ? "swatch-hole" : ""}`}
+                          style={{ backgroundColor: shape.hole ? undefined : shape.color }}
+                          title={shape.hole ? t("outliner.hole") : t("outliner.solid")}
+                        />
+                      )}
 
                       <div className="outliner-info">
                         {editingId === shape.id ? (
@@ -602,7 +738,7 @@ export function ObjectListPanel({
                             <FolderOpen size={13} />
                           </button>
                         ) : null}
-                        {onRenameShape && editingId !== shape.id ? (
+                        {onRenameShape && editingId !== shape.id && !shape.shapeLocked ? (
                           <button
                             type="button"
                             className="outliner-action-btn rename-btn"

@@ -7,7 +7,7 @@ To build a part exactly, you need to measure. layerling has several tools for th
 
 ## The tape measure
 
-The tape measure sits at the lower end of the view bar on the left edge ({{ui:camera.tapeTools}}). It measures distances between corners, edges and faces. A click on it opens five buttons. If they cover what you want to measure, drag them by the grip on the left anywhere on the workplane; a double-click on the grip puts them back:
+The tape measure sits at the lower end of the view bar on the left edge ({{ui:camera.tapeTools}}). It measures distances between corners, edges and faces. A click on it opens five buttons. {{ui:camera.addMeasurement}} is switched on straight away, so the next two clicks in the view measure; another click on that button puts the tool down and leaves the buttons open. If the measurements are hidden, it stays off until you click it. If they cover what you want to measure, drag them by the grip on the left anywhere on the workplane; a double-click on the grip puts them back:
 
 ![The tape measure with its buttons: add measurement, move measuring points, remove measurement, whole edges, delete all measurements.](shot:tape-menu)
 
@@ -18,6 +18,7 @@ The tape measure sits at the lower end of the view bar on the left edge ({{ui:ca
 5. **{{ui:camera.deleteAllMeasurements}}:** Removes every measurement at once. Because this cannot be undone, layerling asks first; with no measurements there is nothing to do.
 6. **{{ui:camera.tapeMarkMiddle}}:** In the middle of every measurement sits a small round mark, its lower half filled. It puts a [reference point](#reference-points) in the middle of the measurement: after a click on a round edge, such as the rim of a hole, in the centre of that circle - on an imported mesh too, where nothing else marks the middle of a hole - and for a diameter or any straight measurement halfway along it. A shape you drag then snaps to the point with its centre. A point that is there already is not made twice. The tape measure snaps to a reference point like to a corner, so you can measure from the centre of a circle or from the middle of a line: mark it, then click the point.
 7. **{{ui:camera.tapeTypeLength}}:** When at least one end of a straight measurement sits on a body, its number can be clicked. Type a new length and press [[Enter]]: the body at the second point moves along the measured line until the distance is exactly that, as with the ruler in Tinkercad. If only the body at the first point is selected, that one moves instead. The measuring points stay on the body, so the measurement follows. Measure from a corner, an edge or the centre of a face or a hole to place parts at an exact distance: from the centre of a hole to the middle of a cylinder's top, the cylinder moves centre to centre. A negative length takes it that far past the first point, say 5 mm inside the edge of a box. A [reference point](#reference-points) belongs to no body, so between two of them nothing moves. When the measurement runs along two or three axes, the field also has a box under the length for each of them (ΔX, ΔY, ΔZ, the reach shown when you point at the number): type there instead, and the body moves along that axis only. [[Tab]] goes from box to box, [[Esc]] closes the field without moving anything. Pointing at the number tells which body will move, or why none can: it is locked, both points lie on the same body, or neither lies on a body. The message afterwards says what moved and how far; one undo takes it back.
+8. **Thickness under the pointer:** While **{{ui:camera.addMeasurement}}** is active and no point is placed yet, pointing at a face shows how thick the body is there: measured straight in, square to the face, to where the material ends, with a dashed line through the body. On a hollowed box that is the wall, on a solid block all of the block, on the side of a cylinder its diameter. Move the pointer over the part to check its walls without placing a measurement.
 
 [[Esc]] leaves measuring mode.
 
@@ -68,6 +69,8 @@ With {{ui:workspace.dimensionsAlwaysVisible}} the dimensions stay visible perman
 With {{ui:workspace.dimensionAxisColors}} each box takes the colour of its axis, as the handles do: red for X, green for Y and blue for Z. So on a small part you see at a glance which number is which.
 
 For a moment without them, press [[Q]]: the sizes and distances around the selection disappear, so a part you move is easy to see. [[Q]] again brings them back. A handle you point at still shows its size.
+
+On a very small part the handles themselves can be in the way. [[Shift+Q]] hides them all - the squares for the size and the arrows for lifting, sliding and turning - and [[Shift+Q]] again brings them back. Without them you can still drag the part and type its sizes at the right, and the list of objects shows which part is selected.
 
 ## Checking clearance
 
@@ -120,6 +123,7 @@ A reference image is a picture to line parts up on: lay a photo of a circuit boa
 - Move, turn and resize it with its handles like any shape. A body in front of it is picked first, so working on top of it does not grab the picture.
 - {{ui:referenceImage.seeThrough}} in its settings fades it from solid to barely there.
 - {{ui:referenceImage.calibrate}} gives it its true size, as in the sketch: click two points on the picture whose real distance you know - two mounting holes of the board, say - and type that distance in {{ui:referenceImage.distance}}. The picture keeps its proportions and its middle.
+- In a sketch on the plate, the picture shows under your drawing: at its place, size and turn, mirrored if you mirrored it, and with its {{ui:referenceImage.seeThrough}} setting, so you can draw over it. A picture that is tilted or mirrored up/down, and any picture in a sketch on a face, shows its outline only.
 - Lock it with the lock in the header of its settings, and it stays put: clicks then go through it to the plate. Pick it in the object list to unlock it.
 - The picture is saved once in the design file, however often it is copied or undone. A large picture makes the file larger by as much; the message when you add it says how large it is.
 - An AI adds, moves, calibrates, fades and locks one with `layerling_reference_image`. With `trace` it traces the picture into a sketch body standing on it, as the sketch's {{ui:sketch.traceImage}} does.

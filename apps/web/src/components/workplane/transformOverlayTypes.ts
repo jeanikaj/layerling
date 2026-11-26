@@ -1,7 +1,7 @@
 import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
 
 /** "slide": the red and green arrows that move the selection along X or Y only (Discussion #1434). */
-import type { TouchHandleMode } from "@/lib/touchHandleMode";
+import type { TransformHandleMode } from "@/lib/touchHandleMode";
 
 export type TransformHandleKind = "scale" | "height" | "lift" | "rotate" | "slide";
 export type RotationAxis = "x" | "y" | "z";
@@ -423,8 +423,8 @@ export type TransformOverlayState = {
   height: number;
   guides: Array<{ x1: number; y1: number; x2: number; y2: number }>;
   handles: Array<{ key: string; className: string; kind: TransformHandleKind; x: number; y: number; title: string; angle?: number }>;
-  /** arc/heads: the arrow's SVG paths, relative to x/y (see rotateHandleArrow). */
-  rotateHandles: Array<{ key: string; className: string; x: number; y: number; arc: string; heads: string }>;
+  /** arc/heads: the arrow's SVG paths, relative to x/y (see rotateHandleArrow); room: see withRotateArrowRooms. */
+  rotateHandles: Array<{ key: string; className: string; x: number; y: number; arc: string; heads: string; room: number }>;
   /** The X and Y arrows beside the lift arrow (Discussion #1434); angle: where the tip points on the screen, in degrees. */
   slideHandles: Array<{ key: string; className: string; x: number; y: number; angle: number; title: string }>;
   dimensions: Record<string, DimensionMark[]>;
@@ -490,8 +490,8 @@ export type TransformOverlayProps = {
   sizeLocked?: boolean;
   /** The red and green arrows that move the selection along X or Y; off in the settings, they are left out. */
   showSlideArrows?: boolean;
-  /** On a touch screen, which handles a finger can reach (Discussion #1747); "all" shows every one. */
-  handleMode?: TouchHandleMode;
+  /** On a touch screen, which handles a finger can reach (Discussion #1747); "all" shows every one, "none" (Shift+Q, #1893) not one. */
+  handleMode?: TransformHandleMode;
   showRotationWheel: boolean;
   hideSelectionChrome: boolean;
   hideDimensionMarks: boolean;

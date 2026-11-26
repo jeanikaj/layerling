@@ -235,15 +235,23 @@ export function placementWorkplanePoint(workplane: PlacementWorkplane, x: number
 }
 
 export function placementPatchForNewShape(
-  shape: Pick<WorkplaneShape, "height">,
+  shape: Pick<WorkplaneShape, "height"> & Partial<Pick<WorkplaneShape, "depth">>,
   workplane: PlacementWorkplane,
   basePoint: PlacementPoint = workplane.origin,
   /** Sunk into the face: the top of the shape on the point, the body below it, not the foot on it (#940). */
   sunk = false,
+  /**
+   * A turn about the shape's own X axis before it is set on the workplane, in degrees: the roof (#1931) is the
+   * three-sided polygon laid on one flat side. Its foot is then its depth, not its height, below the middle.
+   */
+  turnX = 0,
 ): Pick<WorkplaneShape, "x" | "z" | "elevation" | "rotation" | "rotationX" | "rotationZ"> {
-  const quaternion = placementWorkplaneQuaternion(workplane);
+  const turn = THREE.MathUtils.degToRad(turnX);
+  const quaternion = placementWorkplaneQuaternion(workplane).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), turn));
   const euler = new THREE.Euler().setFromQuaternion(quaternion, "XYZ");
-  const center = vector(basePoint).addScaledVector(vector(workplane.normal), sunk ? -shape.height / 2 : shape.height / 2);
+  // How far the turned shape reaches along the workplane's normal, from its middle to its foot.
+  const reach = turnX === 0 ? shape.height / 2 : (Math.abs(Math.cos(turn)) * shape.height + Math.abs(Math.sin(turn)) * (shape.depth ?? shape.height)) / 2;
+  const center = vector(basePoint).addScaledVector(vector(workplane.normal), sunk ? -reach : reach);
   return {
     x: clean(center.x),
     z: clean(center.z),
@@ -283,17 +291,18 @@ export function placementWorkplaneIsBase(workplane: PlacementWorkplane) {
 }
 
 /**
- * How far along X a workplane lies that is the plate itself, only moved sideways - the plate's frame put in the middle of
- * another build plate, where a new sketch starts on that plate (#1660) - or null for any other workplane (lifted, tilted,
- * turned, or moved along Z). The base plate itself gives 0.
+ * How far a workplane lies from the first plate that is the plate itself, only moved - the plate's frame put in the middle
+ * of another build plate, where a new sketch starts on that plate (#1660) - or null for any other workplane (lifted, tilted,
+ * turned, or moved along Z to where no row of plates lies, `rowsZ`). The base plate itself gives 0.
  */
-export function placementWorkplanePlateShift(workplane: PlacementWorkplane): number | null {
+export function placementWorkplanePlateShift(workplane: PlacementWorkplane, rowsZ: readonly number[] = [0]): { x: number; z: number } | null {
   const near = (value: number, target: number) => Math.abs(value - target) < 1e-6;
   const upright = near(workplane.normal.x, 0) && near(workplane.normal.y, 1) && near(workplane.normal.z, 0);
   const square = near(workplane.xAxis.x, 1) && near(workplane.xAxis.y, 0) && near(workplane.xAxis.z, 0)
     && near(workplane.zAxis.x, 0) && near(workplane.zAxis.y, 0) && near(workplane.zAxis.z, 1);
-  if (!upright || !square || Math.abs(workplane.origin.y) > 1e-6 || Math.abs(workplane.origin.z) > 1e-6) return null;
-  return Math.abs(workplane.origin.x) < 1e-6 ? 0 : workplane.origin.x;
+  const row = rowsZ.find((z) => near(workplane.origin.z, z));
+  if (!upright || !square || Math.abs(workplane.origin.y) > 1e-6 || row === undefined) return null;
+  return { x: Math.abs(workplane.origin.x) < 1e-6 ? 0 : workplane.origin.x, z: row };
 }
 
 // A workplane moved or turned on the plate but still lying in its plane. Its grid

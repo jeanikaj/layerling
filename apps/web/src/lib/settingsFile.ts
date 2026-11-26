@@ -3,11 +3,13 @@ import { CUSTOM_SHORTCUTS_STORAGE_KEY, normalizeCustomShortcuts, type CustomShor
 import { normalizePrinterPlay, PRINTER_PLAYS_STORAGE_KEY } from "@/lib/printerPlay";
 import { normalizeRibbonHidden, RIBBON_HIDDEN_STORAGE_KEY } from "@/lib/ribbonHidden";
 import { normalizeRibbonOrder, RIBBON_ORDER_STORAGE_KEY } from "@/lib/ribbonOrder";
+import { normalizeViewBars, VIEW_BARS_STORAGE_KEY } from "@/lib/viewBars";
 import { normalizeRibbonFold, RIBBON_FOLD_STORAGE_KEY, type RibbonFoldMap } from "@/lib/ribbonFold";
 import { normalizeRibbonToolOrder, RIBBON_TOOL_ORDER_STORAGE_KEY, type RibbonToolOrder } from "@/lib/ribbonToolOrder";
 import { normalizeShapeColors, SHAPE_COLORS_STORAGE_KEY } from "@/lib/shapeColors";
 import { normalizeToolbarSize, TOOLBAR_SIZE_STORAGE_KEY, type ToolbarSize } from "@/lib/toolbarSize";
 import { normalizeViewCubePosition, VIEW_CUBE_POSITION_STORAGE_KEY, type ViewCubePosition } from "@/lib/viewCubePosition";
+import { normalizeWorkspaceProfiles, readWorkspaceProfiles, type WorkspaceProfile } from "@/lib/workspaceProfiles";
 import { APP_THEME_STORAGE_KEY } from "@/lib/appTheme";
 import { DEFAULT_SNAP_GRID, normalizeSnapGrid, normalizeWorkspaceSettings } from "@/lib/workplaneSettings";
 import type { GridSize, WorkplaneWorkspaceSettings } from "@/types/layerling";
@@ -43,6 +45,10 @@ export type BrowserSettings = {
   ribbonToolOrder?: Record<string, string[]>;
   /** How each group folds (Discussion #1551); read only from a file that has it. */
   ribbonFold?: Record<string, string>;
+  /** Whether the view bar is shown and whether the measuring tools have a bar of their own (#2073). */
+  viewBars?: { viewBar: boolean; measureBar: boolean };
+  /** The named workspace profiles (#850); read only from a file that has them. */
+  workspaceProfiles?: WorkspaceProfile[];
 };
 
 export type SettingsFile = {
@@ -109,12 +115,19 @@ export function readBrowserSettings(storage: Pick<Storage, "getItem"> | null): B
   } catch {
     ribbonToolOrder = {};
   }
+  let viewBars: unknown = null;
+  try {
+    viewBars = JSON.parse(readText(storage, VIEW_BARS_STORAGE_KEY) ?? "null");
+  } catch {
+    viewBars = null;
+  }
   let ribbonFold: RibbonFoldMap = {};
   try {
     ribbonFold = normalizeRibbonFold(JSON.parse(readText(storage, RIBBON_FOLD_STORAGE_KEY) ?? "{}"));
   } catch {
     ribbonFold = {};
   }
+  const workspaceProfiles = readWorkspaceProfiles(storage);
   return {
     theme: normalizeAppThemePreference(readText(storage, APP_THEME_STORAGE_KEY)),
     toolbarSize: normalizeToolbarSize(readText(storage, TOOLBAR_SIZE_STORAGE_KEY)),
@@ -126,6 +139,8 @@ export function readBrowserSettings(storage: Pick<Storage, "getItem"> | null): B
     ribbonOrder,
     ribbonToolOrder: { ...ribbonToolOrder } as Record<string, string[]>,
     ribbonFold: { ...ribbonFold },
+    viewBars: { ...normalizeViewBars(viewBars) },
+    ...(workspaceProfiles.length ? { workspaceProfiles } : {}),
   };
 }
 
@@ -185,6 +200,8 @@ export function parseSettingsFile(text: string): SettingsFile | null {
       ...("ribbonOrder" in browser ? { ribbonOrder: normalizeRibbonOrder(browser.ribbonOrder) } : {}),
       ...("ribbonToolOrder" in browser ? { ribbonToolOrder: { ...normalizeRibbonToolOrder(browser.ribbonToolOrder) } as Record<string, string[]> } : {}),
       ...("ribbonFold" in browser ? { ribbonFold: { ...normalizeRibbonFold(browser.ribbonFold) } } : {}),
+      ...("workspaceProfiles" in browser ? { workspaceProfiles: normalizeWorkspaceProfiles(browser.workspaceProfiles) } : {}),
+      ...("viewBars" in browser ? { viewBars: { ...normalizeViewBars(browser.viewBars) } } : {}),
     },
   };
 }

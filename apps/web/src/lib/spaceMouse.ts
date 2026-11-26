@@ -97,28 +97,81 @@ export type SpaceMouseInvert = { shift: boolean; lift: boolean; zoom: boolean; t
 
 export const SPACE_MOUSE_NO_INVERT: SpaceMouseInvert = { shift: false, lift: false, zoom: false, tilt: false, twist: false };
 
-const INVERT_KEY = "layerling.spaceMouseInvert";
+/**
+ * The two ways a 3D mouse is read: over WebHID after Connect 3D mouse, or as a game controller, which the browser shows
+ * by itself. On some devices the two do not run the same way round (#1871), so each keeps its own reversed directions.
+ */
+export type SpaceMouseWay = "hid" | "pad";
+
+const INVERT_KEYS: Record<SpaceMouseWay, string> = { hid: "layerling.spaceMouseInvert", pad: "layerling.spaceMouseInvertPad" };
 export const SPACE_MOUSE_INVERT_EVENT = "layerling:spacemouse-invert";
 
-/** The reversed directions the person ticked in the settings; none where the browser keeps nothing. */
-export function readSpaceMouseInvert(): SpaceMouseInvert {
+function storedSpaceMouseInvert(way: SpaceMouseWay): SpaceMouseInvert | null {
   try {
-    const stored = JSON.parse(window.localStorage.getItem(INVERT_KEY) ?? "{}") as Partial<SpaceMouseInvert>;
+    const text = window.localStorage.getItem(INVERT_KEYS[way]);
+    if (text === null) return null;
+    const stored = JSON.parse(text) as Partial<SpaceMouseInvert> | null;
     return {
-      shift: stored.shift === true,
-      lift: stored.lift === true,
-      zoom: stored.zoom === true,
-      tilt: stored.tilt === true,
-      twist: stored.twist === true,
+      shift: stored?.shift === true,
+      lift: stored?.lift === true,
+      zoom: stored?.zoom === true,
+      tilt: stored?.tilt === true,
+      twist: stored?.twist === true,
     };
   } catch {
-    return SPACE_MOUSE_NO_INVERT;
+    return null;
   }
 }
 
-export function saveSpaceMouseInvert(invert: SpaceMouseInvert) {
+/**
+ * The reversed directions the person ticked in the settings for one way of reading the mouse; none where the browser keeps
+ * nothing. A mouse read as a game controller starts from those of WebHID until its own were ticked (#1871).
+ */
+export function readSpaceMouseInvert(way: SpaceMouseWay = "hid"): SpaceMouseInvert {
+  return storedSpaceMouseInvert(way) ?? (way === "pad" ? storedSpaceMouseInvert("hid") : null) ?? SPACE_MOUSE_NO_INVERT;
+}
+
+export function saveSpaceMouseInvert(invert: SpaceMouseInvert, way: SpaceMouseWay = "hid") {
   try {
-    window.localStorage.setItem(INVERT_KEY, JSON.stringify(invert));
+    window.localStorage.setItem(INVERT_KEYS[way], JSON.stringify(invert));
+  } catch {
+    // The choice then holds until the page is closed.
+  }
+  window.dispatchEvent(new Event(SPACE_MOUSE_INVERT_EVENT));
+}
+
+/**
+ * The speed slider of the 3D mouse (#2010, Jeff-Haas): Zoom speed and Pan speed are for the regular mouse, so the 3D mouse
+ * has its own. Steps 1 to 9, 5 in the middle as before; each step doubles or halves the speed every two steps, so the
+ * ends go from a quarter to four times. Kept in the browser like the reversed directions, as it belongs to the device.
+ */
+export const SPACE_MOUSE_SPEED_MIN = 1;
+export const SPACE_MOUSE_SPEED_MAX = 9;
+export const SPACE_MOUSE_SPEED_DEFAULT = 5;
+const SPEED_KEY = "layerling.spaceMouseSpeed";
+
+export function normalizeSpaceMouseSpeed(value: unknown): number {
+  const step = typeof value === "number" ? value : typeof value === "string" && value.trim() ? Number(value) : Number.NaN;
+  if (!Number.isFinite(step)) return SPACE_MOUSE_SPEED_DEFAULT;
+  return Math.round(Math.min(SPACE_MOUSE_SPEED_MAX, Math.max(SPACE_MOUSE_SPEED_MIN, step)));
+}
+
+/** How much faster than the middle step the view moves: 0.25 at the slow end, 1 in the middle, 4 at the fast end. */
+export function spaceMouseSpeedFactor(step: number) {
+  return 2 ** ((normalizeSpaceMouseSpeed(step) - SPACE_MOUSE_SPEED_DEFAULT) / 2);
+}
+
+export function readSpaceMouseSpeed(): number {
+  try {
+    return normalizeSpaceMouseSpeed(window.localStorage.getItem(SPEED_KEY));
+  } catch {
+    return SPACE_MOUSE_SPEED_DEFAULT;
+  }
+}
+
+export function saveSpaceMouseSpeed(step: number) {
+  try {
+    window.localStorage.setItem(SPEED_KEY, String(normalizeSpaceMouseSpeed(step)));
   } catch {
     // The choice then holds until the page is closed.
   }
@@ -129,7 +182,7 @@ export function saveSpaceMouseInvert(invert: SpaceMouseInvert) {
  * Moves the camera for `seconds` of the cap held as `axes`, around `target`, the way a 3D mouse moves the view in CAD
  * programs: shifting the cap left, right, up or down shifts the model that way on the screen, pushing it away zooms in,
  * tilting it forward or back tilts the view, and twisting it turns the view about the up axis. `invert` turns single
- * directions round. Returns whether anything moved.
+ * directions round, and `speed` scales how far it goes (the 3D mouse's own slider, #2010). Returns whether anything moved.
  */
 export function moveCameraBySpaceMouse(
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera,
@@ -137,6 +190,7 @@ export function moveCameraBySpaceMouse(
   axes: SpaceMouseAxes,
   seconds: number,
   invert: SpaceMouseInvert = SPACE_MOUSE_NO_INVERT,
+  speed = 1,
 ): boolean {
   const way = (turned: boolean) => (turned ? -1 : 1);
   // First reports from a real device (Ciwa, 04.11.2026): the four shifts and turns below ran the wrong way round, zoom was right.
@@ -146,6 +200,7 @@ export function moveCameraBySpaceMouse(
   const tilt = -spaceMouseAmount(axes.rx) * way(invert.tilt);
   const twist = -spaceMouseAmount(axes.rz) * way(invert.twist);
   if (!shiftX && !shiftUp && !push && !tilt && !twist) return false;
+  seconds *= Number.isFinite(speed) && speed > 0 ? speed : 1;
   const offset = camera.position.clone().sub(target);
   const distance = offset.length();
   // Twist about the world's up axis, tilt about the camera's own sideways axis, kept short of the poles.

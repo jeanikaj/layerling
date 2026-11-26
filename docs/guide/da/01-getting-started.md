@@ -24,7 +24,7 @@ Men sikkerhedskopiér dine designs ind imellem: en browser kan fejle, og en brow
 - **I midten** ligger arbejdsplanet. Det er her du placerer former, trækker dem i form og ser resultatet.
 - **Til højre** vises **egenskaberne** for den valgte form: farve, dimensioner, position og hvad ellers der udgør formen. At taste tal er mere nøjagtigt end at trække.
 - **Til venstre** er visningsbjælken med visningskuben over den. De flytter dig rundt i scenen, mere i [Visning og arbejdsplan](chapter:view-and-workplane).
-- **Ved siden af visningsbjælken** åbner **objektlisten** ([[Ctrl]]+[[U]]) med alle designets former. Mere i [Valg og arrangering](chapter:select-and-arrange).
+- **Ved siden af visningsbjælken** åbner **objektlisten** ([[Ctrl]]+[[Shift]]+[[O]]) med alle designets former. Mere i [Valg og arrangering](chapter:select-and-arrange).
 - **Til højre for visningskuben** vises **statusbeskeden**, når layerling har noget at fortælle dig, for eksempel hvad et værktøj venter på. Når der ikke er noget at sige, er den der ikke. Efter et trin som en forening siger den kort, hvad der skete, og tilbyder {{ui:shortcuts.undo}}; {{ui:workspace.showStepNotices}} i indstillingerne slår disse beskeder fra.
 - **Værktøjsvinduer** åbner over arbejdsplanet, når du starter et værktøj som {{ui:editor.tool.fillet}}, {{ui:editor.tool.array}} eller {{ui:editor.tool.hollow}}. Træk dem til side i titellinjen, når de dækker noget.
 - **Øverst oppe** skifter du mellem {{ui:editor.modeGeometry}} og {{ui:editor.modeSketch}}, omdøber designet og vælger sprog og farveskema.
@@ -35,7 +35,7 @@ Hold musen over en knap for at se dens navn. Er du i tvivl om, hvad en knap gør
 
 ### Indsæt
 
-{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) sætter det ind i designet, du kopierede med {{ui:editor.tool.copy}}. {{ui:common.duplicate}} kopierer og sætter ind i ét trin. Når du indsætter, lægger hver del sig lidt ved siden af, hvor den var. Dele der kommer fra et andet program kan lande langt fra pladen, og til dem er der {{ui:workspace.pasteCentered}} i indstillingerne, under {{ui:workspace.appearance}}: så indsættes delene sammen midt på arbejdsplanet og lægges ned på det.
+{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) sætter det ind i designet, du kopierede med {{ui:editor.tool.copy}}. {{ui:common.duplicate}} kopierer og sætter ind i ét trin. Når du indsætter, lægger hver del sig lidt ved siden af, hvor den var. Dele der kommer fra et andet program kan lande langt fra pladen, og til dem er der {{ui:workspace.pasteCentered}} i indstillingerne, under {{ui:workspace.controls}}: så indsættes delene sammen midt på arbejdsplanet og lægges ned på det.
 
 ### Slet
 

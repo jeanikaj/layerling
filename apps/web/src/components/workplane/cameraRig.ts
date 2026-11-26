@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import type { ThreeState } from "@/components/workplane/ViewportOverlays";
 import { orthographicFramingZoom, perspectiveFramingDistance } from "@/lib/cameraFraming";
-import { orbitOffsetByDrag, viewCubeAngles, viewFaceDirection, type ViewCubeFace } from "@/lib/viewCubeDrag";
+import { orbitOffsetByDrag, poleDirectionKeepingTurn, VIEW_CUBE_POLE_EPSILON, viewCubeAngles, viewFaceDirection, type ViewCubeFace } from "@/lib/viewCubeDrag";
 import { cameraTurn, cameraTurnOffset, pivotSlide, pivotSlidePoint, prefersReducedMotion, type CameraTurn } from "@/lib/viewCubeTransition";
 import { readStartView, type DesignView } from "@/lib/designView";
 import { zoomDistanceScale } from "@/lib/workplaneSettings";
@@ -200,7 +200,19 @@ export function toggleCameraProjection(state: CameraRig) {
   state.needsRender = true;
 }
 
+/** Top and Bottom keep the view's turn, to the nearest quarter (Discussion #1967): the setting under Settings > Appearance, off by default. */
+let viewCubeKeepsTurn = false;
+
+/** Takes over the setting "Top and Bottom keep the view's turn" for the 3D view and the second view. */
+export function setViewCubeKeepsTurn(keep: boolean) {
+  viewCubeKeepsTurn = keep;
+}
+
 export function setCameraToViewFace(state: CameraRig, face: ViewCubeFace) {
+  if (viewCubeKeepsTurn && (face === "top" || face === "bottom")) {
+    setCameraToViewDirection(state, poleDirectionKeepingTurn(face, state.camera.position.clone().sub(state.controls.target)));
+    return;
+  }
   setCameraToViewDirection(state, viewFaceDirection(face));
 }
 
@@ -224,6 +236,14 @@ export function setCameraToViewDirection(state: CameraRig, direction: THREE.Vect
   state.camera.updateProjectionMatrix();
   state.controls.update();
   state.needsRender = true;
+}
+
+/**
+ * Looks up at the underside the way a tag turned over sideways, like a page of a book, is seen: from below, the plate's
+ * back (-z) at the top of the screen and its right side on the left. The view cube's Bottom turns it over top to bottom.
+ */
+export function tagBackViewDirection() {
+  return new THREE.Vector3().setFromSpherical(new THREE.Spherical(1, Math.PI - VIEW_CUBE_POLE_EPSILON, Math.PI));
 }
 
 /**

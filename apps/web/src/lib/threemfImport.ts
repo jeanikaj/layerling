@@ -1,6 +1,6 @@
 import { unzipSync } from "fflate";
 import { zUpToLayerling } from "@/lib/meshCoordinates";
-import { importedMeshName, importedShapeFromTriangleSoup } from "@/lib/stlImport";
+import { importedMeshName, importedShapeFromTriangleSoup, type MeshPlacement } from "@/lib/stlImport";
 import type { WorkplaneShape } from "@/types/layerling";
 import { normalizeHexColor, placeColoredParts } from "@/lib/coloredImport";
 
@@ -467,7 +467,16 @@ export type ThreeMfImportResult = {
   objects: number;
   /** Dreiecke, die im Slicer bemalt wurden - deren Farben liest layerling nicht. */
   painted: number;
+  /** Zu viele Farben in einem Objekt (ein Farbverlauf): es kam ohne sie als ein Koerper (#1867). */
+  droppedColors: boolean;
 };
+
+/**
+ * So viele Farben darf ein Objekt haben, um je Farbe ein Koerper zu werden.
+ * Ein Scan oder ein KI-Modell traegt an fast jedem Punkt eine eigene Farbe -
+ * das waeren Zehntausende Koerper (#1867); wie bei der OBJ (#351).
+ */
+export const MAX_3MF_COLOR_PARTS = 64;
 
 /** Ein Name aus dem Slicer ohne die Endung der Quelldatei ("tray.step" -> "tray"). */
 function itemLabel(name: string | undefined) {
@@ -482,12 +491,24 @@ function itemLabel(name: string | undefined) {
  * Objekt oder Teil zugewiesen hat. Ein Objekt in einer Farbe bleibt ein
  * Koerper wie bisher.
  */
-export function importedShapesFrom3mf(fileName: string, buffer: ArrayBuffer): ThreeMfImportResult {
+export function importedShapesFrom3mf(fileName: string, buffer: ArrayBuffer, placement: MeshPlacement = {}): ThreeMfImportResult {
   const triangles = readPackage(buffer);
+  // Ein Objekt mit einem Farbverlauf kommt ohne seine Farben, als ein Koerper.
+  const keysIn = new Map<number, Set<string>>();
+  triangles.keys.forEach((key, index) => {
+    if (!key) return;
+    const item = triangles.items[index];
+    let keys = keysIn.get(item);
+    if (!keys) keysIn.set(item, (keys = new Set()));
+    keys.add(key);
+  });
+  const gradients = new Set([...keysIn].filter(([, keys]) => keys.size > MAX_3MF_COLOR_PARTS).map(([item]) => item));
+  const droppedColors = gradients.size > 0;
   const order: Array<{ item: number; key: string }> = [];
   const byGroup = new Map<string, number[]>();
-  triangles.keys.forEach((key, index) => {
+  triangles.keys.forEach((ownKey, index) => {
     const item = triangles.items[index];
+    const key = gradients.has(item) ? "" : ownKey;
     const group = `${item}|${key}`;
     let positions = byGroup.get(group);
     if (!positions) {
@@ -500,9 +521,9 @@ export function importedShapesFrom3mf(fileName: string, buffer: ArrayBuffer): Th
   const objects = new Set(order.map((group) => group.item)).size;
 
   if (order.length <= 1) {
-    const whole = importedShapeFromTriangleSoup(fileName, triangles.positions, undefined, "3mf");
+    const whole = importedShapeFromTriangleSoup(fileName, triangles.positions, undefined, "3mf", placement);
     const color = triangles.colors.get(order[0]?.key ?? "")?.color;
-    return { shapes: [color ? { ...whole, color } : whole], split: false, objects, painted: triangles.painted };
+    return { shapes: [color ? { ...whole, color } : whole], split: false, objects, painted: triangles.painted, droppedColors };
   }
   const colorsIn = (item: number) => order.filter((group) => group.item === item).length;
   const seenIn = new Map<number, number>();
@@ -521,6 +542,7 @@ export function importedShapesFrom3mf(fileName: string, buffer: ArrayBuffer): Th
       return { color: found?.color, label, positions: byGroup.get(`${item}|${key}`)! };
     }),
     (positions) => importedShapeFromTriangleSoup(fileName, positions, undefined, "3mf"),
+    placement,
   );
-  return { shapes, split: true, objects, painted: triangles.painted };
+  return { shapes, split: true, objects, painted: triangles.painted, droppedColors };
 }

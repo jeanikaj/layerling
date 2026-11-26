@@ -2,6 +2,7 @@
 
 import { sectionPointFromFrame, sectionPointToFrame, type SectionPlaneSettings } from "@/lib/sectionView";
 import * as THREE from "three";
+import { installSafariBufferUploads } from "@/lib/safariBufferUploads";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { cameraButtonsFor, leftButtonCameraAction } from "@/lib/cameraMouseButtons";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
@@ -12,7 +13,7 @@ import { pinchWheelDelta, wheelZoomDelta } from "@/lib/wheelZoom";
 import { CAMERA_FOV, CAMERA_MAX_DISTANCE, CAMERA_MIN_DISTANCE, CAMERA_TARGET, updateCameraViewport } from "@/components/workplane/cameraRig";
 import { horizontalPlacementWorkplane, placementWorkplaneIsBase, placementWorkplaneLiesOnBase, placementWorkplaneQuaternion, type PlacementWorkplane } from "@/lib/placementWorkplane";
 import { printerPresetById } from "@/lib/printBed";
-import { plateCenterX, plateCount } from "@/lib/buildPlates";
+import { firstPlateCornerLabel, plateCenterX, plateCenterZ, plateCount } from "@/lib/buildPlates";
 import { DEFAULT_WORKPLANE_WORKSPACE, effectiveViewSettings, viewPixelRatio, orbitControlsZoomSpeed, orbitControlsPanSpeed } from "@/lib/workplaneSettings";
 import { axisCrossWidth, mmPerScreenPixel, workplaneGridBandWidths, AXIS_ARROW_COLORS, axisArrowLayout, fillLightPosition, keyLightPosition, sceneLightLevels, shadowBlurRadius, softSceneLightLevels, workplaneGridLayout, workplaneGridLines, workplaneGridPalette, workplaneLabelLayout, workplaneThemePalette, WORKPLANE_LABEL_ASPECT, WORKPLANE_LINE_ELEVATION, type WorkplaneGridLayout } from "@/lib/workplaneGrid";
 import type { WorkplaneWorkspaceSettings } from "@/types/layerling";
@@ -74,6 +75,7 @@ export const RENDER_LAYER_WORKPLANE = 0;
 export type WorkspaceSettings = WorkplaneWorkspaceSettings;
 
 export function createThreeScene(host: HTMLDivElement): ThreeState {
+  installSafariBufferUploads();
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance", preserveDrawingBuffer: false, stencil: true });
   renderer.localClippingEnabled = true;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -401,7 +403,10 @@ export function rebuildWorkplane(
   theme: ResolvedAppTheme = "light",
   placementWorkplane: PlacementWorkplane = horizontalPlacementWorkplane(),
   projectName = "",
-  /** The label written on each further build plate (Discussion #456), by its index from 1; plate 0 shows the design's name. */
+  /**
+   * The label written on each further build plate (Discussion #456), by its index from 1; plate 0 shows the design's
+   * name, and once it has a name of its own its label as well, the design's name in small above it (Discussion #1860).
+   */
   plateLabel: (index: number) => string = (index) => `${index + 1}`,
 ) {
   if (!state) {
@@ -507,13 +512,14 @@ export function rebuildWorkplane(
       const labelPalette = workplaneGridPalette(theme, lineColor, state.palette).major;
       // The design's name in the near left corner, so a screenshot of the scene
       // says what it shows - unless it was switched off as a distraction (#192).
+      const cornerLabel = extraPlate ? { title: extraPlate.label, subtitle: "" } : firstPlateCornerLabel(workspace, projectName, plateLabel);
       const label = workspace.showPlateLabels === false ? null : createWorkplaneLabel(
         cornerWidth,
         cornerDepth,
         labelPalette.color,
         muted ? labelPalette.opacity * 0.5 : labelPalette.opacity,
-        extraPlate ? extraPlate.label : projectName,
-        "",
+        cornerLabel.title,
+        cornerLabel.subtitle,
         { outline: muted ? undefined : palette.surface.color },
       );
       if (label) {
@@ -566,10 +572,10 @@ export function rebuildWorkplane(
   };
 
   addPlane(horizontalPlacementWorkplane(), !activeIsBase, false, plateOutlineOnly, roundPlate);
-  // The further build plates to the right of the first (Discussion #456): the same plate with its grid and its name.
+  // The further build plates to the right of the first, or in rows in front of it (Discussion #456, #2073): the same plate with its grid and its name.
   for (let index = 1; index < plateCount(workspace); index += 1) {
     const plate = horizontalPlacementWorkplane();
-    addPlane({ ...plate, origin: { ...plate.origin, x: plateCenterX(workspace, index) } }, !activeIsBase, false, false, roundPlate, { label: plateLabel(index) });
+    addPlane({ ...plate, origin: { ...plate.origin, x: plateCenterX(workspace, index), z: plateCenterZ(workspace, index) } }, !activeIsBase, false, false, roundPlate, { label: plateLabel(index) });
   }
   if (!activeIsBase) {
     addPlane(placementWorkplane, false, true);
@@ -682,6 +688,96 @@ export function syncWorkplaneHoverPreview(
   layer.quaternion.copy(placementWorkplaneQuaternion(workplane));
   layer.visible = true;
   setObjectRenderLayer(layer, RENDER_LAYER_PREVIEWS);
+  layer.updateMatrixWorld(true);
+  state.needsRender = true;
+}
+
+/**
+ * The workplane lined up with a shape that moves along its own axes (setting "Show the shape's workplane while
+ * moving"): a square grid patch in the hover preview's cyan, its lines fading towards the edge, with an outline. A
+ * guide only: it takes no clicks, hides nothing behind it, and the real workplane stays as it is. Null hides it.
+ */
+export function syncShapeWorkplanePreview(
+  state: ThreeState | null,
+  preview: { workplane: PlacementWorkplane; size: number; spacing: number } | null,
+  theme: ResolvedAppTheme,
+) {
+  if (!state) return;
+  let layer = state.scene.getObjectByName("ShapeWorkplanePreview") as THREE.Group | undefined;
+  if (!preview) {
+    if (layer?.visible) {
+      layer.visible = false;
+      state.needsRender = true;
+    }
+    return;
+  }
+  if (!layer) {
+    layer = new THREE.Group();
+    layer.name = "ShapeWorkplanePreview";
+    state.scene.add(layer);
+  }
+  const signature = `${theme}:${preview.size}:${preview.spacing}`;
+  if (layer.userData.previewSignature !== signature) {
+    disposeChildren(layer);
+    layer.userData.previewSignature = signature;
+    const color = new THREE.Color(theme === "dark" ? "#69d9ff" : "#079bc6");
+    const half = preview.size / 2;
+    const patch = new THREE.Mesh(
+      new THREE.PlaneGeometry(preview.size, preview.size),
+      new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.08,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+        polygonOffsetUnits: -2,
+      }),
+    );
+    patch.rotation.x = -Math.PI / 2;
+    patch.renderOrder = 940;
+    layer.add(patch);
+    // Each line fades from the middle to the edge, and lines further out are fainter: RGBA per end.
+    const positions: number[] = [];
+    const colors: number[] = [];
+    const lineCount = Math.floor(half / preview.spacing + 1e-9);
+    const fade = (offset: number) => Math.max(0, 1 - Math.abs(offset) / half) * 0.7;
+    for (let index = -lineCount; index <= lineCount; index += 1) {
+      const at = index * preview.spacing;
+      const strength = fade(at);
+      if (strength <= 0) continue;
+      for (const [x1, z1, x2, z2] of [[at, -half, at, 0], [at, 0, at, half], [-half, at, 0, at], [0, at, half, at]]) {
+        positions.push(x1, WORKPLANE_LINE_ELEVATION, z1, x2, WORKPLANE_LINE_ELEVATION, z2);
+        const end = (x: number, z: number) => strength * Math.max(0, 1 - Math.max(Math.abs(x), Math.abs(z)) / half);
+        colors.push(color.r, color.g, color.b, end(x1, z1), color.r, color.g, color.b, end(x2, z2));
+      }
+    }
+    const gridGeometry = new THREE.BufferGeometry();
+    gridGeometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    gridGeometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 4));
+    const grid = new THREE.LineSegments(gridGeometry, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
+    grid.renderOrder = 941;
+    layer.add(grid);
+    const outlineGeometry = new THREE.BufferGeometry();
+    outlineGeometry.setAttribute("position", new THREE.Float32BufferAttribute([
+      -half, WORKPLANE_LINE_ELEVATION, -half, half, WORKPLANE_LINE_ELEVATION, -half,
+      half, WORKPLANE_LINE_ELEVATION, -half, half, WORKPLANE_LINE_ELEVATION, half,
+      half, WORKPLANE_LINE_ELEVATION, half, -half, WORKPLANE_LINE_ELEVATION, half,
+      -half, WORKPLANE_LINE_ELEVATION, half, -half, WORKPLANE_LINE_ELEVATION, -half,
+    ], 3));
+    const outline = new THREE.LineSegments(outlineGeometry, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.35, depthWrite: false }));
+    outline.renderOrder = 942;
+    layer.add(outline);
+  }
+  const { workplane } = preview;
+  layer.position.set(workplane.origin.x, workplane.origin.y, workplane.origin.z);
+  layer.quaternion.copy(placementWorkplaneQuaternion(workplane));
+  layer.visible = true;
+  setObjectRenderLayer(layer, RENDER_LAYER_PREVIEWS);
+  layer.traverse((child) => {
+    child.raycast = () => {};
+  });
   layer.updateMatrixWorld(true);
   state.needsRender = true;
 }

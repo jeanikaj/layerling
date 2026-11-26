@@ -3,7 +3,7 @@ title: Billentyűparancsok
 summary: Minden billentyű egy pillantással, közvetlenül a programból véve, így a lista mindig pontos.
 ---
 
-A billentyűparancsok addig működnek, amíg a munkasík van fókuszban. Amíg egy mezőbe gépelsz, nem lépnek közbe. Macen ahol itt [[Ctrl]] szerepel, ott a [[Cmd]] érvényes.
+A billentyűparancsok addig működnek, amíg a munkasík van fókuszban. Amíg egy mezőbe gépelsz, nem lépnek közbe. Macen ahol itt [[Ctrl]] szerepel, ott a [[Cmd]] érvényes. A billentyűk neve megegyezik a nyelved billentyűzetén láthatóval. A betű a billentyűzeteden lévő betű; más írású (cirill, görög, arab, héber) billentyűzeten a latin betű helyén lévő billentyű számít.
 
 A szerkesztőben a {{ui:editor.group.help}} területen lévő {{ui:editor.keyboardShortcuts}} ugyanezt a listát nyitja meg ablakként. Az ablak nyomtató gombja ({{ui:shortcuts.print}}) csak a listát nyomtatja ki, fehér alapon feketével és nagy betűkkel; a böngésző nyomtatási párbeszédablaka PDF-ként is felkínálja a mentést.
 
@@ -19,7 +19,7 @@ Nem találsz egy eszközt? Nyomd meg a [[Ctrl]]+[[K]] billentyűt, vagy kattints
 - Minden bejegyzés mutatja az ugyanezt végző billentyűket és a szalagnak azt a csoportját, ahol található, így megtanulod, hol van.
 - A szürkén megjelenő bejegyzések éppen nem futtathatók, többnyire azért, mert semmi sincs kijelölve. A listában maradnak, így a kereső akkor is megmondja, hol van az eszköz.
 
-Az útmutatónak, amelyet olvasol, szintén van keresőmezője, minden oldal tetején: gépelj be egy-két szót, és felsorolja azokat a részeket, amelyek mindegyiket tartalmazzák, kiemelve az egyező szavakat. Kattints egyre, vagy nyomj [[Enter]] billentyűt az elsőhöz, és egyenesen oda ugrasz. A megnyíló oldal kiemeli a szavaid minden előfordulását, és a kiválasztott rész első találatához görget; az [[Esc]] vagy egy kattintás a kiemelésre eltünteti őket.
+Az útmutatónak, amelyet olvasol, szintén van keresőmezője, minden oldal tetején: gépelj be egy-két szót, és felsorolja azokat a részeket, amelyek mindegyiket tartalmazzák, kiemelve az egyező szavakat. Kattints egyre, vagy nyomj [[Enter]] billentyűt az elsőhöz, és egyenesen oda ugrasz. A megnyíló oldal kiemeli a szavaid minden előfordulását, és a kiválasztott rész első találatához görget; az [[Esc]] vagy egy kattintás a kiemelésre eltünteti őket. Az idézőjelbe tett szavakat pontos kifejezésként keresi: csak azok a részek jelennek meg, ahol a szavak közvetlenül egymás után, ebben a sorrendben állnak, egyetlen idézőjeles szót pedig csak egész szóként talál meg, hosszabb szó részeként nem.
 - Egy alakzat nevével hozzáadod azt az alakzatot a munkasíkhoz, pont mintha az alakzatmenüben kattintanál rá.
 - Üres mezőnél a kereső felül az utoljára használt parancsokat sorolja fel.
 - A tervedben lévő test neve megtalálja és kijelöli azt a testet, ami sok részből álló tervben segít. A testek csak akkor jelennek meg, amikor gépelsz.

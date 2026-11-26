@@ -3,14 +3,21 @@
  * handles, the turn arrows, the lift arrow and the slide arrows lie close together, and the part itself
  * moves when a finger lands on it, so a finger easily does something else than meant. On a touch
  * device the camera bar picks one of them: everything as with the mouse, or only moving, only the size
- * or only turning. The others are hidden, and outside moving a finger on the part only selects it.
+ * or only turning. The others are hidden, and set to the size or to turning a finger on the part only
+ * selects it. "off" hides every handle (Discussion #2019); a finger on the part then still moves it.
  */
 import type { TransformHandleKind } from "@/components/workplane/transformOverlayTypes";
 
-export type TouchHandleMode = "all" | "move" | "size" | "turn";
+export type TouchHandleMode = "all" | "move" | "size" | "turn" | "off";
+
+/**
+ * What the handles around a selection show: one of the touch modes, or "none" while Shift+Q has put them
+ * all away for a clear look at a small part (Discussion #1893). "none" is never kept and no button goes to it.
+ */
+export type TransformHandleMode = TouchHandleMode | "none";
 
 /** In the order the camera bar button goes through them. */
-export const TOUCH_HANDLE_MODES: readonly TouchHandleMode[] = ["all", "move", "size", "turn"];
+export const TOUCH_HANDLE_MODES: readonly TouchHandleMode[] = ["all", "move", "size", "turn", "off"];
 
 const STORAGE_KEY = "layerling.touchHandleMode";
 
@@ -19,8 +26,9 @@ export function nextTouchHandleMode(mode: TouchHandleMode): TouchHandleMode {
 }
 
 /** Whether a handle of this kind shows in the mode: the lift and slide arrows move, the size and height handles size, the arrows around turn. */
-export function touchModeShowsHandle(mode: TouchHandleMode, kind: TransformHandleKind): boolean {
+export function touchModeShowsHandle(mode: TransformHandleMode, kind: TransformHandleKind): boolean {
   if (mode === "all") return true;
+  if (mode === "none" || mode === "off") return false;
   if (mode === "move") return kind === "lift" || kind === "slide";
   if (mode === "size") return kind === "scale" || kind === "height";
   return kind === "rotate";
@@ -28,7 +36,7 @@ export function touchModeShowsHandle(mode: TouchHandleMode, kind: TransformHandl
 
 /** Whether a finger dragged on the part itself moves it. */
 export function touchModeMovesBody(mode: TouchHandleMode): boolean {
-  return mode === "all" || mode === "move";
+  return mode === "all" || mode === "move" || mode === "off";
 }
 
 export function isTouchHandleMode(value: unknown): value is TouchHandleMode {

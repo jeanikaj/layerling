@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { pressedKey } from "@/lib/keyPressed";
 
 /**
  * Focus mode (Discussion #1554): the editor gives its title row and its footer to the work. On a small laptop screen
@@ -18,7 +19,7 @@ export const FOCUS_MODE_SHORTCUT = "Ctrl+Shift+F";
 /** Whether the key is the focus mode's: Ctrl+Shift+F, or Cmd+Shift+F on a Mac. */
 export function isFocusModeKey(event: { key: string; code?: string; ctrlKey: boolean; metaKey: boolean; shiftKey: boolean; altKey: boolean }) {
   if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.altKey) return false;
-  return event.key.toLowerCase() === "f" || event.code === "KeyF";
+  return pressedKey(event) === "f" || event.code === "KeyF";
 }
 
 type ScreenLike = { width: number; height: number };
@@ -48,6 +49,22 @@ export function browserFillsScreen(win: WindowLike): boolean {
 /** Shown when it was switched on, or while the browser fills the screen unless it was switched off in that full screen. */
 export function focusModeShown(chosen: boolean, fullScreen: boolean, declinedInFullScreen: boolean) {
   return chosen || (fullScreen && !declinedInFullScreen);
+}
+
+/** How far the panels docked at the right edge reach in: a tool panel with its gap, and the properties, which follow the toolbar size. */
+const TOOL_PANEL_REACH = 354;
+const PROPERTIES_REACH = 320;
+/** The room the bar takes below the ribbon with its gaps, as focusMode.css gives it to these panels. */
+export const FOCUS_BAR_ROOM = 56;
+
+/** Whether the bar, hung in the middle of the window, reaches over the panels docked at the right edge. */
+export function focusBarReachesPanels(barWidth: number, windowWidth: number, toolbarScale = 1) {
+  return barWidth > 0 && (windowWidth + barWidth) / 2 > windowWidth - Math.max(TOOL_PANEL_REACH, PROPERTIES_REACH * toolbarScale);
+}
+
+/** Whether the panels at the right edge stand below the bar just now. */
+export function focusBarOverPanels() {
+  return typeof document !== "undefined" && document.documentElement.getAttribute("data-focus-bar") === "over-panels";
 }
 
 function readChosen() {

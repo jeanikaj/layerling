@@ -23,7 +23,7 @@ Alla dina designer visas senare på startsidan med en förhandsgranskningsbild. 
 - **I mitten** finns arbetsytan. Här placerar du former, drar dem till rätt mått och ser resultatet.
 - **Till höger** visas **egenskapspanelen** för den markerade formen: färg, mått, position och allt annat som hör till formen. Att skriva in siffror är mer exakt än att dra.
 - **Till vänster** finns **vyfältet** med **vykuben** ovanför. De flyttar dig runt i scenen, läs mer i [Vy och arbetsyta](chapter:view-and-workplane).
-- **Bredvid vyfältet** öppnas **objektlistan** ([[Ctrl]]+[[U]]) med alla former i designen. Mer om det i [Markera och ordna](chapter:select-and-arrange).
+- **Bredvid vyfältet** öppnas **objektlistan** ([[Ctrl]]+[[Shift]]+[[O]]) med alla former i designen. Mer om det i [Markera och ordna](chapter:select-and-arrange).
 - **Till höger om vykuben** visas **statusmeddelandet** när layerling har något att tala om, till exempel vad ett verktyg väntar på härnäst. När inget finns att meddela syns rutan inte. Efter ett steg som en förening säger det kort vad som gjordes och erbjuder {{ui:shortcuts.undo}}; {{ui:workspace.showStepNotices}} i inställningarna stänger av dessa meddelanden.
 - **Verktygsfönster** öppnas över arbetsytan när du startar ett verktyg som avrunda, mönster eller gröpa ur. Dra dem åt sidan i rubrikraden om de skymmer något.
 - **Längst upp** växlar du mellan {{ui:editor.modeGeometry}} och {{ui:editor.modeSketch}}, byter namn på designen och väljer språk och färgtema.
@@ -34,7 +34,7 @@ Håll muspekaren över en knapp för att se dess namn. Om du är osäker på vad
 
 ### Klistra in
 
-{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) lägger till det du kopierade med {{ui:editor.tool.copy}} i designen. {{ui:common.duplicate}} kopierar och klistrar in i ett enda steg. När du klistrar in hamnar varje del en aning vid sidan av originalet. Delar från ett annat program kan hamna långt utanför plattan, och för dem finns {{ui:workspace.pasteCentered}} i inställningarna under {{ui:workspace.appearance}}: då läggs delarna samlat mitt på arbetsytan.
+{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) lägger till det du kopierade med {{ui:editor.tool.copy}} i designen. {{ui:common.duplicate}} kopierar och klistrar in i ett enda steg. När du klistrar in hamnar varje del en aning vid sidan av originalet. Delar från ett annat program kan hamna långt utanför plattan, och för dem finns {{ui:workspace.pasteCentered}} i inställningarna under {{ui:workspace.controls}}: då läggs delarna samlat mitt på arbetsytan.
 
 ### Ta bort
 

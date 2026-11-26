@@ -16,9 +16,11 @@ import type { WorkplaneShape } from "@/types/layerling";
  * row (#856) rounds the plate's outer corners less, down to square. The large plate switch
  * (#1061) lets a baseplate take up to 12 units, and the Swallowtail switch (#1061) puts it on a floor
  * with pockets for keys, which Add keys lays out beside it with the clearance set under the switch.
- * A plate larger than the chosen printer's bed is offered a split into plates that fit it (#1388).
+ * A plate larger than the chosen printer's bed is offered a split into plates that fit it (#1388), joined by
+ * clips when it has clip notches, or by GridFlock's puzzle when that is switched on, its fit set under the switch.
  * A plate fitted into an outline (#1061) has its size in mm and a switch to take the outline away; a
- * baseplate and another shape selected together offer the fit.
+ * baseplate and another shape selected together offer the fit. A padded plate's buttons put all the padding
+ * of one direction on one side in one change, the plate keeping its size and its place (Discussion #2078).
  */
 beforeAll(() => {
   // jsdom lays nothing out; the panel only scrolls itself back to the top.
@@ -118,6 +120,53 @@ describe("a Gridfinity baseplate's padding in its settings", () => {
     const panel = mount({ ...plate, gridfinityCornerRadius: 1.5 }, (patch) => updates.push(patch));
     type(rowNamed(panel, "Corner radius")!.querySelector<HTMLInputElement>("input:not([type=range])")!, "7");
     expect(updates).toEqual([{ gridfinityCornerRadius: 4 }]);
+  });
+});
+
+describe("a Gridfinity baseplate's padding moved to one side (Discussion #2078)", () => {
+  const buttonNamed = (panel: HTMLElement, name: string) => [...panel.querySelectorAll<HTMLButtonElement>("button.property-subheading-action")].find((button) => button.textContent === name);
+  const moves = ["All at the back", "All at the front", "All on the left", "All on the right"];
+  // A drawer 230 mm deep: 5 units and 9.75 mm at the back and the front.
+  const even = { ...plate, depth: 229.5, gridfinityPaddingBack: 9.75, gridfinityPaddingFront: 9.75 };
+
+  it("offers the four buttons on a padded baseplate only, not without padding, on a bin or on a plate fitted to an outline", () => {
+    const padded = mount(even);
+    moves.forEach((move) => expect(buttonNamed(padded, move), move).toBeDefined());
+    // An outline plate keeps the padding settings it had before the fit, but has no padding.
+    const square = [{ x: -84, z: -84 }, { x: 84, z: -84 }, { x: 84, z: 84 }, { x: -84, z: 84 }];
+    for (const fields of [plate, { gridfinityType: "bin" as const, gridfinityPaddingBack: 9.75 }, { ...plate, width: 168, depth: 168, gridfinityOutline: square, gridfinityPaddingBack: 9.75 }]) {
+      act(() => root?.unmount());
+      const panel = mount(fields);
+      moves.forEach((move) => expect(buttonNamed(panel, move), move).toBeUndefined());
+    }
+  });
+
+  it("moves the padding of that direction to the side in one change, the plate keeping its size and its place", () => {
+    const updates: Partial<WorkplaneShape>[] = [];
+    const panel = mount(even, (patch) => updates.push(patch));
+    act(() => buttonNamed(panel, "All at the front")!.click());
+    // Nothing else in the change: the plate is not moved.
+    expect(updates).toEqual([{ gridfinityPaddingFront: 19.5, gridfinityPaddingBack: 0, width: 252, depth: 229.5, size: 252 }]);
+  });
+
+  it("moves the padding across to the side its button names", () => {
+    const updates: Partial<WorkplaneShape>[] = [];
+    const panel = mount({ ...plate, width: 267, gridfinityPaddingLeft: 10, gridfinityPaddingRight: 5 }, (patch) => updates.push(patch));
+    act(() => buttonNamed(panel, "All on the left")!.click());
+    expect(updates).toEqual([{ gridfinityPaddingLeft: 15, gridfinityPaddingRight: 0, width: 267, depth: 42, size: 267 }]);
+  });
+
+  it("greys out a button that would change nothing", () => {
+    const panel = mount({ ...even, gridfinityPaddingBack: 0, gridfinityPaddingFront: 19.5 });
+    expect(moves.map((move) => buttonNamed(panel, move)!.disabled)).toEqual([false, true, true, true]);
+  });
+
+  it("is greyed out on a locked plate or one with its shape locked", () => {
+    for (const lock of [{ locked: true }, { shapeLocked: true }]) {
+      act(() => root?.unmount());
+      const panel = mount({ ...even, ...lock });
+      moves.forEach((move) => expect(buttonNamed(panel, move)!.disabled, move).toBe(true));
+    }
   });
 });
 
@@ -235,6 +284,13 @@ describe("a Gridfinity baseplate's split to fit the printer (#1388)", () => {
     expect(made).toBe(1);
   });
 
+  it("says a plate with clip notches is joined by clips, with notches on the cut sides too", () => {
+    const panel = mount({ ...large, gridfinityClipNotches: true }, undefined, coreOne, actions);
+    expect(panel.textContent).toContain("into 4 plates that fit the Prusa CORE One, with clip notches on the cut sides too, and lays out the clips for the seams");
+    expect(panel.textContent).not.toContain("each with Swallowtail, and lays out their keys");
+    expect(splitButton(panel)).toBeDefined();
+  });
+
   it("is not offered without a printer, for a plate that fits its bed, or without the editor's action", () => {
     expect(splitButton(mount(large, undefined, undefined, actions))).toBeUndefined();
     act(() => root?.unmount());
@@ -248,6 +304,68 @@ describe("a Gridfinity baseplate's split to fit the printer (#1388)", () => {
     expect(splitButton(mount({ ...large, locked: true }, undefined, coreOne, actions))!.disabled).toBe(true);
     act(() => root?.unmount());
     expect(splitButton(mount({ ...large, shapeLocked: true }, undefined, coreOne, actions))!.disabled).toBe(true);
+  });
+});
+
+describe("a Gridfinity baseplate's GridFlock puzzle switch", () => {
+  const puzzle = "GridFlock puzzle";
+  const coreOne = { ...DEFAULT_WORKPLANE_WORKSPACE, printer: "prusa-core-one", width: 250, depth: 220 };
+  const large = { ...plate, width: 460, depth: 376, gridfinityLargePlate: true, gridfinityPaddingBack: 20, gridfinityPaddingFront: 20, gridfinityPaddingLeft: 20, gridfinityPaddingRight: 20 };
+  const actions = { onGridfinitySplit: () => {} };
+
+  it("shows the switch on a baseplate, off, and none on a bin or a plate fitted to an outline", () => {
+    expect(toggleNamed(mount(plate), puzzle)!.querySelector("input")!.checked).toBe(false);
+    expect(toggleNamed(mount({ gridfinityType: "bin" }), puzzle)).toBeUndefined();
+    const l = [{ x: -84, z: -84 }, { x: 84, z: -84 }, { x: 84, z: 0 }, { x: 0, z: 0 }, { x: 0, z: 84 }, { x: -84, z: 84 }];
+    expect(toggleNamed(mount({ ...plate, width: 168, depth: 168, gridfinityOutline: l }), puzzle)).toBeUndefined();
+  });
+
+  it("switching it on or off is one change, and shows the fit, 0.7 unless set, only while it is on", () => {
+    const updates: Partial<WorkplaneShape>[] = [];
+    const off = mount(plate, (patch) => updates.push(patch));
+    expect(rowNamed(off, "Puzzle fit")).toBeUndefined();
+    act(() => toggleNamed(off, puzzle)!.querySelector("input")!.click());
+    act(() => root?.unmount());
+    const on = mount({ ...plate, gridfinityPuzzle: true }, (patch) => updates.push(patch));
+    const row = rowNamed(on, "Puzzle fit")!;
+    expect(row.querySelector<HTMLInputElement>("input:not([type=range])")!.value).toContain("0.7");
+    const slider = row.querySelector<HTMLInputElement>("input[type=range]")!;
+    expect([slider.min, slider.max]).toEqual(["0", "1"]);
+    expect(toggleNamed(on, puzzle)!.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    act(() => toggleNamed(on, puzzle)!.querySelector("input")!.click());
+    expect(updates).toMatchObject([{ gridfinityPuzzle: true }, { gridfinityPuzzle: false }]);
+  });
+
+  it("writes a fit typed in as one change, at most 1", () => {
+    const updates: Partial<WorkplaneShape>[] = [];
+    const panel = mount({ ...plate, gridfinityPuzzle: true, gridfinityPuzzleFit: 0.8 }, (patch) => updates.push(patch));
+    type(rowNamed(panel, "Puzzle fit")!.querySelector<HTMLInputElement>("input:not([type=range])")!, "1.7");
+    expect(updates).toMatchObject([{ gridfinityPuzzleFit: 1 }]);
+  });
+
+  it("keeps a split piece's cells where they are when the puzzle is switched off or its fit changes", () => {
+    // A piece with sockets on its left: the fingers take 0.48 mm of its box at 0.7, its body 0.24 mm right of the middle.
+    const piece = { ...plate, width: 84.48, depth: 42, x: 10, z: 5, gridfinityPuzzle: true, gridfinityPuzzleSides: ["left" as const] };
+    const updates: Partial<WorkplaneShape>[] = [];
+    const panel = mount(piece, (patch) => updates.push(patch));
+    act(() => toggleNamed(panel, puzzle)!.querySelector("input")!.click());
+    type(rowNamed(panel, "Puzzle fit")!.querySelector<HTMLInputElement>("input:not([type=range])")!, "1");
+    expect(updates).toHaveLength(2);
+    // Off: the box shrinks to the body, and its middle moves onto the body's.
+    expect(updates[0]).toMatchObject({ gridfinityPuzzle: false, width: 84, depth: 42, z: 5 });
+    expect(updates[0].x).toBeCloseTo(10.24, 6);
+    // Tighter: the fingers reach 0.58 mm, the box grows on the left only.
+    expect(updates[1]).toMatchObject({ gridfinityPuzzleFit: 1, width: 84.58, depth: 42, z: 5 });
+    expect(updates[1].x).toBeCloseTo(9.95, 6);
+  });
+
+  it("says a split plate is joined by the puzzle, with its keys laid out as well when it has Swallowtail", () => {
+    const panel = mount({ ...large, gridfinityPuzzle: true }, undefined, coreOne, actions);
+    expect(panel.textContent).toContain("plates that fit the Prusa CORE One, joined by GridFlock's puzzle: tabs on the cut sides at the back and right, sockets at the front and left.");
+    expect(panel.textContent).not.toContain("Their Swallowtail keys");
+    expect(panel.textContent).not.toContain("each with Swallowtail, and lays out their keys");
+    act(() => root?.unmount());
+    expect(mount({ ...large, height: 7.4, gridfinityPuzzle: true, gridfinitySwallowtail: true }, undefined, coreOne, actions).textContent).toContain("Their Swallowtail keys are laid out in front of them.");
   });
 });
 
@@ -321,5 +439,35 @@ describe("a baseplate and another shape selected together (#1061)", () => {
 
   it("greys it out with a locked shape", () => {
     expect(fitButton(mountSelection([basePlate, { ...box, locked: true }]))!.disabled).toBe(true);
+  });
+});
+
+describe("a Gridfinity baseplate's clip notches in its settings", () => {
+  const notches = "Clip notches";
+  const addClips = "Add clips";
+
+  it("offers the switch on a baseplate, and Add clips with a count once it is on, each handing the count to the editor", () => {
+    const updates: Array<Partial<WorkplaneShape>> = [];
+    const counts: number[] = [];
+    const actions = { onGridfinityClips: (count: number) => { counts.push(count); } };
+    const off = mount(plate, (patch) => updates.push(patch), undefined, actions);
+    expect(toggleNamed(off, addClips)).toBeUndefined();
+    expect(toggleNamed(mount({ gridfinityType: "bin" }), notches)).toBeUndefined();
+    act(() => toggleNamed(off, notches)!.querySelector("input")!.click());
+    expect(updates).toEqual([{ gridfinityClipNotches: true }]);
+    act(() => root?.unmount());
+    // Switched on, no clips yet: Add clips lays out one, and only then is there a count to change.
+    const on = mount({ ...plate, gridfinityClipNotches: true }, undefined, undefined, actions);
+    expect(toggleNamed(on, addClips)!.querySelector("input")!.checked).toBe(false);
+    expect(rowNamed(on, "Clips")).toBeUndefined();
+    act(() => toggleNamed(on, addClips)!.querySelector("input")!.click());
+    expect(counts).toEqual([1]);
+    act(() => root?.unmount());
+    const five = mount({ ...plate, gridfinityClipNotches: true, gridfinityClipCount: 1 }, undefined, undefined, actions);
+    expect(toggleNamed(five, addClips)!.querySelector("input")!.checked).toBe(true);
+    type(rowNamed(five, "Clips")!.querySelector<HTMLInputElement>("input:not([type=range])")!, "5");
+    expect(counts).toEqual([1, 5]);
+    act(() => toggleNamed(five, addClips)!.querySelector("input")!.click());
+    expect(counts).toEqual([1, 5, 0]);
   });
 });

@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cameraButtonsFor, slicerLeftTurn } from "@/lib/cameraMouseButtons";
 import { isSketchPanGesture } from "@/lib/sketchPointerControls";
-import { isSpaceMouseGamepad, moveCameraBySpaceMouse, readSpaceMouseGamepad, readSpaceMouseReport, spaceMouseMoving, smoothSpaceMouseAxes, SPACE_MOUSE_NO_INVERT, SPACE_MOUSE_REST, spaceMouseAmount, type SpaceMouseAxes } from "@/lib/spaceMouse";
+import { isSpaceMouseGamepad, moveCameraBySpaceMouse, readSpaceMouseGamepad, readSpaceMouseInvert, readSpaceMouseReport, readSpaceMouseSpeed, saveSpaceMouseInvert, saveSpaceMouseSpeed, spaceMouseSpeedFactor, SPACE_MOUSE_SPEED_DEFAULT, spaceMouseMoving, smoothSpaceMouseAxes, SPACE_MOUSE_NO_INVERT, SPACE_MOUSE_REST, spaceMouseAmount, type SpaceMouseAxes } from "@/lib/spaceMouse";
 import { DEFAULT_WORKPLANE_WORKSPACE, normalizeWorkspaceSettings } from "@/lib/workplaneSettings";
 
 describe("mouse buttons as in Bambu Studio and OrcaSlicer (#1013)", () => {
@@ -191,5 +191,101 @@ describe("a 3D mouse found as a game controller, with no Connect after a restart
   it("takes a controller held off its rest band as moving, and a resting one not", () => {
     expect(spaceMouseMoving(readSpaceMouseGamepad([0.02, -0.01, 0, 0.03, 0, 0]))).toBe(false);
     expect(spaceMouseMoving(readSpaceMouseGamepad([0, 0, 0, 0, 0, 0.5]))).toBe(true);
+  });
+});
+
+describe("a 3D mouse keeps its reversed directions for each way it is read (#1871)", () => {
+  const browser = () => {
+    const kept = new Map<string, string>();
+    const sent: string[] = [];
+    vi.stubGlobal("window", {
+      localStorage: { getItem: (key: string) => kept.get(key) ?? null, setItem: (key: string, value: string) => void kept.set(key, value) },
+      dispatchEvent: (event: Event) => sent.push(event.type) > 0,
+    });
+    return { kept, sent };
+  };
+  const helicopter = { shift: true, lift: true, zoom: true, tilt: true, twist: true };
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("starts a mouse read as a game controller from the directions ticked for WebHID", () => {
+    browser();
+    expect(readSpaceMouseInvert("pad")).toEqual(SPACE_MOUSE_NO_INVERT);
+    saveSpaceMouseInvert(helicopter);
+    expect(readSpaceMouseInvert()).toEqual(helicopter);
+    expect(readSpaceMouseInvert("hid")).toEqual(helicopter);
+    expect(readSpaceMouseInvert("pad")).toEqual(helicopter);
+  });
+
+  it("keeps what is ticked for the game controller apart, and leaves the directions of WebHID as they were", () => {
+    const { kept, sent } = browser();
+    saveSpaceMouseInvert(helicopter, "hid");
+    // The device runs the other way round as a game controller: the person unticks two directions there.
+    saveSpaceMouseInvert({ ...helicopter, tilt: false, twist: false }, "pad");
+    expect(readSpaceMouseInvert("pad")).toEqual({ ...helicopter, tilt: false, twist: false });
+    expect(readSpaceMouseInvert("hid")).toEqual(helicopter);
+    // After Connect 3D mouse the old settings hold again, and a change there leaves the game controller's alone.
+    saveSpaceMouseInvert({ ...helicopter, zoom: false }, "hid");
+    expect(readSpaceMouseInvert("pad")).toEqual({ ...helicopter, tilt: false, twist: false });
+    // The key of the versions before stays the one of WebHID, so nothing ticked earlier is lost.
+    expect(JSON.parse(kept.get("layerling.spaceMouseInvert") ?? "")).toEqual({ ...helicopter, zoom: false });
+    expect(sent).toEqual(["layerling:spacemouse-invert", "layerling:spacemouse-invert", "layerling:spacemouse-invert"]);
+  });
+
+  it("reads nothing reversed where the browser keeps nothing or something broken", () => {
+    vi.stubGlobal("window", { localStorage: { getItem: () => { throw new Error("blocked"); }, setItem: () => { throw new Error("blocked"); } }, dispatchEvent: () => true });
+    expect(readSpaceMouseInvert("hid")).toEqual(SPACE_MOUSE_NO_INVERT);
+    expect(readSpaceMouseInvert("pad")).toEqual(SPACE_MOUSE_NO_INVERT);
+    const { kept } = browser();
+    kept.set("layerling.spaceMouseInvert", JSON.stringify(helicopter));
+    kept.set("layerling.spaceMouseInvertPad", "{not json");
+    expect(readSpaceMouseInvert("pad")).toEqual(helicopter);
+    kept.set("layerling.spaceMouseInvertPad", "null");
+    expect(readSpaceMouseInvert("pad")).toEqual(SPACE_MOUSE_NO_INVERT);
+  });
+});
+
+describe("a 3D mouse has a speed of its own (#2010, Jeff-Haas)", () => {
+  const view = () => {
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
+    camera.position.set(0, 100, 200);
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld();
+    return { camera, target: new THREE.Vector3() };
+  };
+  const twistAngle = (speed?: number) => {
+    const { camera, target } = view();
+    moveCameraBySpaceMouse(camera, target, { ...SPACE_MOUSE_REST, rz: 350 }, 0.05, SPACE_MOUSE_NO_INVERT, speed);
+    return Math.atan2(camera.position.x, camera.position.z);
+  };
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("goes as before in the middle, a quarter as far at the slow end and four times as far at the fast end", () => {
+    expect(spaceMouseSpeedFactor(SPACE_MOUSE_SPEED_DEFAULT)).toBe(1);
+    expect(spaceMouseSpeedFactor(1)).toBe(0.25);
+    expect(spaceMouseSpeedFactor(9)).toBe(4);
+    expect(twistAngle(1)).toBeCloseTo(twistAngle(), 9);
+    expect(twistAngle(2)).toBeCloseTo(2 * twistAngle(1), 9);
+    expect(twistAngle(0.25)).toBeCloseTo(twistAngle(1) / 4, 9);
+  });
+
+  it("keeps the speed in the browser, and starts in the middle where it keeps nothing or something broken", () => {
+    const kept = new Map<string, string>();
+    const sent: string[] = [];
+    vi.stubGlobal("window", {
+      localStorage: { getItem: (key: string) => kept.get(key) ?? null, setItem: (key: string, value: string) => void kept.set(key, value) },
+      dispatchEvent: (event: Event) => sent.push(event.type) > 0,
+    });
+    expect(readSpaceMouseSpeed()).toBe(SPACE_MOUSE_SPEED_DEFAULT);
+    saveSpaceMouseSpeed(8);
+    expect(readSpaceMouseSpeed()).toBe(8);
+    expect(sent).toEqual(["layerling:spacemouse-invert"]);
+    saveSpaceMouseSpeed(40);
+    expect(readSpaceMouseSpeed()).toBe(9);
+    kept.set("layerling.spaceMouseSpeed", "fast");
+    expect(readSpaceMouseSpeed()).toBe(SPACE_MOUSE_SPEED_DEFAULT);
+    vi.stubGlobal("window", { localStorage: { getItem: () => { throw new Error("blocked"); } }, dispatchEvent: () => true });
+    expect(readSpaceMouseSpeed()).toBe(SPACE_MOUSE_SPEED_DEFAULT);
   });
 });

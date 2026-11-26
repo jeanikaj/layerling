@@ -3,7 +3,7 @@ title: Atajos de teclado
 summary: Todas las teclas de un vistazo, sacadas directamente del programa para que la lista esté siempre al día.
 ---
 
-Los atajos funcionan mientras la zona de trabajo tiene el foco. Cuando escribes en un campo, no interfieren. En el Mac, [[Cmd]] sirve en todos los sitios donde aquí pone [[Ctrl]].
+Los atajos funcionan mientras la zona de trabajo tiene el foco. Cuando escribes en un campo, no interfieren. En el Mac, [[Cmd]] sirve en todos los sitios donde aquí pone [[Ctrl]]. Las teclas llevan los nombres del teclado de tu idioma. Una letra es la letra de tu teclado; en un teclado de otra escritura (cirílica, griega, árabe, hebrea) cuenta la tecla situada en el lugar de la letra latina.
 
 En el editor, {{ui:editor.keyboardShortcuts}}, en el grupo {{ui:editor.group.help}}, abre esta misma lista en una ventana. El botón de la impresora de la ventana ({{ui:shortcuts.print}}) imprime solo la lista, en negro sobre blanco y entera en una cara de una hoja A4 o carta, a tres columnas, para tenerla a mano como referencia rápida; el cuadro de diálogo de impresión del navegador también te ofrece guardarla como PDF.
 
@@ -19,7 +19,7 @@ El cuadro de la parte superior de la ventana busca en la lista: deja solo los at
 - Cada entrada muestra las teclas que hacen lo mismo y el grupo de la cinta en el que está, para que aprendas dónde se encuentra.
 - Las entradas en gris no se pueden ejecutar en ese momento, casi siempre porque no hay nada seleccionado. Siguen en la lista para que la búsqueda te diga igualmente dónde está la herramienta.
 
-La guía que estás leyendo también tiene un cuadro de búsqueda, arriba en cada página: escribe una o dos palabras y te mostrará las secciones que las contienen todas, con las coincidencias resaltadas. Haz clic en una, o pulsa [[Intro]] para ir a la primera, y llegarás directamente. La página que se abre marca cada lugar donde aparecen tus palabras y se desplaza al primero de esa sección; [[Esc]] o un clic en una marca las quita.
+La guía que estás leyendo también tiene un cuadro de búsqueda, arriba en cada página: escribe una o dos palabras y te mostrará las secciones que las contienen todas, con las coincidencias resaltadas. Haz clic en una, o pulsa [[Intro]] para ir a la primera, y llegarás directamente. La página que se abre marca cada lugar donde aparecen tus palabras y se desplaza al primero de esa sección; [[Esc]] o un clic en una marca las quita. Las palabras entre comillas se buscan como frase exacta: solo aparecen las secciones donde están seguidas y en ese orden, y una sola palabra entre comillas solo se encuentra entera, no como parte de otra más larga.
 - El nombre de una forma añade esa forma a la zona de trabajo, igual que si hicieras clic en ella en el menú de formas.
 - Con el campo vacío, la búsqueda muestra arriba los últimos comandos que has usado.
 - El nombre de un cuerpo de tu diseño encuentra ese cuerpo y lo selecciona, algo muy útil en un diseño con muchas piezas. Los cuerpos solo aparecen cuando empiezas a escribir.

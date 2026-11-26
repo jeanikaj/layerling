@@ -5,7 +5,7 @@ import type { ThreadDriveOutline } from "@/lib/threadGeometry";
 import type { ScrewBossFields } from "@/lib/screwBoss";
 import type { SnapFitFields } from "@/lib/snapFit";
 import type { RibFields } from "@/lib/rib";
-import type { GridfinityCompartmentLabel, GridfinityLabelCorner, GridfinityOpening, GridfinityOutlinePoint, GridfinityType, ShellEdges, ShellOpenings } from "@/types/layerling";
+import type { GridfinityCompartmentLabel, GridfinityCompartmentSplit, GridfinityLabelCorner, GridfinityOpening, GridfinityOutlinePoint, GridfinityType, ShellEdges, ShellOpenings } from "@/types/layerling";
 
 export type CadModifierKind = "chamfer" | "chamfillet" | "fillet" | "shell" | "deleteFace" | "offset";
 
@@ -381,6 +381,10 @@ export type CadModifierGridfinityPart = {
   gridfinityHalfGrid?: boolean;
   gridfinityLargePlate?: boolean;
   gridfinitySwallowtail?: boolean;
+  gridfinityClipNotches?: boolean;
+  gridfinityPuzzle?: boolean;
+  gridfinityPuzzleSides?: Array<"back" | "front" | "left" | "right">;
+  gridfinityPuzzleFit?: number;
   gridfinityLabelBack?: boolean;
   gridfinityLabelFront?: boolean;
   gridfinityLabelLeft?: boolean;
@@ -435,6 +439,7 @@ export type CadModifierGridfinityPart = {
   gridfinityDividerPositionsX?: number[];
   gridfinityDividerPositionsZ?: number[];
   gridfinityCompartmentLabels?: GridfinityCompartmentLabel[];
+  gridfinityCompartmentSplits?: GridfinityCompartmentSplit[];
   gridfinityOpenings?: GridfinityOpening[];
   gridfinityOpeningCorner?: GridfinityLabelCorner;
   gridfinityOpeningCornerSize?: number;
@@ -525,6 +530,8 @@ export type CadFaceInfo = {
   width: number;
   /** The faces it shares an edge with. */
   neighbours: number[];
+  /** For each neighbour, how far (degrees) the faces turn at their shared edges, taken along them: 0 where they run smoothly on, 90 at a box's edge; past the whole wall's limit, the first turn found past it (#1797). */
+  bends: number[];
 };
 
 /** The prepared body's faces: each face's description and, for picking, the tessellation with the face of every triangle. */
@@ -568,16 +575,20 @@ export type CadModifierWorkerRequest =
       concave?: boolean;
       // Only for "shell": which faces stay open; `amount` is the wall thickness.
       shellOpenings?: ShellOpenings;
+      // Only for "shell" of a transition whose ends differ: its inside from end to end (loftShellCavity).
+      shellLoftCavity?: CadModifierProfilePart;
       shellEdges?: ShellEdges;
       // Only for "shell" with the top open: the collar round the top and the groove under the wall, this high (mm).
       shellStack?: number;
       shellStackFoot?: { hollow?: boolean; grip?: number; gripDepth?: number };
       // Only for "shell" with the top open: a Gridfinity floor with at most this many cells, the walls fitted to them, and dividers.
-      shellGrid?: { cells: number; fit?: boolean; magnets?: boolean };
-      shellDividers?: { x: number; z: number; height?: number; thickness?: number };
+      shellGrid?: { cells: number; fit?: boolean; magnets?: boolean; screws?: boolean };
+      shellDividers?: { x: number; z: number; height?: number; thickness?: number; manual?: boolean; walls?: { dir: "x" | "z"; at: number; from: number; to: number; slant?: number }[]; angle?: number; scoops?: { x: number; z: number; side: "front" | "back" | "left" | "right" }[]; scoopRadius?: number; pockets?: { points: { x: number; z: number }[]; depth: number }[]; pocketFill?: number; insert?: boolean; insertPlay?: number };
       // Only for "shell" with the top open (#1663): a ledge round the inside of the wall, this wide (mm), its top this high (mm) above the inside of the floor.
       shellShelf?: number;
       shellShelfHeight?: number;
+      // With `shellShelf` (#1981): the underside of the ledge falls at 45 degrees to the wall instead of lying flat.
+      shellShelfSlope?: boolean;
       // Only for "offset" (#919): `amount` is the distance, moved inward when this is set.
       offsetShrink?: boolean;
       // Only for "offset" (#1057): only the sides move, the body keeps its height.

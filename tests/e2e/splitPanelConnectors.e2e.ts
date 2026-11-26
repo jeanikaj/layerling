@@ -71,10 +71,10 @@ const done = (tally: Partial<{ placed: number; faces: number; tooSmall: number; 
 });
 
 describe("the Split panel's connectors", () => {
-  it("offers None, Dowels, Plugs and Dovetail, with None chosen and nothing more shown", () => {
+  it("offers None, Dowels, Plugs, Dovetail and Magnets, with None chosen and nothing more shown", () => {
     const { panel, changes } = mount({});
-    expect(kindButtons(panel).map((button) => button.textContent)).toEqual(["None", "Dowels", "Plugs", "Dovetail"]);
-    expect(kindButtons(panel).map((button) => button.getAttribute("aria-pressed"))).toEqual(["true", "false", "false", "false"]);
+    expect(kindButtons(panel).map((button) => button.textContent)).toEqual(["None", "Dowels", "Plugs", "Dovetail", "Magnets"]);
+    expect(kindButtons(panel).map((button) => button.getAttribute("aria-pressed"))).toEqual(["true", "false", "false", "false", "false"]);
     expect(fieldLabels(panel)).toEqual([]);
     expect(panel.querySelector(".split-connector-summary")).toBeNull();
     act(() => kindButtons(panel)[1].click());
@@ -104,7 +104,34 @@ describe("the Split panel's connectors", () => {
 
   it("says when no connector fits, so the parts are split without", () => {
     const { panel } = mount({ kind: "dowels" }, done({ placed: 0, faces: 2, tooSmall: 2 }));
-    expect(summary(panel)).toEqual(["No connector fits on the cut face, so the parts will be split without. A smaller diameter may fit."]);
+    expect(summary(panel)).toEqual([
+      "No connector fits on the cut face, so the parts will be split without. A smaller diameter may fit.",
+      "“Filament as dowels (1.75 mm)” needs less room and fits plates from 3 mm.",
+    ]);
+    act(() => root?.unmount());
+    // Plugs have no filament to point to.
+    const plugs = mount({ kind: "plugs" }, done({ placed: 0, faces: 2, tooSmall: 2 }));
+    expect(summary(plugs.panel)).toEqual(["No connector fits on the cut face, so the parts will be split without. A smaller diameter may fit."]);
+  });
+
+  it("takes filament as the dowels: no diameter and no base, and the length to cut (Discussion #1986)", () => {
+    const { panel, changes } = mount({ kind: "dowels" }, done({ placed: 2 }));
+    const checks = () => [...panel.querySelectorAll<HTMLLabelElement>(".split-panel label.edge-modifier-check")];
+    expect(checks().map((label) => label.textContent)).toEqual(["Filament as dowels (1.75 mm)", "Dowels on a breakaway base"]);
+    act(() => checks()[0].querySelector("input")!.click());
+    expect(changes).toEqual([{ dowelFilament: true }]);
+    act(() => root?.unmount());
+    const filament = mount({ kind: "dowels", dowelFilament: true }, done({ placed: 0, faces: 1, tooSmall: 1 }));
+    expect(fieldLabels(filament.panel)).toEqual(["Per cut face (0 = automatic)", "Depth into each half", "Clearance per side"]);
+    expect([...filament.panel.querySelectorAll(".split-panel label.edge-modifier-check")].map((label) => label.textContent)).toEqual(["Filament as dowels (1.75 mm)"]);
+    expect(text(filament.panel)).toContain("Cut pieces of filament 11 mm long, one for each pair of holes.");
+    // Nothing smaller to point to once the filament is chosen.
+    expect(summary(filament.panel)).toEqual(["No connector fits on the cut face, so the parts will be split without. A smaller diameter may fit."]);
+    act(() => root?.unmount());
+    // The switch belongs to the dowels.
+    const plugs = mount({ kind: "plugs", dowelFilament: true });
+    expect(fieldLabels(plugs.panel)).toContain("Diameter");
+    expect(text(plugs.panel)).not.toContain("Filament as dowels");
   });
 
   it("says the clearance comes from the fit test while it holds the printer's play", () => {
@@ -116,9 +143,24 @@ describe("the Split panel's connectors", () => {
     expect(text(own.panel)).not.toContain("From your fit test");
   });
 
+  it("shows the magnets' size, their well and the pocket they get, and hands a listed size over in one go", () => {
+    const { panel, changes } = mount({ kind: "magnets" }, done({ placed: 2, faces: 1 }));
+    expect(kindButtons(panel).map((button) => button.getAttribute("aria-pressed"))).toEqual(["false", "false", "false", "false", "true"]);
+    expect(fieldLabels(panel)).toEqual(["Per cut face (0 = automatic)", "Magnet diameter (mm)", "Magnet height (mm)", "Clearance per side"]);
+    expect(text(panel)).toContain("Glue well below the pocket");
+    expect(text(panel)).toContain("Pocket Ø 6.4 mm, 2.2 mm deep, glue well Ø 3 mm, 1 mm deep");
+    const size = panel.querySelector<HTMLSelectElement>(".split-panel select[aria-label='Magnet size']")!;
+    expect(size.value).toBe("6x2");
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")!.set!.call(size, "3x1");
+      size.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(changes.at(-1)).toEqual({ magnetDiameter: 3, magnetHeight: 1 });
+  });
+
   it("shows the dovetail's measures, and says in its own words when a cut face has no room for one", () => {
     const { panel, changes } = mount({ kind: "dovetail" }, done({ placed: 1, faces: 2, tooSmall: 1 }));
-    expect(kindButtons(panel).map((button) => button.getAttribute("aria-pressed"))).toEqual(["false", "false", "false", "true"]);
+    expect(kindButtons(panel).map((button) => button.getAttribute("aria-pressed"))).toEqual(["false", "false", "false", "true", "false"]);
     expect(fieldLabels(panel)).toEqual(["Per cut face (0 = automatic)", "Width at the cut face", "Depth into the other half", "Flank angle", "Direction (0 = lengthwise)", "Clearance per side"]);
     expect(text(panel)).toContain("Slide the halves together from the side");
     expect(summary(panel)).toEqual(["Room for 1 on 2 cut faces.", "One cut face is too small for a dovetail."]);

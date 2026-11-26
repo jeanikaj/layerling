@@ -75,6 +75,30 @@ export type HolePatternSettings = {
   rack?: boolean;
   /** 19" rack: a standard panel height from 1U to 6U, its holes as the standard has them; 0 or unset fits the panel. */
   rackUnits?: number;
+  /**
+   * A ring along the edge and mounting holes for screws (Discussion #1904): one more hole in the middle of the face,
+   * like the others - the drain holes in a plant pot's floor. It does not count among the ring's or the mounting
+   * holes' number, and is left out where it does not fit: in an opening, or too close to the others.
+   */
+  centerHole?: boolean;
+  /**
+   * The hole in the middle in a size of its own, for holes with a single size and no head (round, square, hexagon):
+   * its diameter, side or diameter across the corners. Unset, it is as big as the others and follows them.
+   */
+  centerHoleSize?: number;
+  /**
+   * When the edge cuts the holes (`holePatternCutsAtEdge`): a solid frame this wide (mm) along the face's edge and its
+   * openings; the holes are cut off where it starts. 0 or unset: no frame, the holes run right to the edge.
+   */
+  edgeBorder?: number;
+  /**
+   * A pattern in a flat face (Discussion #1771): the top `topLayerThickness` mm of the body under the face becomes a
+   * body of its own in `topLayerColor`, and the holes go through that layer only: a net in a second colour, its holes
+   * filled up to the face by the body's own colour, so the face is flat. `depth` does not apply then.
+   */
+  topLayer?: boolean;
+  topLayerThickness?: number;
+  topLayerColor?: string;
   perimeterStart?: number;
   /** Own shape (#1235): the id of the shape from the scene that is repeated. */
   customId?: string;
@@ -95,10 +119,16 @@ export const HOLE_PATTERN_MIN_SIZE = 0.5;
 export const HOLE_PATTERN_MAX_SIZE = 200;
 export const HOLE_PATTERN_MAX_SPACING = 400;
 export const HOLE_PATTERN_MAX_MARGIN = 100;
+/** The top layer in a second colour: its thickness by default, the thinnest it can be, and its colour by default. */
+export const HOLE_PATTERN_TOP_LAYER_DEFAULT = 1;
+export const HOLE_PATTERN_TOP_LAYER_MIN = 0.2;
+export const HOLE_PATTERN_TOP_LAYER_COLOR = "#ffffff";
+/** The widest frame along the edge when the edge cuts the holes. */
+export const HOLE_PATTERN_MAX_EDGE_BORDER = 20;
 export const HOLE_PATTERN_MIN_PERIMETER_COUNT = 2;
 export const HOLE_PATTERN_MAX_PERIMETER_COUNT = 200;
 export const HOLE_PATTERN_MAX_PERIMETER_START = 2000;
-/** A rectangle or slot turned beyond a quarter turn either way looks like one turned the other way. */
+/** A hole turned beyond a quarter turn either way looks like one turned the other way. */
 export const HOLE_PATTERN_MAX_HOLE_ANGLE = 90;
 /** The steepest slope through the wall: there a hole is twice as long on the face as it is wide. */
 export const HOLE_PATTERN_MAX_HOLE_TILT = 60;
@@ -122,6 +152,27 @@ export function holeHasHead(settings: Pick<HolePatternSettings, "form"> & Partia
   return settings.form === "round" && (settings.holeType === "counterbore" || settings.holeType === "countersink");
 }
 
+/** Whether the arrangement takes one more hole in the middle of the face: a ring along the edge, and mounting holes for screws. */
+export function holeCenterApplies(settings: Partial<Pick<HolePatternSettings, "arrangement" | "rack">>) {
+  return settings.arrangement === "perimeter" || (settings.arrangement === "corners" && !settings.rack);
+}
+
+/** Whether the hole in the middle can have a size of its own: holes with a single size and no head. */
+export function holeCenterTakesOwnSize(settings: Pick<HolePatternSettings, "form"> & Partial<Pick<HolePatternSettings, "holeType">>) {
+  return (settings.form === "round" || settings.form === "square" || settings.form === "hexagon") && !holeHasHead(settings);
+}
+
+/** The size of the hole in the middle where it differs from the others', or null: no such hole, or one like the others. */
+export function holeCenterOwnSize(
+  settings: Pick<HolePatternSettings, "form" | "size"> & Partial<Pick<HolePatternSettings, "arrangement" | "rack" | "holeType" | "centerHole" | "centerHoleSize">>,
+): number | null {
+  if (!settings.centerHole || !holeCenterApplies(settings) || !holeCenterTakesOwnSize(settings)) return null;
+  const own = settings.centerHoleSize;
+  if (typeof own !== "number" || !Number.isFinite(own)) return null;
+  const size = Math.min(HOLE_PATTERN_MAX_SIZE, Math.max(HOLE_PATTERN_MIN_SIZE, own));
+  return Math.abs(size - settings.size) < 1e-9 ? null : size;
+}
+
 /** The head of a counterbore or countersink at the face: twice the shaft unless set, always a little wider than it. */
 export function holeHeadSize(settings: Pick<HolePatternSettings, "size"> & Partial<Pick<HolePatternSettings, "headSize">>) {
   const shaft = Math.max(HOLE_PATTERN_MIN_SIZE, settings.size);
@@ -142,7 +193,7 @@ export function holeHeadDepth(settings: Pick<HolePatternSettings, "size"> & Part
   return Math.min(HOLE_PATTERN_MAX_SIZE, Math.max(0.2, depth));
 }
 
-/** Any angle in degrees as the same hole direction, from just over -90 up to 90 (-90 is 90): a rectangle or slot repeats every half turn. */
+/** Any angle in degrees as the same hole direction, from just over -90 up to 90 (-90 is 90): every form that turns repeats after half a turn at most. */
 export function normalizeHoleAngle(value: unknown): number {
   if (typeof value !== "number" || !Number.isFinite(value)) return 0;
   const half = HOLE_PATTERN_MAX_HOLE_ANGLE * 2;
@@ -154,12 +205,20 @@ export function normalizeHoleAngle(value: unknown): number {
 }
 
 /**
- * The turn of every hole in the face's frame, in radians from `u` towards `v`: a rectangle's or slot's angle, else none. The frame
+ * Whether the form can be turned in the face: every form with corners or a length (Discussion 1795: a square at 45 is a
+ * diamond, a hexagon at 30 lies on a flat). A round hole looks the same at any angle, an own shape stands as it is.
+ */
+export function holePatternHasAngle(form: HoleForm) {
+  return form === "square" || form === "rectangle" || form === "hexagon" || form === "slot";
+}
+
+/**
+ * The turn of every hole in the face's frame, in radians from `u` towards `v`: the angle of a form that turns, else none. The frame
  * runs `u` to `v` clockwise as seen looking at the face (x cross z points into it), so a counter-clockwise angle is a
  * negative turn here.
  */
 export function holeTurn(settings: Pick<HolePatternSettings, "form"> & Partial<Pick<HolePatternSettings, "holeAngle">>) {
-  if (!holePatternHasRowSpacing(settings.form)) return 0;
+  if (!holePatternHasAngle(settings.form)) return 0;
   const angle = normalizeHoleAngle(settings.holeAngle);
   return angle === 0 ? 0 : -(angle * Math.PI) / 180;
 }
@@ -536,6 +595,16 @@ export type HolePatternResult = {
   roundFace?: boolean;
   /** 19" rack holes: how the slots came out on the face, or why there are none. */
   rack?: RackFit;
+  /**
+   * The edge cuts the holes (`holePatternCutsAtEdge`): holes reaching past it are cut off there instead of left out.
+   * `thin` counts the holes inside the face that leave a strip to its edge thinner than the walls between holes.
+   */
+  edgeCut?: { thin: number; wall: number; border: number };
+  /**
+   * A hole in the middle was asked for (`centerHole`): its place in `centers` (the last one), or null where it does
+   * not fit - the middle lies in an opening or off the face, or the hole would come too close to the others.
+   */
+  centerHole?: { index: number | null };
 };
 
 /** The panel heights of IEC 60297-3-100 (table 1): the height, and the distance between the upper and lower holes. */
@@ -733,7 +802,11 @@ function bestLattice(
   pitchV: number,
   staggered: boolean,
   fits: (c: Point2) => boolean,
-): { centers: Point2[]; rows: number } | null {
+  /** Cut off at the edge: how many of these holes leave a thin strip to it; the way with fewest wins, then the most holes. */
+  thinOf?: (centers: Point2[]) => number,
+  /** Where to try the lattice, moved off the face's middle; by default on a hole or between holes along each axis. */
+  shifts?: readonly Point2[],
+): { centers: Point2[]; rows: number; thin: number } | null {
   const centerU = (bounds.minU + bounds.maxU) / 2;
   const centerV = (bounds.minV + bounds.maxV) / 2;
   const halfSpanU = Math.ceil((bounds.maxU - bounds.minU) / 2 / pitchU) + 1;
@@ -741,7 +814,8 @@ function bestLattice(
   if ((halfSpanU * 2 + 1) * (halfSpanV * 2 + 1) > MAX_CANDIDATES) return null;
   let best: Point2[] = [];
   let bestRows = 0;
-  const offsets = [
+  let bestThin = Infinity;
+  const offsets = shifts ?? [
     { u: 0, v: 0 },
     { u: pitchU / 2, v: 0 },
     { u: 0, v: pitchV / 2 },
@@ -760,12 +834,142 @@ function bestLattice(
         }
       }
     }
-    if (found.length > best.length) {
+    const thin = thinOf ? thinOf(found) : 0;
+    if (thin < bestThin || (thin === bestThin && found.length > best.length)) {
       best = found;
       bestRows = rowsUsed.size;
+      bestThin = thin;
     }
   }
-  return { centers: best, rows: bestRows };
+  return { centers: best, rows: bestRows, thin: Number.isFinite(bestThin) ? bestThin : 0 };
+}
+
+/**
+ * Whether the face's edge cuts the holes (Discussion #1771): with no distance to the edge, the plain holes of a pattern
+ * that go through the body run on past the edge and are cut off by it, so a grille or a honeycomb reaches right to the
+ * edge without a solid strip round it. Screw holes with a head, own shapes, blind holes and a round wall keep to the face.
+ */
+export function holePatternCutsAtEdge(settings: Pick<HolePatternSettings, "arrangement" | "form" | "margin" | "depth"> & Partial<Pick<HolePatternSettings, "holeType" | "topLayer">>) {
+  if (settings.arrangement !== "grid" && settings.arrangement !== "staggered") return false;
+  if (settings.form === "custom" || holeHasHead(settings)) return false;
+  // A top layer in a second colour is a net cut right through that layer, whatever depth was set before.
+  return (settings.depth === null || Boolean(settings.topLayer)) && !(settings.margin > EPSILON);
+}
+
+/**
+ * The top layer in a second colour (Discussion #1771), when it is asked for and can be made: a pattern (not mounting
+ * holes) of plain holes in a flat face, not an own shape. The holes go through that layer only, so it is a net in its
+ * colour, and the body's own colour fills them up to the face. Its thickness stays under the body's
+ * (`thickness`, when known), so some of the body is left under it.
+ */
+export function holePatternTopLayer(
+  settings: Pick<HolePatternSettings, "arrangement" | "form"> & Partial<Pick<HolePatternSettings, "topLayer" | "topLayerThickness" | "topLayerColor" | "holeType">>,
+  thickness?: number,
+): { thickness: number; color: string } | null {
+  if (!settings.topLayer || settings.arrangement === "corners" || settings.form === "custom" || holeHasHead(settings)) return null;
+  const asked = typeof settings.topLayerThickness === "number" && Number.isFinite(settings.topLayerThickness) ? settings.topLayerThickness : HOLE_PATTERN_TOP_LAYER_DEFAULT;
+  const most = thickness !== undefined && thickness > 0 ? thickness - HOLE_PATTERN_TOP_LAYER_MIN : Infinity;
+  if (!(most >= HOLE_PATTERN_TOP_LAYER_MIN)) return null;
+  const color = typeof settings.topLayerColor === "string" && /^#[0-9a-f]{6}$/i.test(settings.topLayerColor) ? settings.topLayerColor : HOLE_PATTERN_TOP_LAYER_COLOR;
+  return { thickness: Math.min(most, Math.max(HOLE_PATTERN_TOP_LAYER_MIN, asked)), color };
+}
+
+/** The frame along the edge when the edge cuts the holes, in mm; 0 when it does not cut them or has no frame. */
+export function holePatternEdgeBorder(settings: Parameters<typeof holePatternCutsAtEdge>[0] & Partial<Pick<HolePatternSettings, "edgeBorder">>) {
+  if (!holePatternCutsAtEdge(settings)) return 0;
+  const border = typeof settings.edgeBorder === "number" && Number.isFinite(settings.edgeBorder) ? settings.edgeBorder : 0;
+  return Math.min(HOLE_PATTERN_MAX_EDGE_BORDER, Math.max(0, border));
+}
+
+/**
+ * The face set in by `border` along its edge and its openings, in the face's frame: where the frame ends and the holes
+ * are cut off. Sharp corners stay sharp (mitred), so the frame is as wide all round.
+ */
+export function insetFaceLoops(runtime: ManifoldToplevel, loops: readonly Point2[][], border: number): Point2[][] {
+  const made: { delete(): void }[] = [];
+  try {
+    const region = new runtime.CrossSection(loops.map((loop) => loop.map((point): [number, number] => [point.u, point.v])), "EvenOdd");
+    made.push(region);
+    const inset = region.offset(-border, "Miter", 2);
+    made.push(inset);
+    const simple = inset.simplify(1e-6);
+    made.push(simple);
+    return simple.toPolygons().map((polygon) => polygon.map((point) => ({ u: point[0], v: point[1] }))).filter((loop) => loop.length >= 3);
+  } finally {
+    made.forEach((section) => section.delete());
+  }
+}
+
+/** How far a hole cut off by the edge must reach into the face at least, so it does not leave a bare scratch. */
+const EDGE_CUT_MIN_BITE = 0.4;
+/** A hole this close to the edge counts as touching it, with no strip between. */
+const EDGE_CUT_TOUCH = 0.01;
+/** The finer steps the lattice is moved in across one step each way, when laid about the middle it leaves thin strips. */
+const EDGE_CUT_SHIFT_STEPS = 12;
+/** About how much work that may take, holes times the edges of the face: past it the steps are halved, then left out. */
+const EDGE_CUT_SHIFT_BUDGET = 1200000;
+
+/**
+ * A hole cut off by the edge: kept when some part of it lies on the face at least `EDGE_CUT_MIN_BITE` from every edge,
+ * or when it lies wholly on the face.
+ */
+function edgeCutFitter(inside: (point: Point2) => boolean, segments: readonly Segment[], footprint: readonly Point2[], whole: (c: Point2) => boolean) {
+  const bite = EDGE_CUT_MIN_BITE;
+  const radius = footprint.reduce((most, point) => Math.max(most, Math.hypot(point.u, point.v)), 0);
+  const nearestEdge = (point: Point2, within: number) => {
+    let nearest = within;
+    for (const segment of segments) {
+      if (segment.maxU < point.u - nearest || segment.minU > point.u + nearest || segment.maxV < point.v - nearest || segment.minV > point.v + nearest) continue;
+      nearest = Math.min(nearest, pointSegmentDistance(point, segment.a, segment.b));
+    }
+    return nearest;
+  };
+  // Points spread over the hole: its corners and the middles of its sides (at most 16 of them), and halfway out to those.
+  const rim = footprint.flatMap((corner, index) => {
+    const next = footprint[(index + 1) % footprint.length];
+    return [corner, { u: (corner.u + next.u) / 2, v: (corner.v + next.v) / 2 }];
+  });
+  const every = Math.max(1, Math.ceil(rim.length / 16));
+  const spread = rim.filter((_, index) => index % every === 0);
+  const samples = [...spread, ...spread.map((point) => ({ u: point.u / 2, v: point.v / 2 }))];
+  return (c: Point2) => {
+    // Most holes are settled by their middle alone: well on the face, or so far off it that no part reaches it.
+    const edge = nearestEdge(c, radius + bite);
+    const onFace = inside(c);
+    if (onFace && edge >= bite) return true;
+    if (!onFace && edge >= radius) return false;
+    if (whole(c)) return true;
+    return samples.some((sample) => {
+      const point = { u: c.u + sample.u, v: c.v + sample.v };
+      return inside(point) && nearestEdge(point, bite) >= bite;
+    });
+  };
+}
+
+/**
+ * Counts the holes wholly on the face that come closer to its edge than `wall` without reaching it: there the edge
+ * keeps a strip thinner than the walls between the holes, which prints or cuts poorly.
+ */
+function thinStripCounter(segments: readonly Segment[], footprint: readonly Point2[], whole: (c: Point2) => boolean, wall: number) {
+  let reach = wall;
+  for (const corner of footprint) reach = Math.max(reach, Math.hypot(corner.u, corner.v) + wall);
+  return (centers: Point2[]) => {
+    if (!(wall > EDGE_CUT_TOUCH)) return 0;
+    let thin = 0;
+    for (const c of centers) {
+      if (!whole(c)) continue;
+      const placed = footprint.map((corner) => ({ u: c.u + corner.u, v: c.v + corner.v }));
+      let gap = Infinity;
+      for (const segment of segments) {
+        if (segment.maxU < c.u - reach || segment.minU > c.u + reach || segment.maxV < c.v - reach || segment.minV > c.v + reach) continue;
+        for (let i = 0; i < placed.length; i += 1) {
+          gap = Math.min(gap, segmentSegmentDistance(segment.a, segment.b, placed[i], placed[(i + 1) % placed.length]));
+        }
+      }
+      if (gap > EDGE_CUT_TOUCH && gap < wall - EPSILON) thin += 1;
+    }
+    return thin;
+  };
 }
 
 /**
@@ -838,6 +1042,19 @@ export function cornerCenters(
   return { centers: [...corners, ...between.filter(onFace)], round: false };
 }
 
+/** The middle of a face: of a round one its circle's, else that of the smallest rectangle round its outline (where the mounting holes' corners come from). */
+export function faceMiddle(loops: readonly Point2[][]): Point2 | null {
+  const hull = convexHull(loops.flat());
+  if (hull.length < 3) return null;
+  const circle = roundOutline(hull);
+  if (circle) return { u: circle.u, v: circle.v };
+  const box = outlineBox(hull);
+  if (!box) return null;
+  const a = (box.minA + box.maxA) / 2;
+  const b = (box.minB + box.maxB) / 2;
+  return { u: a * Math.cos(box.angle) - b * Math.sin(box.angle), v: a * Math.sin(box.angle) + b * Math.cos(box.angle) };
+}
+
 /** The middle and radius of an outline that is a circle (its hull's corners all as far from the middle), or null. */
 function roundOutline(hull: readonly Point2[]): { u: number; v: number; radius: number } | null {
   if (hull.length < 12) return null;
@@ -893,6 +1110,22 @@ export function holePatternCenters(
   const segments = loopSegments(loops);
   const fits = holeFitter((point) => insideRegion(loops, point), segments, footprint, margin);
 
+  // One more hole in the middle of the face (Discussion #1904), like the others or in its own size: it keeps the margin
+  // to the edge and to openings, and the least wall to every other hole, or is left out.
+  const withCenterHole = (centers: Point2[]): Pick<HolePatternResult, "centers" | "centerHole"> => {
+    if (!settings.centerHole || !holeCenterApplies(settings) || centers.length === 0) return { centers };
+    const own = holeCenterOwnSize(settings);
+    const room = own === null ? footprint : holeFitPolygon({ ...settings, size: own }, wall);
+    const reach = (polygon: readonly Point2[]) => polygon.reduce((most, point) => Math.max(most, Math.hypot(point.u, point.v)), 0);
+    const clear = reach(room) + reach(footprint) + HOLE_PATTERN_MIN_WALL;
+    const middle = faceMiddle(loops);
+    const fitsMiddle = own === null ? fits : holeFitter((point) => insideRegion(loops, point), segments, room, margin);
+    if (!middle || !fitsMiddle(middle) || centers.some((center) => Math.hypot(center.u - middle.u, center.v - middle.v) < clear - EPSILON)) {
+      return { centers, centerHole: { index: null } };
+    }
+    return { centers: [...centers, middle], centerHole: { index: centers.length } };
+  };
+
   if (settings.arrangement === "corners" && settings.rack) {
     const { centers, fit } = rackCenters(loops, settings);
     return { centers, tooMany: false, rows: centers.length ? 2 : 0, ...(fit ? { rack: fit } : {}) };
@@ -902,7 +1135,7 @@ export function holePatternCenters(
     // Holes between the corners that would leave the face (a notch in a side) are left out; the corners always stay.
     const onFace = holeFitter((point) => insideRegion(loops, point), segments, footprint, 0);
     const { centers, round } = cornerCenters(loops, settings, footprint, onFace);
-    return { centers, tooMany: false, rows: centers.length ? 2 : 0, ...(round ? { roundFace: true } : {}) };
+    return { ...withCenterHole(centers), tooMany: false, rows: centers.length ? 2 : 0, ...(round ? { roundFace: true } : {}) };
   }
 
   if (settings.arrangement === "perimeter") {
@@ -915,7 +1148,45 @@ export function holePatternCenters(
     const ring = perimeterRing(runtime, loops, settings, wall);
     if (ring.tooMany) return { ...empty, tooMany: true };
     const centers = ring.centers.filter(fits);
-    return { centers, tooMany: false, rows: centers.length ? 1 : 0, ring: { length: ring.length, onCorners: ring.onCorners } };
+    return { ...withCenterHole(centers), tooMany: false, rows: centers.length ? 1 : 0, ring: { length: ring.length, onCorners: ring.onCorners } };
+  }
+
+  if (holePatternCutsAtEdge(settings)) {
+    // The edge cuts the holes: those reaching past it stay, and of the ways to lay the lattice the one leaving the
+    // fewest thin strips along the edge wins. With a frame the line it starts on, set in from the edge, cuts them.
+    const wall = holePatternWall(settings);
+    const border = holePatternEdgeBorder(settings);
+    let cutLoops = loops;
+    if (border > 0) {
+      const runtime = loadedManifoldRuntime();
+      if (!runtime) {
+        requestManifoldRuntime();
+        return empty;
+      }
+      cutLoops = insetFaceLoops(runtime, loops, border);
+      if (cutLoops.length === 0) return { ...empty, edgeCut: { thin: 0, wall, border } };
+    }
+    const cutSegments = cutLoops === loops ? segments : loopSegments(cutLoops);
+    const inside = (point: Point2) => insideRegion(cutLoops, point);
+    const whole = cutLoops === loops ? fits : holeFitter(inside, cutSegments, footprint, 0);
+    const bounds = { minU, maxU, minV, maxV };
+    const keep = edgeCutFitter(inside, cutSegments, footprint, whole);
+    const thinOf = thinStripCounter(cutSegments, footprint, whole, wall);
+    let cut = bestLattice(bounds, pitchU, pitchV, staggered, keep, thinOf);
+    if (!cut) return { ...empty, tooMany: true };
+    // Laid evenly about the middle, a staggered row often keeps a thin strip whichever way: then the lattice is moved
+    // in finer steps across one step each way, and the place with the fewest thin strips (then the most holes) wins.
+    if (cut.thin > 0) {
+      // About the work of one lattice, so a big face or a long curved outline stays quick: finer steps only as far as that allows.
+      const work = Math.max(1, cut.centers.length) * Math.max(1, cutSegments.length);
+      const steps = [EDGE_CUT_SHIFT_STEPS, EDGE_CUT_SHIFT_STEPS / 2].find((count) => work * count * count <= EDGE_CUT_SHIFT_BUDGET) ?? 0;
+      const shifts: Point2[] = [];
+      for (let i = 0; i < steps; i += 1) for (let j = 0; j < steps; j += 1) shifts.push({ u: (pitchU * i) / steps, v: (pitchV * j) / steps });
+      const moved = shifts.length ? bestLattice(bounds, pitchU, pitchV, staggered, keep, thinOf, shifts) : null;
+      if (moved && (moved.thin < cut.thin || (moved.thin === cut.thin && moved.centers.length > cut.centers.length))) cut = moved;
+    }
+    if (cut.centers.length > (settings.allowMany ? HOLE_PATTERN_MANY_HOLES : HOLE_PATTERN_MAX_HOLES)) return { centers: [], tooMany: true, rows: 0 };
+    return { centers: cut.centers, tooMany: false, rows: cut.rows, edgeCut: { thin: cut.thin, wall, border } };
   }
 
   const lattice = bestLattice({ minU, maxU, minV, maxV }, pitchU, pitchV, staggered, fits);
@@ -1355,6 +1626,21 @@ function turnedMinRowSpacing(polygon: readonly Point2[], gap: number, spacing: n
 }
 
 /**
+ * Whether a whole grid or staggered pattern of a turned hole keeps `gap` clear at this spacing and row spacing: a turned
+ * hole has no mirror line along the frame, so every neighbour it can reach is looked at, not just the nearest ones.
+ */
+function turnedPatternClear(polygon: readonly Point2[], gap: number, spacing: number, row: number, staggered: boolean) {
+  const reach = footprintReach(polygon, gap);
+  for (let j = 0; j <= TURNED_MAX_ROWS && j * row < reach.v; j += 1) {
+    const shift = staggered && j % 2 === 1 ? spacing / 2 : 0;
+    for (let k = j === 0 ? 1 : Math.ceil((-reach.u - shift) / spacing); k * spacing + shift < reach.u; k += 1) {
+      if (footprintsCloserThan(polygon, k * spacing + shift, j * row, gap)) return false;
+    }
+  }
+  return true;
+}
+
+/**
  * The smallest spacing at which neighbouring holes of this shape keep a wall of `wall`
  * (default `HOLE_PATTERN_MIN_WALL`): a grid compares along both axes, a staggered
  * pattern along the row and along the diagonal. Hexagons that interlock in a
@@ -1373,6 +1659,20 @@ export function holePatternMinSpacing(
   const high = (holeFootprintSize(settings).width + holeFootprintSize(settings).height) * 2 + gap;
   if (holePatternHasRowSpacing(settings.form)) {
     return Math.max(HOLE_PATTERN_MIN_SIZE, leastClearDistance(polygon, gap, high, (distance) => ({ u: distance, v: 0 })));
+  }
+  if (holeTurn(settings) !== 0 && (settings.arrangement === "grid" || settings.arrangement === "staggered")) {
+    // A turned square or hexagon: the rows follow the spacing, so the whole pattern grows with it, and a pattern that
+    // is clear stays clear when it grows. The least spacing is found by halving, every neighbour in reach looked at.
+    const staggered = settings.arrangement === "staggered";
+    const rowRatio = (staggered ? STAGGER_ROW_RATIO : 1) * squash;
+    let low = 0;
+    let clear = high / Math.min(1, rowRatio);
+    for (let step = 0; step < 40; step += 1) {
+      const middle = (low + clear) / 2;
+      if (turnedPatternClear(polygon, gap, middle, middle * rowRatio, staggered)) clear = middle;
+      else low = middle;
+    }
+    return Math.max(HOLE_PATTERN_MIN_SIZE, clear);
   }
   const directions = settings.arrangement === "staggered"
     ? [{ u: 1, v: 0 }, { u: 0.5, v: STAGGER_ROW_RATIO }]
@@ -1482,7 +1782,7 @@ export function normalizeHolePattern(input: Partial<HolePatternSettings>): HoleP
     form,
     size,
     height,
-    // Kept while another form is chosen, like the hole type, so going back to a rectangle or slot finds it turned as it was.
+    // Kept while a round hole or an own shape is chosen, like the hole type, so going back finds the holes turned as they were.
     ...(holeAngle !== 0 ? { holeAngle } : {}),
     // Kept while a head or an own shape is chosen, which stand straight, so going back finds the holes sloped as they were.
     ...(holeTilt !== 0 ? { holeTilt } : {}),
@@ -1490,6 +1790,10 @@ export function normalizeHolePattern(input: Partial<HolePatternSettings>): HoleP
     ...(rowSpacing !== undefined ? { rowSpacing } : {}),
     arrangement,
     margin: number(input.margin, base.margin, 0, HOLE_PATTERN_MAX_MARGIN),
+    ...(input.edgeBorder !== undefined ? { edgeBorder: number(input.edgeBorder, 0, 0, HOLE_PATTERN_MAX_EDGE_BORDER) } : {}),
+    ...(input.topLayer !== undefined ? { topLayer: Boolean(input.topLayer) } : {}),
+    ...(input.topLayerThickness !== undefined ? { topLayerThickness: number(input.topLayerThickness, HOLE_PATTERN_TOP_LAYER_DEFAULT, HOLE_PATTERN_TOP_LAYER_MIN, 100) } : {}),
+    ...(typeof input.topLayerColor === "string" && /^#[0-9a-f]{6}$/i.test(input.topLayerColor) ? { topLayerColor: input.topLayerColor.toLowerCase() } : {}),
     // Kept while another form or arrangement is chosen, so going back finds them as they were.
     holeType,
     ...head,
@@ -1502,6 +1806,9 @@ export function normalizeHolePattern(input: Partial<HolePatternSettings>): HoleP
     ...(typeof input.cornerCount === "number" && Number.isFinite(input.cornerCount) && Math.round(input.cornerCount) !== MIN_CORNER_COUNT ? { cornerCount: normalizeCornerCount(input.cornerCount, true) } : {}),
     ...(input.rack === true ? { rack: true } : {}),
     ...(input.rack === true && normalizeRackUnits(input.rackUnits) > 0 ? { rackUnits: normalizeRackUnits(input.rackUnits) } : {}),
+    // Kept while another arrangement or form is chosen, so going back finds the hole in the middle as it was.
+    ...(input.centerHole === true ? { centerHole: true } : {}),
+    ...(typeof input.centerHoleSize === "number" && Number.isFinite(input.centerHoleSize) ? { centerHoleSize: number(input.centerHoleSize, size, HOLE_PATTERN_MIN_SIZE, HOLE_PATTERN_MAX_SIZE) } : {}),
     ...custom,
     depth: typeof input.depth === "number" && Number.isFinite(input.depth) && input.depth > 0 ? Math.min(input.depth, 1000) : null,
     ...(input.allowMany === true ? { allowMany: true } : {}),

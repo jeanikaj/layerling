@@ -3,7 +3,7 @@ title: Tastenkürzel
 summary: Alle Tasten auf einen Blick – direkt aus dem Programm übernommen, damit die Liste immer stimmt.
 ---
 
-Die Kürzel wirken, solange die Arbeitsfläche den Fokus hat. Beim Tippen in einem Feld halten sie sich heraus. Auf dem Mac gilt überall dort [[Cmd]], wo hier [[Strg]] steht.
+Die Kürzel wirken, solange die Arbeitsfläche den Fokus hat. Beim Tippen in einem Feld halten sie sich heraus. Auf dem Mac gilt überall dort [[Cmd]], wo hier [[Strg]] steht. Die Tasten heißen wie auf der Tastatur deiner Sprache. Ein Buchstabe ist der Buchstabe auf deiner Tastatur; auf einer Tastatur mit anderer Schrift (kyrillisch, griechisch, arabisch, hebräisch) zählt die Taste an der Stelle des lateinischen Buchstabens.
 
 Im Editor öffnet {{ui:editor.keyboardShortcuts}} im Bereich {{ui:editor.group.help}} dieselbe Liste als Fenster. Der Druckerknopf im Fenster ({{ui:shortcuts.print}}) druckt die Liste für sich, schwarz auf weiß, die ganze Liste auf einer Seite A4 oder Letter in drei Spalten, als Kurzübersicht zum Hinlegen; der Druckdialog des Browsers bietet auch an, sie als PDF zu speichern.
 
@@ -19,7 +19,7 @@ Du findest ein Werkzeug nicht? Drücke [[Strg]]+[[K]] oder klicke auf die Lupe i
 - Jeder Eintrag zeigt die Tasten, die dasselbe tun, und die Gruppe des Menübands, in der er liegt, so lernst du, wo er sitzt.
 - Ausgegraute Einträge lassen sich gerade nicht ausführen, meist weil nichts ausgewählt ist. Sie bleiben in der Liste, damit die Suche trotzdem verrät, wo das Werkzeug liegt.
 
-Auch diese Anleitung hat oben auf jeder Seite ein Suchfeld: Tippe ein oder zwei Wörter, und es listet die Abschnitte auf, in denen alle vorkommen, die Treffer hervorgehoben. Ein Klick, oder [[Enter]] für den ersten, springt direkt dorthin. Die Seite, die sich öffnet, markiert jede Stelle, an der deine Wörter stehen, und rollt zur ersten im gewählten Abschnitt; [[Esc]] oder ein Klick auf eine Markierung nimmt sie wieder weg.
+Auch diese Anleitung hat oben auf jeder Seite ein Suchfeld: Tippe ein oder zwei Wörter, und es listet die Abschnitte auf, in denen alle vorkommen, die Treffer hervorgehoben. Ein Klick, oder [[Enter]] für den ersten, springt direkt dorthin. Die Seite, die sich öffnet, markiert jede Stelle, an der deine Wörter stehen, und rollt zur ersten im gewählten Abschnitt; [[Esc]] oder ein Klick auf eine Markierung nimmt sie wieder weg. Wörter in Anführungszeichen sucht es als genaue Wortfolge: "auf dem Kreisbogen" listet nur die Abschnitte auf, in denen diese Wörter genau so hintereinander stehen, und ein einzelnes Wort in Anführungszeichen wird nur als ganzes Wort gefunden, nicht als Teil eines längeren.
 - Der Name einer Form fügt diese Form auf die Arbeitsfläche ein, genau wie ein Klick im Formenmenü.
 - Bei leerem Feld stehen die zuletzt benutzten Befehle oben.
 - Der Name eines Körpers in deinem Entwurf findet diesen Körper und wählt ihn aus, praktisch bei Entwürfen mit vielen Teilen. Körper erscheinen erst, sobald du etwas tippst.

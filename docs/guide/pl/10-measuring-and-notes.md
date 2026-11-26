@@ -7,7 +7,7 @@ Aby zbudować część dokładnie, trzeba mierzyć. layerling ma do tego kilka n
 
 ## Narzędzie Zmierz
 
-Narzędzie Zmierz jest na dolnym końcu paska widoku przy lewej krawędzi ({{ui:camera.tapeTools}}). Mierzy odległości między narożnikami, krawędziami i ścianami. Kliknięcie go otwiera pięć przycisków. Jeśli zasłaniają to, co chcesz zmierzyć, przeciągnij je za uchwyt po lewej w dowolne miejsce na płaszczyźnie roboczej. Dwukrotne kliknięcie uchwytu odkłada je na miejsce:
+Narzędzie Zmierz jest na dolnym końcu paska widoku przy lewej krawędzi ({{ui:camera.tapeTools}}). Mierzy odległości między narożnikami, krawędziami i ścianami. Kliknięcie go otwiera pięć przycisków. {{ui:camera.addMeasurement}} jest od razu włączone, więc dwa następne kliknięcia w widoku już mierzą; kolejne kliknięcie tego przycisku odkłada narzędzie, a przyciski zostają otwarte. Jeśli pomiary są ukryte, pozostaje wyłączone, dopóki go nie klikniesz. Jeśli zasłaniają to, co chcesz zmierzyć, przeciągnij je za uchwyt po lewej w dowolne miejsce na płaszczyźnie roboczej. Dwukrotne kliknięcie uchwytu odkłada je na miejsce:
 
 ![Narzędzie Zmierz z przyciskami: dodaj pomiar, przesuń punkty pomiaru, usuń pomiar, całe krawędzie, usuń wszystkie pomiary.](shot:tape-menu)
 
@@ -18,6 +18,7 @@ Narzędzie Zmierz jest na dolnym końcu paska widoku przy lewej krawędzi ({{ui:
 5. **{{ui:camera.deleteAllMeasurements}}:** usuwa naraz wszystkie pomiary. Ponieważ tego nie da się cofnąć, layerling najpierw pyta. Gdy nie ma pomiarów, nie ma czego robić.
 6. **{{ui:camera.tapeMarkMiddle}}:** w środku każdego pomiaru jest mały okrągły znacznik z wypełnioną dolną połową. Stawia on [punkt odniesienia](#punkty-odniesienia) w środku pomiaru: po kliknięciu okrągłej krawędzi, takiej jak brzeg otworu, w środku tego okręgu (także na zaimportowanej siatce, gdzie nic innego nie oznacza środka otworu), a dla średnicy albo dowolnego prostego pomiaru w połowie jego długości. Przeciągany kształt przyciąga się wtedy do punktu swoim środkiem. Punkt, który już istnieje, nie powstaje drugi raz. Narzędzie Zmierz przyciąga się do punktu odniesienia jak do narożnika, więc możesz mierzyć od środka okręgu albo od środka linii: zaznacz go, a potem kliknij punkt.
 7. **{{ui:camera.tapeTypeLength}}:** Gdy co najmniej jeden koniec prostego pomiaru leży na bryle, jego liczbę można kliknąć. Wpisz nową długość i naciśnij [[Enter]]: bryła przy drugim punkcie przesuwa się wzdłuż zmierzonej linii, aż odległość będzie dokładnie taka, jak przy linijce w Tinkercad. Jeśli zaznaczona jest tylko bryła przy pierwszym punkcie, przesuwa się ona. Punkty pomiaru zostają na bryle, więc pomiar podąża za nią. Mierz od narożnika, krawędzi albo środka ściany lub otworu, aby ustawić części w dokładnej odległości: od środka otworu do środka górnej ściany walca walec przesuwa się środkiem do środka. Ujemna długość przesuwa ją o tyle za pierwszy punkt, na przykład 5 mm do wewnątrz od krawędzi pudełka. [Punkt odniesienia](#punkty-odniesienia) nie należy do żadnej bryły, więc między dwoma punktami odniesienia nic się nie przesuwa. Gdy pomiar biegnie wzdłuż dwóch lub trzech osi, pole ma pod długością jeszcze okienko dla każdej z nich (ΔX, ΔY, ΔZ, odległości widoczne po wskazaniu liczby): wpisz wartość tam, a bryła przesunie się tylko wzdłuż tej osi. [[Tab]] przechodzi z okienka do okienka, [[Esc]] zamyka pole bez przesuwania. Po wskazaniu liczby widać, która bryła się przesunie albo dlaczego żadna nie może: jest zablokowana, oba punkty leżą na tej samej bryle albo żaden nie leży na bryle. Komunikat potem mówi, co i o ile się przesunęło; jedno cofnięcie to odwraca.
+8. **Grubość pod wskaźnikiem:** Dopóki **{{ui:camera.addMeasurement}}** jest aktywne i nie postawiono jeszcze żadnego punktu, wskazanie ściany pokazuje, jak gruba jest tam bryła: mierzone prosto w głąb, prostopadle do ściany, do miejsca, gdzie kończy się materiał, z linią przerywaną przez bryłę. W wydrążonym pudełku to ścianka, w pełnym klocku cały klocek, na boku walca jego średnica. Przesuwaj wskaźnik po części, aby sprawdzić jej ścianki bez stawiania pomiaru.
 
 [[Esc]] wychodzi z trybu mierzenia.
 
@@ -68,6 +69,8 @@ Z {{ui:workspace.dimensionsAlwaysVisible}} wymiary są widoczne cały czas. Bry�
 Z opcją {{ui:workspace.dimensionAxisColors}} każde pole ma kolor swojej osi, jak uchwyty: czerwony dla X, zielony dla Y i niebieski dla Z. Dzięki temu nawet przy małej części od razu widzisz, która liczba jest która.
 
 Jeśli na chwilę przeszkadzają, naciśnij [[Q]]: wymiary i odległości wokół zaznaczenia znikają, a przesuwana część jest dobrze widoczna. Ponowne [[Q]] przywraca je. Uchwyt, na który wskazujesz, nadal pokazuje swój wymiar.
+
+Przy bardzo małej części przeszkadzać mogą same uchwyty. [[Shift+Q]] ukrywa je wszystkie - kwadraty rozmiaru oraz strzałki podnoszenia, przesuwania i obracania - a ponowne [[Shift+Q]] je przywraca. Bez nich nadal możesz przeciągać część i wpisywać jej wymiary po prawej, a lista obiektów pokazuje, która część jest zaznaczona.
 
 ## Sprawdzanie luzu
 
@@ -120,6 +123,7 @@ Obraz referencyjny to obraz, do którego wyrównujesz części: połóż zdjęci
 - Przesuwaj go, obracaj i zmieniaj jego rozmiar uchwytami jak każdy kształt. Bryła przed nim jest wybierana pierwsza, więc praca na nim nie chwyta obrazu.
 - {{ui:referenceImage.seeThrough}} w jego ustawieniach rozjaśnia go od pełnego do ledwo widocznego.
 - {{ui:referenceImage.calibrate}} nadaje mu prawdziwy rozmiar, jak w szkicu: kliknij dwa punkty na obrazie, których rzeczywistą odległość znasz - na przykład dwa otwory montażowe płytki - i wpisz tę odległość w {{ui:referenceImage.distance}}. Obraz zachowuje proporcje i środek.
+- W szkicu na płycie obraz widać pod rysunkiem: na jego miejscu, w jego rozmiarze i obrocie, odbity, jeśli go odbito, i z ustawieniem {{ui:referenceImage.seeThrough}}, więc można po nim rysować. Obraz pochylony lub odbity góra-dół oraz każdy obraz w szkicu na ścianie pokazuje tylko swój obrys.
 - Zablokuj go kłódką w nagłówku jego ustawień, a zostanie na miejscu: kliknięcia przechodzą przez niego na płytę. Wybierz go na liście obiektów, aby go odblokować.
 - Obraz jest zapisany w pliku projektu tylko raz, niezależnie od tego, ile razy go skopiujesz lub cofniesz. Duży obraz powiększa plik o tyle samo; komunikat przy dodawaniu podaje jego rozmiar.
 - AI dodaje, przesuwa, kalibruje, rozjaśnia i blokuje go za pomocą `layerling_reference_image`. Z `trace` obrysowuje obraz w bryłę szkicu stojącą na nim, jak {{ui:sketch.traceImage}} w szkicu.

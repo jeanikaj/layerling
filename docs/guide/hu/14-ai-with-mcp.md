@@ -63,7 +63,11 @@ A Claude Desktop nem olvassa a projektfájlokat. Add meg a szervert a saját kon
 
 Másold a skillt a `docs/skills/layerling-mcp-skill` mappából a Codex skills mappájába, add meg a szervert a Codex konfigurációjában a `docs/mcp/codex-config.example.toml` alapján, és indítsd újra a Codexet.
 
-Mindhárom részletes leírása a [GitHubon lévő README-ben](https://github.com/henmedia/layerling/blob/main/README.md#layerling-mcp-skill) található.
+### Gemini & Antigravity
+
+Az Antigravity magától megtalálja a munkaterület skilljét a `.agents/skills/layerling-mcp-skill` mappában. A Gemini CLI-hez másold a skillt a `docs/skills/layerling-mcp-skill` mappából a globális skills mappádba (`~/.gemini/skills/`), add hozzá a szervert a beállításaidhoz a `docs/mcp/gemini-config.example.json` alapján, és indítsd újra a klienst.
+
+Az egyes kliensek részletes leírása a [GitHubon lévő README-ben](https://github.com/henmedia/layerling/blob/main/README.md#layerling-mcp-skill) található.
 
 ## Egy példány NAS-on vagy szerveren
 
@@ -98,6 +102,7 @@ Az MI ugyanazokkal a funkciókkal dolgozik, mint te, ugyanazon az úton, mint a 
 | `layerling_place_on_face` | objektumokat tesz le egy másik objektum lapjára, a ferdékre is, mint a C billentyű |
 | `layerling_perforate_face` | lyukmintát vág egy sík lapba vagy egy henger, cső vagy furat kerek falára körbe; a lyukak a testtel csoportosított lyukak maradnak |
 | `layerling_thread_insert` | elkészíti a lyukat egy hőbesüllyesztéses menetes betéthez (M2-től M8-ig, 1/4-20 vagy saját méret) egy sík lapba vagy egy henger vagy cső külső falába, miután ellenőrizte, hogy a lyuk melletti fal és a mögötte lévő mélység elég; a lyuk a testtel csoportosított lyuk marad |
+| `layerling_magnet_pocket` | kivág egy fészket egy kerek mágnesnek (2 × 1 és 12 × 3 mm között vagy saját méret) alatta keskenyebb ragasztóüreggel egy sík lapba vagy egy henger vagy cső külső falába, ugyanazzal az ellenőrzéssel, és ugyanazt a fészket szemben az ott érintkező alkatrészbe; mindegyik az alkatrészével csoportosított lyuk marad |
 | `layerling_sweep_sketch` | téglalap vagy kör keresztmetszetet húz végig egy pontokból álló pályán egyetlen pontos testként; zárt pálya gyűrűt ad |
 | `layerling_push_face` | kihúz egy sík lapot, vagy zsebet vág bele, a lap szélétől mért távolsággal és sarokrádiusszal; az új rész a testtel csoportosított vázlattest |
 | `layerling_paint` | többszínű nyomtatáshoz saját színekkel festi egy test részeit (Festés): lap kitöltése az éles élekig, kerek folt vagy sík nézetben rajzolt lasszó; radírozás, mindent levesz; a testtel mentődik, és a 3MF-be festett lapokként kerül |
@@ -132,11 +137,12 @@ Az MI ugyanazokkal a funkciókkal dolgozik, mint te, ugyanazon az úton, mint a 
 | `layerling_delete_faces` | lapokat töröl, és bezárja a rést |
 | `layerling_array_objects` | sorban, rácsban vagy körön sokszoroz |
 | `layerling_bundle_objects` | objektumokat fog kötegbe, mint a Ctrl+B: együtt mozognak, megtartják a színüket és a fajtájukat, és exportáláskor külön kerülnek ki |
-| `layerling_layer_text` | egy szöveget rétegekből álló kötegbe alakít többszínű nyomtatáshoz (betűk, szélesebb szegélyek, egy lyukak nélküli lap), vagy újraépít egy köteget, kulcstartólyukkal, rétegenkénti sarkokkal és lekerekített vagy letört betűéllel; névlistával nevenként egy címkét készít |
+| `layerling_layer_text` | egy szöveget rétegekből álló kötegbe alakít többszínű nyomtatáshoz (betűk, szélesebb szegélyek, egy lyukak nélküli lap), vagy újraépít egy köteget, kulcstartólyukkal, rétegenkénti sarkokkal és lekerekített vagy letört betűéllel; névlistával nevenként egy címkét készít; a `flush` a rétegeket az alsóba süllyeszti, így minden szín egy sík felületen ér véget (true, false vagy 0,2–5 mm mélység) |
 | `layerling_text_block` | szövegblokkot készít: egy szöveg lesz több sor közül az első, mindegyik önálló szöveg a felette lévő alatt, balra, középre vagy jobbra igazítva, minden sor ugyanakkora vagy kisebb |
-| `layerling_layer_icon` | egy SVG-ikont (a fájl szövegét vagy egy kihúzott vázlattestet) rétegekből álló ikoncímkévé alakít többszínű nyomtatáshoz – az ikon, szélesebb szegélyek, egy lyukak nélküli lap –, vagy új szélességgel vagy rétegekkel újraépít egyet; darabszámmal másolatokkal tölti meg a tárgyasztalt |
+| `layerling_layer_icon` | egy SVG-ikont (a fájl szövegét vagy egy kihúzott vázlattestet) rétegekből álló ikoncímkévé alakít többszínű nyomtatáshoz – az ikon, szélesebb szegélyek, egy lyukak nélküli lap –, vagy új szélességgel vagy rétegekkel újraépít egyet; darabszámmal másolatokkal tölti meg a tárgyasztalt; a `flush` a rétegeket az alsóba süllyeszti, így minden szín egy sík felületen ér véget (true, false vagy 0,2–5 mm mélység) |
 | `layerling_create_qr_code` | szövegből vagy webcímből QR-kódot készít, mint az alakzatkönyvtár {{ui:shape.qrCode}} eleme – csak a kódot, lapon kiemelve vagy gravírozva, hibajavítással, szélességgel, magassággal, csendes zónával és kérésre üregként; figyelmeztet, ha egy modul 0,8 mm alá kerül |
 | `layerling_create_sbc_board` | valódi méretű SBC lapot tesz le, mint az alakzatkönyvtár {{ui:shape.sbcBoard}} eleme – Raspberry Pi 5, 4, 3 B+, Zero 2 W vagy BIGTREETECH Pi, furatokkal és csatlakozókkal, a szélső csatlakozók holtjátékával, helyzettel, és kivágásként doboz vágásához |
+| `layerling_create_fan` | valódi méretű ventilátort tesz le, mint az alakzatkönyvtár {{ui:shape.fan}} eleme – az 5015 radiális vagy a 30 x 10 axiális ventilátort; a beszívó, a kifúvó és a csavarfuratok kinyúlhatnak, hogy átvágják a falat |
 | `layerling_reference_image` | képből mintaképet ad hozzá, mint a {{ui:import.referenceImage}}, vagy egyet mozgat, forgat, kalibrál (a kép két pontja és valódi távolságuk), halványít vagy zárol - segédlet, amely sosem exportálódik és sosem nyomtatódik; a `trace` a sötét vagy világos részéből rajta álló vázlattestet készít |
 | `layerling_measure_section` | egy vágósíkon két, a körvonalhoz illeszkedő pont között mér – falvastagság, rések, illesztések |
 | `layerling_show_overhangs` | be- vagy kikapcsolja a túlnyúlások sraffozását, beállítja a szöget, és minden testnél megadja azt a területet, amelyhez támasz kellene |
@@ -156,6 +162,7 @@ Az MI ugyanazokkal a funkciókkal dolgozik, mint te, ugyanazon az úton, mint a 
 | `layerling_remove_notes` | azonosító alapján töröl jegyzeteket |
 | `layerling_inspect_errors` | megmutatja az utolsó üzenetet és az utolsó hibát, valamint a munkamenet üzeneteit és hibáit |
 | `layerling_wrap_around_cylinder` | egy laposan fekvő testet, például egy SVG-t vagy szöveget egy henger köré teker, kifelé vagy befelé gravírozásként |
+| `layerling_take_rotation_as_zero` | egy elforgatott háló jelenlegi helyzetét veszi 0-nak: a test a helyén marad, a szögei 0-k |
 | `layerling_texture_surface` | felületi mintázatot visz fel egy testre: hornyokat, recézést, méhsejtet vagy bütyköket, a jobb fogásért vagy a látványért, és később módosítja vagy eltávolítja |
 | `layerling_simplify_mesh` | csökkenti egy importált háló háromszögeinek számát, százalékos arányra vagy egy háromszögszámra |
 | `layerling_make_exact` | egy importált hálót pontos CAD-testté alakít: a síkok, hengerek, kúpok, gömbök és tóruszok valódi lapokká válnak, így az élek tisztán lekerekíthetők, és a STEP is viszi őket |
@@ -165,6 +172,7 @@ Az MI ugyanazokkal a funkciókkal dolgozik, mint te, ugyanazon az úton, mint a 
 | `layerling_delete_custom_shape` | eltávolít egy saját alakzatot; a beillesztett testek megmaradnak |
 | `layerling_show_workplane` | elrejti és megmutatja a tárgyasztalt a rácsával, például az alsó oldalról készülő képhez (csak a nézet) |
 | `layerling_focus_mode` | be- és kikapcsolja a fókusz módot: elrejti a címsort és a láblécet, hogy több hely legyen (csak a szerkesztő kerete) |
+| `layerling_detail_level` | kiolvassa vagy beállítja a szerkesztő vagy a vázlat részletességét: mennyi segédjelzés látszik a modell körül (csak a nézet) |
 | `layerling_set_section_view` | egy sík mentén felnyitja a nézetet, hogy belenézz (csak a nézet, semmi sem vágódik szét) |
 | `layerling_measurements` | megjeleníti vagy elrejti a mérőszalag méréseit, és felsorolja őket a hosszukkal, és elrejti vagy megjeleníti a kijelölés körüli méreteket, mint a [[Q]], és hosszt ír be az egyikhez, ami a végén lévő testet úgy mozdítja el, mint a számra kattintás |
 | `layerling_measure_angle` | szöget mér, mint a szögmérő: három pont csúcsánál vagy két sík lap között, és megmutatja a nézetben |
@@ -181,6 +189,7 @@ Az MI ugyanazokkal a funkciókkal dolgozik, mint te, ugyanazon az úton, mint a 
 | `layerling_export_drawing` | elkészíti a „2D” export műhelyrajzát: három nézet 1:1 méretarányban ISO lapon, befoglaló méretekkel és a kerek furatok táblázatával, SVG-szövegként vagy PDF-ként |
 | `layerling_export_mesh` | az exportablak fájlját STL, 3MF, OBJ, SVG (felülnézet, felfekvési felület vagy látható élek) vagy lézervágáshoz DXF formában írja ki ugyanazokból a testekből; ezen a számítógépen megadott helyre vagy base64-ként |
 | `layerling_save_project` | elmenti a teljes szerkeszthető tervet .lyl fájlként egy útvonalra azon a gépen, amelyen az MCP-kiszolgáló fut, párbeszédablak nélkül; meglévő fájlt csak az `overwrite` cserél le, ideiglenes fájlon át íródik, és a Ctrl+S célja a szerkesztőben változatlan marad |
+| `layerling_open_project` | megnyit egy elmentett .lyl fájlt az MCP-kiszolgálót futtató gép egy útvonaláról új tervként, mintha te magad nyitnád meg a fájlt; az új terv nem kapcsolódik a fájlhoz, a módosításokat a `layerling_save_project` írja vissza ugyanarra az útvonalra `overwrite` megadásával |
 | `layerling_list_attachments` | felsorolja a tervhez csatolt fájlokat (név, típus, méret), ahogy az Attachments panel mutatja őket |
 | `layerling_get_attachment` | beolvas egy csatolt fájlt, a bájtjait base64-ként, mint a panel Download gombja |
 | `layerling_add_attachment` | csatol egy base64-ként megadott fájlt a panel ellenőrzéseivel; a már csatolt nevet csak `replace` mellett írja felül |

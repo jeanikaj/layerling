@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { boxSnapSpots, cleanReferencePosition, measurementMiddle, nearestReferenceOnScreen, newReferencePositions, referencePointsForBox, unionReferenceBoxes } from "@/lib/referencePoints";
+import { boxSnapSpots, cleanReferencePosition, measurementMiddle, nearestReferenceOnScreen, newReferencePositions, pivotReference, sameReferencePoint, referencePointsForBox, unionReferenceBoxes } from "@/lib/referencePoints";
 import { normalizeNotes, notesSignature, referencePoints } from "@/lib/workplaneNotes";
 
 const box = { minX: -20, maxX: 40, minY: 0, maxY: 8, minZ: 10, maxZ: 30 };
@@ -81,6 +81,12 @@ describe("the reference point under the tape measure's pointer (#334)", () => {
     expect(nearestReferenceOnScreen(points, project, { x: 4, y: 0 }, 14)).toBe(points[0]);
   });
 
+  it("gives a pivot the point near the pointer, but not hidden notes' or with Shift", () => {
+    expect(pivotReference(points, { visible: true, faceCentre: false }, project, { x: 48, y: 3 }, 10)).toBe(points[1]);
+    expect(pivotReference(points, { visible: false, faceCentre: false }, project, { x: 48, y: 3 }, 10)).toBeNull();
+    expect(pivotReference(points, { visible: true, faceCentre: true }, project, { x: 48, y: 3 }, 10)).toBeNull();
+  });
+
   it("takes none when the pointer is too far away, and none for no points", () => {
     expect(nearestReferenceOnScreen(points, project, { x: 25, y: 40 }, 14)).toBeNull();
     expect(nearestReferenceOnScreen([], project, { x: 0, y: 0 }, 14)).toBeNull();
@@ -105,5 +111,12 @@ describe("box snap spots (#799)", () => {
 
   it("gives nothing for anything but a box", () => {
     expect(boxSnapSpots(corners.slice(0, 4))).toEqual([]);
+  });
+});
+
+describe("sameReferencePoint", () => {
+  it("takes positions within the tolerance as one point, and no others", () => {
+    expect(sameReferencePoint({ x: 1, y: 2, z: 3 }, { x: 1.0005, y: 2, z: 3 })).toBe(true);
+    expect(sameReferencePoint({ x: 1, y: 2, z: 3 }, { x: 1, y: 2.01, z: 3 })).toBe(false);
   });
 });

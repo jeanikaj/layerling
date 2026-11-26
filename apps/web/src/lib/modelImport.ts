@@ -3,12 +3,12 @@ import { t } from "@/lib/i18n";
 import { localizedError } from "@/lib/userErrors";
 import { importExtensionSupported } from "@/lib/importExtensions";
 import { attachProjectAsset, projectAssetFromBytes, sourceFormatForFileName } from "@/lib/projectAssets";
-import { readKeepSvgPage } from "@/lib/importPreferences";
+import { readImportColor, readKeepMeshPosition, readKeepSvgPage } from "@/lib/importPreferences";
 import { scaleSvgText } from "@/lib/svgScale";
 import { decodeSvgBytes, importedColourShapesFromSvg, importedShapeFromSvgWithReport, prepareSvgImport } from "@/lib/svgImport";
 import { importedShapesFrom3mf } from "@/lib/threemfImport";
 import { sketchProfileFromSvg, sketchProfileFromSvgPaths } from "@/lib/svgSketch";
-import { DXF_SKETCH_COLOR, DXF_SKETCH_HEIGHT, DxfImportError, sketchProfileFromDxf } from "@/lib/dxfImport";
+import { DXF_SKETCH_HEIGHT, DxfImportError, sketchProfileFromDxf } from "@/lib/dxfImport";
 import { importedPictureSvg, isPictureFile, svgEmbeddedPicture } from "@/lib/pictureIcon";
 import { createLocalId } from "@/lib/localIds";
 import { canonicalizeShape } from "@/lib/workplaneShapes";
@@ -87,9 +87,19 @@ export async function importModelFiles(
     svgKeepPagePosition?: boolean;
     /** An SVG or a picture comes in at this width in mm, scaled from its own size (#448). Null or left out: its own size. */
     svgWidth?: number | null;
+    /**
+     * An STL, OBJ or 3MF stands where its file puts it, so parts exported as separate files fit together (Issue #1939).
+     * Left out: the setting in the import window.
+     */
+    keepMeshPosition?: boolean;
+    /** The colour of a body whose file gives it none; left out, the one chosen in the import window. */
+    color?: string;
   } = {},
 ): Promise<ModelImportResult | null> {
   const prepared = await prepareImportFiles(selected);
+  // A body whose file gives it no colour starts with the one chosen in the import window (Discussion #2079).
+  const importColor = options.color ?? readImportColor();
+  const placement = { keepPosition: options.keepMeshPosition ?? readKeepMeshPosition(), color: importColor };
   const files = prepared.files;
   const result: ModelImportResult = {
     shapes: [],
@@ -120,17 +130,17 @@ export async function importModelFiles(
         const shapes: WorkplaneShape[] = [];
         for (const profile of dxf.parts.solids) {
           const built = await options.sketchFromProfile(profile, DXF_SKETCH_HEIGHT);
-          shapes.push({ ...built, name: name || built.name, color: DXF_SKETCH_COLOR });
+          shapes.push({ ...built, name: name || built.name, color: importColor });
         }
         for (const profile of dxf.parts.holes) {
-          shapes.push({ ...(await options.sketchFromProfile(profile, DXF_SKETCH_HEIGHT)), hole: true, color: DXF_SKETCH_COLOR });
+          shapes.push({ ...(await options.sketchFromProfile(profile, DXF_SKETCH_HEIGHT)), hole: true, color: importColor });
         }
         dxf.parts.roundHoles.forEach(({ x, z, diameter }) => {
           shapes.push(canonicalizeShape({
             id: createLocalId("shape"),
             name: "Cylinder",
             kind: "cylinder",
-            color: DXF_SKETCH_COLOR,
+            color: importColor,
             hole: true,
             x,
             z,
@@ -185,10 +195,12 @@ export async function importModelFiles(
       // die Datei als Ganzes bauen sie nicht nach.
       if (isObj || is3mf) {
         const colored = isObj
-          ? await (await import("@/lib/geometryWorker")).importedShapesFromObjOffThread(file.name, new TextDecoder().decode(bytes), prepared.mtlSources)
-          : importedShapesFrom3mf(file.name, buffer);
+          ? await (await import("@/lib/geometryWorker")).importedShapesFromObjOffThread(file.name, new TextDecoder().decode(bytes), prepared.mtlSources, placement)
+          : importedShapesFrom3mf(file.name, buffer, placement);
         if ("missingMaterialColors" in colored && colored.missingMaterialColors) result.notes.push(t("status.importObjNoMtl", { name: file.name }));
         if ("droppedVertexColors" in colored && colored.droppedVertexColors) result.notes.push(t("status.importObjVertexColors", { name: file.name }));
+        // The same words fit a 3MF whose object has a colour at almost every point (#1867).
+        if ("droppedColors" in colored && colored.droppedColors) result.notes.push(t("status.importObjVertexColors", { name: file.name }));
         if ("painted" in colored && colored.painted > 0) result.notes.push(t("status.import3mfPainted", { name: file.name }));
         if (colored.split) {
           result.shapes.push(...colored.shapes);
@@ -209,7 +221,7 @@ export async function importModelFiles(
           result.notes.push(t("status.importStepParts", { name: file.name, count: step.shapes.length }));
           continue;
         }
-        shape = step.shapes[0];
+        shape = { ...step.shapes[0], color: importColor };
       } else if (isSvg) {
         let text = isPicture ? await importedPictureSvg(file) : decodeSvgBytes(bytes);
         const embedded = isPicture ? null : svgEmbeddedPicture(text);
@@ -238,7 +250,7 @@ export async function importModelFiles(
             svg = importedShapeFromSvgWithReport(file.name, text, { keepPagePosition });
           }
         }
-        shape = { ...svg.shape, mirrorZ: true };
+        shape = { ...svg.shape, mirrorZ: true, color: importColor };
         if (svg.pageKept === false) result.notes.push(t("status.importSvgNoPage", { name: file.name }));
         // A shape that does not build into a solid is left out; say so instead of leaving a gap unexplained (#258).
         if (svg.skippedShapes > 0) result.notes.push(t("status.importSvgSkipped", { name: file.name, count: svg.skippedShapes }));
@@ -265,7 +277,7 @@ export async function importModelFiles(
         }
       } else {
         // Read off the page (lib/geometryWorker.ts), loaded only when a file needs it.
-        shape = await (await import("@/lib/geometryWorker")).importedShapeFromStlOffThread(file.name, buffer);
+        shape = await (await import("@/lib/geometryWorker")).importedShapeFromStlOffThread(file.name, buffer, placement);
       }
       // Eine eigene OBJ traegt ihr Netz selbst ("json") und braucht die Datei nicht.
       if (shape.importedMesh?.sourceFormat === "json") {

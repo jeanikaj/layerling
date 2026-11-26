@@ -12,7 +12,7 @@ På startsidan visas en avisering med {{ui:installHint.install}} om webbläsaren
 - **Chrome och Edge:** Klicka på installationsikonen till höger i adressfältet, eller välj ”Installera som app” i webbläsarens meny.
 - **Safari på Mac:** Menyn ”Arkiv”, sedan ”Lägg till i Dock”.
 - **Safari på iPhone och iPad:** Dela-ikonen, sedan ”Lägg till på hemskärmen”.
-- **Firefox:** kan inte installera appar. layerling startar ändå offline i en flik där.
+- **Firefox:** i Windows från version 143 klickar du på ikonen ”Lägg till flik i aktivitetsfältet” till höger i adressfältet; i ett privat fönster finns den inte. Dina designer blir kvar som de är. Annars startar layerling offline i en flik.
 
 Du kan stänga tipset på startsidan med {{ui:installHint.dismiss}}. Startar du den installerade appen en andra gång i Chrome eller Edge lyfts det öppna fönstret fram i stället för att öppna ett nytt.
 
@@ -38,11 +38,11 @@ layerling är fri programvara (AGPL-3.0) och kan köras på din egen dator eller
 - **Docker:** För NAS-enheter och hemmaservrar, utan att Node.js behöver installeras. Varje version släpps som en färdig avbildning `henmedia/layerling` på Docker Hub (och `ghcr.io/henmedia/layerling`) för amd64 och arm64; `docker run -d -p 3000:3000 -v layerling-thumbnails:/app/.codex/project-thumbnails henmedia/layerling:latest` startar den, och på en NAS söker du efter den i containerhanterarens register. Volymen `layerling-thumbnails` bevarar startsidans förhandsgranskningsbilder över uppdateringar; utan den försvinner de varje gång containern skapas om, tills du öppnar designen igen.
 - **Statisk export:** Resultatet blir vanliga filer som vilken webbserver som helst kan leverera. De ska ligga i roten på en adress (`https://layerling.example.com/` eller `http://192.168.0.5:8080/`), inte i en undermapp och inte öppnas direkt från hårddisken; README-filen har stegen. Med en skrivbar mapp `store` bredvid `index.html` och PHP på servern blir det också gemensam lagring för designer.
 
-MCP-bryggan för AI-assistenter finns bara i utvecklingsservern, se [Bygga med AI](chapter:ai-with-mcp).
+MCP-bryggan för AI-assistenter finns bara i utvecklingsservern eller i en kopia som du själv driver och som slår på den, se [Bygga med AI](chapter:ai-with-mcp).
 
 ## Hjälp och återkoppling
 
-- I redigeraren har området {{ui:editor.group.help}} knappen {{ui:editor.guide}} med de viktigaste greppen och översikten över [kortkommandon](chapter:shortcuts). Varje avsnitt i snabbguiden har ett frågetecken som leder till rätt kapitel här.
+- I redigeraren har området {{ui:editor.group.help}} knappen {{ui:editor.guide}} med de viktigaste greppen och översikten över [kortkommandon](chapter:shortcuts). Varje avsnitt i snabbguiden har ett frågetecken som leder till rätt kapitel här. Överst i snabbguiden öppnar {{ui:guide.fullGuide}} den här handboken; kommandosökningen ([[Ctrl]]+[[K]]) hittar den också.
 
 ![Snabbguiden i redigeraren. Videor av andra listas överst, och varje avsnitt har ett frågetecken.](shot:quick-guide)
 

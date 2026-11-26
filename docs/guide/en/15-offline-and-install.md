@@ -12,7 +12,7 @@ On the start page a hint with {{ui:installHint.install}} appears if your browser
 - **Chrome and Edge:** Click the install icon at the right of the address bar, or choose "Install as app" in the browser menu.
 - **Safari on the Mac:** Menu "File", then "Add to Dock".
 - **Safari on iPhone and iPad:** Share icon, then "Add to Home Screen".
-- **Firefox:** cannot install apps. layerling still starts offline in a tab there.
+- **Firefox:** On Windows, from version 143, click the icon “Add tab to taskbar” at the right of the address bar; a private window does not have it. Your designs stay as they are. Elsewhere layerling still starts offline in a tab.
 
 You can close the hint on the start page with {{ui:installHint.dismiss}}. Starting the installed app a second time in Chrome or Edge brings the open window to the front instead of opening another one.
 
@@ -38,11 +38,11 @@ layerling is free software (AGPL-3.0) and can be run on your own computer or ser
 - **Docker:** For NAS devices and home servers, without Node.js needing to be installed. Every release comes as a ready-made image `henmedia/layerling` on Docker Hub (also `ghcr.io/henmedia/layerling`) for amd64 and arm64; `docker run -d -p 3000:3000 -v layerling-thumbnails:/app/.codex/project-thumbnails henmedia/layerling:latest` starts it, and on a NAS you search for it in the container manager's registry. The volume `layerling-thumbnails` keeps the preview pictures of the start page through an update; without it they are missing each time the container is created again, until you open the design.
 - **Static export:** The result is plain files that any web server can serve. They belong at the root of an address (`https://layerling.example.com/` or `http://192.168.0.5:8080/`), not in a subfolder and not opened from disk; the README has the steps. With a writable folder `store` next to `index.html` and PHP on the server it also becomes the shared storage for designs.
 
-The MCP bridge for AI assistants exists only in the development server, see [Building with an AI](chapter:ai-with-mcp).
+The MCP bridge for AI assistants exists only in the development server, or in a copy you host yourself that switches it on, see [Building with an AI](chapter:ai-with-mcp).
 
 ## Help and feedback
 
-- In the editor, the {{ui:editor.group.help}} area holds the {{ui:editor.guide}} with the most important moves and the overview of [keyboard shortcuts](chapter:shortcuts). Each section of the quick guide has a question mark that leads to the matching chapter here.
+- In the editor, the {{ui:editor.group.help}} area holds the {{ui:editor.guide}} with the most important moves and the overview of [keyboard shortcuts](chapter:shortcuts). Each section of the quick guide has a question mark that leads to the matching chapter here. At the top of the quick guide, {{ui:guide.fullGuide}} opens this guide; the command search ([[Ctrl]]+[[K]]) finds it too.
 
 ![The quick guide in the editor. Videos by others are listed at the top, and every section has a question mark.](shot:quick-guide)
 

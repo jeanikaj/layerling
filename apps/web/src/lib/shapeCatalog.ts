@@ -1,5 +1,5 @@
 import { canonicalizeShape } from "@/lib/workplaneShapes";
-import { regularPolygonAspect } from "@/lib/regularPolygonFootprint";
+import { polygonFlatAngle, regularPolygonAspect } from "@/lib/regularPolygonFootprint";
 import { normalizePolygonCornerRadius } from "@/lib/roundedPolygonGeometry";
 import { normalizePyramidTop } from "@/lib/pyramidGeometry";
 import { createLocalId } from "@/lib/localIds";
@@ -76,6 +76,7 @@ import {
   normalizeSpringHand,
   normalizeSpringWire,
 } from "@/lib/springGeometry";
+import { spiralSpringDimensions } from "@/lib/spiralSpringGeometry";
 import { FLAT_SPRING_DIMENSIONS, flatSpringSettings } from "@/lib/flatSpringGeometry";
 import {
   DEFAULT_STAR_HEIGHT,
@@ -145,7 +146,7 @@ import {
 } from "@/lib/teardropGeometry";
 import { DEFAULT_PORT_DEPTH, DEFAULT_PORT_PRESET, normalizePortClearance, normalizePortCorner, normalizePortProfile, PORT_PRESETS } from "@/lib/portGeometry";
 import { DEFAULT_LOFT, loftFieldsFromMeasures, loftFrameSize, normalizeLoftMeasures } from "@/lib/loftGeometry";
-import { DEFAULT_VASE_SIZE, normalizeVaseSettings } from "@/lib/vaseSettings";
+import { DEFAULT_VASE_SIZE, normalizeVaseSettings, vasePurposeChoice } from "@/lib/vaseSettings";
 import {
   DEFAULT_DOVETAIL_CLEARANCE,
   DEFAULT_DOVETAIL_DEPTH,
@@ -172,7 +173,7 @@ import {
   normalizeHingeScrewHoles,
   normalizeHingeSnapGrip,
 } from "@/lib/hingeGeometry";
-import { DEFAULT_GRIDFINITY_LIP, DEFAULT_GRIDFINITY_MAGNETS, DEFAULT_GRIDFINITY_TRAY_SIZE, DEFAULT_GRIDFINITY_TYPE, DEFAULT_GRIDFINITY_UNITS, gridfinityFootprintPatch, gridfinityGrowth, gridfinityPadding, gridfinitySize, normalizeGridfinityType } from "@/lib/gridfinityGeometry";
+import { DEFAULT_GRIDFINITY_LIP, DEFAULT_GRIDFINITY_MAGNETS, DEFAULT_GRIDFINITY_TRAY_SIZE, DEFAULT_GRIDFINITY_TYPE, DEFAULT_GRIDFINITY_UNITS, gridfinityFootprintPatch, gridfinityGrowth, gridfinitySize, normalizeGridfinityType } from "@/lib/gridfinityGeometry";
 import {
   DEFAULT_KNURL_ANGLE,
   DEFAULT_KNURL_CHAMFER,
@@ -221,10 +222,13 @@ import {
 import { t, type MessageKey } from "@/lib/i18n";
 import { torusTubeRatio } from "@/lib/torusShape";
 import type { ShapeAsset, ShapeCustomization, ShapeKind, WorkplaneShape } from "@/types/layerling";
+import { DEFAULT_PATTIES, DEFAULT_PATTIES_DEPTH, DEFAULT_PATTIES_HEIGHT, DEFAULT_PATTIES_WIDTH, normalizePatties } from "@/lib/pattiesPattern";
 import { DEFAULT_PULLEY_BELT_WIDTH, DEFAULT_PULLEY_BORE, DEFAULT_PULLEY_FLANGE, DEFAULT_PULLEY_FLANGE_RISE, DEFAULT_PULLEY_HUB_DIAMETER, DEFAULT_PULLEY_HUB_HEIGHT, DEFAULT_PULLEY_TEETH, normalizePulleyTeeth, pulleyFootprint, pulleyFromSize } from "@/lib/pulleyGeometry";
 import { DEFAULT_HIRTH_BORE, DEFAULT_HIRTH_DIAMETER, DEFAULT_HIRTH_HEIGHT, DEFAULT_HIRTH_TEETH, hirthRightAngleToothHeight, normalizeHirthBore, normalizeHirthSteepFlank, normalizeHirthTeeth, normalizeHirthToothHeight } from "@/lib/hirthGeometry";
 
 const SHAPE_LABEL_KEYS: Record<string, MessageKey> = {
+  planter: "vase.purposePot",
+  lampshade: "prop.vaseLamp",
   box: "shape.box",
   roundedBox: "shape.roundedBox",
   cylinder: "shape.cylinder",
@@ -239,6 +243,8 @@ const SHAPE_LABEL_KEYS: Record<string, MessageKey> = {
   iconTag: "shape.iconTag",
   qrCode: "shape.qrCode",
   sbcBoard: "shape.sbcBoard",
+  fan: "shape.fan",
+  roof: "shape.roof",
   "round-roof": "shape.roundRoof",
   "half-sphere": "shape.halfSphere",
   paraboloid: "shape.paraboloid",
@@ -253,6 +259,7 @@ const SHAPE_LABEL_KEYS: Record<string, MessageKey> = {
   gear: "shape.gear",
   hirth: "shape.hirth",
   pulley: "shape.pulley",
+  patties: "shape.patties",
   honeycomb: "shape.honeycomb",
   hinge: "shape.hinge",
   knurl: "shape.knurl",
@@ -320,6 +327,7 @@ export const toolbarShapeAssets: ToolbarShapeAsset[] = [
   { id: "star", name: "Star", src: "assets/editor/shape-icons-gray/star.png", menuIcon: "assets/editor/shape-icons-gray/star.png", kind: "star", color: "#f5a623" },
   { id: "heart", name: "Heart", src: "assets/editor/shape-icons-gray/heart.png", menuIcon: "assets/editor/shape-icons-gray/heart.png", kind: "heart", color: "#e0245e" },
   { id: "crescent", name: "Crescent", src: "assets/editor/shape-icons-gray/crescent.png", menuIcon: "assets/editor/shape-icons-gray/crescent.png", kind: "crescent", color: "#f5c518" },
+  { id: "patties", name: "Patties", src: "assets/editor/shape-icons-gray/patties.png", menuIcon: "assets/editor/shape-icons-gray/patties.png", kind: "patties", color: "#c9682e" },
   { id: "ruler", name: "Ruler", src: "assets/editor/shape-icons-gray/ruler.png", menuIcon: "assets/editor/shape-icons-gray/ruler.png", kind: "ruler", color: "#f2e4b8" },
 ];
 /**
@@ -376,8 +384,60 @@ export const sbcBoardAsset: ToolbarShapeAsset = {
 };
 
 /**
+ * The fan (Discussion #1962): a 5015 blower or an axial fan true to size, whose air openings and screw
+ * holes can reach out through a wall. The library entry places the default fan; the kind only names its picture.
+ */
+export const fanAsset: ToolbarShapeAsset = {
+  id: "fan",
+  name: "Fan",
+  src: "assets/editor/shape-icons-gray/fan.png",
+  menuIcon: "assets/editor/shape-icons-gray/fan.png",
+  kind: "box",
+  color: "#4f7fb8",
+};
+
+/**
+ * The roof (#1931): the three-sided polygon, put in lying on one flat side like Tinkercad's Roof, so a
+ * triangle lying on the plate is found by looking. People turned a wedge until it looked like one and then
+ * had no handle for the triangle's height; the polygon tile shows a hexagon. Underneath it is a polygon with
+ * `polygonRoof`, so its exact body and edges are the polygon's; the mark keeps its three sides and takes the side
+ * count out of its panel. `libraryAssetTurnX` lays it down as it is put in.
+ */
+export const roofAsset: ToolbarShapeAsset = {
+  id: "roof",
+  name: "Roof",
+  src: "assets/editor/shape-icons-gray/roof.png",
+  menuIcon: "assets/editor/shape-icons-gray/roof.png",
+  kind: "polygon",
+  color: "#3f9b8a",
+};
+
+/**
+ * The saved polygon defaults as the roof takes them: always three sides, a corner on top, and 20 mm each way
+ * as Tinkercad's Roof, so the triangle is as high as its base is wide (the regular triangle would be narrower).
+ */
+export function roofCustomization(customization: ShapeCustomization = {}): ShapeCustomization {
+  return { ...customization, sides: 3, polygonFlat: false, polygonRoof: true, width: ROOF_SIZE, depth: ROOF_SIZE, height: ROOF_SIZE };
+}
+
+const ROOF_SIZE = 20;
+
+/** The saved defaults a library entry starts from: the roof's are the polygon's, with three sides. */
+export function libraryAssetCustomization(asset: ShapeAsset, customization: ShapeCustomization = {}): ShapeCustomization {
+  return asset.id === roofAsset.id ? roofCustomization(customization) : customization;
+}
+
+/**
+ * The turn about its own X axis a library entry is set down with, in degrees (placementPatchForNewShape):
+ * the roof lies on one flat side with the corner on top, the rest stand as they are.
+ */
+export function libraryAssetTurnX(asset: ShapeAsset): number {
+  return asset.id === roofAsset.id ? 270 : 0;
+}
+
+/**
  * What the shape library lists: the catalogue, with the name tag, the icon tag and the QR code after the text,
- * and the SBC board after the port opening.
+ * the roof before the round roof, the plant pot and the lampshade after the vase, and the SBC board and the fan after the port opening.
  * The double countersink is not listed on its own: it is the countersink with "Both sides" switched on (#621). The
  * kind stays in the catalogue, so bodies that already are one, and the MCP, keep working.
  */
@@ -390,7 +450,41 @@ export const threadInsertLibraryAsset: ToolbarShapeAsset = {
   color: "#b69b46",
 };
 
-export const libraryShapeAssets: ToolbarShapeAsset[] = [threadInsertLibraryAsset, ...toolbarShapeAssets.flatMap((asset) => (asset.id === "text" ? [asset, nameTagAsset, iconTagAsset, qrCodeAsset] : asset.id === "port" ? [asset, sbcBoardAsset] : asset.id === "doubleCountersink" ? [] : [asset]))];
+/**
+ * A plant pot and a lampshade: the vase with another use (its settings' `purpose`), each an entry of its own in the
+ * library right after the vase, so they are found by what one wants to make. They are vases, not kinds of their own:
+ * the body shapes, the drain holes and the socket's carrier come from the vase's panel.
+ */
+export const planterAsset: ToolbarShapeAsset = {
+  id: "planter",
+  name: "Plant pot",
+  src: "assets/editor/shape-icons-gray/planter.png",
+  menuIcon: "assets/editor/shape-icons-gray/planter.png",
+  kind: "vase",
+  color: "#b5673c",
+};
+export const lampshadeAsset: ToolbarShapeAsset = {
+  id: "lampshade",
+  name: "Lampshade",
+  src: "assets/editor/shape-icons-gray/lampshade.png",
+  menuIcon: "assets/editor/shape-icons-gray/lampshade.png",
+  kind: "vase",
+  color: "#e9dfc8",
+};
+/** The use a vase's library entry starts it with. */
+const VASE_ASSET_PURPOSES: Record<string, string> = { planter: "topf", lampshade: "lampe" };
+
+/** The magnet pocket tool beside it: a pocket with a glue well for a round magnet (magnetPocket.ts). */
+export const magnetPocketLibraryAsset: ToolbarShapeAsset = {
+  id: "magnetPocket",
+  name: "Magnet pocket",
+  src: "assets/editor/shape-icons-gray/magnetPocket.svg",
+  menuIcon: "assets/editor/shape-icons-gray/magnetPocket.svg",
+  kind: "counterbore",
+  color: "#b04a4a",
+};
+
+export const libraryShapeAssets: ToolbarShapeAsset[] = [threadInsertLibraryAsset, magnetPocketLibraryAsset, ...toolbarShapeAssets.flatMap((asset) => (asset.id === "text" ? [asset, nameTagAsset, iconTagAsset, qrCodeAsset] : asset.id === "port" ? [asset, sbcBoardAsset, fanAsset] : asset.id === "vase" ? [asset, planterAsset, lampshadeAsset] : asset.id === "round-roof" ? [roofAsset, asset] :asset.id === "doubleCountersink" ? [] : [asset]))];
 
 /**
  * The colour a new shape of this asset starts with: the asset's own, unless the shape
@@ -440,7 +534,7 @@ function springFields(customization: ShapeCustomization, width: number, depth: n
   const quality = normalizeSpringQuality(customization.springQuality ?? DEFAULT_SPRING_QUALITY);
   if (customization.springForm === "flat") {
     const flat = flatSpringSettings(customization, width, depth);
-    return { springForm: "flat" as const, springPattern: flat.pattern, springEnds: flat.ends, springTurns: flat.turns, springWire: flat.wire, springQuality: quality };
+    return { springForm: "flat" as const, springPattern: flat.pattern, springEnds: flat.ends, springTurns: flat.turns, springWire: flat.wire, springQuality: quality, ...("inner" in flat ? { springInner: flat.inner, springHand: flat.hand } : {}) };
   }
   return {
     springTurns: normalizeSpringTurns(customization.springTurns ?? DEFAULT_SPRING_TURNS, Math.max(width, depth), height, customization.springWire),
@@ -539,6 +633,7 @@ export function shapeAssetDefaultDimensions(kind: ShapeKind) {
     return { width: 26, depth: 16, height: 20 };
   }
   if (kind === "hirth") return { width: DEFAULT_HIRTH_DIAMETER, depth: DEFAULT_HIRTH_DIAMETER, height: DEFAULT_HIRTH_HEIGHT };
+  if (kind === "patties") return { width: DEFAULT_PATTIES_WIDTH, depth: DEFAULT_PATTIES_DEPTH, height: DEFAULT_PATTIES_HEIGHT };
   // A GT2 pulley (Discussion #1319): its measures set its box, 20 teeth for a 6 mm belt by default.
   if (kind === "pulley") {
     const { width, depth, height } = pulleyFootprint({});
@@ -702,6 +797,7 @@ export function shapeAssetSpecialDefaults(kind: ShapeKind, dimensions = shapeAss
       pulleyHubDiameter: DEFAULT_PULLEY_HUB_DIAMETER,
     };
   }
+  if (kind === "patties") return { patties: { ...DEFAULT_PATTIES } };
   if (kind === "hirth") {
     const teeth = DEFAULT_HIRTH_TEETH;
     return {
@@ -795,6 +891,7 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     centerHoleSize: shape.centerHoleSize,
     hirthSteepFlank: shape.hirthSteepFlank,
     hirthReverse: shape.hirthReverse,
+    patties: shape.patties,
     pulleyBeltWidth: shape.pulleyBeltWidth,
     pulleyFlange: shape.pulleyFlange,
     pulleyFlangeRise: shape.pulleyFlangeRise,
@@ -841,6 +938,7 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     springForm: shape.springForm,
     springPattern: shape.springPattern,
     springEnds: shape.springEnds,
+    springInner: shape.springInner,
     starPoints: shape.starPoints,
     starInnerSize: shape.starInnerSize,
     starOuterFillet: shape.starOuterFillet,
@@ -882,6 +980,11 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     gridfinityHalfGrid: shape.gridfinityHalfGrid,
     gridfinityLargePlate: shape.gridfinityLargePlate,
     gridfinitySwallowtail: shape.gridfinitySwallowtail,
+    gridfinityClipNotches: shape.gridfinityClipNotches,
+    gridfinityPuzzle: shape.gridfinityPuzzle,
+    gridfinityPuzzleSides: shape.gridfinityPuzzleSides,
+    gridfinityPuzzleFit: shape.gridfinityPuzzleFit,
+    gridfinityClipCount: shape.gridfinityClipCount,
     gridfinitySwallowtailClearance: shape.gridfinitySwallowtailClearance,
     gridfinityLabelBack: shape.gridfinityLabelBack,
     gridfinityLabelFront: shape.gridfinityLabelFront,
@@ -940,6 +1043,7 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     gridfinityDividerPositionsX: shape.gridfinityDividerPositionsX,
     gridfinityDividerPositionsZ: shape.gridfinityDividerPositionsZ,
     gridfinityCompartmentLabels: shape.gridfinityCompartmentLabels,
+    gridfinityCompartmentSplits: shape.gridfinityCompartmentSplits,
     gridfinityOpenings: shape.gridfinityOpenings,
     gridfinityOpeningCorner: shape.gridfinityOpeningCorner,
     gridfinityOpeningCornerSize: shape.gridfinityOpeningCornerSize,
@@ -982,6 +1086,8 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     portProfile: shape.portProfile,
     portClearance: shape.portClearance,
     cornerFillet: shape.cornerFillet,
+    polygonFlat: shape.polygonFlat,
+    polygonRoof: shape.polygonRoof,
     cornerFillets: shape.cornerFillets,
     topBottomFillet: shape.topBottomFillet,
     bottomFillet: shape.bottomFillet,
@@ -1007,7 +1113,9 @@ export function sceneShape(shape: Partial<WorkplaneShape> & Pick<WorkplaneShape,
     paint: shape.paint,
     vase: shape.vase,
     vasePartOf: shape.vasePartOf,
+    vaseAssembled: shape.vaseAssembled,
     gridfinityKeyOf: shape.gridfinityKeyOf,
+    gridfinityClipOf: shape.gridfinityClipOf,
     importedMesh: shape.importedMesh,
     imagePlate: shape.imagePlate,
     sketchProfile: shape.sketchProfile,
@@ -1039,13 +1147,30 @@ export function clipboardShape(entry: unknown): WorkplaneShape | null {
   return canonicalizeShape({ ...sceneShape({ ...shape, name, kind, color }), ...shape, name, kind, color });
 }
 
+/**
+ * A new Polygon with a flat side in front (Discussion #1787) starts regular too: the hexagon's default footprint
+ * with its corners turned by half a side, so length and width change places.
+ */
+function flatPolygonDefaultDimensions(sides: number | undefined) {
+  const count = Math.max(3, Math.round(sides ?? 6));
+  const aspect = regularPolygonAspect(count, polygonFlatAngle(count, true));
+  const longest = Math.max(aspect.width, aspect.depth);
+  return { width: (20 * aspect.width) / longest, depth: (20 * aspect.depth) / longest, height: 20 };
+}
+
 export function makeShapeFromAsset(
   asset: ShapeAsset,
   point?: { x: number; z: number; elevation?: number },
   customization: ShapeCustomization = {},
 ): WorkplaneShape {
   // A flat spring (#1076) starts as a strip on the plate, not in the coil's upright box.
-  const defaults = asset.kind === "spring" && customization.springForm === "flat" ? FLAT_SPRING_DIMENSIONS : shapeAssetDefaultDimensions(asset.kind);
+  // A plant pot or a lampshade: the vase with that use, in the size and with the settings the use starts with.
+  const vasePurpose = asset.kind === "vase" ? VASE_ASSET_PURPOSES[asset.id] : undefined;
+  const vaseStart = vasePurpose ? vasePurposeChoice(normalizeVaseSettings(undefined), vasePurpose, DEFAULT_VASE_SIZE) : null;
+  const defaults = asset.kind === "spring" && customization.springForm === "flat" ? (customization.springPattern === "spiral" ? spiralSpringDimensions(customization) : FLAT_SPRING_DIMENSIONS)
+    : asset.kind === "polygon" && customization.polygonFlat ? flatPolygonDefaultDimensions(customization.sides)
+      : vaseStart?.size ? { width: vaseStart.size.width, depth: vaseStart.size.width, height: vaseStart.size.height }
+        : shapeAssetDefaultDimensions(asset.kind);
   // Ein Gewinde bekommt seinen Platzbedarf aus Durchmesser und Art. Eine
   // eingetragene Breite waere hier nicht nur ueberfluessig, sondern falsch:
   // sie wuerde spaeter als Zug am Anfasser gelesen und den Durchmesser
@@ -1141,6 +1266,9 @@ export function makeShapeFromAsset(
     gridfinityHalfGrid: customization.gridfinityHalfGrid,
     gridfinityLargePlate: customization.gridfinityLargePlate,
     gridfinitySwallowtail: customization.gridfinitySwallowtail,
+    gridfinityClipNotches: customization.gridfinityClipNotches,
+    gridfinityPuzzle: customization.gridfinityPuzzle,
+    gridfinityPuzzleFit: customization.gridfinityPuzzleFit,
     ...gridfinityPaddingFields,
   }) : null;
   // New gears get involute teeth (#201); their size follows the module, so other teeth keep module 2.
@@ -1228,7 +1356,7 @@ export function makeShapeFromAsset(
     textKerning: asset.kind === "text" ? customization.textKerning ?? true : undefined,
     steps: asset.kind === "box" ? 10 : asset.kind === "sphere" ? customization.steps ?? 24 : asset.kind === "halfSphere" || asset.kind === "paraboloid" ? customization.steps ?? 32 : asset.kind === "torus" ? customization.steps : undefined,
     torusTubeRatio: asset.kind === "torus" ? customization.torusTubeRatio ?? torusTubeRatio({ width, depth, height }) : undefined,
-    sides: asset.kind === "cylinder" || asset.kind === "ellipse" || asset.kind === "slot" || asset.kind === "cone" || asset.kind === "curvedCone" || asset.kind === "tube" || asset.kind === "ring" || asset.kind === "counterbore" || asset.kind === "countersink" || asset.kind === "finishingWasher" || asset.kind === "teardrop" || asset.kind === "torus" ? customization.sides : asset.kind === "roundRoof" ? customization.sides ?? 64 : asset.kind === "pyramid" ? customization.sides ?? 4 : asset.kind === "polygon" ? customization.sides ?? 6 : undefined,
+    sides: asset.kind === "cylinder" || asset.kind === "ellipse" || asset.kind === "slot" || asset.kind === "cone" || asset.kind === "curvedCone" || asset.kind === "tube" || asset.kind === "ring" || asset.kind === "counterbore" || asset.kind === "countersink" || asset.kind === "doubleCountersink" || asset.kind === "finishingWasher" || asset.kind === "teardrop" || asset.kind === "torus" ? customization.sides : asset.kind === "roundRoof" ? customization.sides ?? 64 : asset.kind === "pyramid" ? customization.sides ?? 4 : asset.kind === "polygon" ? customization.sides ?? 6 : undefined,
     bevel: asset.kind === "cylinder" || asset.kind === "ellipse" || asset.kind === "slot" ? 0 : asset.kind === "tube" || asset.kind === "ring" ? customization.bevel ?? 4 : asset.kind === "text" ? customization.bevel : undefined,
     segments: asset.kind === "cylinder" || asset.kind === "ellipse" || asset.kind === "slot" ? 1 : asset.kind === "text" ? customization.segments : undefined,
     topRadius: asset.kind === "cone" ? customization.topRadius ?? 0 : undefined,
@@ -1273,6 +1401,8 @@ export function makeShapeFromAsset(
     pulleyHubDiameter: pulleyFields?.pulleyHubDiameter,
     hirthSteepFlank: asset.kind === "hirth" ? normalizeHirthSteepFlank(customization.hirthSteepFlank) : undefined,
     hirthReverse: asset.kind === "hirth" && normalizeHirthSteepFlank(customization.hirthSteepFlank) !== undefined && customization.hirthReverse === true ? true : undefined,
+    // A pattern plate carries all its settings, each within its range, so every reader finds them whole.
+    patties: asset.kind === "patties" ? normalizePatties(customization.patties) : undefined,
     gearType,
     gearRim,
     helixAngle: asset.kind === "gear" ? normalizeGearHelixAngle(customization.helixAngle ?? DEFAULT_GEAR_HELIX_ANGLE) : undefined,
@@ -1330,6 +1460,10 @@ export function makeShapeFromAsset(
     gridfinityHalfGrid: asset.kind === "gridfinity" ? customization.gridfinityHalfGrid : undefined,
     gridfinityLargePlate: asset.kind === "gridfinity" ? customization.gridfinityLargePlate : undefined,
     gridfinitySwallowtail: asset.kind === "gridfinity" ? customization.gridfinitySwallowtail : undefined,
+    gridfinityClipNotches: asset.kind === "gridfinity" ? customization.gridfinityClipNotches : undefined,
+    gridfinityPuzzle: asset.kind === "gridfinity" ? customization.gridfinityPuzzle : undefined,
+    gridfinityPuzzleFit: asset.kind === "gridfinity" ? customization.gridfinityPuzzleFit : undefined,
+    gridfinityClipCount: asset.kind === "gridfinity" ? customization.gridfinityClipCount : undefined,
     gridfinitySwallowtailClearance: asset.kind === "gridfinity" ? customization.gridfinitySwallowtailClearance : undefined,
     gridfinityLabelBack: asset.kind === "gridfinity" ? customization.gridfinityLabelBack : undefined,
     gridfinityLabelFront: asset.kind === "gridfinity" ? customization.gridfinityLabelFront : undefined,
@@ -1416,7 +1550,7 @@ export function makeShapeFromAsset(
     knurlDepth: asset.kind === "knurl" ? normalizeKnurlDepth(customization.knurlDepth ?? DEFAULT_KNURL_DEPTH, width) : undefined,
     knurlAngle: asset.kind === "knurl" ? normalizeKnurlAngle(customization.knurlAngle ?? DEFAULT_KNURL_ANGLE) : undefined,
     knurlChamfer: asset.kind === "knurl" ? normalizeKnurlChamfer(customization.knurlChamfer ?? DEFAULT_KNURL_CHAMFER, width, height) : undefined,
-    vase: asset.kind === "vase" ? normalizeVaseSettings(undefined) : undefined,
+    vase: asset.kind === "vase" ? normalizeVaseSettings(vaseStart?.patch) : undefined,
     dovetailNeckWidth: asset.kind === "dovetail" ? normalizeDovetailNeckWidth(customization.dovetailNeckWidth, width) : undefined,
     dovetailClearance: asset.kind === "dovetail" ? normalizeDovetailClearance(customization.dovetailClearance ?? DEFAULT_DOVETAIL_CLEARANCE) : undefined,
     screwHoleShaft: asset.kind === "counterbore" || asset.kind === "countersink" || asset.kind === "doubleCountersink" ? normalizeScrewHoleShaft(customization.screwHoleShaft ?? DEFAULT_SCREW_HOLE_SHAFT, width)
@@ -1434,7 +1568,10 @@ export function makeShapeFromAsset(
     cornerFillet: asset.kind === "roundedBox" ? normalizeCornerFillet(customization.cornerFillet ?? DEFAULT_ROUNDED_BOX_CORNER_FILLET, Math.min(width, depth) / 2)
       : asset.kind === "port" ? normalizePortCorner(customization.cornerFillet, width, height, customization.portProfile)
         // A polygon's rounded corners (roundedPolygonGeometry.ts); left out while they are sharp.
-        : asset.kind === "polygon" && (customization.cornerFillet ?? 0) > 0 ? normalizePolygonCornerRadius(customization.cornerFillet, width, depth, customization.sides ?? 6) : undefined,
+        : asset.kind === "polygon" && (customization.cornerFillet ?? 0) > 0 ? normalizePolygonCornerRadius(customization.cornerFillet, width, depth, customization.sides ?? 6, Boolean(customization.polygonFlat)) : undefined,
+    // A polygon with a flat side in front (Discussion #1787); left out when off, as the editor leaves it.
+    polygonFlat: asset.kind === "polygon" && customization.polygonFlat ? true : undefined,
+    polygonRoof: asset.kind === "polygon" && customization.polygonRoof ? true : undefined,
     portProfile: asset.kind === "port" ? normalizePortProfile(customization.portProfile) : undefined,
     portClearance: asset.kind === "port" && normalizePortClearance(customization.portClearance) > 0 ? normalizePortClearance(customization.portClearance) : undefined,
     ...(asset.kind === "roundedBox"
@@ -1475,6 +1612,16 @@ const GENERATED_NAME_KEYS: Record<string, MessageKey> = {
   "QR code": "shape.qrCode",
   "QR plate": "shape.qrPlate",
   Board: "sbcBoard.board",
+  // The roof (#1931) is a polygon from the library, not the toolbar, so its name is not found among the toolbar shapes.
+  Roof: "shape.roof",
+  // Made by a tool or a window of their own, under a kind that no library entry of that name has.
+  "Sketch sweep": "sketch.sweep",
+  Loft: "shape.loft",
+  "Name tag": "shape.nameTag",
+  Fan: "shape.fan",
+  "SBC board": "sbcBoard.title",
+  "Thread insert": "threadInsert.title",
+  "Magnet pocket": "magnetPocket.title",
 };
 
 /**
@@ -1483,20 +1630,22 @@ const GENERATED_NAME_KEYS: Record<string, MessageKey> = {
  * "Sketch extrusion") is shown in the interface language. The stored name
  * does not change, so switching the language switches these names along.
  */
-export function displayShapeName(shape: Pick<WorkplaneShape, "name" | "kind">): string {
+export function displayShapeName(shape: Pick<WorkplaneShape, "name" | "kind" | "polygonRoof">): string {
   const name = shape.name?.trim() ?? "";
   const generated = GENERATED_NAME_KEYS[name];
   if (generated) return t(generated);
-  const asset = toolbarShapeAssets.find((entry) => entry.kind === shape.kind && entry.name === name);
+  // The library has entries the toolbar does not: the plant pot and the lampshade are vases under their own name.
+  const asset = toolbarShapeAssets.find((entry) => entry.kind === shape.kind && entry.name === name) ?? libraryShapeAssets.find((entry) => entry.kind === shape.kind && entry.name === name);
   if (asset) return shapeAssetLabel(asset);
+  if (!name && shape.kind === "polygon" && shape.polygonRoof) return shapeAssetLabel(roofAsset);
   return name || shapeAssetLabel({ id: shape.kind, name: shape.kind });
 }
 
 /** Whether the shape carries a name somebody gave it, not one the editor handed out ("Box", "Group"). */
-export function hasOwnShapeName(shape: Pick<WorkplaneShape, "name" | "kind">): boolean {
+export function hasOwnShapeName(shape: Pick<WorkplaneShape, "name" | "kind" | "polygonRoof">): boolean {
   const name = shape.name?.trim() ?? "";
   if (!name || GENERATED_NAME_KEYS[name]) return false;
-  return !toolbarShapeAssets.some((entry) => entry.kind === shape.kind && (entry.name === name || shapeAssetLabel(entry) === name));
+  return ![...toolbarShapeAssets, ...libraryShapeAssets].some((entry) => entry.kind === shape.kind && (entry.name === name || shapeAssetLabel(entry) === name));
 }
 
 /**
@@ -1505,7 +1654,7 @@ export function hasOwnShapeName(shape: Pick<WorkplaneShape, "name" | "kind">): b
  * so confirming it untouched must not pin "Quader" onto a shape stored as
  * "Box". An emptied field stores "", which shows the default name again.
  */
-export function renamedShapeName(shape: Pick<WorkplaneShape, "name" | "kind">, draft: string): string | undefined {
+export function renamedShapeName(shape: Pick<WorkplaneShape, "name" | "kind" | "polygonRoof">, draft: string): string | undefined {
   const trimmed = draft.trim();
   return trimmed === displayShapeName(shape) ? undefined : trimmed;
 }
@@ -1517,10 +1666,13 @@ export function renamedShapeName(shape: Pick<WorkplaneShape, "name" | "kind">, d
  */
 const SHAPE_MENU_LABEL_KEYS: Record<string, MessageKey> = {
   thread: "shape.threadMenu",
+  // "Patties" alone says nothing to someone who looks for a pattern or a stencil.
+  patties: "shape.pattiesMenu",
 };
 
 export function shapeAssetMenuLabel(asset: Pick<ShapeAsset, "id" | "name">): string {
   if (asset.id === "threadInsert") return t("threadInsert.title");
+  if (asset.id === "magnetPocket") return t("magnetPocket.title");
   const key = SHAPE_MENU_LABEL_KEYS[asset.id];
   return key ? t(key) : shapeAssetLabel(asset);
 }

@@ -23,7 +23,7 @@ All your designs later appear on the start page with a preview picture. They are
 - **In the middle** lies the workplane. This is where you place shapes, pull them into form and see the result.
 - **On the right** is the **properties panel** of the selected shape: colour, dimensions, position and whatever else makes up the shape. Typing numbers is more exact than dragging.
 - **On the left** is the **view bar** with the **view cube** above it. They move you around the scene, more in [View and workplane](chapter:view-and-workplane).
-- **Beside the view bar** the **object list** opens ([[Ctrl]]+[[U]]), with every shape of the design. More in [Select and arrange](chapter:select-and-arrange).
+- **Beside the view bar** the **object list** opens ([[Ctrl]]+[[Shift]]+[[O]]), with every shape of the design. More in [Select and arrange](chapter:select-and-arrange).
 - **To the right of the view cube** the **status message** appears when layerling has something to tell you, such as what a tool expects from you next. When there is nothing to say, it is not there. After a step such as a union it says briefly what was done and offers {{ui:shortcuts.undo}}; {{ui:workspace.showStepNotices}} in the settings switches these messages off.
 - **Tool windows** open over the workplane when you start a tool such as fillet, pattern or hollow. Drag one aside by its title bar when it covers something.
 - **At the very top** you switch between {{ui:editor.modeGeometry}} and {{ui:editor.modeSketch}}, rename the design and choose language and colour scheme.
@@ -34,7 +34,7 @@ Hover over a button to see its name. If you are not sure what a button does, cli
 
 ### Paste
 
-{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) adds what you copied with {{ui:editor.tool.copy}} to the design. {{ui:common.duplicate}} copies and pastes in one step. A paste puts each part a little beside where it was. Parts that come from another program can land far from the plate, and for those there is {{ui:workspace.pasteCentered}} in the settings, under {{ui:workspace.appearance}}: a paste then sets the parts together in the middle of the workplane and drops them onto it.
+{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) adds what you copied with {{ui:editor.tool.copy}} to the design. {{ui:common.duplicate}} copies and pastes in one step. A paste puts each part a little beside where it was. Parts that come from another program can land far from the plate, and for those there is {{ui:workspace.pasteCentered}} in the settings, under {{ui:workspace.controls}}: a paste then sets the parts together in the middle of the workplane and drops them onto it.
 
 ### Delete
 

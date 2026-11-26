@@ -12,7 +12,7 @@ Si tu navegador lo permite, en la página de inicio aparece un aviso con {{ui:in
 - **Chrome y Edge:** Haz clic en el icono de instalar que hay a la derecha de la barra de direcciones, o elige «Instalar como aplicación» en el menú del navegador.
 - **Safari en el Mac:** Menú «Archivo» y luego «Añadir al Dock».
 - **Safari en iPhone y iPad:** Icono de compartir y luego «Añadir a pantalla de inicio».
-- **Firefox:** no puede instalar aplicaciones. Aun así, layerling se abre en él sin conexión, en una pestaña.
+- **Firefox:** en Windows, desde la versión 143, haz clic en el icono «Añadir pestaña a la barra de tareas», a la derecha de la barra de direcciones; en una ventana privada no aparece. Tus diseños se quedan como están. En los demás sistemas, layerling se abre sin conexión en una pestaña.
 
 Puedes cerrar el aviso de la página de inicio con {{ui:installHint.dismiss}}. Si abres por segunda vez la aplicación instalada en Chrome o Edge, trae al frente la ventana que ya está abierta en lugar de abrir otra.
 
@@ -38,11 +38,11 @@ layerling es software libre (AGPL-3.0) y puedes hacerlo funcionar en tu propio o
 - **Docker:** Para NAS y servidores domésticos, sin necesidad de instalar Node.js. Cada versión se publica como imagen lista para usar, `henmedia/layerling`, en Docker Hub (y también como `ghcr.io/henmedia/layerling`), para amd64 y arm64; `docker run -d -p 3000:3000 -v layerling-thumbnails:/app/.codex/project-thumbnails henmedia/layerling:latest` la pone en marcha, y en un NAS la buscas en el registro del gestor de contenedores. El volumen `layerling-thumbnails` conserva las imágenes de vista previa de la página de inicio al actualizar; sin él, desaparecen cada vez que se vuelve a crear el contenedor, hasta que abres el diseño.
 - **Exportación estática:** El resultado son archivos normales que cualquier servidor web puede servir. Tienen que ir en la raíz de una dirección (`https://layerling.example.com/` o `http://192.168.0.5:8080/`), no en una subcarpeta ni abiertos desde el disco; el README explica los pasos. Con una carpeta `store` con permiso de escritura junto a `index.html` y PHP en el servidor, se convierte además en el almacenamiento compartido de los diseños.
 
-El puente MCP para asistentes de IA solo existe en el servidor de desarrollo: consulta [Construir con una IA](chapter:ai-with-mcp).
+El puente MCP para asistentes de IA solo existe en el servidor de desarrollo o en una copia que alojes tú mismo y que lo active: consulta [Construir con una IA](chapter:ai-with-mcp).
 
 ## Ayuda y comentarios
 
-- En el editor, el grupo {{ui:editor.group.help}} contiene la {{ui:editor.guide}}, con los pasos más importantes, y el resumen de los [atajos de teclado](chapter:shortcuts). Cada apartado de la guía rápida tiene un signo de interrogación que lleva al capítulo correspondiente de esta guía.
+- En el editor, el grupo {{ui:editor.group.help}} contiene la {{ui:editor.guide}}, con los pasos más importantes, y el resumen de los [atajos de teclado](chapter:shortcuts). Cada apartado de la guía rápida tiene un signo de interrogación que lleva al capítulo correspondiente de esta guía. Arriba en la guía rápida, {{ui:guide.fullGuide}} abre esta guía; la búsqueda de comandos ([[Ctrl]]+[[K]]) también la encuentra.
 
 ![La guía rápida en el editor. Arriba aparecen vídeos hechos por otras personas, y cada apartado tiene un signo de interrogación.](shot:quick-guide)
 

@@ -102,6 +102,7 @@ Die KI arbeitet mit denselben Funktionen wie du, sie läuft über denselben Weg 
 | `layerling_place_on_face` | setzt Objekte auf eine Fläche eines anderen, auch schräg, wie die Taste C |
 | `layerling_perforate_face` | schneidet ein Lochmuster in eine ebene Fläche oder rund um die Wand eines Zylinders, Rohrs oder einer Bohrung, die Löcher bleiben als Aussparungen mit dem Körper gruppiert |
 | `layerling_thread_insert` | erzeugt das Loch für einen einzuschmelzenden Gewindeeinsatz (M2 bis M8, 1/4-20 oder eigene Größe) in einer ebenen Fläche oder der Außenwand eines Zylinders oder Rohrs, nachdem geprüft wurde, ob die Wand neben dem Loch und die Tiefe dahinter ausreichen; das Loch bleibt als Aussparung mit dem Körper gruppiert |
+| `layerling_magnet_pocket` | schneidet eine Tasche für einen runden Magneten (2 × 1 bis 12 × 3 mm oder eigene Größe) mit einer schmaleren Klebermulde darunter in eine ebene Fläche oder die Außenwand eines Zylinders oder Rohrs, nach derselben Prüfung, und dieselbe Tasche gegenüber im Teil, das dort anliegt; jede bleibt eine mit ihrem Teil gruppierte Aussparung |
 | `layerling_sweep_sketch` | zieht einen rechteckigen oder runden Querschnitt entlang eines Pfades aus Punkten als einen exakten Körper; ein geschlossener Pfad ergibt einen Ring |
 | `layerling_push_face` | zieht eine ebene Fläche heraus oder schneidet eine Tasche hinein, mit Rand zur Kante und Eckenradius; das neue Teil ist ein Skizzenkörper, mit dem Körper gruppiert, oder mit `separate` ein freier eigener Körper |
 | `layerling_paint` | bemalt Teile eines Körpers in eigenen Farben für den Mehrfarbdruck (Bemalen): eine Fläche bis an ihre scharfen Kanten füllen, ein runder Fleck oder ein Lasso in einer flachen Ansicht; radieren, alles abnehmen; mit dem Körper gespeichert und im 3MF als bemalte Flächen |
@@ -121,7 +122,7 @@ Die KI arbeitet mit denselben Funktionen wie du, sie läuft über denselben Weg 
 | `layerling_flexi_joints` | teilt einen flachen Körper in Glieder mit mitgedruckten Gelenken, die zur Seite schwenken (Flexi-Gelenke) |
 | `layerling_make_lid` | macht einen Deckel für einen oben offenen Körper: eingesteckt, übergestülpt oder flach, mit wählbarer Passung und auf Wunsch mit Magneten (Deckel) |
 | `layerling_add_container_grid` | adds a custom grid of dividers inside an empty box, with unequal spacing, removable sections and clearance below sliding lid guides (Container grid) |
-| `layerling_make_mold` | macht aus einem Urmodell eine Gussform oder einen Prägestempel mit Matrize: zweiteilige Form, Silikon-Gießrahmen, offene Form oder Stempel und Matrize (Gussform & Stanze) |
+| `layerling_make_mold` | macht aus einem Urmodell eine Gussform oder einen Prägestempel mit Matrize: zweiteilige Form (auch in vier Teilen, stehend durch die Trennfuge gegossen, mit Dochtloch), Silikon-Gießrahmen, Silikon-Hautform mit Stützschale, Kernform für ein Gefäß, zwei Wannen für Formhälften, offene Form oder Stempel und Matrize; die Antwort sagt, was anzumischen ist (Gussform & Stanze) |
 | `layerling_make_cable_channel` | legt einen runden Kanal für ein Kabel durch einen Körper, von einem Eingang zu einem Ausgang, und sucht den Weg mit sanften Bögen selbst (Kabelkanal) |
 | `layerling_loft_sketches` | verbindet zwei Skizzenkörper zu einem Übergang von einem Umriss zum anderen (Übergang aus Skizzen) |
 | `layerling_separate_parts` | zerlegt eine Form mit losen Teilen, einen Skizzenkörper in einen Körper je Umriss |
@@ -136,11 +137,12 @@ Die KI arbeitet mit denselben Funktionen wie du, sie läuft über denselben Weg 
 | `layerling_delete_faces` | löscht Flächen und schließt die Lücke |
 | `layerling_array_objects` | vervielfältigt in einer Reihe, einem Raster oder auf einem Kreis |
 | `layerling_bundle_objects` | bündelt Objekte wie Strg+B: sie bewegen sich zusammen, behalten Farbe und Art und gehen einzeln in den Export |
-| `layerling_layer_text` | macht aus einem Text einen Stapel aus Schichten für den Mehrfarbdruck (Buchstaben, breitere Ränder, Platte ohne Löcher) oder baut einen Stapel neu, mit Loch für den Schlüsselring, Ecken je Schicht und gerundeter oder abgeschrägter Buchstabenkante; mit einer Namensliste ein Schild je Name |
+| `layerling_layer_text` | macht aus einem Text einen Stapel aus Schichten für den Mehrfarbdruck (Buchstaben, breitere Ränder, Platte ohne Löcher) oder baut einen Stapel neu, mit Loch für den Schlüsselring, Ecken je Schicht und gerundeter oder abgeschrägter Buchstabenkante; mit einer Namensliste ein Schild je Name; `flush` senkt die Schichten in die unterste ein, sodass alle Farben auf einer ebenen Fläche enden (true, false oder eine Tiefe von 0,2 bis 5 mm) |
 | `layerling_text_block` | macht einen Textblock: Ein Text wird die erste von mehreren Zeilen, jede ein eigener Text unter der darüber, links, mittig oder rechts ausgerichtet, jede Zeile gleich groß oder kleiner |
-| `layerling_layer_icon` | macht aus einem SVG-Symbol (dem Text der Datei oder einem extrudierten Skizzenkörper) ein Symbolschild in Schichten für den Mehrfarbdruck - Symbol, breitere Ränder, Platte ohne Löcher - oder baut eines mit neuer Breite oder neuen Schichten neu; mit einer Anzahl füllt es die Platte mit Kopien |
+| `layerling_layer_icon` | macht aus einem SVG-Symbol (dem Text der Datei oder einem extrudierten Skizzenkörper) ein Symbolschild in Schichten für den Mehrfarbdruck - Symbol, breitere Ränder, Platte ohne Löcher - oder baut eines mit neuer Breite oder neuen Schichten neu; mit einer Anzahl füllt es die Platte mit Kopien; `flush` senkt die Schichten in die unterste ein, sodass alle Farben auf einer ebenen Fläche enden (true, false oder eine Tiefe von 0,2 bis 5 mm) |
 | `layerling_create_qr_code` | erzeugt aus einem Text oder einer Webadresse einen QR-Code wie {{ui:shape.qrCode}} in der Formenbibliothek - den Code allein, erhaben auf einer Platte oder graviert, mit Fehlerkorrektur, Breite, Höhe, Ruhezone und auf Wunsch als Aussparung; warnt, wenn ein Modul unter 0,8 mm kommt |
 | `layerling_create_sbc_board` | setzt eine SBC-Platine in echter Größe, wie {{ui:shape.sbcBoard}} in der Formenbibliothek - Raspberry Pi 5, 4, 3 B+, Zero 2 W oder BIGTREETECH Pi, mit Löchern und Anschlüssen, dem Spiel um die Randanschlüsse, der Position und als Aussparung für ein Gehäuse |
+| `layerling_create_fan` | setzt einen Lüfter in echter Größe, wie {{ui:shape.fan}} in der Formenbibliothek - den 5015-Radiallüfter oder den 30 x 10 Axiallüfter; Einlass, Auslass und Schraubenlöcher können hinausreichen, um eine Wand zu durchschneiden |
 | `layerling_reference_image` | legt ein Referenzbild aus einem Bild an wie {{ui:import.referenceImage}} oder verschiebt, dreht, kalibriert (zwei Punkte des Bildes und ihr wirklicher Abstand), blendet oder sperrt eines - eine Hilfe, die nie exportiert oder gedruckt wird; `trace` macht aus dem dunklen oder hellen Teil einen Skizzenkörper, der darauf steht |
 | `layerling_measure_section` | misst auf einer Schnittebene zwischen zwei Punkten, die am Umriss einrasten – Wandstärken, Spalte, Passungen |
 | `layerling_show_overhangs` | schaltet die Überhang-Schraffur ein oder aus, setzt den Winkel und nennt je Körper die Fläche, die Stützen bräuchte |
@@ -160,6 +162,7 @@ Die KI arbeitet mit denselben Funktionen wie du, sie läuft über denselben Weg 
 | `layerling_remove_notes` | löscht Notizen nach Kennung |
 | `layerling_inspect_errors` | zeigt die letzte Meldung und den letzten Fehler, dazu die Meldungen und Fehler der Sitzung |
 | `layerling_wrap_around_cylinder` | wickelt einen flach liegenden Körper, etwa ein SVG oder Text, um einen Zylinder, nach außen oder als Gravur nach innen |
+| `layerling_take_rotation_as_zero` | nimmt die jetzige Lage eines gedrehten Netzes als 0: der Körper bleibt stehen, seine Winkel sind 0 |
 | `layerling_texture_surface` | bringt eine Oberfläche auf einen Körper: Rillen, Rändel, Waben oder Noppen, für besseren Halt oder fürs Auge, und ändert oder entfernt sie später |
 | `layerling_simplify_mesh` | verringert die Dreieckszahl eines importierten Netzes, auf einen Anteil in Prozent oder auf eine Anzahl Dreiecke |
 | `layerling_make_exact` | macht aus einem importierten Netz einen exakten CAD-Körper: Ebenen, Zylinder, Kegel, Kugeln und Tori werden echte Flächen, damit Kanten sauber abrunden und STEP sie trägt |
@@ -169,6 +172,7 @@ Die KI arbeitet mit denselben Funktionen wie du, sie läuft über denselben Weg 
 | `layerling_delete_custom_shape` | entfernt eine eigene Form; eingesetzte Körper bleiben |
 | `layerling_show_workplane` | blendet die Platte mit ihrem Gitter aus und wieder ein, etwa für ein Bild der Unterseite (nur die Ansicht) |
 | `layerling_focus_mode` | schaltet den Fokusmodus ein und aus: blendet Titel- und Fußzeile für mehr Platz aus (nur der Rahmen des Editors) |
+| `layerling_detail_level` | liest oder setzt den Detailgrad von Editor oder Skizze: wie viele Hilfsanzeigen rund um das Modell gezeichnet werden (nur die Ansicht) |
 | `layerling_set_section_view` | schneidet die Ansicht entlang einer Ebene auf, um ins Innere zu sehen (nur die Ansicht, nichts wird zerteilt) |
 | `layerling_measurements` | blendet die Messungen des Maßbands ein oder aus und listet sie mit ihren Längen auf; dazu die Maße um die Auswahl, wie [[Q]]; tippt auch eine Länge für eine Messung ein, die den Körper an ihrem Ende verschiebt wie ein Klick auf ihre Zahl |
 | `layerling_measure_angle` | misst einen Winkel wie der Winkelmesser: an der Ecke von drei Punkten oder zwischen zwei ebenen Flächen, und zeigt ihn in der Ansicht |
@@ -185,6 +189,7 @@ Die KI arbeitet mit denselben Funktionen wie du, sie läuft über denselben Weg 
 | `layerling_export_drawing` | macht die Werkstattzeichnung des Exports „2D“: drei Ansichten im Maßstab 1:1 auf einem ISO-Blatt mit Gesamtmaßen und einer Tabelle der runden Bohrungen, als SVG-Text oder PDF |
 | `layerling_export_mesh` | schreibt die Datei des Exportfensters als STL, 3MF, OBJ, SVG (Draufsicht, Aufstandsfläche oder sichtbare Kanten) oder DXF für den Laserschnitt, aus denselben Körpern; an einen Pfad auf diesem Rechner oder als Base64 |
 | `layerling_save_project` | speichert den ganzen bearbeitbaren Entwurf als .lyl-Datei an einem Pfad auf dem Rechner, auf dem der MCP-Server läuft, ohne Dialog; eine vorhandene Datei wird nur mit `overwrite` ersetzt, geschrieben wird über eine temporäre Datei, und das Ziel von Strg+S im Editor bleibt, wie es war |
+| `layerling_open_project` | öffnet eine gespeicherte .lyl-Datei von einem Pfad auf dem Rechner, auf dem der MCP-Server läuft, als neuen Entwurf, so wie wenn du die Datei selbst öffnest; der neue Entwurf ist nicht mit der Datei verbunden, Änderungen schreibt `layerling_save_project` mit demselben Pfad und `overwrite` zurück |
 | `layerling_list_attachments` | listet die an den Entwurf angehängten Dateien (Name, Art, Größe), wie das Fenster Anhänge sie zeigt |
 | `layerling_get_attachment` | liest eine angehängte Datei, ihre Bytes als base64, wie Herunterladen im Fenster |
 | `layerling_add_attachment` | hängt eine als base64 übergebene Datei an, mit den Prüfungen des Fensters; ein schon vorhandener Name wird nur mit `replace` überschrieben |

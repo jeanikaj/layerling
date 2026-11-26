@@ -3,17 +3,19 @@
 import { GuideHelpLink } from "@/components/GuideHelpLink";
 import { FocusModeBar } from "@/components/workplane/FocusModeBar";
 import { ProjectNameField } from "@/components/workplane/ProjectNameField";
+import { comboLabel } from "@/lib/keyNames";
+import { pressedKey } from "@/lib/keyPressed";
 import { FOCUS_MODE_CHANGE_EVENT, FOCUS_MODE_SHORTCUT } from "@/lib/focusMode";
 import { ShapeMenuPanel } from "@/components/workplane/ShapeMenuPanel";
 import { ShapeLibraryList } from "@/components/workplane/ShapeLibraryList";
-import { AlertTriangle, ArchiveRestore, ArrowDownToLine, ArrowLeftRight, ArrowUpFromLine, Check, CircleHelp, Percent, Circle as CircleIcon, Eye, EyeOff, Hexagon as HexagonIcon, ListTree, Maximize2, Minimize2, Pentagon as PentagonIcon, Pin, PinOff, Rotate3d, Route as RouteIcon, ScanEye, Search, Sparkles, Square as SquareIcon, Star as StarIcon, Triangle as TriangleIcon, X } from "lucide-react";
+import { AlertTriangle, ArchiveRestore, ArrowDownToLine, ArrowLeftRight, BookmarkPlus, ArrowUpFromLine, BookOpen, Check, CircleHelp, Percent, Circle as CircleIcon, Eye, EyeOff, Hexagon as HexagonIcon, ListTree, Maximize2, Minimize2, Palette, Pentagon as PentagonIcon, Pin, PinOff, Rotate3d, Route as RouteIcon, ScanEye, Search, Sparkles, Square as SquareIcon, Star as StarIcon, Triangle as TriangleIcon, X } from "lucide-react";
 import { OPEN_FILE_BACKUPS_EVENT } from "@/lib/fileBackups";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
 import { useWheelField } from "@/lib/useWheelField";
 import { wheelNextValue } from "@/lib/wheelValueStep";
 import type { ComponentType, ReactNode, SVGProps } from "react";
-import { t, type MessageKey } from "@/lib/i18n";
+import { getLanguage, t, type MessageKey } from "@/lib/i18n";
 import { useLanguage } from "@/lib/useLanguage";
 import { useSimpleMode } from "@/lib/useSimpleMode";
 import { simpleModeKeepsShape, simpleModeKeepsTool } from "@/lib/simpleMode";
@@ -29,6 +31,7 @@ import { type SketchPrimitive, type SketchTool } from "../SketchWorkspace";
 import { CommandPalette, type PaletteCommand } from "./CommandPalette";
 import { customShapeCommands } from "@/lib/customShapeCommands";
 import { COMMAND_KEYWORDS, COMMAND_SHORTCUTS, SHAPE_KEYWORDS } from "@/lib/commandKeywords";
+import { guideHref } from "@/lib/guideLinks";
 import { readCustomShortcuts, runCustomShortcutKey, setCustomShortcutCommandSource } from "@/lib/customShortcuts";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { ThemeSwitch } from "@/components/ThemeSwitch";
@@ -169,6 +172,9 @@ export const MODIFY_SECTIONS = [
   ["surface", "surface", "editor.section.surface", 7],
 ] as const satisfies readonly (readonly [string, string, MessageKey, number])[];
 type ModifySection = (typeof MODIFY_SECTIONS)[number][0];
+/** Library entries that open a tool on the selected body instead of adding a shape. */
+const LIBRARY_TOOL_IDS: ReadonlySet<string> = new Set(["threadInsert", "magnetPocket"]);
+
 const MODIFY_SECTION_ICONS: Record<ModifySection, ComponentType> = {
   pattern: ToolbarMirrorIcon,
   shape: ToolbarSplitIcon,
@@ -330,6 +336,7 @@ export function SecondaryToolbar({
   holePatternActive,
   onThreadInsert,
   threadInsertActive,
+  onMagnetPocket,
   canHolePattern,
   onFaceTool,
   faceToolActive,
@@ -396,8 +403,14 @@ export function SecondaryToolbar({
   onShowHidden,
   onHideOthers,
   onInvertSelection,
+  onSelectSameColor,
+  onKeepSelection,
+  selectionSetNames,
+  onSelectSet,
   onToggleHidden,
   onUngroup,
+  onUngroupAll,
+  canUngroupAll,
   onUndo,
   onTopPanel,
   onAddShape,
@@ -528,6 +541,8 @@ export function SecondaryToolbar({
   holePatternActive: boolean;
   onThreadInsert: () => void;
   threadInsertActive: boolean;
+  /** The magnet pocket tool: the thread insert's spot and check, for a magnet's pocket (magnetPocketGeometry.ts). */
+  onMagnetPocket: () => void;
   canHolePattern: boolean;
   onFaceTool: () => void;
   faceToolActive: boolean;
@@ -607,8 +622,17 @@ export function SecondaryToolbar({
   /** Hide everything but the selection, and select what is not selected (Discussion #1472). */
   onHideOthers: () => void;
   onInvertSelection: () => void;
+  /** Select every visible part in the colour of the selected ones (Discussion #1839). */
+  onSelectSameColor: () => void;
+  /** Named selections (Discussion #1472). */
+  onKeepSelection: () => void;
+  selectionSetNames: string[];
+  onSelectSet: (name: string) => void;
   onToggleHidden: () => void;
   onUngroup: () => void;
+  /** Takes the groups inside the selected ones apart too; a command of the search, with no button of its own. */
+  onUngroupAll: () => void;
+  canUngroupAll: boolean;
   onUndo: () => void;
   onTopPanel: (panel: TopPanel) => void;
   onAddShape: (shape: ShapeAsset) => void;
@@ -803,9 +827,10 @@ export function SecondaryToolbar({
     onToolbarModeChange(mode);
   };
   const addShapeFromMenu = (shape: ShapeAsset) => {
-    if (shape.id === "threadInsert") {
+    if (LIBRARY_TOOL_IDS.has(shape.id)) {
       if (canHolePattern || threadInsertActive) {
-        onThreadInsert();
+        if (shape.id === "magnetPocket") onMagnetPocket();
+        else onThreadInsert();
         closeShapesAfterPick();
       }
       return;
@@ -899,7 +924,7 @@ export function SecondaryToolbar({
     // while a field has the focus - the browsers' own use of the key (a search
     // bar) is not worth keeping here.
     const openOnShortcut = (event: KeyboardEvent) => {
-      if (!(event.ctrlKey || event.metaKey) || event.shiftKey || event.altKey || (event.key ?? "").toLowerCase() !== "k") return;
+      if (!(event.ctrlKey || event.metaKey) || event.shiftKey || event.altKey || pressedKey(event) !== "k") return;
       event.preventDefault();
       openPaletteRef.current();
     };
@@ -1106,8 +1131,8 @@ export function SecondaryToolbar({
         title={shapeAssetMenuLabel(shape).replace(/\s+/g, " ")}
         aria-label={shapeAssetMenuLabel(shape).replace(/\s+/g, " ")}
         style={{ "--shape-default-color": shapeAssetColor(shape, shapeCustomizations[shape.kind]) } as CSSProperties}
-        draggable={shape.id !== "threadInsert"}
-        disabled={shape.id === "threadInsert" && !canHolePattern && !threadInsertActive}
+        draggable={!LIBRARY_TOOL_IDS.has(shape.id)}
+        disabled={LIBRARY_TOOL_IDS.has(shape.id) && !canHolePattern && !threadInsertActive}
         onClick={() => {
           if (suppressNextShapeClickRef.current) {
             suppressNextShapeClickRef.current = false;
@@ -1157,7 +1182,7 @@ export function SecondaryToolbar({
           addShapeFromMenu(shape);
         }}
         onDragStart={(event) => {
-          if (shape.id === "threadInsert") {
+          if (LIBRARY_TOOL_IDS.has(shape.id)) {
             event.preventDefault();
             return;
           }
@@ -1251,10 +1276,12 @@ export function SecondaryToolbar({
     const helpGroup = t("editor.group.help");
     const helpCommands = [
       plain("guide", t("editor.guide"), helpGroup, true, onGuide, { icon: ToolbarGuideIcon }),
+      plain("user-guide", t("guide.fullGuide"), helpGroup, true, () => window.open(guideHref(getLanguage()), "_blank", "noopener"), { icon: BookOpen }),
       plain("shortcuts", t("editor.keyboardShortcuts"), helpGroup, true, onShortcuts, { icon: ToolbarKeyboardIcon }),
       ...(onWhatsNew ? [plain("whats-new", t("whatsNew.footerLink"), helpGroup, true, onWhatsNew, { icon: Sparkles })] : []),
       plain("interactive-help", t("interactiveHelp.title"), helpGroup, true, onInteractiveHelp, { icon: CircleHelp, active: interactiveHelpActive }),
     ];
+    const settingsCommand = plain("settings", t("editor.workspaceSettings"), t("editor.group.help"), true, () => window.dispatchEvent(new Event("layerling:open-workspace-settings")), { icon: ToolbarSettingsIcon });
     if (toolbarMode === "sketch") {
       const modeGroup = t("palette.group.mode");
       const modeCommand = plain("mode-geometry", t("palette.switchGeometry"), modeGroup, true, () => selectToolbarMode("geometry"));
@@ -1266,6 +1293,7 @@ export function SecondaryToolbar({
           plain("sketch-sweep", t("sketch.sweep"), createGroup, true, () => startSketch("sweep")),
           plain("sketch-edit", t("sketch.editTo3d"), createGroup, canEditSketch, onEditSketch),
           modeCommand,
+          settingsCommand,
           ...helpCommands,
         ];
       }
@@ -1304,6 +1332,7 @@ export function SecondaryToolbar({
         plain("sketch-finish", sketchOperation === "revolve" ? t("sketch.finishRevolve") : sketchOperation === "sweep" ? t("sketch.finishSweep") : t("sketch.finishSketch"), finishGroup, true, onSketchFinish),
         plain("sketch-cancel", t("sketch.cancel"), finishGroup, true, onSketchCancel),
         modeCommand,
+        settingsCommand,
         ...helpCommands,
       ];
     }
@@ -1334,10 +1363,14 @@ export function SecondaryToolbar({
       ),
       plain("hide-others", t("contextMenu.hideOthers"), visibilityGroup, hasSelection, onHideOthers, { icon: EyeOff }),
       plain("invert-selection", t("contextMenu.invertSelection"), t("shortcuts.group.selection"), true, onInvertSelection, { icon: ArrowLeftRight }),
+      plain("select-same-colour", t("contextMenu.selectSameColor"), t("shortcuts.group.selection"), hasSelection, onSelectSameColor, { icon: Palette }),
+      plain("keep-selection", t("selectionSets.save"), t("shortcuts.group.selection"), hasSelection, onKeepSelection, { icon: BookmarkPlus }),
+      ...selectionSetNames.map((name) => plain(`selection-set:${name}`, t("selectionSets.command", { name }), t("shortcuts.group.selection"), true, () => onSelectSet(name), { icon: BookmarkPlus })),
       plain("notes", t("visibility.notes"), visibilityGroup, noteCount > 0, onToggleNotes, { icon: notesVisible ? Eye : EyeOff, active: notesVisible }),
       plain("overhangs", t("visibility.overhangs", { angle: overhangAngle }), visibilityGroup, true, onToggleOverhangs, { icon: AlertTriangle, active: overhangsVisible }),
       plain("look-onto-workplane", t("camera.lookOntoWorkplane"), t("shortcuts.group.view"), true, () => window.dispatchEvent(new Event("layerling:look-onto-workplane")), { icon: ScanEye }),
       ...combineTools.map((tool) => fromTool(tool, t("editor.group.combine"))),
+      plain("ungroup-all", t("contextMenu.ungroupAll"), t("editor.group.combine"), canUngroupAll, onUngroupAll, { icon: ToolbarUngroupIcon }),
       ...modifyTools.map((tool) => fromTool(tool, t(modifySectionLabel(tool.section)))),
       plain("carry", t("contextMenu.carry"), t("editor.group.arrange"), canModifySelection, onCarryOntoFace, { icon: ArrowDownToLine }),
       plain("scalePercent", t("scalePercent.title"), t("editor.group.modify"), canModifySelection, onScalePercent, { icon: Percent, active: scalePercentActive }),
@@ -1347,7 +1380,7 @@ export function SecondaryToolbar({
       plain("export", t("editor.export"), fileGroup, true, () => onTopPanel("export"), { icon: ToolbarVectorExportIcon }),
       plain("file-backups", t("backups.title"), fileGroup, true, () => window.dispatchEvent(new Event(OPEN_FILE_BACKUPS_EVENT)), { icon: ArchiveRestore, keywords: ["backup", "backups", "version", "versions", "restore", "sicherung", "fassung", "wiederherstellen"] }),
       plain("attachments", t("editor.attachments"), fileGroup, true, () => onTopPanel("attachments"), { icon: ToolbarAttachmentsIcon, keywords: ["attachment", "file", "notes", "instructions", "readme", "anhang", "datei"] }),
-      plain("settings", t("editor.workspaceSettings"), t("editor.group.help"), true, () => window.dispatchEvent(new Event("layerling:open-workspace-settings")), { icon: ToolbarSettingsIcon }),
+      settingsCommand,
       plain("focus-mode", focusMode ? t("focusMode.leave") : t("focusMode.enter"), t("shortcuts.group.view"), Boolean(onFocusModeChange), () => onFocusModeChange?.(!focusMode), { icon: focusMode ? Minimize2 : Maximize2, active: focusMode }),
       plain("mode-sketch", t("palette.switchSketch"), t("palette.group.mode"), true, () => selectToolbarMode("sketch")),
       ...helpCommands,
@@ -1948,7 +1981,7 @@ export function SecondaryToolbar({
               className="action-icon-button toolbar-focus-mode"
               type="button"
               aria-label={t("focusMode.enter")}
-              title={`${t("focusMode.enter")} (${FOCUS_MODE_SHORTCUT}) - ${t("focusMode.enterHint")}`}
+              title={`${t("focusMode.enter")} (${comboLabel(FOCUS_MODE_SHORTCUT)}) - ${t("focusMode.enterHint")}`}
               data-layerling-tool="focus-mode"
               onClick={() => onFocusModeChange(true)}
             >

@@ -27,6 +27,8 @@ Egy test, amely túlnyúlik a tárgyasztal szélén, jelölést kap. Egy üzenet
 
 A figyelmeztetés nem akadályoz meg abban, hogy tovább dolgozz. Csak jelzés, hogy ne a szeletelőben derüljön ki, hogy az alkatrész túl nagy. Egy túl nagy alkatrész gyakran kettévágható: vágd ketté a {{ui:editor.tool.split}} paranccsal, és nyomtasd ki a két felét külön.
 
+Ha szándékosan teszel részeket a tárgyasztal mellé, kattints az üzenetben a kis keresztre. A figyelmeztetés ekkor pontosan ezeknél a testeknél eltűnik. Ha valamelyikük újra elfér, és később ismét kitolod, vagy egy másik test lóg ki, az üzenet visszatér. A rejtett testek sosem számítanak, így a félretett részek elrejtése is működik.
+
 ## Az alkatrész helyes fektetése
 
 Hogy egy alkatrész hogyan fekszik a tárgyasztalon, az dönti el az erősségét és a kinézetét. Az {{ui:editor.group.arrange}} terület két eszköze segít:
@@ -77,6 +79,17 @@ Több nyomtatóval először a {{ui:workspace.printer}} alatt válaszd ki, amely
 
 Ettől kezdve az új használatok a beépített érték helyett ebből a hézagból indulnak: a(z) {{ui:lid.gap}} és a(z) {{ui:lid.hingePinPlay}} a(z) {{ui:editor.tool.lid}} eszközben, egy új {{ui:shape.dovetail}} és {{ui:shape.snapFit}} hézaga, egy új anya vagy menetes furat {{ui:prop.clearance}} értéke – a hézag kétszerese, mert az a teljes átmérőre jutó hely –, valamint a(z) {{ui:clearance.threshold}} a(z) {{ui:editor.tool.clearance}} eszközben. Ugyanígy a(z) {{ui:editor.tool.split}} eszköz csapjainak és fecskefarkainak {{ui:split.connectorClearance}} értéke is. Amíg egy ilyen mező még ezt az értéket tartja, a mellette álló „{{ui:printerPlay.fromFitTest}}” megmondja, honnan jön a szám. Az egyben nyomtatott zsanér és a(z) {{ui:editor.tool.flexi}} eszköz ízületei megtartják a 0,4 mm-t: egy darabban nyomtatva a réseiknek a rétegek között is nyitva kell maradniuk, ezt pedig egy külön nyomtatott csap nem méri. A mágnes vagy Gridfinity-kulcs bepréseléséhez szükséges hely és a megvásárolt aljzatnak vagy lapnak hagyott hely is megtartja a saját értékét. A tervben már meglévő testek sosem változnak, és az a terv sem, amelyet megnyitsz.
 
+## A méretek ellenőrzése papíron
+
+Azt az alkatrészt, amelynek illeszkednie kell valamihez - ventilátorhoz, nyomtatott áramköri laphoz, furatképhez -, papíron gyorsan ellenőrizheted a 3D nyomtatás előtt. Egy lap papír másodpercek kérdése; a próbanyomat időbe és filamentbe kerül, és ha egy méret nem jó, újra kell nyomtatni.
+
+1. Jelöld ki az alkatrészt, kattints erre: {{ui:editor.export}}, és válaszd a **2D** formátumot, majd a PDF-et.
+2. Itt: {{ui:export.drawing.paper}} válaszd ki a nyomtatódban lévő papírt, A4, A3, US Letter vagy US Tabloid. A nagyobb rajz több oldalra kerül.
+3. Nyomtass 100 %-on vagy „tényleges méretben”, soha ne „oldalhoz igazítva”.
+4. Mérj meg vonalzóval egy befoglaló méretet a lapon. Ha egyezik a mellette álló számmal, a nyomat méretarányos: tedd rá a valódi alkatrészt.
+
+A papír nem mutatja a 3D nyomtatód eltéréseit: a műanyag kissé zsugorodik, és a furatok szűkebbek lesznek. Ezt a fenti illesztési próba mutatja meg. A rajzról bővebben: [Fájlok, mentés és megosztás](chapter:files-and-saving).
+
 ## A nyomtatás ellenőrzése
 
 A {{ui:editor.tool.printCheck}} a {{ui:editor.group.combine}} csoportban, a {{ui:editor.tool.clearance}} mellett megnézi a kijelölt objektumokat, vagy ha nincs kijelölés, az összes láthatót, és egy ablakban megmondja, mi romlana el nyomtatáskor. Öt sora közül az zöld, amelyik nem talált semmit, és narancssárga, azzal együtt, hogy mit és hol, amelyik talált:
@@ -90,6 +103,14 @@ A {{ui:editor.tool.printCheck}} a {{ui:editor.group.combine}} csoportban, a {{ui
 ![Egy tálca, amelynek jobb fala csak 0,6 mm vastag: a nyomtatás ellenőrzése pirosra festi, és megnevezi az ablakban.](shot:print-check)
 
 Egy sor {{ui:printCheck.show}} gombja odaviszi a kamerát; kijelöli a lebegő alkatrészeket, a kevés felületen állókat és a nyitott hálókat, a túlnyúlásoknál pedig bekapcsolja a **Túlnyúlások mutatása** nézetet. Az egymásba érő testeket egyesítve ellenőrzi, ahogy a szeletelő is egyesíti őket. Ha az ablak nyitva van, miközben a tervet módosítod, megjelenik a {{ui:printCheck.stale}} felirat; kattints rá vagy a {{ui:printCheck.checkAgain}} gombra. Az [[Esc]] bezárja az ablakot. A tervben semmi sem változik. Egy MI ugyanezt az ellenőrzést a `layerling_check_print` eszközzel végzi. Az ablak csak ellenőriz, nem nyomtat és nem ment semmit: nyomtatáshoz exportáld a modellt a szeletelőnek a(z) {{ui:editor.group.file}} csoport {{ui:editor.export}} gombjával. Az ablakban a(z) {{ui:printCheck.openExport}} bezárja az ellenőrzést és megnyitja az exportot.
+
+### Nyomtatáselemzés és rétegnézet
+
+A(z) {{ui:editor.tool.layerCheck}} a(z) {{ui:editor.tool.printCheck}} mellett egy lépéssel tovább megy: a kijelölt objektumokat (vagy az összes láthatót) felszeleteli azokra a rétegekre, amelyeket a nyomtatód lerak, és minden réteget összevet az alatta lévővel, mindezt egyszerre. Nem kell rétegről rétegre lapozgatnod, hogy megtalálj egy hibát: az ablak felsorolja a **találatait**, előbb a hibákat (piros), aztán a figyelmeztetéseket (sárga), alulról felfelé. Minden sor megmondja, hol és mennyire súlyos, például „83–97. réteg (16,6–19,4 mm): Túlnyúlás 62°, 1,4 cm²”, és hogy mi segít. Az egymás utáni rétegek, amelyekben ugyanazon a helyen ugyanaz a hiba van, egyetlen találatot alkotnak.
+
+Mielőtt a rétegeket nézné, az egészet ellenőrzi: egy részt, amely belelóg a tárgyasztalba ({{ui:finding.kind.inBed}}; a munkasík alatti rétegek nem számítanak), egy részt, amely fölötte lebeg, egy nem zárt hálót, egy részt, amely nagyobb a beállításokban kiválasztott nyomtatónál. Aztán rétegről rétegre: {{ui:finding.kind.unsupported}} (egy hely, amely alatt semmi sincs, amikor elkezdődik, például egy T karjai), {{ui:finding.kind.overhang}} (45°-tól figyelmeztetés, 60°-tól hiba a függőlegeshez képest), {{ui:finding.kind.bridge}} (10 mm-es fesztávtól figyelmeztetés), {{ui:finding.kind.thinWall}} (a fúvóka két vonala alatt), {{ui:finding.kind.smallIsland}} (2 mm²-nél kisebb különálló hely, amely 2 mm-en vagy annál tovább tart) és {{ui:finding.kind.adhesion}}. Felül válaszd ki a(z) {{ui:layerCheck.layerHeight}} és a(z) {{ui:layerCheck.nozzle}} értékét; a határértékek a(z) {{ui:layerCheck.advanced}} alatt vannak. A 0,05 mm²-nél kisebb helyeket, például egy csúcsot vagy az utolsó réteget, nem értékeli. Az ellenőrzés a háttérben fut egy sávval; a(z) {{ui:layerCheck.stop}} azonnal leállítja.
+
+Kattints egy találatra: a **rétegnézet** az első érintett rétegnél nyílik meg, a kamera a helyre megy, a hely pirosra vagy sárgára festődik a rétegen, és az alatta lévő rétegek láthatók maradnak. A csúszka függőlegesen áll a keresztmetszet magasság szerinti profilja mellett; az oldalán lévő jelek mutatják, hol vannak találatok, és egy kattintás valamelyikre odaugrik. A csúszkán a [[↑]] és a [[↓]] egy réteggel lép, a [[Page Up]] és a [[Page Down]] tízzel, a [[Home]] és az [[End]] a végekre ugrik, a [[Space]] lejátssza, az [[N]] a következő találatra ugrik, a [[Shift+N]] az előzőre. A(z) {{ui:layerCheck.view.mode}} a(z) {{ui:layerCheck.view.mode.upTo}}, a(z) {{ui:layerCheck.view.mode.only}} vagy a(z) {{ui:layerCheck.view.mode.range}} nézetet mutatja; a még hátralévő rétegek halvány árnyékként látszhatnak. Ahol a Layerlingnek van eszköze a találathoz, egy gomb megnyitja: {{ui:finding.action.dropToPlate}}, {{ui:finding.action.layFlat}} vagy {{ui:finding.action.supportRib}}. Egy változtatás után a lista elavultként van megjelölve, amíg a(z) {{ui:layerCheck.checkAgain}} gombra nem kattintasz. Az ablak bezárása visszateszi a kamerát oda, ahol volt. Ez nem szeletelő-előnézet: a támaszokat, a kitöltést és a nyomtatási időt a szeletelőd adja.
 
 ## Ha kész vagy
 

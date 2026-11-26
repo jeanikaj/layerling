@@ -1349,7 +1349,9 @@ html[data-theme="dark"] .dashboard-trademark {
 }
 
 .dashboard-update-preview .whats-new-version h2 {
-  color: #2a8334;
+  color: #1d6527;
+  background: #d5efd8;
+  border-color: #2a8334;
 }
 
 .dashboard-update-preview .whats-new-version li span {
@@ -1971,13 +1973,28 @@ body:has(.install-app-hint-floating:not(.tablet-hint)) .install-app-hint.install
   font-weight: 600;
 }
 
+/* Each version starts with a band across the card, larger than the topics' headings, so it is plain where one ends and
+   the next begins (Stefan, 25.11.2026). */
 .whats-new-version h2 {
-  margin: 0 0 6px;
-  color: #bf6508;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  margin: 0 0 12px;
+  padding: 7px 12px;
+  color: #7c3f02;
+  background: #fbdcb2;
+  border-left: 5px solid #d27f28;
+  border-radius: 8px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.whats-new-version + .whats-new-version,
+.whats-new-earlier-heading + .whats-new-version {
+  margin-top: 22px;
+}
+
+html[data-theme="dark"] .whats-new-version h2 {
+  color: #ffd9a8;
+  background: #4a3119;
+  border-color: #f3a452;
 }
 
 .whats-new-version ul {
@@ -2069,10 +2086,6 @@ html[data-theme="dark"] .whats-new-note {
 }
 
 html[data-theme="dark"] .whats-new-note a {
-  color: #f3a452;
-}
-
-html[data-theme="dark"] .whats-new-version h2 {
   color: #f3a452;
 }
 
@@ -2398,6 +2411,20 @@ html[data-theme="dark"] .announcement-body li::marker {
   width: 58%;
   height: auto;
   transform: translateX(2.5%);
+}
+
+/* A folder whose name starts with an emoji shows that emoji in place of the
+   folder icon (#1932), sized by the card like the icon. */
+.server-folder-preview.folder-emoji-preview {
+  display: grid;
+  place-items: center;
+  container-type: inline-size;
+}
+
+.folder-emoji {
+  font-size: 34cqw;
+  line-height: 1;
+  font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
 }
 
 /* The way back is a folder card, but a quieter one: dashed like the others,
@@ -2978,6 +3005,14 @@ html[data-theme="dark"] .announcement-body li::marker {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 1px 2px rgba(72, 53, 32, 0.06);
 }
 
+/* A menu that hangs from the toolbar - a folded group's tools, the visibility menu, the Shapes panel - lies over the
+   status message beside the view cube (#1849): the message (z-index 50) covered the menu just opened, and the pointer
+   on the message keeps it there. The menus' own z-index counts inside the toolbar only, so the toolbar itself rises
+   above the message while one of them is open. The pinned Shapes panel is no menu and stays where it is. */
+.secondary-toolbar:has(.toolbar-section[data-collapsed][data-open], .visibility-dropdown, .shape-menu-dropdown:not(.shape-menu-under-inspector)) {
+  z-index: 51;
+}
+
 .edge-modifier-panel {
   position: fixed;
   top: calc(var(--editor-toolbar-height) + 14px);
@@ -3218,6 +3253,24 @@ html[data-theme="dark"] .edge-modifier-quick-actions button.active {
   opacity: 0.8;
 }
 
+/* The top layer's colour: the label and a swatch on one line. */
+.hole-pattern-layer-color {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hole-pattern-layer-color input[type="color"] {
+  width: 44px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border, #ccc);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
 /* Scale by percent: the model railway gauges, four to a row. */
 .model-scale-presets {
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3287,6 +3340,13 @@ html[data-theme="dark"] .model-scale-result {
   margin-top: 8px;
 }
 
+/* A hint below another hint, a checkbox or the Fill gaps button keeps a little room instead of tucking under it. */
+.paint-panel .cylinder-wrap-hint + .cylinder-wrap-hint,
+.paint-panel .edge-modifier-field + .cylinder-wrap-hint,
+.paint-panel .paint-gaps > .paint-gaps-button + .cylinder-wrap-hint {
+  margin-top: 6px;
+}
+
 /* The shape a lasso of the paint tool is drawing, over the view. */
 .paint-lasso-overlay {
   position: absolute;
@@ -3303,6 +3363,43 @@ html[data-theme="dark"] .model-scale-result {
   stroke: #d3710c;
   stroke-width: 2;
   stroke-linejoin: round;
+}
+
+/* A brush line being drawn: in the paint's colour, as wide as it paints, until it is laid on the body. */
+.paint-brush-overlay line,
+.paint-brush-overlay circle {
+  stroke: currentColor;
+  fill: currentColor;
+  stroke-linecap: round;
+  opacity: 0.75;
+}
+
+/* The magnetic lasso: the line laid along the edges, the way on to the pointer, and the clicks (the first one larger, to close on). */
+.paint-magnet-overlay polyline {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.paint-magnet-overlay polyline.laid {
+  stroke: #d3710c;
+}
+
+.paint-magnet-overlay polyline.ahead {
+  stroke: #d3710c;
+  stroke-dasharray: 5 4;
+  opacity: 0.8;
+}
+
+.paint-magnet-overlay circle {
+  fill: #ffffff;
+  stroke: #d3710c;
+  stroke-width: 2;
+}
+
+.paint-magnet-overlay circle.first {
+  fill: #fff1e0;
 }
 
 .shell-opening-options button.active {
@@ -3509,6 +3606,148 @@ html[data-theme="dark"] .shell-openings-summary {
   border-radius: 6px;
 }
 
+/* A hollowed box, its lid or its insert in the inspector: what belongs together, and the two tools that change it. */
+.box-actions-card {
+  display: grid;
+  gap: 6px;
+  margin: 0 10px 12px;
+  padding: 10px;
+  color: #533d26;
+  background: #fffaf3;
+  border: 1px solid #e3d2bf;
+  border-radius: 10px;
+}
+
+.box-actions-card > strong {
+  font-size: 14px;
+}
+
+.box-actions-card > span {
+  color: #7a6650;
+  font-size: 12px;
+}
+
+.box-actions-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.box-actions-buttons button,
+.tool-next-step button,
+.lid-change-rooms {
+  min-height: 38px;
+  padding: 0 10px;
+  color: #6d4b28;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  background: #ffffff;
+  border: 1px solid #d8c5b1;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.box-actions-buttons button:hover:not(:disabled),
+.tool-next-step button:hover:not(:disabled),
+.lid-change-rooms:hover:not(:disabled) {
+  color: #98540d;
+  background: #f8f4ed;
+  border-color: #d1995e;
+}
+
+.box-actions-buttons button:disabled,
+.tool-next-step button:disabled,
+.lid-change-rooms:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* The step after a tool, above its Cancel and Apply: a button as wide as the panel. */
+.tool-next-step {
+  display: grid;
+  margin: 8px 0 0;
+}
+
+.lid-change-rooms {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* For a finger: the tools' check boxes and their rows as large as a fingertip. */
+@media (pointer: coarse) {
+  .edge-modifier-field.offset-copy {
+    align-items: center;
+    min-height: 40px;
+  }
+
+  .edge-modifier-field.offset-copy input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    margin-top: 0;
+  }
+
+  .box-actions-buttons button,
+  .tool-next-step button,
+  .lid-change-rooms {
+    min-height: 44px;
+  }
+}
+
+/* The lid's labels: the box from above with its compartments numbered, and a line of text for each. */
+.lid-rooms-plan {
+  display: block;
+  width: 100%;
+  max-height: 150px;
+  margin: 6px 0 4px;
+}
+
+.lid-rooms-plan-body {
+  fill: #e9dccb;
+  stroke: #b89c7d;
+  stroke-width: 0.5;
+}
+
+.lid-rooms-plan-room {
+  fill: #fffaf3;
+  stroke: #b89c7d;
+  stroke-width: 0.4;
+}
+
+.lid-rooms-plan text {
+  fill: #533d26;
+  font-weight: 700;
+}
+
+.lid-label-row {
+  display: grid;
+  grid-template-columns: minmax(56px, auto) 1fr;
+  gap: 8px;
+  align-items: center;
+  margin-top: 5px;
+  font-weight: 600;
+}
+
+.lid-label-row input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 31px;
+  padding: 0 7px;
+  color: #533d26;
+  font: inherit;
+  font-weight: 600;
+  background: white;
+  border: 1px solid #c4ad96;
+  border-radius: 6px;
+}
+
+@media (pointer: coarse) {
+  .lid-label-row input {
+    height: 40px;
+  }
+}
+
 /* The text on a lid's sliders or beside its bolts, a short line under its label. */
 .edge-modifier-field.lid-latch-label input {
   display: block;
@@ -3529,6 +3768,22 @@ html[data-theme="dark"] .shell-openings-summary {
   width: 100%;
   margin-top: 5px;
   padding: 0 7px;
+}
+
+/* The magnet pocket's typed measures (and the thread insert's own size): boxes like the selects beside them. */
+.magnet-pocket-panel .edge-modifier-field input[type="text"] {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 31px;
+  margin-top: 5px;
+  padding: 0 7px;
+  color: #533d26;
+  font: inherit;
+  font-weight: 600;
+  background: white;
+  border: 1px solid #c4ad96;
+  border-radius: 6px;
 }
 
 .edge-modifier-check {
@@ -3844,14 +4099,18 @@ html[data-theme="dark"] .cable-channel-status.warning {
 }
 
 .split-position-pick {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  margin-left: 2px;
-  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 30px;
+  padding: 4px 8px;
   color: #6d5133;
   background: #fbf8f4;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
   border: 1px solid #d8c8b7;
   border-radius: 6px;
   cursor: pointer;
@@ -4382,6 +4641,10 @@ html[data-theme="dark"] .toolbar-title-help .action-icon-button.active svg path 
   display: flex;
   min-width: 88px;
   height: var(--editor-toolbar-tools-height);
+  /* A group is never narrower than its tools. Where the bar does not wrap (wider than 1737 px, e.g. in focus mode) the
+     browser squeezed Visibility, Combine or Edges & walls below their buttons, Visibility's first button spilled over
+     Shapes, and the folding measured the squeezed widths, so it saw no need to fold (Stefan, 21.11.2026). */
+  flex-shrink: 0;
   flex-direction: column;
   justify-content: flex-start;
   border-right: 0;
@@ -6178,6 +6441,37 @@ html[data-simple-mode="on"]:not([data-toolbar-size], [data-simple-mode-enlarge="
   accent-color: #b3680f;
 }
 
+/* The colour of imported bodies (#2079): a swatch, and a small arrow back to the usual blue. */
+.import-option.import-color-option,
+.import-option.import-color-option label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.import-option.import-color-option input {
+  width: 32px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid #d8c4a5;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
+.import-option.import-color-option button {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 /* The width an SVG or a picture comes in at (#448): a number field, not a tick box. */
 .import-option.import-width-option input {
   width: 6.5em;
@@ -6194,6 +6488,46 @@ html[data-simple-mode="on"]:not([data-toolbar-size], [data-simple-mode-enlarge="
 html[data-theme="dark"] .import-option.import-width-option input {
   border-color: #5a4a36;
   background: #2a241c;
+}
+
+/* The drawing's title block (forum, Lofo): number, revision and who drew it, under the 2D file format. */
+.export-drawing-info {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.export-drawing-info label {
+  display: contents;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.export-drawing-info input {
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid #d8c4a5;
+  border-radius: 6px;
+  background: #fffaf1;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+html[data-theme="dark"] .export-drawing-info input {
+  border-color: #5a4a36;
+  background: #2a241c;
+}
+
+.export-drawing-info-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  opacity: 0.8;
 }
 
 html[data-theme="dark"] .import-option {
@@ -7344,6 +7678,34 @@ html[data-theme="dark"] .sketch-shape-options .unit {
   border-radius: 17px;
 }
 
+/* A folded bar says which one it is (Discussion #2073). */
+.camera-controls.collapsed > .camera-controls-handle > .camera-controls-toggle {
+  width: auto;
+  min-width: calc(44px * var(--toolbar-scale));
+  height: auto;
+  padding: 4px 6px;
+}
+
+.camera-controls-name {
+  max-width: 96px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* The measuring tools' own bar stands beside the view bar, clear of its two columns, until it is moved. Its one group
+   always fits below each other. */
+.workplane-stage > .camera-controls.measure-bar {
+  display: flex;
+  left: calc(30px + 96px * var(--toolbar-scale));
+}
+
+.workplane-stage > .camera-controls.measure-bar > .camera-group {
+  display: flex;
+}
+
 .camera-controls button.active,
 .camera-controls button[aria-pressed="true"] {
   color: #8e4b06;
@@ -8331,6 +8693,43 @@ html[data-theme="dark"] .inspector-bundle-note {
 .section-checkbox-label input[type="checkbox"] {
   cursor: pointer;
   accent-color: #d27009;
+}
+
+/* The view bar's detail level: the section view's panel, with a slider and the switches. */
+.detail-control-group {
+  position: relative;
+}
+
+.camera-controls > .camera-group > .detail-control-group {
+  display: grid;
+}
+
+.detail-popover {
+  width: 250px;
+}
+
+.detail-level-name {
+  font-size: 14px;
+}
+
+.detail-popover .section-slider {
+  flex: none;
+  width: 100%;
+}
+
+.detail-items {
+  display: grid;
+  gap: 8px;
+}
+
+.detail-items .section-checkbox-label {
+  font-size: 12.5px;
+}
+
+.detail-hint {
+  font-size: 11.5px;
+  line-height: 1.4;
+  opacity: 0.75;
 }
 
 .workplane-wrap {
@@ -9469,6 +9868,12 @@ html[data-theme="dark"] .align-dot.axis-z, html[data-theme="dark"] .align-spread
     inset: -15px;
     content: "";
   }
+
+  /* Two rotate arrows side by side: neither zone reaches into the other's (#2020). */
+  .rotate-handle::before {
+    inset: calc((min(52px, var(--rotate-room, 116px)) - min(82px, var(--rotate-room, 116px))) / 2);
+    border-radius: calc((116px - var(--rotate-room, 116px)) * 99);
+  }
 }
 
 /* A small body: the wide zones of its handles would cover all of it and every touch would grab one (#574). */
@@ -9487,8 +9892,7 @@ html[data-theme="dark"] .align-dot.axis-z, html[data-theme="dark"] .align-spread
 }
 
 .transform-handle.corner,
-.transform-handle.height-top,
-.transform-handle.height-lift {
+.transform-handle.height-top {
   width: 10px;
   height: 10px;
   background: #f5f2ec;
@@ -9518,30 +9922,48 @@ html[data-theme="dark"] .align-dot.axis-z, html[data-theme="dark"] .align-spread
     border-color: var(--hover-accent-border-color);
 }
 
-/* The lift arrow moves along Z, so it is blue like the Z turn arrow and the Z axis arrow on the plate (Facebook group). */
+/* The lift arrow moves along Z, so it is blue like the Z turn arrow and the Z axis arrow on the plate (Facebook group).
+   It is drawn like the X and Y arrows (Discussion #2018): a tail and a light rim, the button being the grab area along it. */
 .transform-handle.height-lift {
-  border: 0;
-  width: 0;
-  height: 0;
+  --slide-handle-axis: #2f6fe0;
+  --slide-handle-halo: rgba(255, 252, 247, 0.95);
+  width: 18px;
+  height: 34px;
+  color: var(--slide-handle-axis);
   background: transparent;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-bottom: 13px solid #2f6fe0;
+  border: 0;
+  border-radius: 0;
   box-shadow: none;
 }
 
-.transform-handle.height-lift.lower {
-  border-bottom: 0;
-  border-top: 13px solid #2f6fe0;
+.transform-handle.height-lift .slide-handle-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: 0;
+  transform: translate(-50%, -50%) rotate(-90deg);
 }
 
-.transform-handle.height-lift:hover {
-  border-bottom-color: var(--hover-accent-color);
+.transform-handle.height-lift.lower .slide-handle-icon {
+  transform: translate(-50%, -50%) rotate(90deg);
 }
 
-.transform-handle.height-lift.lower:hover {
-  border-bottom-color: transparent;
-  border-top-color: var(--hover-accent-color);
+/* Pointed at, it keeps its blue and only gets thicker, as the X and Y arrows do (Discussion #2018): red is the X colour. */
+.transform-handle.height-lift:hover .slide-arrow-shaft {
+  stroke-width: 3.2;
+}
+
+/* For a finger it catches from further away, but not towards the height handle at its tail. */
+@media (pointer: coarse) {
+  .transform-handle.height-lift::before,
+  .transform-overlay.small-body .transform-handle.height-lift::before {
+    inset: -12px -10px 0;
+  }
+
+  .transform-handle.height-lift.lower::before,
+  .transform-overlay.small-body .transform-handle.height-lift.lower::before {
+    inset: 0 -10px -12px;
+  }
 }
 
 /* A locked selection: the handles turn grey and stay put, but hovering one still shows its dimensions. */
@@ -9560,15 +9982,8 @@ html[data-theme="dark"] .align-dot.axis-z, html[data-theme="dark"] .align-spread
 
 .transform-overlay.locked .transform-handle.height-lift,
 .transform-overlay.locked .transform-handle.height-lift:hover {
+  color: var(--locked-handle-ink);
   background: transparent;
-  border-color: transparent;
-  border-bottom-color: var(--locked-handle-ink);
-}
-
-.transform-overlay.locked .transform-handle.height-lift.lower,
-.transform-overlay.locked .transform-handle.height-lift.lower:hover {
-  border-bottom-color: transparent;
-  border-top-color: var(--locked-handle-ink);
 }
 
 /* The colour itself, not --rotate-handle-axis: the dark theme's axis colours outrank a variable set here. */
@@ -9609,16 +10024,16 @@ html[data-theme="dark"] .align-dot.axis-z, html[data-theme="dark"] .align-spread
 
 .rotate-handle {
   z-index: 3;
-  /* The grab area is 52px; the arrow drawn in it is smaller. */
-  width: 52px;
-  height: 52px;
+  /* The grab area is 52px; the arrow drawn in it is smaller. Beside another arrow it is a circle that ends halfway between them (#2020). */
+  width: min(52px, var(--rotate-room, 116px));
+  height: min(52px, var(--rotate-room, 116px));
   --rotate-handle-ink: #433629;
   --rotate-handle-axis: var(--rotate-handle-ink);
   --rotate-handle-halo: rgba(255, 252, 247, 0.95);
   color: var(--rotate-handle-axis);
   background: transparent;
   border: 0;
-  border-radius: 0;
+  border-radius: calc((74px - var(--rotate-room, 116px)) * 99);
   box-shadow: none;
   opacity: 1;
   transform: translate3d(var(--overlay-x, 0), var(--overlay-y, 0), 0) translate(-50%, -50%);
@@ -9642,6 +10057,7 @@ html[data-theme="dark"] .align-dot.axis-z, html[data-theme="dark"] .align-spread
 }
 
 .rotate-handle-icon {
+  pointer-events: none;
   position: absolute;
   left: 50%;
   top: 50%;
@@ -10348,6 +10764,377 @@ html[data-theme="dark"] .rotation-angle-badge {
   cursor: default;
 }
 
+/* Hollow, dividers and finger scoops: the grips on the body in the view (ShellWallsOverlay). Only grips and buttons take the pointer. */
+.shell-walls-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+}
+
+.shell-walls-overlay .shell-walls-overlay-line {
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.shell-walls-overlay .shell-walls-overlay-line.picked {
+  stroke: #ffb347;
+  stroke-width: 3;
+}
+
+.shell-walls-overlay-grip,
+.shell-walls-overlay-remove,
+.shell-walls-overlay-split button {
+  pointer-events: auto;
+  touch-action: none;
+  padding: 0;
+  border: 2px solid #e07b00;
+  background: #ffffff;
+  color: #6d4b28;
+  box-shadow: 0 1px 4px rgba(40, 25, 10, 0.35);
+}
+
+.shell-walls-overlay-grip {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  cursor: move;
+}
+
+.shell-walls-overlay-grip.move {
+  background: #ffd591;
+}
+
+.shell-walls-overlay-grip.move.picked,
+.shell-walls-overlay-grip:hover,
+.shell-walls-overlay-grip:focus-visible {
+  background: #e07b00;
+  outline: none;
+}
+
+.shell-walls-overlay-grip.end {
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  cursor: grab;
+}
+
+.shell-walls-overlay-remove {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-color: #c0392b;
+  border-radius: 50%;
+  color: #c0392b;
+  cursor: pointer;
+}
+
+.shell-walls-overlay-remove:hover,
+.shell-walls-overlay-remove:focus-visible {
+  color: #ffffff;
+  background: #c0392b;
+  outline: none;
+}
+
+.shell-walls-overlay-compartment {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transform: translate(-50%, -50%);
+}
+
+.shell-walls-overlay-size {
+  padding: 1px 6px;
+  color: #3d2c1b;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(40, 25, 10, 0.3);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.shell-walls-overlay-split {
+  display: flex;
+  gap: 4px;
+}
+
+.shell-walls-overlay-split button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-width: 1px;
+  border-color: #d8c5b1;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.shell-walls-overlay-split button.on {
+  color: #ffffff;
+  background: #2f8f5b;
+  border-color: #2f8f5b;
+}
+
+.shell-walls-overlay-split button:hover,
+.shell-walls-overlay-split button:focus-visible {
+  color: #ffffff;
+  background: #e07b00;
+  border-color: #e07b00;
+  outline: none;
+}
+
+/* On a tablet or phone the grips and buttons on the box are larger, so a finger finds them. */
+@media (pointer: coarse) {
+  .shell-walls-overlay-grip {
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+    border-width: 3px;
+  }
+
+  .shell-walls-overlay-grip.end {
+    width: 26px;
+    height: 26px;
+    margin: -13px 0 0 -13px;
+  }
+
+  .shell-walls-overlay-remove {
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+  }
+
+  .shell-walls-overlay-split {
+    gap: 8px;
+  }
+
+  .shell-walls-overlay-split button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .shell-walls-overlay-size {
+    font-size: 13px;
+  }
+}
+
+/* Hollow, shaped pocket: the part to choose and the button under it. */
+.shell-pocket-add {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shell-pocket-add select {
+  width: 100%;
+  min-height: 34px;
+  padding: 4px 8px;
+  color: #3d2c1b;
+  background: #ffffff;
+  border: 1px solid #d8c5b1;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+html[data-theme="dark"] .shell-pocket-add select {
+  color: #f1e6d8;
+  background: #3a3029;
+  border-color: #6b5a4b;
+}
+
+/* Hollow, dividers by hand: the buttons under the drawing (ShellWallsEditor). */
+.shell-walls-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shell-walls-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.shell-walls-actions button {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 4px 8px;
+  color: #6d4b28;
+  background: #ffffff;
+  border: 1px solid #d8c5b1;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.shell-walls-actions button:hover:not(:disabled) {
+  color: #98540d;
+  background: #f8f4ed;
+  border-color: #d1995e;
+}
+
+.shell-walls-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+html[data-theme="dark"] .shell-walls-actions button {
+  color: #e8d9c8;
+  background: #3a3029;
+  border-color: #6b5a4b;
+}
+
+html[data-theme="dark"] .shell-walls-actions button:hover:not(:disabled) {
+  color: #ffd9a8;
+  background: #4a3d33;
+  border-color: #b98a55;
+}
+
+/* Hollow, dividers by hand: the box from above (ShellWallsPlan). */
+.shell-walls-plan .shell-walls-plan-pocket {
+  fill: rgba(47, 143, 91, 0.18);
+  stroke: #2f8f5b;
+  pointer-events: none;
+}
+
+.shell-walls-plan .shell-walls-plan-scoop {
+  stroke: #2f8f5b;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.shell-walls-plan {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+  margin: 2px 0 6px;
+  touch-action: none;
+  user-select: none;
+}
+
+.shell-walls-plan .shell-walls-plan-box {
+  fill: none;
+  stroke: #b9a48d;
+  stroke-linejoin: round;
+}
+
+.shell-walls-plan .shell-walls-plan-floor {
+  fill: #fbf7f1;
+  stroke: none;
+}
+
+.shell-walls-plan .shell-walls-plan-compartment {
+  fill: #fbf7f1;
+  stroke: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.shell-walls-plan .shell-walls-plan-compartment:hover,
+.shell-walls-plan .shell-walls-plan-compartment:focus-visible {
+  fill: #f6e9d6;
+}
+
+.shell-walls-plan .shell-walls-plan-compartment.picked {
+  fill: #fbd9a8;
+}
+
+.shell-walls-plan .shell-walls-plan-size {
+  fill: #7a6855;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.shell-walls-plan .shell-walls-plan-wall {
+  fill: #9c8670;
+  pointer-events: none;
+}
+
+.shell-walls-plan .shell-walls-plan-wall.picked {
+  fill: #e07b00;
+}
+
+.shell-walls-plan .shell-walls-plan-reach {
+  fill: transparent;
+  cursor: move;
+  outline: none;
+}
+
+.shell-walls-plan .shell-walls-plan-reach:hover,
+.shell-walls-plan .shell-walls-plan-reach:focus-visible {
+  fill: rgba(224, 123, 0, 0.22);
+}
+
+.shell-walls-plan .shell-walls-plan-grip {
+  fill: #ffffff;
+  stroke: #e07b00;
+}
+
+.shell-walls-plan .shell-walls-plan-grip.across {
+  cursor: ew-resize;
+}
+
+.shell-walls-plan .shell-walls-plan-grip.along {
+  cursor: ns-resize;
+}
+
+.shell-walls-plan.disabled .shell-walls-plan-reach,
+.shell-walls-plan.disabled .shell-walls-plan-compartment {
+  cursor: default;
+}
+
+html[data-theme="dark"] .shell-walls-plan .shell-walls-plan-box {
+  stroke: #7d6a57;
+}
+
+html[data-theme="dark"] .shell-walls-plan .shell-walls-plan-floor,
+html[data-theme="dark"] .shell-walls-plan .shell-walls-plan-compartment {
+  fill: #2b241e;
+}
+
+html[data-theme="dark"] .shell-walls-plan .shell-walls-plan-compartment:hover,
+html[data-theme="dark"] .shell-walls-plan .shell-walls-plan-compartment:focus-visible {
+  fill: #3a2f25;
+}
+
+html[data-theme="dark"] .shell-walls-plan .shell-walls-plan-compartment.picked {
+  fill: #5b3f1c;
+}
+
+html[data-theme="dark"] .shell-walls-plan .shell-walls-plan-size {
+  fill: #d9c8b6;
+}
+
+html[data-theme="dark"] .shell-walls-plan .shell-walls-plan-wall {
+  fill: #b39c85;
+}
+
+html[data-theme="dark"] .shell-walls-plan .shell-walls-plan-wall.picked {
+  fill: #ff9d2e;
+}
+
+html[data-theme="dark"] .shell-walls-plan .shell-walls-plan-grip {
+  fill: #2b241e;
+  stroke: #ff9d2e;
+}
+
 .shape-inspector .bent-tube-segment-actions {
   display: flex;
   gap: 8px;
@@ -10445,6 +11232,13 @@ html[data-theme="dark"] .rotation-angle-badge {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.property-rotation-actions,
+.gridfinity-padding-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .property-subheading-action:disabled {
@@ -10602,12 +11396,14 @@ html[data-theme="dark"] .rotation-angle-badge {
   min-width: 0;
 }
 
+/* A long name wraps onto a second line instead of being cut off, so it stays readable in every language and on a
+   narrow panel (Discussion #1975). A single very long word still breaks rather than pushing the value field out. */
 .range-property-name {
   min-width: 0;
-  overflow: hidden;
   color: #7d6b58;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 /* Dragging the name changes the value; the panel still scrolls up and down under a finger. */
@@ -11217,6 +12013,28 @@ html[data-theme="dark"] .mesh-compare-actions .secondary {
   font-weight: 700;
 }
 
+/* The texture card's button stays in sight while the long card scrolls (Discussion #1972): it sticks above the snap
+   dock at the bottom of the panel, on the panel's own ground so the fields pass behind it. */
+.surface-texture-actions {
+  position: sticky;
+  bottom: 42px;
+  z-index: 2;
+  display: grid;
+  gap: 8px;
+  margin: 0 -2px;
+  padding: 10px 0;
+  background: rgba(248, 246, 244, 0.98);
+  border-top: 1px solid rgba(231, 224, 216, 0.9);
+}
+
+.shape-inspector .surface-texture-actions .inspector-action-button {
+  margin-bottom: 0;
+}
+
+.surface-texture-actions .cylinder-wrap-hint {
+  margin: 0 10px;
+}
+
 /* The vase's drawing boards (card Draw): the vase tool's boards, in the editor's colours. */
 .vase-drawing {
   --accent: var(--primary);
@@ -11284,6 +12102,152 @@ html[data-theme="dark"] .mesh-compare-actions .secondary {
   color: #8d6a3b;
   font-size: 12px;
   line-height: 1.4;
+}
+
+/* How the vase prints, at a glance: a coloured line over the weight, and a closing line that it is a guide only. */
+.vase-print-verdict {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font: 700 13px/1.2 var(--font-ui);
+}
+
+.vase-print-dot {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.vase-print-verdict.fine {
+  color: #1f7a45;
+  background: #e3f4e9;
+}
+
+.vase-print-verdict.supports {
+  color: #a35a00;
+  background: #fdebd2;
+}
+
+.vase-print-verdict.notes {
+  color: #6f5d4b;
+  background: #efe7dc;
+}
+
+.vase-print-disclaimer {
+  margin: 0;
+}
+
+/* What the check found when a vase's accessories are put together round it: a line per collision, or that they fit. */
+.vase-assembly-report {
+  display: grid;
+  gap: 6px;
+}
+
+/* The vase's pattern card: the patterns as tiles, four to a row, each with a picture shaded from the pattern itself. */
+.gear-type-options.vase-pattern-options {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.gear-type-options.vase-pattern-options button {
+  min-height: 0;
+  padding: 4px 2px 6px;
+  font-size: 10.5px;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.gear-type-options.vase-pattern-options .vase-tile-picture {
+  width: 100%;
+  max-width: 48px;
+  height: auto;
+}
+
+.vase-tile-picture {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 5px;
+  background: #e9e1d4;
+}
+
+/* One's own picture or text as the pattern, and the line that offers to keep a lid's neck smooth. */
+.vase-own-picture,
+.vase-neck-hint {
+  display: grid;
+  gap: 6px;
+}
+
+.vase-own-picture .cylinder-wrap-hint,
+.vase-neck-hint .cylinder-wrap-hint {
+  margin: 0;
+}
+
+/* One's own leaf: half its outline on a small board, mirrored. */
+.vase-leaf-editor {
+  display: grid;
+  gap: 6px;
+}
+
+.vase-leaf-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  color: #7d6b58;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.vase-leaf-editor svg {
+  justify-self: center;
+  width: 120px;
+  height: 150px;
+  background: #f6f0e7;
+  border: 1px solid #e3d7c8;
+  border-radius: 8px;
+  touch-action: none;
+}
+
+.vase-leaf-axis {
+  stroke: #cdbca6;
+  stroke-dasharray: 3 3;
+}
+
+.vase-leaf-outline {
+  fill: #e8dcc6;
+  stroke: #9a7d5c;
+  stroke-width: 1.4;
+}
+
+.vase-leaf-point {
+  fill: #ffffff;
+  stroke: #e0821f;
+  stroke-width: 2.5;
+  cursor: grab;
+}
+
+.vase-leaf-editor .cylinder-wrap-hint {
+  margin: 0;
+}
+
+.vase-link-button {
+  padding: 0;
+  color: #b0640f;
+  background: none;
+  border: 0;
+  font: 650 12px/1.2 var(--font-ui);
+  cursor: pointer;
+}
+
+.vase-link-button:disabled {
+  color: #b8a894;
+  cursor: default;
 }
 
 /* Layered text (#215): the names list and the layer colour in the layers card. */
@@ -11379,6 +12343,102 @@ html[data-theme="dark"] .text-layers-body .text-layers-names textarea {
 
 html[data-theme="dark"] .property-hint {
   color: #bfae9a;
+}
+
+/* Text on a tag's back: a drawer under the layers, opened by its own small header. */
+.shape-inspector .tag-back {
+  display: grid;
+  gap: 10px;
+}
+
+/* Front | Back at the top of the tag cards: two halves of one pill, the chosen one filled. */
+.shape-inspector .tag-side-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border: 1px solid rgba(125, 107, 88, 0.3);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.shape-inspector .tag-side-switch button {
+  position: relative;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.shape-inspector .tag-side-switch button.active {
+  background: #e58a2a;
+  color: #fff;
+}
+
+.shape-inspector .tag-side-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: middle;
+}
+
+html[data-theme="dark"] .shape-inspector .tag-side-switch {
+  border-color: #5c4b3a;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.shape-inspector .tag-back-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.shape-inspector .tag-back-header svg.collapsed {
+  transform: rotate(180deg);
+}
+
+.shape-inspector .tag-back-fill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* The icon tag's finished size (Discussion #2059): the label, and the measures under it on a line of their own. */
+.shape-inspector .name-tag-finished-size {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.shape-inspector .name-tag-finished-size output {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The line between the tag's own settings and its copies (Discussion #2059), as above the layers. */
+.shape-inspector .name-tag-count-separator {
+  border-top: 1px solid rgba(125, 107, 88, 0.22);
 }
 
 .name-tag-layers-heading {
@@ -11604,6 +12664,12 @@ html[data-theme="dark"] .property-hint {
   border-color: #c96f12;
 }
 
+/* A choice that does nothing now (a letter edge on an inlaid tag, #215; too long a text) is greyed out. */
+.name-tag-sides button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .name-tag-letters {
   display: block;
   overflow: hidden;
@@ -11650,6 +12716,7 @@ html[data-theme="dark"] .name-tag-letters {
 }
 
 html[data-theme="dark"] .name-tag-layers-heading,
+html[data-theme="dark"] .shape-inspector .name-tag-finished-size,
 html[data-theme="dark"] .name-tag-sides {
   color: #d8ccb8;
 }
@@ -12328,6 +13395,28 @@ html[data-theme="dark"] .pattern-picker-empty {
   max-height: calc(100vh - 16px);
 }
 
+/* The mm / in switch in the title of the snap menu at the pointer (Discussion #1933): the menu's own buttons are wide
+   list rows, these stay the small switch of the snap field. */
+.snap-menu-title .snap-units {
+  margin-left: auto;
+}
+
+.snap-menu .snap-menu-title .snap-units button {
+  display: inline-block;
+  width: auto;
+  padding: 0 6px;
+  color: inherit;
+  text-align: center;
+}
+
+.snap-menu .snap-menu-title .snap-units button:hover {
+  background: rgba(127, 127, 127, 0.16);
+}
+
+.snap-menu .snap-menu-title .snap-units button[aria-pressed="true"] {
+  background: rgba(127, 127, 127, 0.28);
+}
+
 .snap-menu-title {
   display: flex;
   align-items: center;
@@ -12468,6 +13557,128 @@ html[data-theme="dark"] .pattern-picker-empty {
   box-shadow: 0 1px 3px rgba(84, 58, 31, 0.08);
 }
 
+.workspace-settings-search {
+  position: sticky;
+  /* The bar's own padding scrolls with it: the field stays at the very edge, with the bar's ground above it. */
+  top: -16px;
+  z-index: 1;
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  margin: -16px -10px 4px;
+  padding: 16px 10px 6px;
+  color: #7e6852;
+  background: #faf7f3;
+}
+
+.workspace-settings-search > svg {
+  position: absolute;
+  inset-inline-start: 20px;
+  pointer-events: none;
+}
+
+.workspace-settings-search input {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  padding-block: 0;
+  padding-inline: 32px 30px;
+  color: #61482f;
+  background: #fff;
+  border: 1px solid #dacfc2;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.workspace-settings-search input:placeholder-shown {
+  padding-inline-end: 6px;
+  text-overflow: ellipsis;
+}
+
+.workspace-settings-search input:focus-visible {
+  border-color: #cf710f;
+  outline: 2px solid rgba(207, 113, 15, 0.25);
+}
+
+.workspace-settings-nav .workspace-settings-search button {
+  position: absolute;
+  inset-inline-end: 14px;
+  display: grid;
+  width: 26px;
+  min-height: 26px;
+  padding: 0;
+  place-items: center;
+}
+
+.workspace-settings-nav > button {
+  position: relative;
+}
+
+.workspace-settings-nav button > svg {
+  flex: none;
+}
+
+.workspace-settings-nav button.no-hits {
+  opacity: 0.45;
+}
+
+.workspace-settings-nav-count {
+  /* On the corner of its button, so the name beside it keeps its line. */
+  position: absolute;
+  top: 2px;
+  inset-inline-end: 3px;
+  min-width: 18px;
+  padding: 0 5px;
+  color: #955717;
+  background: #fbefe1;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.workspace-settings-section {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  min-width: 0;
+}
+
+.workspace-search-empty {
+  margin: 0;
+  color: #756656;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.workspace-modal-body [data-search-hidden] {
+  display: none !important;
+}
+
+/* The choices of a menu the search found, which a closed menu does not show. */
+.workspace-modal-body [data-search-options]::after {
+  content: attr(data-search-options);
+  grid-column: 1 / -1;
+  color: #955717;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: end;
+}
+
+/* The whole tab is open after a search: what was found stands out. */
+.workspace-modal-body.search-marked [data-search-hit] {
+  background: #fdf3e4;
+  border-radius: 4px;
+  box-shadow: 0 0 0 6px #fdf3e4;
+}
+
+::highlight(layerling-settings-search) {
+  color: #3f2508;
+  background-color: #ffd48a;
+}
+
 .workspace-modal-content {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
@@ -12575,7 +13786,7 @@ html[data-theme="dark"] .pattern-picker-empty {
 
 .bed-overhang-warning {
   position: fixed;
-  bottom: 44px;
+  bottom: calc(44px + var(--plate-bar-room, 0px));
   left: 50%;
   /* Below the windows (.workspace-modal is 30): it lay over the settings (#640). */
   z-index: 29;
@@ -12618,7 +13829,7 @@ html[data-theme="dark"] .pattern-picker-empty {
 /* While overhangs are shown: how much needs supports and the steepest overhang, under the view. */
 .overhang-figures {
   position: fixed;
-  bottom: 44px;
+  bottom: calc(44px + var(--plate-bar-room, 0px));
   left: 50%;
   z-index: 29;
   display: flex;
@@ -12640,11 +13851,11 @@ html[data-theme="dark"] .pattern-picker-empty {
 
 /* Above the warning that a body leaves the build volume, and above the open group's bar with it. */
 .overhang-figures.stacked-1 {
-  bottom: 88px;
+  bottom: calc(88px + var(--plate-bar-room, 0px));
 }
 
 .overhang-figures.stacked-2 {
-  bottom: 132px;
+  bottom: calc(148px + var(--plate-bar-room, 0px));
 }
 
 /* The hatching's own red and white, so the line reads as the hatched faces' figure. */
@@ -12950,6 +14161,32 @@ html[data-theme="dark"] .pattern-picker-empty {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+}
+
+.workspace-space-mouse-invert-way {
+  flex-basis: 100%;
+  color: #756657;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* The 3D mouse's own speed (#2010): beneath its directions, in the second column, title above the slider. */
+.workspace-range.workspace-space-mouse-speed {
+  grid-column: 2;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  padding-bottom: 0;
+  border-bottom: 0;
+  font-size: 12px;
+}
+
+.workspace-range.workspace-space-mouse-speed > span {
+  color: #756657;
+}
+
+.workspace-range.workspace-space-mouse-speed small {
+  grid-column: 1;
 }
 
 .workspace-history-setting {
@@ -13656,6 +14893,23 @@ html[data-theme="dark"] .workspace-reset-row button {
     text-align: center;
   }
 
+  .workspace-settings-search {
+    position: relative;
+    top: 0;
+    margin: 0 0 4px;
+    padding: 0;
+  }
+
+  .workspace-settings-search > svg {
+    inset-inline-start: 10px;
+  }
+
+  .workspace-settings-nav .workspace-settings-search button {
+    inset-inline-end: 4px;
+    min-height: 26px;
+    padding: 0;
+  }
+
   .workspace-modal-body {
     padding: 16px;
   }
@@ -14071,6 +15325,8 @@ html[data-theme="dark"] .dashboard-update-preview-body {
 
 html[data-theme="dark"] .dashboard-update-preview .whats-new-version h2 {
   color: #78d482;
+  background: #1f3a23;
+  border-color: #5fbf6c;
 }
 
 html[data-theme="dark"] .store-move-targets button {
@@ -14272,6 +15528,7 @@ html[data-theme="dark"] .edge-modifier-target,
 html[data-theme="dark"] .edge-modifier-quick-actions button,
 html[data-theme="dark"] .edge-modifier-footer .secondary,
 html[data-theme="dark"] .edge-modifier-field select,
+html[data-theme="dark"] .magnet-pocket-panel .edge-modifier-field input[type="text"],
 html[data-theme="dark"] .split-axis-control button,
 html[data-theme="dark"] .split-position-value input,
 html[data-theme="dark"] .split-position-pick:not(.active),
@@ -14695,6 +15952,11 @@ html[data-theme="dark"] .select-property-hint {
   color: #a08a72;
 }
 
+html[data-theme="dark"] .surface-texture-actions {
+  background: rgba(34, 28, 22, 0.98);
+  border-top-color: rgba(92, 75, 58, 0.9);
+}
+
 html[data-theme="dark"] .surface-layers button {
   color: #ede4d4;
   background: #2f2418;
@@ -14715,6 +15977,39 @@ html[data-theme="dark"] .surface-layers .surface-layer-add {
 
 html[data-theme="dark"] .cylinder-wrap-hint.surface-layer-missing {
   color: #f0b13c;
+}
+
+html[data-theme="dark"] .vase-print-verdict.fine {
+  color: #7fdca3;
+  background: #173323;
+}
+
+html[data-theme="dark"] .vase-print-verdict.supports {
+  color: #f3b766;
+  background: #3a2710;
+}
+
+html[data-theme="dark"] .vase-print-verdict.notes {
+  color: #d8ccb8;
+  background: #2a2016;
+}
+
+html[data-theme="dark"] .vase-tile-picture {
+  background: #2a2016;
+}
+
+html[data-theme="dark"] .vase-leaf-head {
+  color: #d8ccb8;
+}
+
+html[data-theme="dark"] .vase-leaf-editor svg {
+  background: #231a11;
+  border-color: #4a3a2a;
+}
+
+html[data-theme="dark"] .vase-leaf-outline {
+  fill: #4a3826;
+  stroke: #c9a57d;
 }
 
 html[data-theme="dark"] .vase-print-notes {
@@ -14771,20 +16066,8 @@ html[data-theme="dark"] .transform-handle.axis-y { background: #5fd47c; border-c
 html[data-theme="dark"] .transform-handle.axis-z { background: #6aa0ff; border-color: #163f86; }
 
 html[data-theme="dark"] .transform-handle.height-lift {
-  border-bottom-color: #6aa0ff;
-}
-
-html[data-theme="dark"] .transform-handle.height-lift.lower {
-  border-top-color: #6aa0ff;
-}
-
-html[data-theme="dark"] .transform-handle.height-lift:hover {
-  border-bottom-color: var(--hover-accent-color);
-}
-
-html[data-theme="dark"] .transform-handle.height-lift.lower:hover {
-  border-bottom-color: transparent;
-  border-top-color: var(--hover-accent-color);
+  --slide-handle-axis: #6aa0ff;
+  --slide-handle-halo: rgba(28, 24, 20, 0.9);
 }
 
 html[data-theme="dark"] .transform-overlay.locked {
@@ -14880,6 +16163,35 @@ html[data-theme="dark"] .workspace-history-note,
 html[data-theme="dark"] .workspace-toggle-copy small,
 html[data-theme="dark"] .workspace-section-heading span {
   color: #9f866c;
+}
+
+html[data-theme="dark"] .workspace-settings-search {
+  color: #9f866c;
+  background: #231a11;
+}
+
+html[data-theme="dark"] .workspace-settings-search input {
+  color: #f1e9dc;
+  background: #2f2419;
+  border-color: #68533d;
+}
+
+html[data-theme="dark"] .workspace-settings-nav-count {
+  color: #f0973a;
+  background: #3b2c1d;
+}
+
+html[data-theme="dark"] .workspace-search-empty {
+  color: #9f866c;
+}
+
+html[data-theme="dark"] .workspace-modal-body [data-search-options]::after {
+  color: #f0973a;
+}
+
+html[data-theme="dark"] .workspace-modal-body.search-marked [data-search-hit] {
+  background: #3b2c1d;
+  box-shadow: 0 0 0 6px #3b2c1d;
 }
 
 html[data-theme="dark"] .workspace-settings-nav button:hover {
@@ -15507,8 +16819,8 @@ html[data-theme="dark"] .theme-check {
 
 /* Die Kameraleiste ist mit den beiden Notizknoepfen (31.10.2026) um zwei Knoepfe laenger geworden, und die Flaeche eines 900 Pixel hohen Fensters
    ist rund 750 hoch: Bei Normalgroesse lief sie unten ins Fussband. Bis 900 Pixel wird sie darum schon verkleinert, wie unter 780.
-   Mit dem Winkelmesser (#1228) braucht sie ungeschrumpft 800 Pixel unter der Oberkante der Flaeche, also bis 970 Pixel Fensterhoehe. */
-@media (min-height: 781px) and (max-height: 970px) {
+   Mit dem Winkelmesser (#1228) und dem Detailgrad braucht sie ungeschrumpft 880 Pixel unter der Oberkante der Flaeche, also bis 1035 Pixel Fensterhoehe. */
+@media (min-height: 781px) and (max-height: 1035px) {
   .camera-controls {
     transform: scale(0.88);
     transform-origin: top left;
@@ -15551,8 +16863,8 @@ html[data-theme="dark"] .theme-check {
    nur gut 500 Pixel hoch, und die einspaltige Leiste (120 + 460 Pixel) lief
    unten aus dem Bild - samt dem Knopf, der eine eingeschaltete
    Schnittansicht anzeigt. */
-/* Verkleinert braucht die einspaltige Leiste seit dem Winkelmesser (#1228) 718 Pixel der Flaeche; bis 740 steht sie zweispaltig. */
-@container workplane (max-height: 740px) {
+/* Verkleinert braucht die einspaltige Leiste seit dem Detailgrad 789 Pixel der Flaeche; bis 800 steht sie zweispaltig. */
+@container workplane (max-height: 800px) {
   .camera-controls {
     display: grid;
     grid-template-columns: repeat(2, auto);
@@ -15575,8 +16887,8 @@ html[data-theme="dark"] .theme-check {
 
 /* At Large the column is a quarter taller, so it needs two columns from a taller
    workplane on - 600 px was measured for Medium (#241). With the protractor (#1228)
-   it needs 960 px of the workplane at full size. */
-@container workplane (max-height: 980px) {
+   and the detail level it needs 1045 px of the workplane at full size. */
+@container workplane (max-height: 1065px) {
   html[data-toolbar-size="large"] .camera-controls {
     display: grid;
     grid-template-columns: repeat(2, auto);
@@ -15756,6 +17068,160 @@ html[data-theme="dark"] .theme-check {
   color: #563e24;
 }
 
+/* The named selections at the top of the object list (#1472) and the profile row of the settings window (#850). */
+.outliner-sets {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 34vh;
+  padding: 8px 12px;
+  overflow-y: auto;
+  border-bottom: 1px solid #f0e9df;
+  background: #faf8f5;
+}
+
+.outliner-set {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.outliner-set-name {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 4px 8px;
+  color: inherit;
+  background: #ffffff;
+  border: 1px solid #e2d9cd;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: start;
+}
+
+.outliner-set-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outliner-set-name small {
+  color: #8a745c;
+}
+
+.outliner-set-name:hover:not(:disabled) {
+  border-color: #d46b08;
+}
+
+.outliner-set-name:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.outliner-set .outliner-action-btn {
+  opacity: 1;
+}
+
+.outliner-set-input,
+.workspace-profiles input,
+.workspace-profiles select {
+  min-width: 0;
+  padding: 4px 8px;
+  color: inherit;
+  background: #ffffff;
+  border: 1px solid #e2d9cd;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.outliner-set-input {
+  flex: 1;
+}
+
+.outliner-set-save {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  padding: 3px 6px;
+  color: #ad6206;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.outliner-set-save:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.workspace-profiles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  color: #756656;
+  background: #f6f2ed;
+  border-top: 1px solid #efe8dd;
+  font-size: 12px;
+}
+
+.workspace-profiles input,
+.workspace-profiles select {
+  min-height: 34px;
+  max-width: 220px;
+}
+
+.workspace-profiles .make-default-button {
+  min-width: 0;
+}
+
+.workspace-profiles .make-default-button:disabled,
+.workspace-profiles-remove:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.workspace-profiles-remove {
+  display: inline-flex;
+  padding: 8px;
+  color: inherit;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+html[data-theme="dark"] .outliner-sets,
+html[data-theme="dark"] .workspace-profiles {
+  color: #d8cfc4;
+  background: #26221e;
+  border-color: #3a342d;
+}
+
+html[data-theme="dark"] .outliner-set-name,
+html[data-theme="dark"] .outliner-set-input,
+html[data-theme="dark"] .workspace-profiles input,
+html[data-theme="dark"] .workspace-profiles select {
+  color: #e8e0d6;
+  background: #1d1a17;
+  border-color: #463f37;
+}
+
+html[data-theme="dark"] .outliner-set-name small {
+  color: #a89a8a;
+}
+
+html[data-theme="dark"] .outliner-set-save {
+  color: #f0a552;
+}
+
 .outliner-list-wrap {
   flex: 1;
   max-height: calc(100vh - 220px);
@@ -15793,6 +17259,15 @@ html[data-theme="dark"] .theme-check {
   cursor: pointer;
 }
 
+/* A long press on a row starts Select multiple; without this iOS selects the text or shows its own menu. */
+@media (any-pointer: coarse) {
+  .outliner-list > li.outliner-item {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
 .outliner-item:last-child {
   border-bottom: none;
 }
@@ -15801,9 +17276,11 @@ html[data-theme="dark"] .theme-check {
   background: rgba(240, 234, 224, 0.6);
 }
 
+/* The selected row is plain to see without the handles in the view: a stronger tone and a bar at its left (Discussion #1893). */
 .outliner-item.selected {
-  background: #faefe0;
+  background: #f6d9ae;
   border-color: rgba(220, 160, 90, 0.4);
+  box-shadow: inset 4px 0 0 #d97a1c;
 }
 
 .outliner-item.hidden-shape {
@@ -15919,6 +17396,19 @@ html[data-theme="dark"] .theme-check {
 .outliner-swatch.small {
   width: 9px;
   height: 9px;
+}
+
+/* In a row of the object list the swatch is a button: it selects every shape of its colour (Discussion #1839). */
+button.outliner-swatch {
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+}
+
+button.outliner-swatch:hover,
+button.outliner-swatch:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
 }
 
 .outliner-info {
@@ -16175,8 +17665,9 @@ html[data-theme="dark"] .outliner-item:hover {
 }
 
 html[data-theme="dark"] .outliner-item.selected {
-  background: #3e3223;
+  background: #5a4424;
   border-color: rgba(246, 173, 85, 0.35);
+  box-shadow: inset 4px 0 0 #f6ad55;
 }
 
 html[data-theme="dark"] .outliner-shape-name {
@@ -16378,7 +17869,7 @@ html[data-theme="dark"] .export-holes-only-warning svg {
 
 .open-group-banner {
   position: fixed;
-  bottom: 88px;
+  bottom: calc(88px + var(--plate-bar-room, 0px));
   left: 50%;
   z-index: 41;
   display: flex;
@@ -16594,14 +18085,18 @@ html[data-theme="dark"] .guide-videos a {
   gap: 8px 16px;
 }
 
-.guide-footer-link {
-  padding: 6px 12px;
+.guide-full-link {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 8px 14px;
   color: #fff;
   background: #ad6206;
   border-radius: 8px;
   font-weight: 700;
   text-decoration: none;
-  white-space: nowrap;
 }
 
 html[data-theme="dark"] .inspector-help-link {
@@ -16868,6 +18363,20 @@ html[data-theme="dark"] .color-recent {
   font-weight: 700;
 }
 
+/* What to try when the browser gave the 3D view no WebGL context. */
+.safe-mode-steps {
+  display: grid;
+  gap: 6px;
+}
+
+.safe-mode-steps ol {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-inline-start: 22px;
+  list-style: decimal;
+}
+
 .safe-mode-details {
   color: var(--muted-strong);
   font-size: 12px;
@@ -17112,6 +18621,34 @@ html[data-theme="dark"] .color-recent {
   margin-bottom: -14px;
   padding-bottom: 14px;
   background: inherit;
+}
+
+/* The message why a tool refused stays in view with the buttons (Discussion #1869): in a panel that
+   scrolls, the buttons were always there, but the message stood at the very foot, out of sight until
+   one scrolled down - a click on "Hollow" then seemed to do nothing. 60px is the height of the
+   buttons' row with its line and the gap above it; a long message scrolls inside itself. */
+.edge-modifier-panel > .edge-modifier-error:has(+ .edge-modifier-footer) {
+  position: sticky;
+  bottom: 60px;
+  z-index: 1;
+  max-height: 30dvh;
+  overflow-y: auto;
+}
+
+/* What scrolls past must not show in the gap between the message and the buttons' line. */
+.edge-modifier-panel > .edge-modifier-error + .edge-modifier-footer::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 1px);
+  left: 0;
+  height: 15px;
+  background: inherit;
+}
+
+/* The dark message is a little see-through; over the fields that scroll under it, it is not. */
+html[data-theme="dark"] .edge-modifier-panel > .edge-modifier-error:has(+ .edge-modifier-footer) {
+  background: #4e181d;
 }
 
 /* The angles at a selected point's two neighbouring corners (#149): the same, a touch quieter. */
@@ -17703,12 +19240,30 @@ html[data-theme="dark"] .interactive-help-more a:hover {
   font-size: 13px;
 }
 
+/* The lines under the view stand above the bar of build plates while it is open (Issue #1991). */
+body:has(.plate-bar) {
+  --plate-bar-room: 54px;
+}
+
 .plate-bar-chips,
 .plate-bar-tools {
   display: flex;
   align-items: center;
   gap: 3px;
   min-width: 0;
+}
+
+/* The chips scroll before a tool is pushed out of the bar. */
+.plate-bar-tools {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 860px) {
+  .plate-bar-tools {
+    flex: 0 1 auto;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
 }
 
 .plate-bar-chips {
@@ -17789,6 +19344,32 @@ html[data-theme="dark"] .interactive-help-more a:hover {
   border: 1px solid #bf6508;
   border-radius: 10px;
   font: inherit;
+}
+
+/* Beside the docked properties the bar stays clear of them, so its last buttons are in reach; the chips scroll. */
+@media (min-width: 1200px) {
+  .workplane-stage:has(> .shape-inspector) .plate-bar {
+    left: calc(50% - 125px);
+    max-width: calc(100% - 420px);
+  }
+}
+
+.plate-bar-per-row {
+  flex: 0 0 auto;
+  height: 32px;
+  max-width: 130px;
+  padding: 0 6px;
+  color: inherit;
+  background: transparent;
+  border: 1px solid #e3d2bf;
+  border-radius: 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+html[data-theme="dark"] .plate-bar-per-row {
+  background: #281e14;
+  border-color: #5b4b3a;
 }
 
 .plate-bar-separator {
@@ -18292,8 +19873,8 @@ html[data-theme="dark"] .property-card > button.property-card-header:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* Shown with every pointer: a tablet has no Alt key, and many Linux desktops take Alt+click to move the window (#1770). */
 .align-size-toggle {
-  display: none;
   position: absolute;
   left: 12px;
   bottom: 72px;
@@ -18308,16 +19889,18 @@ html[data-theme="dark"] .property-card > button.property-card-header:hover {
   touch-action: manipulation;
 }
 
+/* With a mouse the tool rail stands at the left edge; the switch goes beside it. */
+@media not all and (any-pointer: coarse) {
+  .align-size-toggle {
+    left: 76px;
+    bottom: 16px;
+  }
+}
+
 .align-size-toggle.on {
   background: rgba(173, 89, 0, 0.92);
   border-color: rgba(173, 89, 0, 0.92);
   color: #fff;
-}
-
-@media (any-pointer: coarse) {
-  .align-size-toggle {
-    display: block;
-  }
 }
 
 /* Print analysis (Druckanalyse) and its layer view. */
@@ -18678,6 +20261,40 @@ html[data-theme="dark"] .layer-check-remedy {
   gap: 4px;
 }
 
+.mold-openings ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mold-openings li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.mold-openings li button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.mold-openings li button:hover:not(:disabled) {
+  background: rgba(127, 127, 127, 0.18);
+}
+
 html[data-theme="dark"] .layer-view-readout strong {
   color: #ecdcc9;
 }
@@ -18702,4 +20319,59 @@ html[data-theme="dark"] .layer-view-chart {
 html[data-theme="dark"] .layer-view-chart path {
   fill: rgba(143, 179, 224, 0.3);
   stroke: #8fb3e0;
+}
+
+/* A multicolour group's parts, each with its own colour, under the Multicolor switch. */
+.part-colors {
+  display: grid;
+  gap: 4px;
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.part-colors > span {
+  opacity: 0.8;
+}
+
+.part-color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.part-color-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.part-color-row input[type="color"] {
+  flex: none;
+  width: 32px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--border, #ccc);
+  border-radius: 5px;
+  background: none;
+  cursor: pointer;
+}
+
+/* Fill gaps: its size and its button, under the paint tool's settings. */
+.paint-panel .paint-gaps {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+}
+
+.paint-panel .paint-gaps > .paint-gaps-button {
+  justify-content: center;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.paint-panel .paint-gaps > .paint-gaps-button:disabled {
+  cursor: default;
+  opacity: 0.55;
 }

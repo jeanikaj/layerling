@@ -12,7 +12,7 @@ Auf der Startseite erscheint dafür ein Hinweis mit {{ui:installHint.install}}, 
 - **Chrome und Edge:** Klicke auf das Installieren-Symbol rechts in der Adressleiste, oder wähle im Browsermenü „Als App installieren“.
 - **Safari am Mac:** Menü „Ablage“, dann „Zum Dock hinzufügen“.
 - **Safari auf dem iPhone und iPad:** Teilen-Symbol, dann „Zum Home-Bildschirm“.
-- **Firefox:** kann keine Apps installieren. layerling startet dort aber trotzdem offline im Tab.
+- **Firefox:** Unter Windows ab Version 143 klickst du rechts in der Adresszeile auf das Symbol „Tab zur Taskleiste hinzufügen“; im privaten Fenster fehlt es. Deine Entwürfe bleiben, wie sie sind. Sonst startet layerling dort offline im Tab.
 
 Den Hinweis auf der Startseite kannst du mit {{ui:installHint.dismiss}} schließen. Startest du die installierte App in Chrome oder Edge ein zweites Mal, holt sie das offene Fenster nach vorn, statt ein weiteres zu öffnen.
 
@@ -38,11 +38,11 @@ layerling ist freie Software (AGPL-3.0) und lässt sich auf einem eigenen Rechne
 - **Docker:** Für NAS-Geräte und Heimserver, ohne dass Node.js installiert sein muss. Jedes Release gibt es als fertiges Image `henmedia/layerling` auf Docker Hub (auch `ghcr.io/henmedia/layerling`) für amd64 und arm64; `docker run -d -p 3000:3000 -v layerling-thumbnails:/app/.codex/project-thumbnails henmedia/layerling:latest` startet es, auf einem NAS suchst du es in der Registrierung der Container-Verwaltung. Das Volume `layerling-thumbnails` hält die Vorschaubilder der Startseite über ein Update hinweg; ohne es fehlen sie nach jedem Neuanlegen des Containers, bis du den Entwurf wieder öffnest.
 - **Statischer Export:** Das Ergebnis besteht aus reinen Dateien, die jeder Webserver ausliefern kann. Sie gehören an die Wurzel einer Adresse (`https://layerling.example.com/` oder `http://192.168.0.5:8080/`), nicht in einen Unterordner und nicht von der Festplatte geöffnet; die Schritte stehen in der README. Mit einem beschreibbaren Ordner `store` neben der `index.html` und PHP auf dem Server wird daraus auch die gemeinsame Ablage für Entwürfe.
 
-Die MCP-Brücke für KI-Assistenten gibt es nur beim Entwicklungsserver, siehe [Mit einer KI bauen](chapter:ki-mit-mcp).
+Die MCP-Brücke für KI-Assistenten gibt es nur beim Entwicklungsserver oder in einer selbst betriebenen Kopie, die sie einschaltet, siehe [Mit einer KI bauen](chapter:ki-mit-mcp).
 
 ## Hilfe und Rückmeldung
 
-- Im Editor liegt im Bereich {{ui:editor.group.help}} die {{ui:editor.guide}} mit den wichtigsten Handgriffen und die Übersicht der [Tastenkürzel](chapter:tastenkuerzel). Die Kurzanleitung verweist bei jedem Abschnitt mit einem Fragezeichen auf das passende Kapitel hier.
+- Im Editor liegt im Bereich {{ui:editor.group.help}} die {{ui:editor.guide}} mit den wichtigsten Handgriffen und die Übersicht der [Tastenkürzel](chapter:tastenkuerzel). Die Kurzanleitung verweist bei jedem Abschnitt mit einem Fragezeichen auf das passende Kapitel hier. Ganz oben in der Kurzanleitung öffnet {{ui:guide.fullGuide}} diese Anleitung; die Befehlssuche ([[Strg]]+[[K]]) findet sie ebenfalls.
 
 ![Die Kurzanleitung im Editor. Oben stehen Videos von anderen, jeder Abschnitt hat ein Fragezeichen.](shot:quick-guide)
 

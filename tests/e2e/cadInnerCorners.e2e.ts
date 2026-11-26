@@ -112,6 +112,29 @@ describe("a fillet past sharp inner corners", () => {
     }
   });
 
+  it("refuses a body the kernel calls valid though its faces cross", async () => {
+    vi.stubGlobal("WebAssembly", WebAssembly);
+    await import("@/workers/cadModifier.worker");
+    // Two small discs that stand out only a little between two large ones: the fillet came out a sixth too large.
+    for (const discs of [[[5.89, 0.95, 27.88], [8.9, 1.19, 19.35], [16.76, 4.01, 16.56], [25.29, 3.52, 27.7]], [[1.39, 9.31, 27.02], [9.65, 2.36, 19.19], [20.14, 6.91, 16.23], [24.99, 9.21, 27.11]]]) {
+      const ready = await ask({ type: "prepare", parts: await cloudParts(discs), sharpAngle: 25 });
+      if (ready.type !== "ready") throw new Error("not ready");
+      const top = ready.edges.filter((edge) => edge.selectable && heights(edge).every((y) => Math.abs(y - HEIGHT) < 1e-3));
+      await expect(ask({ type: "preview", kind: "fillet", edgeIds: top.map((edge) => edge.id), amount: 1, quality: "draft", chamferAngle: 45 })).rejects.toThrow(/invalid or overlapping/);
+    }
+  });
+
+  it("refuses crossing faces also where the volume hardly shows them", async () => {
+    vi.stubGlobal("WebAssembly", WebAssembly);
+    await import("@/workers/cadModifier.worker");
+    // The fillet stood 0.05 mm over the top beside a notch, and the body's volume was off by 0.04 % only.
+    const discs = [[3.744140625, 5.185604095458984, 20.19757080078125], [9.735897064208984, 3.5089874267578125, 29.904998779296875], [16.247718811035156, 4.084339439868927, 26.240285873413086], [24.17608952522278, 9.280303977429867, 25.724882125854492], [36.39069962501526, 4.033592939376831, 15.162801742553711], [43.68275398015976, 4.484593868255615, 16.005840301513672]];
+    const ready = await ask({ type: "prepare", parts: await cloudParts(discs), sharpAngle: 25 });
+    if (ready.type !== "ready") throw new Error("not ready");
+    const top = ready.edges.filter((edge) => edge.selectable && heights(edge).every((y) => Math.abs(y - HEIGHT) < 1e-3));
+    await expect(ask({ type: "preview", kind: "fillet", edgeIds: top.map((edge) => edge.id), amount: 2, quality: "draft", chamferAngle: 45 })).rejects.toThrow(/invalid or overlapping|cannot be filleted together/);
+  });
+
   it("leaves a body whose edges go through as they are", async () => {
     vi.stubGlobal("WebAssembly", WebAssembly);
     await import("@/workers/cadModifier.worker");

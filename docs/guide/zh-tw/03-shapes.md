@@ -15,30 +15,34 @@ layerling 的每個零件都從一個形狀開始。其餘一切都是由形狀�
 
 每選取一個形狀，形狀庫就會關閉。拖曳它的標題列可以移動它，讓你把它放到不會擋住目標位置的地方，例如屬性面板上方；按兩下標題列會讓它回到按鈕下方，你上次留下的位置會儲存在瀏覽器中。標題列的圖釘可讓形狀庫保持開啟，方便你連續放置多個形狀。拖曳它的邊緣與角落可調整大小，最大到螢幕允許的寬高；尺寸同樣儲存在瀏覽器中，按兩下邊緣即可還原。拉窄之後，形狀庫會省略名稱、只顯示圖片；把指標移到形狀上時才會出現名稱。
 
-選一個形狀。它會跟著滑鼠指標，並在你點擊的位置落下。把它移到實體上方，它會貼在指標底下的面上，斜面也一樣，就像 Tinkercad 的 Cruise；移到空白平台上方，則落在工作平面。[[Esc]] 取消放置。等待點擊的工具（例如捲尺、角尺、備註、{{ui:camera.placeWorkplane}}、{{ui:editor.tool.layFlat}} 或邊緣工具）在你選取形狀時會被關掉，因此那一下點擊就是放置形狀。反過來，開啟其中一個工具也會把形狀放下。如果你希望形狀直接出現在平台中央，可以在設定中關閉點擊放置（{{ui:workspace.appearance}} 區域的 {{ui:workspace.cruise}} 開關）。
+選一個形狀。它會跟著滑鼠指標，並在你點擊的位置落下。把它移到實體上方，它會貼在指標底下的面上，斜面也一樣，就像 Tinkercad 的 Cruise；移到空白平台上方，則落在工作平面。[[Esc]] 取消放置。等待點擊的工具（例如捲尺、角尺、備註、{{ui:camera.placeWorkplane}}、{{ui:editor.tool.layFlat}} 或邊緣工具）在你選取形狀時會被關掉，因此那一下點擊就是放置形狀。反過來，開啟其中一個工具也會把形狀放下。如果你希望形狀直接出現在平台中央，可以在設定中關閉點擊放置（{{ui:workspace.controls}} 區域的 {{ui:workspace.cruise}} 開關）。
 
 在一個面上,指標靠近面中心時形狀會吸附到該面的中心,就像吸附到角或邊一樣;按住 [[Alt]] 可放在任意位置。如果從形狀庫把它拖到一個面上,它總是落在面的中心,按住 [[Alt]] 則落在放開的位置。
 
 形狀庫提供：
 
-- **{{ui:library.section.basic}}：** {{ui:shape.box}}、{{ui:shape.roundedBox}}、{{ui:shape.cylinder}}、{{ui:shape.slot}}、{{ui:shape.ellipse}}、{{ui:shape.polygon}}（三到二十四邊）、{{ui:shape.wedge}}、{{ui:shape.sphere}}、{{ui:shape.cone}}、{{ui:shape.curvedCone}}（側面向內彎成像偽球面那樣的喇叭形，或向外鼓成圓頂；由 {{ui:prop.curvedConeTop}} 與 {{ui:prop.curvedConeBend}} 設定，並且像所有精確實體一樣可以薄殼與導圓角）、{{ui:shape.pyramid}}（三到二十四邊，因此也有三角錐）、{{ui:shape.roundRoof}}、{{ui:shape.halfSphere}}、{{ui:shape.paraboloid}}（收窄成圓頭的穹頂，高度隨離軸距離的平方下降）和 {{ui:shape.torus}}。
+- **{{ui:library.section.basic}}：** {{ui:shape.box}}、{{ui:shape.roundedBox}}、{{ui:shape.cylinder}}、{{ui:shape.slot}}、{{ui:shape.ellipse}}、{{ui:shape.polygon}}（三到二十四邊）、{{ui:shape.wedge}}、{{ui:shape.roof}}、{{ui:shape.sphere}}、{{ui:shape.cone}}、{{ui:shape.curvedCone}}（側面向內彎成像偽球面那樣的喇叭形，或向外鼓成圓頂；由 {{ui:prop.curvedConeTop}} 與 {{ui:prop.curvedConeBend}} 設定，並且像所有精確實體一樣可以薄殼與導圓角）、{{ui:shape.pyramid}}（三到二十四邊，因此也有三角錐）、{{ui:shape.roundRoof}}、{{ui:shape.halfSphere}}、{{ui:shape.paraboloid}}（收窄成圓頭的穹頂，高度隨離軸距離的平方下降）和 {{ui:shape.torus}}。
 - **{{ui:library.section.vessels}}：** 從一個輪廓過渡到另一個輪廓的 {{ui:shape.loft}}，例如從方形到圓形，{{ui:shape.tube}}，由最多十二段直管與其間的彎角組成的 {{ui:shape.bentTube}}，以及 {{ui:shape.vase}}。
 - **{{ui:library.section.holes}}：** 用於螺絲頭的 {{ui:shape.counterbore}} 與 {{ui:shape.countersink}}、用於水平孔的 {{ui:shape.teardrop}}，以及用於 USB、HDMI、DisplayPort 與 RJ45 插座的 {{ui:shape.port}}。 {{ui:threadInsert.title}} 在你選取的實體上開出熱熔嵌件的孔；它不能拖入設計。
 - **{{ui:library.section.connections}}：** {{ui:shape.thread}}（螺桿、螺絲、螺帽與螺紋孔）、沉頭螺絲下的 {{ui:shape.finishingWasher}}、可一體列印的 {{ui:shape.hinge}} 與 {{ui:shape.dovetail}}。更多內容見[螺紋與機械件](chapter:threads-and-mechanics)。
 - **{{ui:library.section.enclosure}}：** 用於熱熔螺母與自攻螺絲的 {{ui:shape.screwBoss}}、附卡座的 {{ui:shape.snapFit}}，以及 {{ui:shape.rib}} 或角撐板。更多內容見[螺紋與機械件](chapter:threads-and-mechanics)。
 - **{{ui:library.section.mechanics}}：** {{ui:shape.spring}}、{{ui:shape.gear}}、{{ui:shape.hirth}} 與 {{ui:shape.pulley}}。
-- **{{ui:library.section.systems}}：** {{ui:shape.gridfinity}} 收納盒與底板，以及 {{ui:shape.sbcBoard}}，一塊依實際尺寸製作的單板電腦，用來圍繞它設計外殼。
+- **{{ui:library.section.systems}}：** {{ui:shape.gridfinity}} 收納盒與底板，以及 {{ui:shape.sbcBoard}}，一塊依實際尺寸製作的單板電腦，用來圍繞它設計外殼；還有 {{ui:shape.fan}}，離心與軸流風扇，其螺絲孔和風口可以穿過牆壁。
 - **{{ui:library.section.lettering}}：** {{ui:shape.text}}，也可沿圓弧排列，以及 {{ui:shape.nameTag}}、{{ui:shape.iconTag}} 與 {{ui:shape.qrCode}}。更多內容見[文字](chapter:text)。
-- **{{ui:library.section.decorative}}：** {{ui:shape.star}}、{{ui:shape.heart}}、{{ui:shape.crescent}}，以及用於握持的 {{ui:shape.knurl}}。
+- **{{ui:library.section.decorative}}：** {{ui:shape.star}}、{{ui:shape.heart}}、{{ui:shape.crescent}}、用於握持的 {{ui:shape.knurl}}，以及 {{ui:shape.patties}}，一塊用於鏤空模板和印章的圖案板。
 - **{{ui:library.section.helpers}}：** {{ui:shape.ruler}}，它只是量測工具，永遠不會出現在匯出檔案中。
 
 要得到三角形有兩種方式：三邊的 {{ui:shape.polygon}} 是等腰三角形，也就是 Tinkercad 的「Roof」；{{ui:shape.wedge}} 則是直角三角形。兩者都是真正的三角柱。想挖出三角形孔，可複製該形狀、把副本縮小、標記為孔，再用 {{ui:editor.tool.centerOnWorkplane}} 或 {{ui:editor.tool.align}} 對齊。兩者都按形狀的邊界框運作，也就是包住它的最小方框，所以切掉一半的正方形仍算作完整正方形。命令搜尋（[[Ctrl]]+[[K]]）在「triangle」或「roof」下也找得到這兩種形狀。楔形的屬性裡還有{{ui:prop.wedgeAngle}}，即其斜面與平台的夾角。輸入一個角度，高度會在寬度不變的情況下隨之改變，便於把面上的工作平面設成一定的傾角。
+
+形狀庫中的{{ui:shape.roof}}正是這個三邊的多邊形，插入時已平躺在一個平面上，像屋頂一樣尖角朝上。頂部的控制點改變三角形的高度，底邊保持在平台上；底部的控制點改變寬度和長度。它的三條邊固定不變；需要其他邊數時請用{{ui:shape.polygon}}。
 
 {{ui:shape.slot}} 可以一端比另一端窄，例如用在兩顆皮帶輪之間的皮帶護罩。在 {{ui:inspector.properties}} 下設定 {{ui:prop.slotSmallEnd}}；大端與膠囊同寬，兩側從一段圓弧直通到另一段圓弧。{{ui:prop.slotCentreDistance}} 是兩段圓弧圓心之間的距離，也就是兩顆皮帶輪的間距。改變小端時圓心距保持不變，膠囊會變長或變短。錐形膠囊同樣是精確實體，可套用圓角並匯出 STEP。
 
 {{ui:shape.sector}} 是一個圓盤，你可以用 {{ui:prop.sectorAngle}}（1 到 360°）像時鐘指針一樣把它切掉一部分，從十二點鐘方向起順時針計算。{{ui:prop.innerDiameter}} 可以把它變成圓環或圓環段（為 0 時零件保持實心），{{ui:prop.sectorEndRadius}} 則把兩端倒成半圓：得到一條彎曲的槽，例如用於螢幕支架和其他需要轉動並夾緊的零件。直徑和高度的設定方法與圓柱相同。外框仍是完整的圓，所以形狀繞圓心旋轉。
 
 {{ui:shape.polygon}} 在 {{ui:prop.sides}} 下方有 {{ui:prop.cornerFillet}} 滑桿，模型上還有一個拖曳點，與 {{ui:shape.roundedBox}} 一樣。無論有多少條邊，一個半徑適用於所有角。它以毫米為單位，所以拉伸後的多邊形仍保持圓角；最大值是相鄰圓角恰好相接的位置，0 則是普通多邊形。
+
+{{ui:prop.polygonFlat}}將多邊形轉過半條邊，使朝前的是一條平邊而不是一個角。長度和寬度是在多邊形外圍的框上測量的：八邊形通常以四個角接觸這個框，因此兩個尺寸都是對角之間的距離；打開此開關後，它以四條平邊接觸這個框，兩個尺寸都是對邊之間的距離，也就是扳手的對邊寬度。六邊形的平邊這時在前後，而不是在左右。切換開關時，形體保持不變，兩個數值隨之改變。
 
 ## 形狀的設定
 
@@ -50,8 +54,8 @@ layerling 的每個零件都從一個形狀開始。其餘一切都是由形狀�
 
 - **{{ui:inspector.solid}} 或 {{ui:inspector.hole}}：** 實體保留材料，孔則移除材料。點擊 {{ui:inspector.solid}} 會開啟顏色；你在那裡調出的自訂顏色之後會留在 {{ui:inspector.recentColors}} 下，最多最近八個。更多內容見[實體與孔](chapter:solids-and-holes)。{{ui:inspector.keptColors}} 那一列的圖釘可永久保留你選的顏色：它獨佔一列，較新的顏色永遠不會把它擠掉，再按同一枚圖釘即可取消保留；這個瀏覽器最多保留 21 種顏色。
 - **{{ui:inspector.transparent}}：** 讓你能看穿實體，例如看清它後面的形狀。
-- **{{ui:inspector.multicolor}}：** 僅適用於群組；[[Shift]]+[[M]] 可切換。開啟後，群組中的每個部件都顯示自己的顏色，被孔挖成單一實體的群組也一樣（孔留下的壁會採用被挖入實體的顏色）。為群組選顏色會關閉這個選項，並為整個群組上色。綁定則一律保留各部件自己的顏色。匯出 3MF 時每個部件都保留顏色，切片軟體便能據此把各部件對應到線材；OBJ 把顏色記錄在頂點上，因此那裡兩種顏色的交界會稍微粗糙一些。
-- **{{ui:inspector.properties}}：** 尺寸以及屬於這個形狀的一切。圓柱有直徑、高度與邊數。圓管或圓環則有 {{ui:prop.outerDiameter}}、{{ui:prop.innerDiameter}}（用於已知軸徑的襯套）與壁厚：任意兩個值可得出第三個，輸入順序不拘。設定外徑時內孔保持不變、壁厚隨之改變；設定內徑時外徑保持不變、壁厚隨之改變；內孔比管更寬時，外徑會按壁厚增大。管的長度就是它的高度。被拉過一邊、不再是圓形的管，會以長度與寬度兩個值取代原本的單一外徑；在那裡改變寬度時壁厚保持不變。齒輪有齒數，彈簧有圈數。離開預設值的數值，名稱旁會出現一個小箭頭：點擊它只還原該數值，無論你之後還做了什麼，這點與復原不同。按兩下滑桿也一樣，這裡以及工作區設定中的滑桿都是如此。用滑鼠拖曳時，長度滑桿會吸附到吸附步距，因此高度會落在整數公釐（格線關閉時與短滑桿上不會）；輸入的值與滑桿上的方向鍵仍保持精確。底部的 {{ui:inspector.saveDefaults}} 會把目前的值設為這類形狀的起始值（等同設定中的 {{ui:workspace.shapeDefaults}}），{{ui:inspector.resetDefaults}} 則還原為應用程式自己的預設值。 開啟{{ui:prop.tubeBoreHole}}後，管子群組時其孔算作空洞：它也會切開與管子群組在一起的物體的壁，於是T形相接的兩根管子彼此貫通。
+- **{{ui:inspector.multicolor}}：** 適用於群組或綁定；[[Shift]]+[[M]] 可切換。開啟後，群組中的每個部件都顯示自己的顏色，被孔挖成單一實體的群組也一樣（孔留下的壁會採用被挖入實體的顏色）。為群組選顏色會關閉這個選項，並為整個群組上色；各部件自己的顏色仍保留在底下，因此再次開啟時會恢復。綁定一開始就是開啟的；關閉後，綁定會以單一顏色顯示與匯出。你新建立的純實體群組一開始是關閉的，顯示為一個整體；先前建立的群組仍顯示各部件的顏色。為某個群組開啟後，之後新建立的群組也會一開始就開啟，直到你再次為某個群組關閉它；瀏覽器會記住這個選擇。匯出 3MF 時每個部件都保留顏色，切片軟體便能據此把各部件對應到線材；OBJ 把顏色記錄在頂點上，因此那裡兩種顏色的交界會稍微粗糙一些。開關下方的 {{ui:inspector.partColors}} 列出群組或綁定中的實體部件（最多 12 個；孔不列出，被挖成單一網格的群組沒有此清單），每個部件附一個色塊：選一次顏色只會為該部件重新上色，不必開啟群組，並算作一個復原步驟。
+- **{{ui:inspector.properties}}：** 尺寸以及屬於這個形狀的一切。圓柱有直徑、高度與邊數。圓管或圓環則有 {{ui:prop.outerDiameter}}、{{ui:prop.innerDiameter}}（用於已知軸徑的襯套）與壁厚：任意兩個值可得出第三個，輸入順序不拘。最後輸入的值保持不變，第三個隨之改變：壁厚 1 公釐，再輸入外徑 30 公釐，內徑就是 28 公釐。尚未輸入任何一個時：設定外徑時內孔保持不變、壁厚隨之改變；設定內徑時外徑保持不變、壁厚隨之改變；內孔比管更寬時，外徑會按壁厚增大。管的長度就是它的高度。被拉過一邊、不再是圓形的管，會以長度與寬度兩個值取代原本的單一外徑；在那裡改變寬度時壁厚保持不變。齒輪有齒數，彈簧有圈數。離開預設值的數值，名稱旁會出現一個小箭頭：點擊它只還原該數值，無論你之後還做了什麼，這點與復原不同。按兩下滑桿也一樣，這裡以及工作區設定中的滑桿都是如此。用滑鼠拖曳時，長度滑桿會吸附到吸附步距，因此高度會落在整數公釐（格線關閉時與短滑桿上不會）；輸入的值與滑桿上的方向鍵仍保持精確。底部的 {{ui:inspector.saveDefaults}} 會把目前的值設為這類形狀的起始值（等同設定中的 {{ui:workspace.shapeDefaults}}），{{ui:inspector.resetDefaults}} 則還原為應用程式自己的預設值。 開啟{{ui:prop.tubeBoreHole}}後，管子群組時其孔算作空洞：它也會切開與管子群組在一起的物體的壁，於是T形相接的兩根管子彼此貫通。
 - **{{ui:inspector.makeEllipse}}：** 僅適用於圓柱。圓柱一律是圓的：只有一個直徑，每個控制點都會同時改變兩側。想要橢圓，點擊這個選項，它就會變成 {{ui:shape.ellipse}}——同一個實體，之後你可以分別設定長度與寬度。帶有倒角、圓角或壁的圓柱，以及轉過或群組過的圓柱，不能這樣轉換；這些情況請一開始就選用 {{ui:shape.ellipse}}。
 - **{{ui:inspector.taper}}：** 頂部與底部尺寸不同，例如做斜面或漏斗。開啟 {{ui:inspector.keepProportions}} 後，同一端的長度與寬度會依目前比例一起變化，方形頂部仍維持方形；頂部與底部互不影響。
 - **{{ui:inspector.twist}}：** 讓頂部相對底部扭轉，或往側邊偏移。這樣就能做出扭轉的柱子與傾斜的高塔。
@@ -120,9 +124,9 @@ layerling 的每個零件都從一個形狀開始。其餘一切都是由形狀�
 - **形狀旁的數字**顯示尺寸。點擊其中一個會開啟欄位，讓你輸入想要的數字。按 [[Enter]] 時，形狀從該數字對面的邊開始增大，跟拖曳時一樣；按 [[Alt]]+[[Enter]] 則繞著自己的中心增大，因此先前與其他形狀對齊過的形狀仍保持對齊。這適用於寬度與長度；高度一律從底面往上增大。右側屬性面板中的欄位不需按鍵就會保持中心。[[Tab]] 保留數字並開啟下一個欄位（寬度、深度、高度）；[[Shift]]+[[Tab]] 返回上一個。在屬性面板中已點入的欄位，滑鼠滾輪也能改變數值：每一格一個單位，按住 [[Shift]] 為十倍，[[Ctrl]] 為十分之一，[[Alt]] 為百分之一。沒點入的欄位則把滾輪留給面板捲動。
 - **點擊一個角**（不拖曳）會同時開啟寬度與深度。輸入第一個，按 [[Tab]] 切到第二個，再按 [[Enter]] 套用兩者。[[Esc]] 取消。
 
-形狀一旦轉過直角，例如用 {{ui:editor.tool.layFlat}} 側放，屬性面板中的欄位就會按每項尺寸目前的方向命名：{{ui:prop.height}} 是往上的尺寸，{{ui:prop.width}} 沿 X 方向，{{ui:prop.length}} 沿 Y 方向。有專用名稱的欄位（例如沉頭孔的頭部直徑）保留其名稱。因此對躺下的形狀輸入高度，改的是垂直方向的尺寸，而它的底面仍留在平台上。以其他角度傾斜的形狀，欄位中顯示的是它自己的尺寸，下方會有備註說明。 提示下方還會顯示空間中的總尺寸，因此可以讀出傾斜形狀實際有多高；它只用於查看。
+形狀一旦轉過直角，例如用 {{ui:editor.tool.layFlat}} 側放，屬性面板中的欄位就會按每項尺寸目前的方向命名：{{ui:prop.height}} 是往上的尺寸，{{ui:prop.width}} 沿 X 方向，{{ui:prop.length}} 沿 Y 方向。有專用名稱的欄位（例如沉頭孔的頭部直徑）保留其名稱。因此對躺下的形狀輸入高度，改的是垂直方向的尺寸，而它的底面仍留在平台上。側放在平台或其他水平工作平面上的形狀，其控制點也會直立顯示：頂部的控制點把它往上拉，底部的控制點改變沿工作平面方向的尺寸，不論那是形狀自身的哪一項尺寸。以其他角度傾斜的形狀，欄位中顯示的是它自己的尺寸，下方會有備註說明。 提示下方還會顯示空間中的總尺寸，因此可以讀出傾斜形狀實際有多高；它只用於查看。
 
-不用滑鼠時，可以用鍵盤：方向鍵把選取項移動一個吸附步距（格線關閉時為 0.01 mm），按住 [[Shift]] 為五個，若把 {{ui:workspace.gridMajorEvery}} 設為 {{ui:workspace.gridMajorSteps|10}}（在設定中的 {{ui:workspace.appearance}} 下），則為十個：移動到下一條較深的格線，跟 Tinkercad 一樣。方向鍵跟隨檢視：[[→]] 往螢幕右側，[[↑]] 遠離你，即使轉過平台也一樣。把形狀推出畫面，檢視也會跟著移動。[[Ctrl]]+[[↑]] 與 [[Ctrl]]+[[↓]] 升高與降低它。連續按方向鍵在歷史記錄中算一步：只要下一次按鍵在 1.5 秒內接上，復原就會收回整串操作，而不是一次一下。[[R]] 旋轉 45°，[[Shift]]+[[R]] 旋轉 22.5°。[[D]] 把選取項放到工作平面上。
+不用滑鼠時，可以用鍵盤：方向鍵把選取項移動一個吸附步距（格線關閉時為 0.01 mm），按住 [[Shift]] 為五個，若把 {{ui:workspace.gridMajorEvery}} 設為 {{ui:workspace.gridMajorSteps|10}}（在設定中的 {{ui:workspace.workplane}} 下），則為十個：移動到下一條較深的格線，跟 Tinkercad 一樣。方向鍵跟隨檢視：[[→]] 往螢幕右側，[[↑]] 遠離你，即使轉過平台也一樣。把形狀推出畫面，檢視也會跟著移動。[[Ctrl]]+[[↑]] 與 [[Ctrl]]+[[↓]] 升高與降低它。旋轉或傾斜的形狀這樣會沿格線移動。按住 [[J]] 可改為沿它自身的軸移動：方向鍵會沿著它的各邊移動，傾斜的形狀會沿斜面上下移動，[[J]]+[[Ctrl]]+[[↑]] 會沿它自身的向上方向移動它。要先按 [[J]] 再按 [[Ctrl]]，因為 [[Ctrl]]+[[J]] 會開啟瀏覽器的下載內容。用滑鼠拖曳時，以及使用紅色、綠色和上下控制點時，[[J]] 同樣有效，按下它後這些控制點會立即轉過來。這時粉紅色參考線只會把形狀與以相同方式旋轉的形狀以及參考點對齊。旋轉已烘焙進三角網格的零件算作未旋轉。在設定中的 {{ui:workspace.controls}} 下開啟 {{ui:workspace.moveAlongShapeAxes}} 後，沿形狀自身的軸移動就成了一般方式，[[J]] 則沿格線移動。{{ui:workspace.showShapeWorkplaneWhileMoving}} 會在這樣移動時顯示一個與形狀對齊的工作平面，僅作參考。連續按方向鍵在歷史記錄中算一步：只要下一次按鍵在 1.5 秒內接上，復原就會收回整串操作，而不是一次一下。[[R]] 旋轉 45°，[[Shift]]+[[R]] 旋轉 22.5°。[[D]] 把選取項放到工作平面上。
 
 控制點可把形狀拉到和你的平台一樣大，寬與深至少 220 mm。在屬性面板輸入數字則可超過，而這樣放大的形狀再次抓取時不會縮回。在設定中的 {{ui:workspace.shapeDefaults}} 下，可用 {{ui:workspace.customLimit}} 為每種形狀設定自己的上限。
 
@@ -174,7 +178,7 @@ layerling 的每個零件都從一個形狀開始。其餘一切都是由形狀�
 
 已經包覆過的形狀是包覆後物件的網格，不能再次包覆：復原這次包覆，或用另一個直徑重新包覆原來的平面形狀。
 
-結果像匯入的模型一樣是網格。復原會把形狀重新攤平；想換直徑，先復原再重新包覆。包覆範圍不能超過圓柱一圈；超過時 layerling 會指出能夠容納的最小直徑。
+結果像匯入的模型一樣是網格。形狀本身的設定會隨之消失，因此請先設定好一切，最後再包覆。復原會把形狀重新攤平；想換直徑，先復原再重新包覆。包覆範圍不能超過圓柱一圈；超過時 layerling 會指出能夠容納的最小直徑。
 
 ## 表面紋理
 
@@ -184,15 +188,15 @@ layerling 的每個零件都從一個形狀開始。其餘一切都是由形狀�
 2. 在 {{ui:inspector.surfaceProjection}} 下，杯子、旋鈕或把手等圓形實體選 {{ui:surfaceTexture.cylinder}}。圖案繞 {{ui:inspector.surfaceAxis}} 一圈，間距會略作取整，使一圈正好是整數個凹槽或單元：圖案閉合，沒有接縫。{{ui:surfaceTexture.allRound}} 適合不是圓形的實體，{{ui:surfaceTexture.flatProjection}} 適合從上方看的蓋子或平板。保持 {{ui:surfaceTexture.auto}}，Layerling 會替你選擇：圓形實體以及像盒子這樣直立的稜角實體用 {{ui:surfaceTexture.cylinder}}（圖案沿外輪廓走，無接縫地繞過稜邊，凸起的圖案會順著稜邊彎過去），其他稜角實體用 {{ui:surfaceTexture.allRound}}。
 3. 點擊 {{ui:inspector.surfaceApply}}。大的實體需要幾秒鐘，期間可以繼續工作。
 
-如果只想給部分面加圖案，例如只給盒子的頂面，點擊 {{ui:inspector.surfaceFacesPick}}，再在檢視中點擊這些面：頂面、底面或某個側面。一個面一直延伸到實體的銳利稜邊；圓柱的側面是一個面，頂面和底面各是一個面。選取的面會亮起，再點擊一次可以取消，{{ui:inspector.surfaceFacesClear}} 讓圖案重新覆蓋整個實體。選取完成後，{{ui:inspector.surfaceFacesShow}} 會再次點亮目前顯示圖層所選的面供檢查，不會改動它們；一個實體上有多個圖樣時很有用。只有選取的面得到圖案，其他面保持原樣，三角形也很少。在頂面或底面上圖案是平鋪的；在圓形頂面上，凹槽、繩紋和針織紋繞中心排成一圈圈，像樹的年輪。{{ui:inspector.surfaceFaceTurn}} 轉動頂面和底面上的圖案：0° 時各列沿前緣，90° 時沿側緣。{{ui:inspector.surfaceCapStyle}} 讓那裡的凹槽、繩紋和針織紋在列與環之間切換；在稜角實體上，環會沿外輪廓走。{{ui:inspector.surfaceCapEdge}} 決定側面與帶圖案的頂面或底面之間的稜邊怎麼處理：{{ui:surfaceTexture.edgeSharp}} 讓兩者都止於稜邊。選 {{ui:surfaceTexture.edgeOver}} 時，側面的圖案繞過稜邊鋪滿整個頂面：繩紋、針織紋和水平凹槽的各列以環的形式延續，垂直和斜向的凹槽則作為射線幾乎延伸到中心。{{ui:surfaceTexture.edgeFold}} 效果相同，但只作為一圈邊；裡面是頂面自己的圖案，依 {{ui:inspector.surfaceCapStyle}} 的設定。{{ui:surfaceTexture.edgeBead}} 為任何圖案在稜邊加一圈飾邊：一條繩、一道收針鏈或一道圓珠邊。較窄的圓角也會結束一個面：杯緣有圓角的杯子，其外側、圓角、杯緣、內側和杯底各自是獨立的面，所以點擊外側只會選到外側。較寬的圓角（約占實體四分之一或更多）屬於該面，就像球是一個面。選了面時，{{ui:inspector.surfaceOutside}} 和 {{ui:inspector.surfaceInside}} 不起作用。
+如果只想給部分面加圖案，例如只給盒子的頂面，點擊 {{ui:inspector.surfaceFacesPick}}，再在檢視中點擊這些面：頂面、底面或某個側面。一個面一直延伸到實體的銳利稜邊；圓柱的側面是一個面，頂面和底面各是一個面。選取的面會亮起，再點擊一次可以取消，{{ui:inspector.surfaceFacesClear}} 讓圖案重新覆蓋整個實體。選取完成後，{{ui:inspector.surfaceFacesShow}} 會再次點亮目前顯示圖樣群組所選的面供檢查，不會改動它們；一個實體上有多個圖樣時很有用。只有選取的面得到圖案，其他面保持原樣，三角形也很少。在頂面或底面上圖案是平鋪的；在圓形頂面上，凹槽、繩紋和針織紋繞中心排成一圈圈，像樹的年輪。{{ui:inspector.surfaceFaceTurn}} 轉動頂面和底面上的圖案：0° 時各列沿前緣，90° 時沿側緣。{{ui:inspector.surfaceCapStyle}} 讓那裡的凹槽、繩紋和針織紋在列與環之間切換；在稜角實體上，環會沿外輪廓走。{{ui:inspector.surfaceCapEdge}} 決定側面與帶圖案的頂面或底面之間的稜邊怎麼處理：{{ui:surfaceTexture.edgeSharp}} 讓兩者都止於稜邊。選 {{ui:surfaceTexture.edgeOver}} 時，側面的圖案繞過稜邊鋪滿整個頂面：繩紋、針織紋和水平凹槽的各列以環的形式延續，垂直和斜向的凹槽則作為射線幾乎延伸到中心。{{ui:surfaceTexture.edgeFold}} 效果相同，但只作為一圈邊；裡面是頂面自己的圖案，依 {{ui:inspector.surfaceCapStyle}} 的設定。{{ui:surfaceTexture.edgeBead}} 為任何圖案在稜邊加一圈飾邊：一條繩、一道收針鏈或一道圓珠邊。較窄的圓角也會結束一個面：杯緣有圓角的杯子，其外側、圓角、杯緣、內側和杯底各自是獨立的面，所以點擊外側只會選到外側。較寬的圓角（約占實體四分之一或更多）屬於該面，就像球是一個面。選了面時，{{ui:inspector.surfaceOutside}} 和 {{ui:inspector.surfaceInside}} 不起作用。
 
-一個實體上的多種圖案——四周是磚牆，頂面是滾花——就是圖層：第一個旁邊的 {{ui:inspector.surfaceLayerAddShort}} 會新增一層，並立即為它開啟選面；點擊它應覆蓋的面。之後的每一層只作用於它自己的面，第一層作用於其餘所有面。分頁一次顯示一個圖層及其設定，{{ui:inspector.surfaceLayerRemove}} 刪除一層。所有圖層都在紋理下方的實體上一起產生，因此修改其中一層或移除紋理，和單一圖案時一樣。文字作為圖層不需要選面：放在哪裡就在哪裡。
+一個實體上的多種圖案——四周是磚牆，頂面是滾花——就是圖樣群組：第一個旁邊的 {{ui:inspector.surfaceLayerAddShort}} 會新增一組，並立即為它開啟選面；點擊它應覆蓋的面。之後的每一組只作用於它自己的面，第一組作用於其餘所有面。分頁一次顯示一個圖樣群組及其設定，{{ui:inspector.surfaceLayerRemove}} 刪除一組。所有圖樣群組都在紋理下方的實體上一起產生，因此修改其中一組或移除紋理，和單一圖案時一樣。文字作為圖樣群組不需要選面：放在哪裡就在哪裡。
 
-如果只想給一個面上的某一處加圖案，例如蓋子上一塊圓形的滾花，點擊 {{ui:inspector.surfaceRegionDraw}}，在檢視中按住該面，並按住按鍵繞這一處畫一圈。圖案就只落在你畫的輪廓之內，面的其餘部分保持光滑；如果按在實體旁邊，檢視照常旋轉。{{ui:inspector.surfaceRegionAgain}} 重新繪製區域，{{ui:inspector.surfaceRegionClear}} 將它移除。每個圖層都可以有自己的區域，也可以在同一個面上。
+如果只想給一個面上的某一處加圖案，例如蓋子上一塊圓形的滾花，點擊 {{ui:inspector.surfaceRegionDraw}}，在檢視中按住該面，並按住按鍵繞這一處畫一圈。圖案就只落在你畫的輪廓之內，面的其餘部分保持光滑；如果按在實體旁邊，檢視照常旋轉。{{ui:inspector.surfaceRegionAgain}} 重新繪製區域，{{ui:inspector.surfaceRegionClear}} 將它移除。每個圖樣群組都可以有自己的區域，也可以在同一個面上。
 
 在 {{ui:inspector.more}} 下選擇圖案鋪在哪裡：外壁和內壁，底部和頂部各留多少光滑（光滑的底部讓實體平穩地放在熱床上），高度上的一條帶，以及銳利稜邊是否保持光滑。在所有保持光滑的地方旁邊，圖案會柔和地過渡出現；{{ui:inspector.surfaceFade}} 設定過渡的毫米數。數值越小，圖案越靠近稜邊；凸起的圖案會一直延伸到稜邊。在立方體這類稜角實體的平面上，圖案則在這個距離處以一條直邊結束：凹槽和菱形以一小段壁收尾，只保留完整的凸點。{{ui:inspector.surfaceProfile}} 決定凹槽或接縫的截面：尖形和平形是精確的，圓形則依 {{ui:inspector.surfaceDetail}} 給出的級數分段。
 
-除了 {{ui:surfaceTexture.grooves}}、{{ui:surfaceTexture.knurl}}、{{ui:surfaceTexture.honeycomb}} 和 {{ui:surfaceTexture.bumps}}，還有更多圖案。{{ui:surfaceTexture.cells}} 是像鋪路石或乾裂泥土那樣的不規則單元；接縫像蜂巢一樣切得乾淨，換一個 {{ui:inspector.surfaceSeed}} 就重新排布。{{ui:surfaceTexture.knit}}、{{ui:surfaceTexture.rope}} 和 {{ui:surfaceTexture.weave}} 模仿針織線圈、纏繞的繩子以及由立條和編條編成的籃子；它們預設凸起、圓潤，大小與原物相當。{{ui:surfaceTexture.grain}} 讓表面變得細微粗糙，像噴砂過一樣；顆粒分布在空間中，沒有接縫，也不會拉伸。{{ui:surfaceTexture.image}} 把一張灰階圖當作高度圖：可用現成的木紋、地形或磨石子，也可用 {{ui:inspector.surfaceImageLoad}} 載入自己的圖。亮處成為完整深度；{{ui:inspector.surfaceSpacingImage}} 設定一塊拼貼的寬度，在 {{ui:inspector.surfaceImageTiling}} 下，拼貼可以重複、鏡像或錯位。透明背景上的深色圖畫（例如 SVG 裡的黑色線條）按其線條計算：線條變成最大深度。選擇 {{ui:surfaceTexture.tilingOnce}} 時，圖片像標籤一樣只壓印一次：{{ui:inspector.surfaceTextAround}} 和 {{ui:inspector.surfaceTextHeight}} 像文字一樣決定它的中心，{{ui:inspector.surfaceImageWidth}} 設定它的寬度，旁邊的表面保持平滑。選了面時，它總是落在這些面上，即使 {{ui:inspector.surfaceTextAround}} 和 {{ui:inspector.surfaceTextHeight}} 指向別處。 雙色的 SVG 圖案在一次性壓上時，會像文字一樣沿著輪廓切出，因此斜線和曲線乾淨俐落，不會出現階梯。
+除了 {{ui:surfaceTexture.grooves}}、{{ui:surfaceTexture.knurl}}、{{ui:surfaceTexture.honeycomb}} 和 {{ui:surfaceTexture.bumps}}，還有更多圖案。{{ui:surfaceTexture.cells}} 是像鋪路石或乾裂泥土那樣的不規則單元；接縫像蜂巢一樣切得乾淨，換一個 {{ui:inspector.surfaceSeed}} 就重新排布。{{ui:surfaceTexture.hammered}} 是相互重疊的圓形凹坑，像手工鎚打銅杯上的鎚痕，每個大小和深淺略有不同；換一個 {{ui:inspector.surfaceSeed}} 也會重新排布。{{ui:surfaceTexture.knit}}、{{ui:surfaceTexture.rope}} 和 {{ui:surfaceTexture.weave}} 模仿針織線圈、纏繞的繩子以及由立條和編條編成的籃子；它們預設凸起、圓潤，大小與原物相當。{{ui:surfaceTexture.grain}} 讓表面變得細微粗糙，像噴砂過一樣；顆粒分布在空間中，沒有接縫，也不會拉伸。{{ui:surfaceTexture.image}} 把一張灰階圖當作高度圖：可用現成的木紋、地形或磨石子，也可用 {{ui:inspector.surfaceImageLoad}} 載入自己的圖。亮處成為完整深度；{{ui:inspector.surfaceSpacingImage}} 設定一塊拼貼的寬度，在 {{ui:inspector.surfaceImageTiling}} 下，拼貼可以重複、鏡像或錯位。選擇 {{ui:surfaceTexture.tilingKaleidoscope}} 時，拼貼除了鏡像，還會沿對角線對折：圖片的一小塊就變成沒有接縫的紋飾，像萬花筒裡看到的那樣。透明背景上的深色圖畫（例如 SVG 裡的黑色線條）按其線條計算：線條變成最大深度。選擇 {{ui:surfaceTexture.tilingOnce}} 時，圖片像標籤一樣只壓印一次：{{ui:inspector.surfaceTextAround}} 和 {{ui:inspector.surfaceTextHeight}} 像文字一樣決定它的中心，{{ui:inspector.surfaceImageWidth}} 設定它的寬度，旁邊的表面保持平滑。選了面時，它總是落在這些面上，即使 {{ui:inspector.surfaceTextAround}} 和 {{ui:inspector.surfaceTextHeight}} 指向別處。 雙色的圖案（SVG、PNG 或 JPEG）在一次性壓上時，會像文字一樣沿著輪廓切出，因此斜線和曲線乾淨俐落，不會出現階梯。
 
 {{ui:surfaceTexture.carbon}} 在實體上鋪斜紋編織的碳纖維：直向帶和橫向帶互相上下穿插，每條帶錯開一條帶的位置，於是出現熟悉的斜紋。{{ui:inspector.surfaceCarbonWeave}} 可選 {{ui:surfaceTexture.carbonTwill22}}（大多數碳纖維件的均勻編織），或 {{ui:surfaceTexture.carbonTwill21}} 和 {{ui:surfaceTexture.carbonTwill31}}，後兩者直向帶顯得長、橫向帶顯得短。{{ui:inspector.surfaceSpacingCarbon}} 設定直向帶的寬度；{{ui:inspector.surfaceCarbonCross}} 讓橫向帶更寬或更窄，得到不均勻的編織（0：一樣寬）。繞實體一圈時，帶寬會略作取整，使編織無接縫地閉合。單根纖維對列印來說太細了：看得見的是帶和它們的交叉。
 
@@ -210,21 +214,24 @@ layerling 的每個零件都從一個形狀開始。其餘一切都是由形狀�
 
 要讓實體的一部分保持光滑，或只給一部分加紋理，請用輔助實體：把盒子、圓柱或球放到相應位置，選取它，在 {{ui:inspector.surfaceMask}} 下選 {{ui:surfaceTexture.maskExclude}} 或 {{ui:surfaceTexture.maskOnly}}。它會變成透明，在另一個實體產生紋理時起作用，隱藏時也一樣。列印前請隱藏或刪除它。
 
-結果是一個網格，就像匯入的模型一樣，並保留產生它時所用的實體。之後再選取它（儲存後也可以），卡片會顯示產生時的設定：修改後點擊 {{ui:inspector.surfaceChange}}，紋理會在該實體上重新產生，位置和大小與紋理實體現在的一致。{{ui:inspector.surfaceRemove}} 恢復光滑的實體。更改紋理時遮罩實體會再次起作用：如果之後可能還要改，請隱藏而不是刪除它們。復原同樣可以撤回其中每一步。
+結果是一個網格，就像匯入的模型一樣，並保留產生它時所用的實體。之後再選取它（儲存後也可以），卡片會顯示產生時的設定：修改後點擊 {{ui:inspector.surfaceChange}}，紋理會在該實體上重新產生，位置和大小與紋理實體現在的一致。{{ui:inspector.surfaceRemove}} 恢復光滑的實體。更改紋理時遮罩實體會再次起作用：如果之後可能還要改，請隱藏而不是刪除它們。復原同樣可以撤回其中每一步。點擊 {{ui:inspector.surfaceChange}} 之後，卡片會停留在你正在處理的圖樣群組上；捲動設定時，按鈕始終顯示在面板底部。白色實體上的圖案不容易看清：{{ui:inspector.surfaceLook}} 會以素灰色顯示實體。這只改變視圖，實體、顏色和匯出都維持不變。
 
-要用兩種顏色列印，請開啟 {{ui:inspector.surfacePatternPart}}，適用於任何圖樣：圖樣會成為獨立零件，{{ui:inspector.surfacePatternColor}} 決定它的顏色——第一次是與實體形成對比的顏色，下一次是你上次選的顏色。凸出實體時，零件就是凸出的部分，實體保持原樣；凹入實體時，實體被刻入圖樣，零件把凹槽一直填到表面，就像裂紋裡的金色填充。兩者一起放在綁定中：它們會一起移動，各自保留顏色，3MF 檔案中它們是交給切片軟體的兩個零件。像往常一樣修改或取下紋理；圖樣零件會隨之一起變化。有多個圖層時，它們必須朝同一方向，凸出或凹入實體；兩側置中的圖樣仍與實體為一體。
+要用兩種顏色列印，請開啟 {{ui:inspector.surfacePatternPart}}，適用於任何圖樣：圖樣會成為獨立零件，{{ui:inspector.surfacePatternColor}} 決定它的顏色——第一次是與實體形成對比的顏色，下一次是你上次選的顏色。凸出實體時，零件就是凸出的部分，實體保持原樣；凹入實體時，實體被刻入圖樣，零件把凹槽一直填到表面，就像裂紋裡的金色填充。兩者一起放在綁定中：它們會一起移動，各自保留顏色，3MF 檔案中它們是交給切片軟體的兩個零件。像往常一樣修改或取下紋理；圖樣零件會隨之一起變化。有多個圖樣群組時，它們必須朝同一方向，凸出或凹入實體；兩側置中的圖樣仍與實體為一體。
 
 ## 多色上色
 
-為了多色列印，{{ui:paint.title}} 直接在設計中為實體的部分表面上色：一個面、一圈圓柱壁、孔的內壁、一個圓斑，或者你圈出的一塊區域。它和切片軟體裡的上色工具類似，但顏色會隨設計一起儲存。選取一個實體，在 {{ui:editor.section.surface}} 群組中點擊 {{ui:paint.title}}（在 {{ui:inspector.surfaceTexture}} 旁邊）。面板會列出設計中用到的顏色，{{ui:paint.customColor}} 可以調出自己的顏色。然後在檢視中用三種工具之一上色：
+為了多色列印，{{ui:paint.title}} 直接在設計中為實體的部分表面上色：一個面、一圈圓柱壁、孔的內壁、一個圓斑，或者你圈出的一塊區域。它和切片軟體裡的上色工具類似，但顏色會隨設計一起儲存。選取一個實體，在 {{ui:editor.section.surface}} 群組中點擊 {{ui:paint.title}}（在 {{ui:inspector.surfaceTexture}} 旁邊）。面板會列出設計中用到的顏色，{{ui:paint.customColor}} 可以調出自己的顏色。然後在檢視中用六種工具之一上色：
 
 - {{ui:paint.mode.fill}}：點擊一下，把面一直填色到它的銳利邊緣，就像繪圖軟體裡的油漆桶：長方體的頂面、圓柱的側壁、凹槽的底面或孔的內壁，各點一下即可。{{ui:paint.angle}} 決定邊緣要多銳利才會讓填色停下；設為 90° 時會越過長方體的稜邊。
 - {{ui:paint.mode.circle}}：點擊一下，在表面上放一個設定 {{ui:paint.diameter}} 的圓斑，圓心就在點擊處，曲面上也可以。它會在實體的銳利邊緣停下，也不會透到壁的背面。
+- {{ui:paint.mode.brush}}：在物體上按住滑鼠鍵或筆，畫出一條寬 {{ui:paint.diameter}} 的線。線條沿表面越過曲面和邊緣，絕不會透到牆的背面。使用筆或繪圖板時，{{ui:paint.pressure}} 讓輕觸畫得更細，最細為直徑的五分之一：適合畫眼睛、牙齒和細線。開啟 {{ui:paint.ball}} 後，圓形和筆刷會像切片軟體的球體一樣，塗滿球內的一切，也包括邊緣周圍和凹處。
+- {{ui:paint.mode.height}}：點擊即在該高度繞整個物體畫一條高 {{ui:paint.band}} 的水平帶，像頭帶一樣；半透明的環顯示它經過的位置。
 - {{ui:paint.mode.lasso}}：按住滑鼠鍵圈出一塊區域。區域內看得見的部分會被上色，實體後面的背面不會。
+- {{ui:paint.mode.magnet}}：大致沿邊緣點擊，線會自動找到邊緣：表面轉折處、物體相對背後的輪廓，或已有顏色的邊界。點擊第一個點、雙擊或按 [[Enter]] 封閉；[[Backspace]] 撤回最後一個點，[[Esc]] 放棄這條線。內部可見的部分會被上色，與套索相同：要填滿用筆刷勾過邊的眼睛，沿它的邊緣點一圈即可。它也能感知雕刻表面的柔和起伏，例如眼窩的邊緣。{{ui:paint.smooth}} 會在套用前把線條抹平，套索也一樣；角保持不變。
 
 ![用三種工具上色的長方體：頂面填色為黃色，正面一個白色圓，側面一個用套索圈出的綠色星形；旁邊是上色面板。](shot:paint)
 
-{{ui:paint.eraser}} 用同樣的工具把顏色去掉，{{ui:paint.clear}} 一次去掉全部顏色。每一筆都是獨立的一步，所以 [[Ctrl]]+[[Z]] 會復原最後一筆。兩筆之間仍然可以像平常一樣用滑鼠右鍵旋轉檢視；{{ui:paint.done}} 或 [[Esc]] 關閉面板。
+{{ui:paint.eraser}} 用同樣的工具把顏色去掉，{{ui:paint.clear}} 一次去掉全部顏色。每一筆都是獨立的一步，所以 [[Ctrl]]+[[Z]] 會復原最後一筆。兩筆之間仍然可以像平常一樣用滑鼠右鍵旋轉檢視；{{ui:paint.done}} 或 [[Esc]] 關閉面板。{{ui:paint.gaps}} 用於收尾：小於 {{ui:paint.gapArea}} 的單色區域會變成周圍的顏色，零散斑點消失，印表機換色更少。
 
 圓和套索的邊緣會切進實體的網格：長方體面上的圓是圓的，而不是幾個三角形，實體也保持封閉。顏色屬於實體：它隨實體移動和旋轉，調整尺寸時隨之拉伸；修改後找不到位置的筆畫會被略過。匯出 3MF 時顏色會寫成已上色的面，OrcaSlicer、Bambu Studio 和 PrusaSlicer 會用各自的線材列印（見[檔案與儲存](chapter:files-and-saving)）；OBJ 也保留顏色，STL 仍是單色。
 
@@ -232,21 +239,49 @@ layerling 的每個零件都從一個形狀開始。其餘一切都是由形狀�
 
 ## 花瓶
 
-{{ui:shape.vase}} 是專為花瓶、花盆和燈罩準備的實體。它的尺寸在 {{ui:inspector.properties}} 中，形狀和圖案在 {{ui:inspector.vaseForm}} 卡片上；所有設定隨時都能更改，儲存後也可以：
+{{ui:shape.vase}}是用於花瓶、花盆和燈罩的獨立形體。它的尺寸在{{ui:inspector.properties}}下，造型在{{ui:inspector.vaseForm}}卡片上，圖案在{{ui:inspector.vasePattern}}卡片上；所有設定隨時都能更改，儲存後也可以：
 
 - {{ui:prop.vaseProfile}}：瓶形、鼓肚、帶頸的碗、桶形、圓柱或漏斗。高度和最大直徑是該形狀自己的尺寸：拖曳控制點，或輸入 {{ui:prop.vaseDiameter}} 和 {{ui:prop.height}}。
 - {{ui:prop.vaseSection}}：圓、圓角多邊形或波浪（柔和、尖形、拱形或鰭形）。{{ui:prop.vaseTwist}} 讓截面沿高度旋轉，{{ui:prop.vaseSway}} 讓它來回擺動。
-- {{ui:prop.vaseBody}}：{{ui:vase.bodySolid}} 用於切片軟體的花瓶模式（也叫螺旋化）：切片軟體以螺旋方式只列印一層壁，省去頂部和填充，因此實體畫成實心。{{ui:vase.bodyHollow}} 為一般列印產生真正的壁和底。{{ui:prop.vaseBottom}} 設為 0 mm 時，空心花瓶沒有底：兩端開口的管子，適合喇叭口、吹嘴和管道。
-- {{ui:prop.vaseEffect}}：新花瓶是光面的。可選外側的凹槽、條紋、Voronoi 單元或切面（低多邊形），也可只放在高度上的一條帶裡；它們屬於花瓶，隨花瓶一起保持可編輯。
+- {{ui:prop.vaseVaseMode}}：開啟時，花瓶是供切片軟體花瓶模式（也叫螺旋化）使用的實心體：切片軟體以螺旋方式只列印一層壁，省去頂面和填充。{{ui:prop.vasePrintView}}按列印出來的樣子顯示它，即頂部開口的薄壁容器；關閉後顯示實心體。關閉{{ui:prop.vaseVaseMode}}時，花瓶有真正的瓶壁和瓶底，按一般方式列印。{{ui:prop.vaseBottom}}為 0 mm 時，空心花瓶沒有底：兩端開口的管子，可做喇叭口、吹嘴和管道。{{ui:prop.vaseRimEdge}}和{{ui:prop.vaseBaseEdge}}可將上緣和底部的外邊緣倒圓或倒角，各有自己的{{ui:lid.topEdgeSize}}。空心花瓶的上緣內外兩側都會成形，每側最多取壁厚的一半，這樣就是完全圓潤的瓶口；壁上的圖案和表面紋理保持不變。
 
 {{ui:prop.vaseSection2}} 讓截面沿高度過渡到第二種截面，例如從底部的圓過渡到頂部的六邊形。
 
+新花瓶是光滑的。{{ui:inspector.vasePattern}}卡片把每種圖案顯示為帶圖片的圖塊，圖片按花瓶實際得到的樣子計算。除了凹槽、條紋、Voronoi 縫和刻面，還有凸起的浮雕，例如{{ui:vase.effectPetals}}、{{ui:vase.effectTulipLeaves}}、{{ui:vase.effectScales}}或{{ui:vase.effectHexagons}}，由公式計算的圖案，例如{{ui:vase.effectBricks}}、{{ui:vase.effectKnit}}或{{ui:vase.effectHammered}}，以及帶有一排專屬葉形的{{ui:vase.effectLeaves}}；選擇{{ui:vase.leafOwn}}可以自己畫半片葉子。{{ui:vase.effectPicture}}把你自己的圖片或輸入的{{ui:prop.vasePatternText}}作為浮雕放到花瓶上：亮處凸起，暗處更深，可以鋪滿、繞瓶一圈成帶，或只放一次。浮雕貼合花瓶本身的造型，其間的底面下沉{{ui:prop.vaseReliefDepth}}，因此沒有任何部分超出輪廓；{{ui:prop.vasePatternCount}}表示圖案繞瓶幾次，{{ui:prop.vaseZoneFrom}}和{{ui:prop.vaseZoneTo}}表示從哪裡開始、到哪裡結束。花瓶變窄的地方，圖案隨之變小；{{ui:prop.vaseLeafFixed}}讓它保持同樣大小，改為在瓶頸處少排幾個。{{ui:inspector.more}}下有更細的設定和{{ui:prop.vasePrintFriendly}}，它一開始就是開啟的：浮雕的每條下邊緣最多以 45° 上升，花瓶無需支撐即可列印。如果圖案伸到放蓋子的瓶頸裡，卡片會提議讓瓶頸保持光滑。拖動滑桿時，視圖先粗略顯示花瓶，放開後再完整產生。
+
 花瓶設定上方的 {{ui:inspector.vaseDraw}} 會在工作區上方開啟一個獨立的大視窗：在裡面以真實毫米親手繪製花瓶。拖曳標題列可移動視窗，拖曳角落可放大；檢視中的花瓶會跟隨每一次更改。{{ui:vaseDraw.tabProfile}} 從側面顯示花瓶：拖曳各點，最上面的點決定高度，最寬的點決定直徑；{{ui:vaseDraw.handle}} 給點一個角度，{{ui:vaseDraw.corner}} 讓它成為折角。{{ui:vaseDraw.tabSection}} 從上方顯示截面，{{ui:prop.vaseDrawSymmetry}} 會鏡像或重複你畫的內容。{{ui:vaseDraw.tabTwist}} 把旋轉畫成一條沿高度的曲線。繪圖軟體的 SVG 檔案可以成為截面或瓶身形狀，樣品花瓶的網格（STL、3MF、OBJ）可以成為瓶身形狀。可以把花瓶照片放在繪圖後面描摹，或用 {{ui:vaseDraw.takeOutline}} 擷取它的輪廓。{{ui:vaseDraw.trace}} 用設定做同樣的事：{{ui:vaseDraw.traceThreshold}} 決定物體要多明顯地與背景區分，{{ui:vaseDraw.tracePoints}}（3 到 40）和 {{ui:vaseDraw.traceCorners}}；新的瓶身形狀先以紅色顯示在照片上，按 {{ui:vaseDraw.traceApply}} 後成為花瓶的形狀。花瓶放在雜亂背景前（書架、房間）時，搜尋找不到它；這時用 **{{ui:vaseDraw.traceLasso}}** 抓住它：圍繞花瓶大致點擊，兩次點擊之間線條會自動沿邊緣走，點擊第一個點、按兩下或按 [[Enter]] 閉合。瓶身形狀隨後來自套索；{{ui:vaseDraw.traceLassoOff}} 讓搜尋重新尋找。滑鼠拖曳一次就是一步復原；拖曳時，檢視會粗略顯示花瓶。
+
+{{ui:inspector.vaseForm}}卡片頂部的{{ui:vase.purpose}}說明這個形體的用途：{{ui:shape.vase}}或{{ui:vase.purposePot}}（形狀庫裡也有花盆自己的圖塊）。花盆有自己的造型（{{ui:vase.profilePotClassic}}、{{ui:vase.profilePotTub}}、{{ui:vase.profilePotBowl}}）、真正的盆壁、排水孔和托盤，還有一張{{ui:vase.purposePot}}卡片，放著與它相關的一切。{{ui:vase.potDrain}}開啟或關閉排水孔，並設定孔的數量和寬度。{{ui:prop.vaseSaucer}}提供花盆所站的托盤，可選{{ui:vase.saucerFormPlate}}或{{ui:vase.saucerFormHug}}，水平的，或帶{{ui:prop.vaseSaucerRise}}，環抱半個花盆；{{ui:vase.saucerDocked}}是齊平裝在花盆下方、向下延續其輪廓的碗，用銷釘或磁鐵固定。{{ui:prop.vaseInnerPot}}加入一個底部有孔、澆水時可取出的內盆；即使花盆有鰭片或拱形，它也與內壁保持距離。{{ui:prop.vaseWallMount}}給花盆一個帶導軌的平背，並產生一個鎖在牆上的支架；花盆從上方插入，擋住螺絲。{{ui:vase.partsAssemble}}把托盤、內盆、蓋子或支架組裝在花盆周圍，查看是否合適，並互相檢查：卡片會列出每一對相互穿插的零件，或顯示{{ui:vase.assemblyFits}}{{ui:inspector.vasePartsMake}}會把它們重新擺開以便列印。
+
+{{ui:vase.purpose}}下的第三個選項是{{ui:prop.vaseLamp}}（形狀庫裡也有它自己的圖塊）。它有無需支撐即可列印的燈罩造型（{{ui:vase.profileShadeCone}}、{{ui:vase.profileShadeBell}}、{{ui:vase.profileShadeDome}}、{{ui:vase.profileShadeLantern}}、{{ui:vase.profileShadeDrum}}）、薄壁和燈座支架：設定{{ui:prop.vaseLampSpokes}}後，燈座周圍的板變成由輻條撐起的圓環，讓光線和熱空氣通過。{{ui:vase.lampOnBase}}把無底的燈罩放在一個單獨的底座上，底座裡裝 LED 圓片或螺口燈座（{{ui:prop.vaseLampBaseShape}}、{{ui:prop.vaseLampBaseHeight}}、{{ui:prop.vaseLampBaseRibs}}）；電線從底腳後面引出。{{ui:vase.lampWall}}做成壁燈：燈罩的前半部分帶平背，另有一塊帶螺絲孔的背板作為單獨零件。{{ui:prop.vaseLampBulb}}把常見燈泡（或你自己的尺寸）放進燈罩比對：列印檢查會說明它能否放下以及離罩壁有多近。在切片軟體的花瓶模式下，燈罩立在底座上或 LED 燈餅上方，列印時不帶底層。
 
 {{ui:inspector.vaseFloor}} 卡片收納實體在形狀之外還需要的東西。空心花瓶上：帶有朝向排水孔坡度的排水孔、空心底腳、鏤空的壁（{{ui:prop.vaseCutout}}：Voronoi、蜂巢、菱形或圓形，適合燈籠和籃子），以及 {{ui:prop.vaseLamp}}：吊掛、裝在燈座上或罩在 LED 燈片上。實心花瓶上，{{ui:prop.vaseReinforce}} 會切出細縫，切片軟體在花瓶模式下藉此一次列印出內部加強肋或雙層壁。橡膠腳墊的凹槽兩種都可用。{{ui:prop.vaseWatertight}} 把空心花瓶的壁和底加厚到至少 1.6 mm。
 
 在 {{ui:inspector.vaseParts}} 卡片上為花瓶加入配件。{{ui:prop.vaseLegs}} 可以一體成型（成為花瓶的一部分），也可以做成插接式，在底部留插座；支架從下面托住花瓶。{{ui:prop.vaseSaucer}} 接住水，或藏在底腳裡。空心花瓶可以放 {{ui:prop.vaseInsert}}：植物內膽、帶儲水層的自動澆水內膽、花莖或試管架。{{ui:prop.vaseLid}} 可以蓋在瓶口上、卡進凹槽，或旋在壁內的螺紋上。選擇 {{ui:vase.lidTeapot}} 時，花瓶本身的頂部就成為蓋子，像茶壺那樣：{{ui:prop.vaseLidHeight}}（或從底部算起的 {{ui:prop.vaseLidJoint}}）決定多少，圖案與扭轉會延續過接縫，一圈唇邊把它固定在開口裡，{{ui:prop.vaseLidKnob}} 會加上一個黏進頂部孔裡的把手。{{ui:inspector.vasePartsMake}} 把這些零件作為獨立物件擺在花瓶旁邊，可直接列印，倒過來列印較好的會倒放。花瓶上已經有插座、凹槽或螺紋。更改設定後請重新擺放：之前的零件會被取代。如果某個零件不適合這個花瓶，編輯器會提示，例如內膽穿不過窄瓶頸時。
 
-{{ui:inspector.vasePrint}} 卡片告訴你列印這個花瓶需要什麼：以所選 {{ui:prop.vaseMaterial}} 計的重量和線材長度；實心花瓶依切片軟體的花瓶模式計算，即沿壁的一條線。下方是列印提示：超過 45° 的懸垂及其位置、太薄的壁、蓋子、燈具或支腳需要什麼，以及加強肋和雙層壁的切片設定。
+{{ui:inspector.vasePrint}} 卡片告訴你列印這個花瓶需要什麼：以所選 {{ui:prop.vaseMaterial}} 計的重量和線材長度；實心花瓶依切片軟體的花瓶模式計算，即沿壁的一條線。下方是列印提示：超過 45° 的懸垂及其位置、太薄的壁、蓋子、燈具或支腳需要什麼，以及加強肋和雙層壁的切片設定。頂部的一行彩色文字概括結果：{{ui:vase.verdictFine}}、{{ui:vase.verdictSupports}}或{{ui:vase.verdictNotes}}。對於浮雕，提示還會指出懸垂的下邊緣和過細而難以列印的圖案部分。
 
 {{ui:prop.vaseQuality}} 決定花瓶劃分三角形的精細程度：越細看起來越平滑，但大花瓶會讓編輯器變慢。
+
+## Patties：圖案板
+
+{{ui:shape.patties}} 是一塊帶圖案的平板：上釉或上色用的鏤空模板、印章、在陶土上滾壓紋理的墊子、隔熱墊、通風格柵。它在資料庫的 {{ui:library.section.decorative}} 中。這塊板每次都由它的設定產生，所以一切隨時都能更改，儲存後也可以：
+
+- {{ui:prop.pattiesPattern}}：{{ui:patties.pattern.warp}}、{{ui:patties.pattern.dots}}、{{ui:patties.pattern.petals}}、{{ui:patties.pattern.scales}}、{{ui:patties.pattern.waves}}、{{ui:patties.pattern.cells}}、{{ui:patties.pattern.bricks}}、{{ui:patties.pattern.triangles}}、{{ui:patties.pattern.diamonds}}、{{ui:patties.pattern.weave}}、{{ui:patties.pattern.herringbone}}、{{ui:patties.pattern.rays}}, {{ui:patties.pattern.pegboard}} 或 {{ui:patties.pattern.motif}}。選擇圖案會給它一個合適的起點；下面的各列隨後只顯示這種圖案用到的設定。欄位下方的一行說明板上有多少個圖形，以及它們佔板面的多少。
+- {{ui:prop.pattiesMode}}：圖形貫穿底板、立在底板上、壓入底板，或者只有圖形、沒有底板。只有圖形時，把它設為孔並與某個實體成組，就能在該實體上切出圖案。
+- {{ui:prop.pattiesGap}}：兩個圖形之間板面的最小寬度，單位為公釐。任何位置的連筋都不會更細，所以鏤空模板保持一整塊，連筋也能列印出來；0.4 mm 是常見噴嘴的一條線寬。{{ui:prop.pattiesFrame}} 是圖案四周的實心邊緣。
+- {{ui:prop.pattiesBulge}}：大於 0 時，圖形在某一點最大，離它越遠越小；小於 0 時相反。兩列焦點設定用來移動這個點。
+- {{ui:prop.pattiesLayout}}：{{ui:patties.layout.straight}} 或 {{ui:patties.layout.polar}}。成環排列時，每個圖形保持自己的形狀並隨所在的環變大，連筋在邊緣和在中心一樣寬。
+- {{ui:patties.pattern.pegboard}}：{{ui:patties.pegboardHint}}
+- {{ui:prop.pattiesTilt}}：{{ui:patties.tiltHint}}
+- {{ui:prop.pattiesChamfer}}：{{ui:patties.chamferHint}}
+
+選擇 {{ui:patties.pattern.motif}} 時，會重複同一個圖形：心形、水滴、月牙、十字、葉子或爪印，也可以用自己的圖形。{{ui:inspector.pattiesMotifLoad}} 從圖面（SVG）或圖片（PNG、JPG）中取出圖形，並描出它的輪廓。圖形內部的孔會被填實，這樣鏤空模板上不會有東西掉落。 {{ui:prop.pattiesAlternate}}: {{ui:patties.alternateHint}}
+
+{{ui:prop.pattiesOutline}}下的{{ui:patties.outline.polygon}}和{{ui:patties.outline.star}}讓板帶有角：六邊形、三角形、星形。{{ui:prop.pattiesCorners}}或{{ui:prop.pattiesPoints}}決定有多少個，從 3 到 12。板開始時各邊相等；把它拉到別的尺寸，它就被拉伸。
+
+{{ui:prop.pattiesOutline}} 下的 {{ui:patties.outline.fan}} 可以為杯子或花盆製作鏤空模板。量出器皿上口和底部的直徑以及側面的長度並填入：這塊板就成為展開成平面的器皿側面。列印成 0.6 到 1 mm 厚，它能繞在器皿上，圖案的各排水平環繞一周。{{ui:prop.pattiesSeamless}} 在兩端各只留半條連筋，於是圖案在兩端相接處連續下去。
+
+設定下方的 {{ui:inspector.pattiesSvg}} 會把板的邊緣和每個圖形儲存為以公釐為單位的圖面，用於雷射切割機或割字機。
+
+圖案板是網格，和匯入的模型一樣：可以成組、切割，並匯出為 STL 或 3MF；STEP 匯出會略過它。

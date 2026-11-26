@@ -32,6 +32,7 @@ export type ShapeKind =
   | "gear"
   | "hirth"
   | "pulley"
+  | "patties"
   | "honeycomb"
   | "hinge"
   | "knurl"
@@ -130,6 +131,10 @@ export type ShapeCustomization = {
   height?: number;
   maxDimension?: number;
   cornerFillet?: number;
+  /** Polygon: a flat side faces the front instead of a corner, so an octagon measures from flat to flat (Discussion #1787). */
+  polygonFlat?: boolean;
+  /** Polygon: the Roof of the shape library (#1931), three sides for good; its panel offers no side count and no flat side. */
+  polygonRoof?: boolean;
   /** Rounded box with flat top and bottom: an own radius for each corner (back left, back right, front right, front left); wins over cornerFillet. */
   cornerFillets?: [number, number, number, number];
   topBottomFillet?: number;
@@ -190,6 +195,8 @@ export type ShapeCustomization = {
   hirthSteepFlank?: number;
   /** Hirth joint with saw teeth: the steep flank on the other side of each tooth. */
   hirthReverse?: boolean;
+  /** Pattern plate ("Patties"): everything that makes its pattern; the plate is built from it every time. */
+  patties?: Partial<PattiesSettings>;
   /** GT2 pulley (Discussion #1319): the toothed band's width along the axis, the belt's width plus a little play. */
   pulleyBeltWidth?: number;
   /** GT2 pulley: each flange's thickness, 0 for none. */
@@ -256,6 +263,8 @@ export type ShapeCustomization = {
   springForm?: SpringForm;
   springPattern?: FlatSpringPattern;
   springEnds?: FlatSpringEnds;
+  /** The free inside of a spiral spring (Discussion #412), in mm. */
+  springInner?: number;
   starPoints?: number;
   starInnerSize?: number;
   starOuterFillet?: number;
@@ -327,6 +336,16 @@ export type ShapeCustomization = {
   gridfinityLargePlate?: boolean;
   /** Gridfinity baseplate: Swallowtail, on a 2.4 mm floor with a pocket for a key under each side without padding (#1061); missing means off. */
   gridfinitySwallowtail?: boolean;
+  /** Gridfinity baseplate: notches in its sides for ostat's wall clips, which join plates printed in pieces. */
+  gridfinityClipNotches?: boolean;
+  /** Gridfinity baseplate with clip notches: how many clips Add clips lays out, 1 unless set. */
+  gridfinityClipCount?: number;
+  /** Gridfinity baseplate: GridFlock's puzzle (yawkat/GridFlock), tabs on the back and right and sockets on the front and left at the cell corners of each side without padding, so plates printed in pieces join by pressing them together. */
+  gridfinityPuzzle?: boolean;
+  /** Gridfinity baseplate with the GridFlock puzzle: the sides it is kept to, missing means every side without padding; a piece of a split plate has its cut sides. */
+  gridfinityPuzzleSides?: Array<"back" | "front" | "left" | "right">;
+  /** Gridfinity baseplate with the GridFlock puzzle: its fit, 0 loose to 1 tight (GridFlock's intersection_puzzle_fit); missing means 0.7. */
+  gridfinityPuzzleFit?: number;
   /** Gridfinity baseplate with Swallowtail: the clearance of the keys Add keys lays out, in mm on every side; missing means 0.05, at most 0.15; the plate stays as it is (#1061). */
   gridfinitySwallowtailClearance?: number;
   /** Gridfinity bin: a label shelf along the back wall. */
@@ -447,6 +466,20 @@ export type ShapeCustomization = {
   dovetailNeckWidth?: number;
   /** Dovetail: gap in mm added on every side when the dovetail is a cut-out (its socket). */
   dovetailClearance?: number;
+  /**
+   * A lid made by the Lid tool: the body it closes (its id; the group, where the lid's parts were grouped with the body),
+   * the settings it was made with (lidTool.ts LidOptions), the loose parts lying beside it (a pin, clips, end plugs) and,
+   * with labels, the middles of the box's compartments then (from the box's middle), so each label finds its compartment again.
+   * When that body is hollowed again - other compartments, another wall - the lid is made again in its place.
+   * `up` says which end of the body the lid was made for: the direction that pointed up then, in the body's own frame
+   * (lidGroup.ts lidBodyUp). Turned over, the body can get a second lid on its other end (Discussion #2052).
+   */
+  lidFor?: { body: string; options: Record<string, unknown>; parts?: string[]; rooms?: [number, number][]; up?: [number, number, number] };
+  /**
+   * A loose insert made by Hollow (dividers "as a loose insert"): the body it goes into (its id). When that body is
+   * hollowed again or resized the insert is made again in its place, and taken away when the dividers are fixed again.
+   */
+  insertFor?: { body: string };
   /** Transition (loft, #188): the outline at the bottom and at the top. */
   loftBottomOutline?: "round" | "rectangle" | "polygon";
   loftTopOutline?: "round" | "rectangle" | "polygon";
@@ -538,6 +571,8 @@ export type WorkplaneWorkspaceSettings = {
    * part of the default workplane.
    */
   plates?: string[];
+  /** How many build plates stand in a row, the next row in front of it (Discussion #2073); left out, all in one row. A design's own, as the plates. */
+  platesPerRow?: number;
   gridBlockSize: number;
   gridBlockPreset: string;
   /** The grid preset of the unit system left by the last switch between mm and in, so switching back finds it again (#442). */
@@ -603,6 +638,10 @@ export type WorkplaneWorkspaceSettings = {
   frameByDirection: boolean;
   /** Pasted parts are set in the middle of the workplane and dropped onto it, instead of where they came from (#876). */
   pasteCentered: boolean;
+  /** The arrow keys, dragging and the slide and lift handles move a turned or tilted shape along its own axes; J held moves along the grid. */
+  moveAlongShapeAxes: boolean;
+  /** While a shape moves along its own axes, a workplane lined up with it is shown - a guide only. */
+  showShapeWorkplaneWhileMoving: boolean;
   /** A double click on a sketch body opens its sketch; on a group or bundle, opens it for editing (#150). */
   doubleClickOpensSketch: boolean;
   doubleClickOpensGroup: boolean;
@@ -629,6 +668,8 @@ export type WorkplaneWorkspaceSettings = {
   viewBarOpensOnHover: boolean;
   /** The short message after a step, such as a union, with its Undo button (Discussion #1708); on by default. Off, messages that want something, warn or carry a button of their own still show. */
   showStepNotices: boolean;
+  /** A click on Top or Bottom of the view cube (or 5 and 6) keeps the view turned as it stands, to the nearest quarter turn, instead of the front at the bottom (Discussion #1967); off by default. */
+  viewCubeKeepsTurn: boolean;
   zoomSpeed: number;
   /** How fast shifting the 3D view follows the mouse, a slider from 1 to 9; at 5 the grabbed point stays under the cursor (#1553). */
   panSpeed: number;
@@ -720,6 +761,27 @@ export type SketchStrokeAlign = "center" | "inside" | "outside" | "grow" | "shri
 export type SketchStrokeJoin = "miter" | "round" | "bevel";
 export type SketchStrokeCap = "flat" | "square" | "round";
 /**
+ * A layer of a name tag or an icon tag laid in flush instead of stacked: all layers end on the same top. Every layer above the
+ * bottom one is `depth` high; the bottom one keeps its own height and carries the others. Each layer has a pocket `depth` deep
+ * in its top, the shape of the layer above it (`pocket`: that layer's widening, corners and holes), which that layer fills - so
+ * the colours lie side by side on one flat face, none on another. `height` is the layer's own height in the stack, kept so the
+ * stack comes back as it was when it is stacked again. The top layer has no pocket.
+ */
+/**
+ * Text on the back of a name tag or an icon tag (phone number, e-mail): its lines (Enter starts a new one), centred
+ * under each other and sunk `depth` mm into the bottom layer's underside, mirrored so they read from below. `size` is
+ * a capital's height in mm; `font` the letters' typeface (the name tag's own, else the usual one). With `fill`, a part
+ * in that colour fills the letters flush with the underside. Kept on the bottom layer, the fill part flagged as such.
+ */
+export type TagBack = { text: string; size: number; depth: number; font?: string; fill?: string; /** Set by the build: some letters reached past the bottom layer's outline and were cut off. */ clipped?: boolean };
+
+export type FlushLayer = {
+  depth: number;
+  height: number;
+  pocket?: { grow: number; join?: SketchStrokeJoin; silhouette?: boolean };
+};
+
+/**
  * A sketch drawn as a line of this width instead of a filled area (#154). `edge` makes the wall a cutting edge (#982): its top
  * runs in to that width with a 45° chamfer on both sides; only for a line inside, outside or centred, and narrower than the line.
  */
@@ -773,6 +835,11 @@ export type SketchProfile = {
   silhouette?: boolean;
   /** A key ring hole cut through the body, with its ear on the bottom layer of an icon tag (#391). */
   keyring?: SketchKeyring;
+  /** A layer of an icon tag laid in flush, as a name tag's (textFlush): see FlushLayer. */
+  flush?: FlushLayer;
+  /** The bottom layer of an icon tag with text on its back: see TagBack. With `backFill` the part that fills that text. */
+  back?: TagBack;
+  backFill?: boolean;
   /** Built set in from its outlines by the face tool: the body keeps the face's outline and builds the inset from it. */
   inset?: SketchInset;
   /** Which edge of a swept cross-section runs along the path: "center" (the default, left out) or "left"/"right" as seen along the path. */
@@ -812,6 +879,18 @@ export type GridfinityCompartmentLabel = {
 };
 
 /**
+ * One compartment of a Gridfinity bin with dividers split further (#1799): column 0 is the left, row 0 the back, as for
+ * a label. `x` is how many parts it is split into across and `z` how many deep, each a whole number from 1 (missing is
+ * 1); the parts are evenly spaced, with dividers as thick and as high as the bin's between them.
+ */
+export type GridfinityCompartmentSplit = {
+  column: number;
+  row: number;
+  x?: number;
+  z?: number;
+};
+
+/**
  * A Gridfinity bin's side switched open, opened only partly (#455): a notch from the lip's top down `depth` mm, `width`
  * mm wide, at its place along the side's straight part: `align` start (towards -x on a back or front side, towards -z on
  * a left or right one), middle or end, and `distance` mm from that end; a missing value is the full depth, the full
@@ -835,7 +914,7 @@ export type ThreadHead = "cylinder" | "countersunk" | "hex" | "square" | "flange
 export type ThreadDrive = "hex" | "torx" | "phillips" | "slot" | "robertson" | "none";
 export type ThreadHand = "right" | "left";
 export type SpringForm = "coil" | "flat";
-export type FlatSpringPattern = "round" | "zigzag" | "square";
+export type FlatSpringPattern = "round" | "zigzag" | "square" | "spiral";
 export type FlatSpringEnds = "eye" | "tab" | "none";
 /**
  * Die Zahnform: scharfe ISO-Spitze, flache Trapezflanke, rundes Profil oder
@@ -904,13 +983,15 @@ export type EdgeTreatmentFeature = {
   /** Only with `shellStack`: the foot hollow (the floor on the plate) instead of solid, and a grip recess `grip` mm wide, `gripDepth` deep, at the front of the bottom. */
   shellStackFoot?: { hollow?: boolean; grip?: number; gripDepth?: number };
   /** Only for "shell" with the top open: a Gridfinity baseplate in the floor with at most `cells` cells; with `fit` the walls are thickened to the cells. */
-  shellGrid?: { cells: number; fit?: boolean; magnets?: boolean };
+  shellGrid?: { cells: number; fit?: boolean; magnets?: boolean; screws?: boolean };
   /** Only for "shell" with the top open: this many dividers across (x) and along (z) the inside, evenly spaced. */
-  shellDividers?: { x: number; z: number; height?: number; thickness?: number };
+  shellDividers?: { x: number; z: number; height?: number; thickness?: number; manual?: boolean; walls?: { dir: "x" | "z"; at: number; from: number; to: number; slant?: number }[]; angle?: number; scoops?: { x: number; z: number; side: "front" | "back" | "left" | "right" }[]; scoopRadius?: number; pockets?: { points: { x: number; z: number }[]; depth: number }[]; pocketFill?: number; insert?: boolean; insertPlay?: number };
   /** Only for "shell" with the top open (#1663): the width in mm of a ledge round the inside of the wall for a plate to rest on; missing means none. */
   shellShelf?: number;
   /** Only with `shellShelf`: how high in mm the top of the ledge lies above the inside of the floor. */
   shellShelfHeight?: number;
+  /** Only with `shellShelf` (#1981): the underside of the ledge falls at 45 degrees from a short straight front edge to the wall, so it prints without supports; missing means flat. */
+  shellShelfSlope?: boolean;
   /** Only for "offset": the faces moved inward, the body shrunk; missing means grown. */
   offsetShrink?: boolean;
   /** Only for "offset" (#1057): only the sides moved, flat tops and bottoms kept at their heights; missing means every face. */
@@ -1020,8 +1101,14 @@ export type CadPrimitiveFrame = {
   frame: CadBrepFrame;
 };
 
-/** The top edge of a text's letters: rounded or chamfered, `size` mm wide and high (#225). */
-export type TextEdge = { kind: "round" | "chamfer"; size: number };
+/** Which end of a text's letters takes the edge: the top (left out), the bottom or both. */
+export type TextEdgeSide = "top" | "bottom" | "both";
+
+/**
+ * The edge of a text's letters: rounded or chamfered, `size` mm wide and high (#225), on the top
+ * unless `side` says the bottom or both ends; only "bottom" and "both" are stored.
+ */
+export type TextEdge = { kind: "round" | "chamfer"; size: number; side?: "bottom" | "both" };
 
 /** A section of a transition between its bottom and its top (#1034). */
 export type LoftMiddleSection = {
@@ -1162,6 +1249,8 @@ export type WorkplaneShape = {
   hirthSteepFlank?: number;
   /** Hirth joint with saw teeth: the steep flank on the other side of each tooth. */
   hirthReverse?: boolean;
+  /** Pattern plate ("Patties"): everything that makes its pattern; the plate is built from it every time. */
+  patties?: Partial<PattiesSettings>;
   /** GT2 pulley (Discussion #1319): the toothed band's width along the axis, the belt's width plus a little play. */
   pulleyBeltWidth?: number;
   /** GT2 pulley: each flange's thickness, 0 for none. */
@@ -1228,6 +1317,8 @@ export type WorkplaneShape = {
   springForm?: SpringForm;
   springPattern?: FlatSpringPattern;
   springEnds?: FlatSpringEnds;
+  /** The free inside of a spiral spring (Discussion #412), in mm. */
+  springInner?: number;
   starPoints?: number;
   starInnerSize?: number;
   starOuterFillet?: number;
@@ -1299,6 +1390,16 @@ export type WorkplaneShape = {
   gridfinityLargePlate?: boolean;
   /** Gridfinity baseplate: Swallowtail, on a 2.4 mm floor with a pocket for a key under each side without padding (#1061); missing means off. */
   gridfinitySwallowtail?: boolean;
+  /** Gridfinity baseplate: notches in its sides for ostat's wall clips, which join plates printed in pieces. */
+  gridfinityClipNotches?: boolean;
+  /** Gridfinity baseplate with clip notches: how many clips Add clips lays out, 1 unless set. */
+  gridfinityClipCount?: number;
+  /** Gridfinity baseplate: GridFlock's puzzle (yawkat/GridFlock), tabs on the back and right and sockets on the front and left at the cell corners of each side without padding, so plates printed in pieces join by pressing them together. */
+  gridfinityPuzzle?: boolean;
+  /** Gridfinity baseplate with the GridFlock puzzle: the sides it is kept to, missing means every side without padding; a piece of a split plate has its cut sides. */
+  gridfinityPuzzleSides?: Array<"back" | "front" | "left" | "right">;
+  /** Gridfinity baseplate with the GridFlock puzzle: its fit, 0 loose to 1 tight (GridFlock's intersection_puzzle_fit); missing means 0.7. */
+  gridfinityPuzzleFit?: number;
   /** Gridfinity baseplate with Swallowtail: the clearance of the keys Add keys lays out, in mm on every side; missing means 0.05, at most 0.15; the plate stays as it is (#1061). */
   gridfinitySwallowtailClearance?: number;
   /** Gridfinity bin: a label shelf along the back wall. */
@@ -1415,6 +1516,8 @@ export type WorkplaneShape = {
   gridfinityDividerPositionsZ?: number[];
   /** Gridfinity bin with dividers: the compartments' labels, one for each compartment that has one. */
   gridfinityCompartmentLabels?: GridfinityCompartmentLabel[];
+  /** Gridfinity bin with dividers: the compartments split further into evenly spaced parts (#1799), one entry for each split compartment. */
+  gridfinityCompartmentSplits?: GridfinityCompartmentSplit[];
   /** Gridfinity bin: how far each side switched open is opened (#455), one entry a side; missing is the whole side. */
   gridfinityOpenings?: GridfinityOpening[];
   /** Gridfinity bin: the corners of its partly open sides' notches, seen from outside the wall, rounded or chamfered; missing is rounded (#455). */
@@ -1437,6 +1540,20 @@ export type WorkplaneShape = {
   dovetailNeckWidth?: number;
   /** Dovetail: gap in mm added on every side when the dovetail is a cut-out (its socket). */
   dovetailClearance?: number;
+  /**
+   * A lid made by the Lid tool: the body it closes (its id; the group, where the lid's parts were grouped with the body),
+   * the settings it was made with (lidTool.ts LidOptions), the loose parts lying beside it (a pin, clips, end plugs) and,
+   * with labels, the middles of the box's compartments then (from the box's middle), so each label finds its compartment again.
+   * When that body is hollowed again - other compartments, another wall - the lid is made again in its place.
+   * `up` says which end of the body the lid was made for: the direction that pointed up then, in the body's own frame
+   * (lidGroup.ts lidBodyUp). Turned over, the body can get a second lid on its other end (Discussion #2052).
+   */
+  lidFor?: { body: string; options: Record<string, unknown>; parts?: string[]; rooms?: [number, number][]; up?: [number, number, number] };
+  /**
+   * A loose insert made by Hollow (dividers "as a loose insert"): the body it goes into (its id). When that body is
+   * hollowed again or resized the insert is made again in its place, and taken away when the dividers are fixed again.
+   */
+  insertFor?: { body: string };
   /** Transition (loft, #188): the outline at the bottom and at the top. */
   loftBottomOutline?: "round" | "rectangle" | "polygon";
   loftTopOutline?: "round" | "rectangle" | "polygon";
@@ -1513,6 +1630,10 @@ export type WorkplaneShape = {
   /** Port opening: extra room in mm on every side on top of the preset's, already in width and height; it lets the preset be recognised. */
   portClearance?: number;
   cornerFillet?: number;
+  /** Polygon: a flat side faces the front instead of a corner, so an octagon measures from flat to flat (Discussion #1787). */
+  polygonFlat?: boolean;
+  /** Polygon: the Roof of the shape library (#1931), three sides for good; its panel offers no side count and no flat side. */
+  polygonRoof?: boolean;
   /** Rounded box with flat top and bottom: an own radius for each corner (back left, back right, front right, front left); wins over cornerFillet. */
   cornerFillets?: [number, number, number, number];
   topBottomFillet?: number;
@@ -1545,6 +1666,14 @@ export type WorkplaneShape = {
   /** Text only (#215): the letters without their counters (the holes in O, A, e), as the usual Silhouette. */
   textSilhouette?: boolean;
   /**
+   * A layer of a name tag laid in flush (#215): every layer's top on one level, the layer under each colour set in
+   * where the colour above lies, so the tag's face is flat. See FlushLayer.
+   */
+  textFlush?: FlushLayer;
+  /** The bottom layer of a name tag with text on its back: see TagBack. With `textBackFill`, the part that fills that text. */
+  textBack?: TagBack;
+  textBackFill?: boolean;
+  /**
    * Straight text only (#382): the letters are stretched to fill the box in both directions, so a
    * capital can be made lower or narrower as in Tinkercad. Without it the letters keep their
    * proportions and are fitted into the box, centred.
@@ -1572,9 +1701,15 @@ export type WorkplaneShape = {
    */
   textLetterWidth?: number;
   /**
+   * Curved text only (#1840): the line closes the circle - the letters are spread evenly over all of it, so the gap
+   * between the last and the first is the same as between the others (a date ring, a dial). Text too long for the
+   * circle gets smaller letters instead. Not for a column of upright letters (textVertical).
+   */
+  textFullCircle?: boolean;
+  /**
    * Text only (#225): the top edge of the letters rounded or chamfered by `size` mm, as a name
-   * tag's letters on top are finished. Built from the outline stepped inwards, so it works for
-   * every font and word; the edge tool takes such a text as a mesh.
+   * tag's letters on top are finished, or with `side` the bottom edge or both. Built from the
+   * outline stepped inwards, so it works for every font and word; the edge tool takes such a text as a mesh.
    */
   textEdge?: TextEdge;
   /** Text only (#215): a key ring hole, with the ear round it on the bottom layer of a name tag. Straight text only. */
@@ -1606,6 +1741,11 @@ export type WorkplaneShape = {
    * panel can make it again. On the group that holds the board and its parts.
    */
   sbcBoard?: SbcBoardSettings;
+  /**
+   * A fan (Discussion #1962): which fan and how far its air openings and screw holes reach out, so
+   * the properties panel can make it again. On the group that holds the fan's body and parts.
+   */
+  fan?: FanSettings;
   /**
    * Set on a body made by wrapping around a cylinder (#106): its box is
    * centred on the cylinder's axis, and aligning, snapping and centring use
@@ -1639,8 +1779,15 @@ export type WorkplaneShape = {
   vase?: import("@/lib/vase/vase-geometry.mjs").VaseSettings;
   /** An accessory laid out for a vase (its id): laying them out again replaces it. */
   vasePartOf?: string;
+  /**
+   * Only for "vase": its accessories are shown put together round it, and the vase is raised by this much (mm) to
+   * stand on them. Laying the accessories out for printing sets it down again.
+   */
+  vaseAssembled?: number;
   /** A Swallowtail key laid out for a Gridfinity plate (its id, #1061): laying them out again replaces it. */
   gridfinityKeyOf?: string;
+  /** A clip laid out for a Gridfinity baseplate with clip notches: that plate's id, so laying them out again replaces it. */
+  gridfinityClipOf?: string;
   importedMesh?: {
     positions: number[];
     normals?: number[];
@@ -1816,6 +1963,101 @@ export type QrStyle = "code" | "raised" | "engraved";
 /** The single-board computers the SBC board shape knows (#1098). */
 export type SbcBoardType = "pi5" | "pi4" | "pi3bPlus" | "zero2w" | "bttPi12" | "xiaoEsp32c6" | "esp32c3SuperMini" | "esp32c6SuperMini" | "featherEsp32s3" | "arduinoUno" | "arduinoMega" | "arduinoNano" | "wemosD1Mini" | "pico" | "picoW" | "pico2" | "pico2W" | "esp32CamMb" | "esp32s3Cam" | "esp32DevKitC" | "esp32DevKitV1" | "cyd" | "cyd2usb" | "waveshareEsp32s3Zero" | "arduinoProMini" | "nanoPiNeo3Plus" | "waveshareEsp32p4Nano";
 
+export type PattiesPattern = "warp" | "dots" | "petals" | "scales" | "waves" | "cells" | "bricks" | "triangles" | "diamonds" | "weave" | "herringbone" | "rays" | "pegboard" | "motif";
+/** The figure the motif pattern repeats: one of the ready ones, or one's own, read from a drawing or a picture. */
+export type PattiesMotif = "heart" | "drop" | "moon" | "cross" | "leaf" | "paw" | "custom";
+export type PattiesOutline = "rectangle" | "round" | "polygon" | "star" | "fan";
+export type PattiesLayout = "straight" | "polar";
+export type PattiesMode = "stencil" | "raised" | "sunk" | "pieces";
+export type PattiesCell = "pill" | "ellipse";
+/** Motif: what every second row does with its figure - nothing, mirror it left to right, or stand it on its head. */
+export type PattiesAlternate = "none" | "mirror" | "turn";
+
+/**
+ * Pattern plate ("Patties"): a flat plate that carries a pattern of figures. The figures are laid out by these
+ * settings (lib/pattiesPattern.ts) and the body is built from them every time (lib/pattiesGeometry.ts).
+ */
+export type PattiesSettings = {
+  /**
+   * Warp grid, dots, flowers, scales, waves, cells that grow like foam, bricks, triangles, diamonds, a weave,
+   * herringbone, rays from a middle, a pegboard's slots at their fixed measures, or a figure of one's own repeated.
+   */
+  pattern: PattiesPattern;
+  /** The plate's edge: a rectangle, round, a polygon, a star, or the unrolled side of a round vessel with sloped sides. */
+  outline: PattiesOutline;
+  /** Polygon: the corners of the plate's edge. Star: its points. */
+  corners: number;
+  /** The figures in straight rows, or in rings round the middle. A fan lays them out along its own curve. */
+  layout: PattiesLayout;
+  /**
+   * How the plate is built: the figures cut through it (stencil), standing on it (raised), pressed into it (sunk),
+   * or the figures alone without a plate (pieces).
+   */
+  mode: PattiesMode;
+  /** Warp grid: a rectangle with rounded corners, or an ellipse. */
+  cell: PattiesCell;
+  /** Figures across the plate; round a middle: figures round the ring. */
+  count: number;
+  /** Warp grid and waves: rows up the plate; 0 lets them follow the columns. */
+  rows: number;
+  /** The bar between two figures in mm, the least everywhere. */
+  gap: number;
+  /** -100 to 100: above 0 the figures at the focus are the largest, below 0 the smallest. */
+  bulge: number;
+  /** Where the bulge has its middle, -100 (left, front) to 100 (right, back) of the patterned area. */
+  focusX: number;
+  focusY: number;
+  /** Every figure turned on the spot, in degrees. */
+  turn: number;
+  /** 0 to 100: how round the corners of the figures are. */
+  roundness: number;
+  /** Dots: corners. Flowers: petals of a flower. Waves: pieces every band is cut into. Weave: strips in a field. */
+  sides: number;
+  /**
+   * 0 to 100, what it means follows the pattern: star depth, petal width, scale width, wave height, disorder, how
+   * tall a diamond is, how thick a herringbone bar is, how large the open middle of the rays is.
+   */
+  amount: number;
+  /** Cells: which of the endless random arrangements. */
+  seed: number;
+  /** A solid border round the pattern in mm. */
+  frame: number;
+  /** Raised and sunk: the plate under the figures in mm. */
+  base: number;
+  /** Left and right edge meet when the plate is wrapped round a body: half a bar there instead of the border. */
+  seamless: boolean;
+  /** Figures that reach over the edge are cut there instead of left out. */
+  cutEdge: boolean;
+  /** Round a middle: the solid middle, in percent of the radius. */
+  hub: number;
+  /** Fan: the vessel's diameter at the top and at the bottom, and the length of its side between them. */
+  fanTop: number;
+  fanBottom: number;
+  fanSide: number;
+  /** Motif: which figure is repeated. */
+  motif: PattiesMotif;
+  /**
+   * Motif: every second row shows the figure the other way - mirrored left to right, so a figure that points along
+   * the row goes there and back, or turned by half a turn.
+   */
+  alternate: PattiesAlternate;
+  /**
+   * Stencil and pieces: the openings slope through the plate by this many degrees, -60 to 60. Above 0 their top is
+   * further back than their bottom, so a plate stood up on its front edge lets no rain in from its underside.
+   */
+  tilt: number;
+  /**
+   * Print chamfer in mm: the two upper corners of every figure cut off at 45 degrees (the lower ones of raised
+   * figures), up to a roof, so the plate prints standing on its front edge. 0 for none.
+   */
+  chamfer: number;
+  /**
+   * Motif "custom": the figure's outlines, each a closed line as x, y, x, y, ... inside a circle of radius 1 round
+   * the origin, y up. Read from an SVG or traced from a picture (lib/pattiesMotif.ts); holes are left out.
+   */
+  motifLoops?: number[][];
+};
+
 export type SbcBoardSettings = {
   board: SbcBoardType;
   /** Extra room in mm on every side (but the bottom) of the connectors at the edge, 0 to 2. */
@@ -1834,6 +2076,23 @@ export type SbcBoardSettings = {
   upReach?: number;
   /** How far in mm the buttons reach the way they are pressed (up through a lid, or out of a side), 0 to 100; missing is 0. */
   buttonReach?: number;
+};
+
+/** The fans the Fan shape knows (Discussion #1962): radial blowers and axial fans, by size. */
+export type FanType =
+  | "blower5015" | "blower5015wide" | "blower5020" | "blower4020" | "blower4010"
+  | "axial2510" | "axial3010" | "axial4010" | "axial4020" | "axial5015" | "axial5020" | "axial6015" | "axial6025" | "axial8025" | "axial9225" | "axial12025";
+
+export type FanSettings = {
+  fan: FanType;
+  /** Extra room in mm on every side of the body and the air openings, 0 to 2; the screw holes keep their size. */
+  clearance: number;
+  /** How far in mm the air inlet reaches out of the fan, to cut through a wall, 0 to 50; missing is 0. */
+  inletReach?: number;
+  /** How far in mm the air outlet reaches out of the fan, 0 to 50; missing is 0. */
+  outletReach?: number;
+  /** How far in mm the screw holes reach out of the fan on both faces, 0 to 50; missing is 0. */
+  screwReach?: number;
 };
 
 export type QrCodeSettings = {

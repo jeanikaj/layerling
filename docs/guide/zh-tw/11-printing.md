@@ -79,6 +79,17 @@ FLSun、SeeMeCNC 等品牌的三角洲（Delta）印表機以及 Anycubic Predat
 
 從此以後，新的使用都會以這個間隙而不是內建數值為起點：{{ui:editor.tool.lid}}工具中的{{ui:lid.gap}}和{{ui:lid.hingePinPlay}}，新建{{ui:shape.dovetail}}和{{ui:shape.snapFit}}的間隙，新建螺帽或螺紋孔的{{ui:prop.clearance}}——取間隙的兩倍，因為它是整個直徑上的餘量——以及{{ui:editor.tool.clearance}}中的{{ui:clearance.threshold}}。{{ui:editor.tool.split}}中銷釘、凸柱和燕尾榫的{{ui:split.connectorClearance}}也是如此。只要這樣的欄位仍保持該數值，旁邊的「{{ui:printerPlay.fromFitTest}}」就會說明這個數字的來源。一體列印的鉸鏈和{{ui:editor.tool.flexi}}工具的關節保持 0.4 mm：一體列印時，它們的縫隙在層與層之間也必須保持開啟，而單獨列印的銷釘量不出這一點。壓入磁鐵或 Gridfinity 鍵的餘量，以及為買來的插座或電路板留的餘量，也都保持各自的數值。設計中已有的實體永遠不會改變，你開啟的設計也不會。
 
+## 在紙上檢查尺寸
+
+需要與其他東西配合的零件（風扇、電路板、螺絲孔配置），在 3D 列印前可以先在紙上快速檢查。印一張紙只要幾秒；試印件要花時間和線材，尺寸不對還得重印。
+
+1. 選取零件，按一下 {{ui:editor.export}}，選擇 **2D** 格式，再選 PDF。
+2. 在 {{ui:export.drawing.paper}} 中選擇印表機裡的紙張，A4、A3、US Letter 或 US Tabloid。較大的圖紙會分到多頁上。
+3. 以 100 % 或「實際大小」列印，不要選「符合頁面」。
+4. 用尺量一個總尺寸。如果與旁邊的數字一致，列印就是真實比例：把實物放上去比對。
+
+紙張無法顯示 3D 印表機的偏差：塑膠會略微收縮，孔會偏緊。上面的配合測試可以看出這一點。關於圖紙的更多內容見 [檔案、儲存與分享](chapter:files-and-saving)。
+
 ## 檢查列印
 
 {{ui:editor.tool.printCheck}} 位於 {{ui:editor.group.combine}} 中 {{ui:editor.tool.clearance}} 的旁邊。它檢查選取的物件；沒有選取任何物件時，檢查所有可見物件，並在一個視窗中說明列印時會出什麼問題。五行檢查中，沒發現問題的顯示為綠色，發現問題的顯示為橘色，並說明是什麼、在哪裡：
@@ -92,6 +103,14 @@ FLSun、SeeMeCNC 等品牌的三角洲（Delta）印表機以及 Anycubic Predat
 ![右側壁只有 0.6 mm 厚的托盤：列印檢查把它塗成紅色，並在視窗中列出。](shot:print-check)
 
 點選某一行的{{ui:printCheck.show}}會把相機移到那裡；它會選取懸空的零件、接觸過少的零件和開放網格，對於懸垂則會開啟**顯示懸垂**。互相重疊的實體會合併後再檢查，就像切片軟體合併它們那樣。如果視窗開啟時修改了設計，會顯示{{ui:printCheck.stale}}；點選它或{{ui:printCheck.checkAgain}}即可。[[Esc]] 關閉視窗。設計本身不會改變。AI 可以用 `layerling_check_print` 做同樣的檢查。這個視窗只做檢查，不會列印或儲存任何內容：要列印，請用 {{ui:editor.group.file}} 群組中的 {{ui:editor.export}} 為切片軟體匯出模型。視窗中的 {{ui:printCheck.openExport}} 會關閉檢查並開啟匯出。
+
+### 列印分析與分層檢視
+
+{{ui:editor.tool.layerCheck}} 位於 {{ui:editor.tool.printCheck}} 旁邊，更進一步：它把選取的物件（或所有可見物件）切成印表機逐層列印的層，並把每一層與下面一層比較，一次完成。你不必逐層翻看來尋找問題：視窗會列出它的**發現項目**，先是問題（紅色），再是提示（黃色），由下往上排列。每一行說明位置與嚴重程度，例如「第 83–97 層（16.6–19.4 mm）：懸垂 62°，1.4 cm²」，以及怎樣補救。連續多層在同一位置有相同問題時，合併為一個發現項目。
+
+在查看各層之前，它先檢查整體：伸進列印平台的零件（{{ui:finding.kind.inBed}}；工作平面以下的層不計入）、懸浮在平台上方的零件、不封閉的網格、比設定中所選印表機更大的零件。接著逐層檢查：{{ui:finding.kind.unsupported}}（下面什麼都沒有就開始的地方，例如 T 形的兩臂）、{{ui:finding.kind.overhang}}（與垂直方向夾角 45° 起為提示，60° 起為問題）、{{ui:finding.kind.bridge}}（跨距 10 mm 起為提示）、{{ui:finding.kind.thinWall}}（小於噴嘴的兩條線寬）、{{ui:finding.kind.smallIsland}}（小於 2 mm² 且延續 2 mm 或以上的獨立區域）以及 {{ui:finding.kind.adhesion}}。在頂部選擇 {{ui:layerCheck.layerHeight}} 與 {{ui:layerCheck.nozzle}}；各項界限在 {{ui:layerCheck.advanced}} 下。小於 0.05 mm² 的地方（例如尖端或最後一層）不作評估。檢查在背景執行並顯示進度列；{{ui:layerCheck.stop}} 會立即停止它。
+
+點擊一個發現項目：**分層檢視**會在它涉及的第一層開啟，相機移到該位置，該位置在這一層上塗成紅色或黃色，下面的層仍然可見。滑桿直立在沿高度的截面輪廓旁邊；它旁邊的標記顯示發現項目所在的位置，點擊某個標記即可跳過去。在滑桿上，[[↑]] 與 [[↓]] 移動一層，[[Page Up]] 與 [[Page Down]] 移動十層，[[Home]] 與 [[End]] 跳到兩端，[[Space]] 播放，[[N]] 跳到下一個發現項目，[[Shift+N]] 跳到上一個。{{ui:layerCheck.view.mode}} 可選 {{ui:layerCheck.view.mode.upTo}}、{{ui:layerCheck.view.mode.only}} 或 {{ui:layerCheck.view.mode.range}}；後面還沒列印的層可以顯示為淡淡的影子。對於 Layerling 有對應工具的發現項目，會有一個按鈕開啟該工具：{{ui:finding.action.dropToPlate}}、{{ui:finding.action.layFlat}} 或 {{ui:finding.action.supportRib}}。修改設計後，清單會標為已過時，直到你點擊 {{ui:layerCheck.checkAgain}}。關閉視窗後，相機回到原來的位置。這不是切片預覽：支撐、填充與列印時間請以切片軟體為準。
 
 ## 準備就緒時
 

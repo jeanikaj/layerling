@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
 import manifoldModule from "manifold-3d";
 import {
+  DEFAULT_ICON_TAG_FINISHED_WIDTH,
+  DEFAULT_ICON_TAG_WIDTH,
   ICON_TAG_LAYERS,
+  ICON_TAG_START_REACH,
+  iconLayersReach,
+  iconTagFinishedWidth,
+  iconWidthForFinishedWidth,
+  iconWidthInFinished,
+  MAX_ICON_TAG_FINISHED_WIDTH,
+  MAX_ICON_TAG_WIDTH,
+  MIN_ICON_TAG_FINISHED_WIDTH,
+  MIN_ICON_TAG_WIDTH,
   iconLayerElevations,
   iconLayerProfile,
   iconLayersOf,
@@ -204,5 +215,57 @@ describe("finding the icon tag", () => {
     const tag = { kind: "mesh" as const, groupedShapes: [{}], groupOperation: "bundle", layeredIcon: true };
     expect(guideHref("en", guideChapterForShape(tag), guideSectionForShape(tag))).toBe("/guide/text.html#icon-tags");
     expect(guideHref("de", guideChapterForShape(tag), guideSectionForShape(tag))).toBe("/anleitung/text.html#symbolschilder");
+  });
+});
+
+describe("a colour change keeps the layers' own changes (Discussion #1999)", () => {
+  it("tells new colours apart from any other change", async () => {
+    const { layersOnlyRecolored } = await import("@/lib/iconTag");
+    const before = [{ grow: 0, height: 1.2, color: "#ffffff" }, { grow: 3, height: 2, color: "#2b2b2b", silhouette: true }];
+    expect(layersOnlyRecolored(before, [{ ...before[0], color: "#ff0000" }, before[1]])).toBe(true);
+    expect(layersOnlyRecolored(before, before)).toBe(false);
+    expect(layersOnlyRecolored(before, [{ ...before[0], color: "#ff0000", height: 1.4 }, before[1]])).toBe(false);
+    expect(layersOnlyRecolored(before, [before[0]])).toBe(false);
+    expect(layersOnlyRecolored(before, [before[0], { ...before[1], silhouette: false }])).toBe(false);
+  });
+
+  it("recolours the layers in place, keeping a texture and a pattern part's own colour", async () => {
+    const { recoloredTagLayers } = await import("@/lib/editorTextTags");
+    const textured = { ...body({ id: "top-group-child-1", sketchProfile: square }), surfaceTexture: { pattern: "knurl" } as unknown as WorkplaneShape["surfaceTexture"] };
+    const patternBody = body({ id: "rim-body", sketchProfile: square, color: "#d41721" });
+    const pattern = body({ id: "rim-pattern", sketchProfile: square, color: "#d4a72c" });
+    const rim = { ...body({ id: "rim-group-child-2", sketchProfile: square, color: "#d41721" }), surfaceTexture: { pattern: "bricks" } as unknown as WorkplaneShape["surfaceTexture"], groupOperation: "bundle" as const, groupedShapes: [patternBody, pattern] };
+    const tag = { ...body({ id: "tag", sketchProfile: square }), layeredIcon: true, groupedShapes: [textured, rim] } as WorkplaneShape;
+    // The stack reads the parts loose, under ids of their own that come from the same ones.
+    const next = recoloredTagLayers(tag, ["top-ungroup-7", "rim-ungroup-8"], [{ grow: 0, height: 1.2, color: "#00ff00" }, { grow: 1.5, height: 1.2, color: "#0000ff" }]);
+    const [top, ring] = next.groupedShapes!;
+    expect(top).toMatchObject({ id: "top-group-child-1", color: "#00ff00", surfaceTexture: { pattern: "knurl" } });
+    expect(ring).toMatchObject({ id: "rim-group-child-2", color: "#0000ff", surfaceTexture: { pattern: "bricks" } });
+    expect(ring.groupedShapes!.map((part) => part.color)).toEqual(["#0000ff", "#d4a72c"]);
+  });
+});
+
+describe("the icon tag window's finished width (Discussion #2059)", () => {
+  it("takes the start layers' reach off both sides of the finished width", () => {
+    expect(ICON_TAG_START_REACH).toBe(3);
+    expect(iconWidthForFinishedWidth(50)).toBe(44);
+    expect(iconWidthForFinishedWidth(DEFAULT_ICON_TAG_FINISHED_WIDTH)).toBe(DEFAULT_ICON_TAG_WIDTH);
+    expect(iconWidthForFinishedWidth(MIN_ICON_TAG_FINISHED_WIDTH)).toBe(MIN_ICON_TAG_WIDTH);
+    expect(iconWidthForFinishedWidth(MAX_ICON_TAG_FINISHED_WIDTH)).toBe(MAX_ICON_TAG_WIDTH);
+  });
+});
+
+describe("an icon tag keeps its finished width (Discussion #2059)", () => {
+  it("reads the finished width as the widest layer's, without the key ring tab", () => {
+    expect(iconLayersReach(ICON_TAG_LAYERS)).toBe(3);
+    expect(iconTagFinishedWidth({ width: 44, layers: [...ICON_TAG_LAYERS] })).toBe(50);
+  });
+
+  it("makes the icon smaller, not the tag wider, when a layer reaches further", () => {
+    const wider = ICON_TAG_LAYERS.map((layer, index) => (index === 2 ? { ...layer, grow: 5 } : layer));
+    expect(iconWidthInFinished(50, wider)).toBe(40);
+    expect(iconWidthInFinished(50, ICON_TAG_LAYERS)).toBe(44);
+    // Never under the smallest icon: then the tag grows after all.
+    expect(iconWidthInFinished(10, wider)).toBe(MIN_ICON_TAG_WIDTH);
   });
 });

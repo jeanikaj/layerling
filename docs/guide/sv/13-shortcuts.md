@@ -3,7 +3,7 @@ title: Kortkommandon
 summary: Alla tangenter i korthet, hämtade direkt från programmet så att listan alltid stämmer.
 ---
 
-Kortkommandona fungerar så länge arbetsytan har fokus. Medan du skriver i ett textfält håller de sig ur vägen. På Mac gäller [[Cmd]] överallt där [[Ctrl]] står angivet här.
+Kortkommandona fungerar så länge arbetsytan har fokus. Medan du skriver i ett textfält håller de sig ur vägen. På Mac gäller [[Cmd]] överallt där [[Ctrl]] står angivet här. Tangenterna heter som på tangentbordet för ditt språk. En bokstav är bokstaven på ditt tangentbord; på ett tangentbord med annan skrift (kyrillisk, grekisk, arabisk, hebreisk) räknas tangenten på den latinska bokstavens plats.
 
 I redigeraren öppnar {{ui:editor.keyboardShortcuts}} under {{ui:editor.group.help}} samma lista i ett fönster. Skrivarknappen i fönstret ({{ui:shortcuts.print}}) skriver ut själva listan, svart på vitt, hela översikten på ena sidan av ett A4- eller Letter-ark i tre spalter, perfekt att ha nära till hands; webbläsarens utskriftsdialog låter dig även spara den som PDF.
 
@@ -19,7 +19,7 @@ Hittar du inte ett verktyg? Tryck [[Ctrl]]+[[K]] eller klicka på förstoringsgl
 - Varje rad visar vilka tangenter som gör samma sak och vilken grupp i verktygsfältet verktyget bor i, så att du lär dig var det finns.
 - Poster som är nedtonade kan inte köras just nu, oftast för att inget är markerat. De ligger ändå kvar i listan så att sökningen alltid visar var verktyget finns.
 
-Handboken du läser har också en sökruta högst upp på varje sida: skriv ett ord eller två så listar den avsnitten där alla orden förekommer, med träffarna markerade. Klicka på en träff, eller tryck [[Enter]] för den första, för att hoppa direkt dit. Sidan som öppnas markerar varje ställe där dina ord står och rullar ned till första träffen i avsnittet; [[Esc]] eller ett klick på en markering rensar markeringarna.
+Handboken du läser har också en sökruta högst upp på varje sida: skriv ett ord eller två så listar den avsnitten där alla orden förekommer, med träffarna markerade. Klicka på en träff, eller tryck [[Enter]] för den första, för att hoppa direkt dit. Sidan som öppnas markerar varje ställe där dina ord står och rullar ned till första träffen i avsnittet; [[Esc]] eller ett klick på en markering rensar markeringarna. Ord inom citattecken söks som en exakt fras: bara avsnitt där de står direkt efter varandra i den ordningen listas, och ett enstaka ord inom citattecken hittas bara som helt ord, inte som del av ett längre.
 
 - Namnet på en form lägger till formen på arbetsytan, precis som ett klick i formmenyn.
 - När fältet är tomt listar sökningen de kommandon du använde senast överst.

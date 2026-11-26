@@ -3,7 +3,7 @@ title: Tastaturgenveje
 summary: Alle taster på ét sted, taget direkte fra programmet så listen altid er rigtig.
 ---
 
-Genvejene virker så længe arbejdsplanet har fokus. Mens du skriver i et felt holder de sig væk. På en Mac, brug [[Cmd]] hvor [[Ctrl]] er angivet her.
+Genvejene virker så længe arbejdsplanet har fokus. Mens du skriver i et felt holder de sig væk. På en Mac, brug [[Cmd]] hvor [[Ctrl]] er angivet her. Tasterne hedder som på tastaturet i dit sprog. Et bogstav er bogstavet på dit tastatur; på et tastatur med en anden skrift (kyrillisk, græsk, arabisk, hebraisk) gælder tasten på det latinske bogstavs plads.
 
 I editoren åbner {{ui:editor.keyboardShortcuts}} i området {{ui:editor.group.help}} den samme liste som et vindue. Printerknappen i vinduet ({{ui:shortcuts.print}}) udskriver selve listen, sort på hvidt, hele listen på én side af et A4- eller Letter-ark i tre spalter, så den er lige ved hånden som en hurtig reference; browserens udskrivningsdialog tilbyder også at gemme den som PDF.
 
@@ -19,7 +19,7 @@ Kan du ikke finde et værktøj? Tryk [[Ctrl]]+[[K]] eller klik forstørrelsesgla
 - Hver post viser de taster der gør det samme og den gruppe i båndet den bor i, så du lærer hvor den er.
 - Poster der er grået ud kan ikke køres lige nu, for det meste fordi intet er valgt. De bliver i listen så søgningen stadig fortæller dig hvor værktøjet er.
 
-Vejledningen du læser har også en søgeboks, øverst på hver side: tast et ord eller to, og den lister de sektioner der indeholder dem alle, med de matchende ord markeret. Klik én, eller tryk [[Enter]] for den første, for at springe direkte derhen. Siden der åbner, markerer hvert sted dine ord står, og ruller til det første i den valgte sektion; [[Esc]] eller et klik på en markering fjerner dem igen.
+Vejledningen du læser har også en søgeboks, øverst på hver side: tast et ord eller to, og den lister de sektioner der indeholder dem alle, med de matchende ord markeret. Klik én, eller tryk [[Enter]] for den første, for at springe direkte derhen. Siden der åbner, markerer hvert sted dine ord står, og ruller til det første i den valgte sektion; [[Esc]] eller et klik på en markering fjerner dem igen. Ord i anførselstegn søges som en præcis ordlyd: kun de sektioner hvor de står lige efter hinanden i den rækkefølge bliver listet, og et enkelt ord i anførselstegn findes kun som helt ord, ikke som del af et længere.
 - En forms navn tilføjer den form til arbejdsplanet, ligesom at klikke den i formmenuen.
 - Med et tomt felt lister søgningen de kommandoer du brugte sidst øverst.
 - Navnet på en form i dit design finder den form og vælger den, hvilket hjælper i et design med mange dele. Former vises først når du taster.

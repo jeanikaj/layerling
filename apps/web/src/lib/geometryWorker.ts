@@ -5,7 +5,7 @@ import { checkClearance, type ClearanceOptions, type ClearanceResult } from "@/l
 import { buildGroupedShapeFromSelection, exportSolidVolume, faceReadJoins, faceReadPositions, previewSplitConnectors, splitShapeIfCrossed, splitShapesByPlane, type ExportSolidVolume, type RebuildStretchedGroup, type GroupBuildResult, type SplitConnectorPreview, type SplitShapesOutcome } from "@/lib/editorBooleans";
 import { packValue, packedTransfer, unpackValue } from "@/lib/geometryTransfer";
 import { articulateShapes, type FlexiOptions, type FlexiShapesResult } from "@/lib/flexiJoints";
-import { lidForShapes, lidTopForShapes, type LidOptions, type LidShapeResult } from "@/lib/lidTool";
+import { lidForShapes, lidRoomsForShapes, lidTopForShapes, type LidOptions, type LidShapeResult } from "@/lib/lidTool";
 import { analyseMoldForShapes, moldForShapes, type MoldAnalysisResult, type MoldOptions, type MoldShapeResult } from "@/lib/moldTool";
 import { checkPrint, type PrintCheckOptions, type PrintCheckResult } from "@/lib/printCheck";
 import { checkLayers, type LayerCheckOptions, type LayerCheckResult } from "@/lib/layerCheck";
@@ -17,7 +17,7 @@ import type { ModelSplitPlane } from "@/lib/modelSplit";
 import type { SplitConnectorOptions } from "@/lib/splitConnectors";
 import { simplifyTrianglePositions, type SimplifiedMesh, type SimplifyOptions } from "@/lib/meshSimplify";
 import { importedShapesFromObj, type ObjImportResult } from "@/lib/objImport";
-import { importedShapeFromStl, type StlReadOptions } from "@/lib/stlImport";
+import { importedShapeFromStl, type MeshPlacement, type StlReadOptions } from "@/lib/stlImport";
 import { importedShapesFromStepFile, type StepFileImport } from "@/lib/stepFileImport";
 import type { StepExportResult } from "@/lib/stepExport";
 import type { WorkplaneShape } from "@/types/layerling";
@@ -374,6 +374,16 @@ export function lidTopOffThread(targets: readonly WorkplaneShape[], signal?: Abo
 }
 
 /**
+ * lidRoomsForShapes (lib/lidTool.ts) off the page: the body's compartments as Make lid numbers them, for the plan the lid
+ * panel shows beside the labels. Quiet, as lidTopOffThread is; one that times out is no measurement.
+ */
+export function lidRoomsOffThread(targets: readonly WorkplaneShape[], signal?: AbortSignal): ReturnType<typeof lidRoomsForShapes> {
+  const onPage = () => lidRoomsForShapes([...targets]);
+  if (containsText([...targets])) return onPage();
+  return runGeometryTask("lidRooms", { targets: [...targets] }, onPage, () => null, signal, true);
+}
+
+/**
  * An STL file read off the page (importedShapeFromStl in lib/stlImport.ts): reading a 300,000-triangle
  * file held the page for over a second. The import window shows its own progress, so this says
  * nothing of its own.
@@ -417,8 +427,8 @@ export async function exportShapesToStepOffThread(shapes: readonly WorkplaneShap
 }
 
 /** An OBJ file read off the page (importedShapesFromObj in lib/objImport.ts). */
-export function importedShapesFromObjOffThread(fileName: string, text: string, mtlSources: readonly string[]): Promise<ObjImportResult> {
-  return runGeometryTask("obj", { fileName, text, mtlSources: [...mtlSources] }, async () => importedShapesFromObj(fileName, text, mtlSources), () => {
+export function importedShapesFromObjOffThread(fileName: string, text: string, mtlSources: readonly string[], placement: MeshPlacement = {}): Promise<ObjImportResult> {
+  return runGeometryTask("obj", { fileName, text, mtlSources: [...mtlSources], placement }, async () => importedShapesFromObj(fileName, text, mtlSources, placement), () => {
     throw new Error(t("status.computeTimedOut"));
   }, undefined, true);
 }

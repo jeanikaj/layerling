@@ -323,6 +323,55 @@ function fallbackHeadingId(context, position) {
   return context.englishHeadingIds?.[position]?.[0] || `section-${position + 1}`;
 }
 
+/**
+ * The ids headings had before they were renamed, by the id they have now. They stay as second anchors, so links given
+ * out earlier still land.
+ */
+const FORMER_HEADING_IDS = {
+  "ribbon-size-and-buttons": ["appearance-buttons-in-the-ribbon"],
+  "controls-selecting-and-moving": ["appearance-selecting-and-moving"],
+  "appearance-theme-and-view-cube": ["appearance-theme-toolbar-and-view-cube"],
+  "pas-nastroju-velikost-a-tlacitka": ["vzhled-tlacitka-na-pasu-nastroju"],
+  "ovladani-vyber-a-presouvani": ["vzhled-vyber-a-presouvani"],
+  "vzhled-motiv-a-krychle": ["vzhled-motiv-pas-nastroju-a-krychle"],
+  "band-st-rrelse-og-knapper": ["udseende-knapper-i-bandet"],
+  "betjening-markering-og-flytning": ["udseende-markering-og-flytning"],
+  "udseende-tema-og-visningskube": ["udseende-tema-v-rkt-jsbj-lke-og-visningskube"],
+  "menueband-groesse-und-knoepfe": ["darstellung-knoepfe-im-menueband"],
+  "bedienung-auswaehlen-und-verschieben": ["darstellung-auswaehlen-und-verschieben"],
+  "darstellung-thema-und-ansichtswuerfel": ["darstellung-thema-leiste-und-ansichtswuerfel"],
+  "cinta-tamano-y-botones": ["aspecto-botones-de-la-cinta"],
+  "controles-seleccionar-y-mover": ["aspecto-seleccionar-y-mover"],
+  "aspecto-tema-y-cubo-de-vista": ["aspecto-tema-barra-de-herramientas-y-cubo-de-vista"],
+  "ruban-taille-et-boutons": ["apparence-boutons-du-ruban"],
+  "commandes-selectionner-et-deplacer": ["apparence-selectionner-et-deplacer"],
+  "apparence-theme-et-cube-de-vue": ["apparence-theme-barre-d-outils-et-cube-de-vue"],
+  "szalag-meret-es-gombok": ["megjelenes-gombok-a-szalagon"],
+  "kezeles-kijeloeles-es-mozgatas": ["megjelenes-kijeloeles-es-mozgatas"],
+  "megjelenes-tema-es-nezetkocka": ["megjelenes-tema-szalag-es-nezetkocka"],
+  "barra-dimensione-e-pulsanti": ["aspetto-pulsanti-della-barra-multifunzione"],
+  "comandi-selezione-e-spostamento": ["aspetto-selezione-e-spostamento"],
+  "aspetto-tema-e-cubo-di-visualizzazione": ["aspetto-tema-barra-degli-strumenti-e-cubo-di-visualizzazione"],
+  "lint-grootte-en-knoppen": ["weergave-knoppen-in-het-lint"],
+  "bediening-selecteren-en-verplaatsen": ["weergave-selecteren-en-verplaatsen"],
+  "weergave-thema-en-kubus": ["weergave-thema-werkbalk-en-kubus"],
+  "wstazka-rozmiar-i-przyciski": ["wyglad-przyciski-na-wstazce"],
+  "sterowanie-zaznaczanie-i-przesuwanie": ["wyglad-zaznaczanie-i-przesuwanie"],
+  "wyglad-motyw-i-kostka-widoku": ["wyglad-motyw-pasek-narzedzi-i-kostka-widoku"],
+  "faixa-de-ferramentas-tamanho-e-botoes": ["aspeto-botoes-da-faixa-de-ferramentas"],
+  "controlos-selecionar-e-mover": ["aspeto-selecionar-e-mover"],
+  "aspeto-tema-e-cubo-de-vistas": ["aspeto-tema-faixa-de-ferramentas-e-cubo-de-vistas"],
+  "lenta-razmer-i-knopki": ["vneshniy-vid-knopki-na-lente"],
+  "upravlenie-vydelenie-i-peremeshchenie": ["vneshniy-vid-vydelenie-i-peremeshchenie"],
+  "vneshniy-vid-tema-i-kub": ["vneshniy-vid-tema-panel-instrumentov-i-kub"],
+  "orodna-vrstica-velikost-in-gumbi": ["videz-gumbi-v-orodni-vrstici"],
+  "upravljanje-izbiranje-in-premikanje": ["videz-izbiranje-in-premikanje"],
+  "videz-tema-in-kocka": ["videz-tema-orodna-vrstica-in-kocka"],
+  "verktygsfaelt-storlek-och-knappar": ["utseende-knappar-i-verktygsfaeltet"],
+  "styrning-markera-och-flytta": ["utseende-markera-och-flytta"],
+  "utseende-tema-och-vykub": ["utseende-tema-verktygsfaelt-och-vykub"],
+};
+
 export function renderBlocks(markdown, context) {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const html = [];
@@ -343,7 +392,7 @@ export function renderBlocks(markdown, context) {
       const id = slugify(heading[2]) || fallbackHeadingId(context, position);
       if (level === 2) headings.push({ id, text: renderInline(heading[2], { ...context, references: undefined }).replace(/<[^>]+>/g, "") });
       // The English id as a second anchor, so a help link that knows only the English name of a section still lands on it.
-      const alias = (context.englishHeadingIds?.[position] ?? [])
+      const alias = [...new Set([...(context.englishHeadingIds?.[position] ?? []), ...(FORMER_HEADING_IDS[id] ?? [])])]
         .filter((englishId) => englishId !== id && !context.ownHeadingIds?.has(englishId))
         .map((englishId) => `<span class="heading-alias" id="${englishId}"></span>`)
         .join("");
@@ -457,7 +506,7 @@ export async function readToolIcons() {
 export async function readShortcutGroups() {
   const source = await readFile(join(root, "apps", "web", "src", "components", "workplane", "ShortcutsModal.tsx"), "utf8");
   const groups = [];
-  const token = /title:\s*"(shortcuts\.group\.\w+)"|\{\s*combos:\s*\[([^\]]*)\],\s*label:\s*"(shortcuts\.\w+)"\s*\}/g;
+  const token = /title:\s*"(shortcuts\.group\.\w+)"|\{\s*combos:\s*\[([^\]]*)\],\s*label:\s*"((?:shortcuts|sketch)\.\w+)"\s*\}/g;
   for (const match of source.matchAll(token)) {
     if (match[1]) {
       groups.push({ title: match[1], entries: [] });
@@ -471,7 +520,12 @@ export async function readShortcutGroups() {
 
 export function renderShortcuts(groups, messages, language) {
   const names = LANGUAGE_INFO[language]?.keyNames ?? {};
-  const key = (name) => `<kbd>${escapeHtml(names[name] ?? name)}</kbd>`;
+  // The mouse as the in-app dialog names it (keyLabel in ShortcutsModal.tsx), where the language has no key name of its own.
+  const mouse = { Click: "shortcuts.click", RightClick: "shortcuts.rightClick", MiddleClick: "shortcuts.middleClick", Drag: "shortcuts.drag", Wheel: "shortcuts.wheel" };
+  const fallback = { PgUp: "Page Up", PgDn: "Page Down" };
+  const keyName = (name) => names[name] ?? (mouse[name] ? messages[mouse[name]] : undefined) ?? (fallback[name] ? names[fallback[name]] : undefined) ?? name;
+  // "PgUp / PgDn" and "← / → / ↑ / ↓" are keys side by side: each is named on its own.
+  const key = (name) => (name.includes(" / ") ? name.split(" / ").map((part) => key(part.trim())).join(" / ") : `<kbd>${escapeHtml(keyName(name))}</kbd>`);
   const combo = (text) => (text === "+" || text === "−" ? key(text) : text.includes("+") ? `<span dir="ltr">${text.split("+").map((part) => key(part.trim())).join("+")}</span>` : key(text.trim()));
   const or = messages["shortcuts.or"] ?? "or";
   return groups

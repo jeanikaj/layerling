@@ -42,16 +42,32 @@ function wrapShare(cad: OcctKernel, solid: ShapeHandle, edge: ShapeHandle, probe
   return inside / samples;
 }
 
-/** The inner corners among these edges: the solid fills clearly more than half the turn round them. */
-export function innerCornerEdges(cad: OcctKernel, solid: ShapeHandle, edges: ShapeHandle[], amount: number) {
+/**
+ * The inner corners among these edges: the solid fills clearly more than half the turn round them.
+ *
+ * Each edge costs sixteen questions to the kernel whether a point lies in the solid, and on a body of many faces one
+ * such question takes a while: on a Gridfinity bin with a lettered label the 150 edges touching an all-edge selection
+ * took 14 s to look at, none of them an inner corner, and the refusal the user was waiting for came after the preview
+ * had timed out (Issue #1812). So the look shares the time `treatAfterInnerCorners` has: once `deadline` (a time of
+ * `performance.now()`) is past, it stops and reports no inner corners at all, and the refusal stands as it did before
+ * inner corners were looked for.
+ *
+ * The corners found until then are not handed on. Rounding some notches and not the others leaves the picked edges as
+ * stuck as before, so the try would only cost more time when there is none left; and which corners were found in time
+ * depends on how fast the machine is, so the same edges could come out as different bodies from one try to the next.
+ */
+export function innerCornerEdges(cad: OcctKernel, solid: ShapeHandle, edges: ShapeHandle[], amount: number, deadline = Infinity) {
   const probe = Math.max(0.002, Math.min(0.05, amount * 0.05));
-  return edges.filter((edge) => {
+  const corners: ShapeHandle[] = [];
+  for (const edge of edges) {
+    if (performance.now() > deadline) return [];
     try {
-      return wrapShare(cad, solid, edge, probe) > 0.6;
+      if (wrapShare(cad, solid, edge, probe) > 0.6) corners.push(edge);
     } catch {
-      return false;
+      // An edge the kernel cannot measure is no corner to round.
     }
-  });
+  }
+  return corners;
 }
 
 /**
@@ -133,7 +149,12 @@ export function treatAfterInnerCorners(
  * tripled edges here where its topology looks fine.
  */
 export function meshIsClosed(cad: OcctKernel, body: ShapeHandle) {
-  const mesh = cad.tessellate(body, { linearDeflection: 0.1, angularDeflection: 0.5 });
+  return openMeshEdges(cad, body) === 0;
+}
+
+/** How many edges of the body's coarse mesh do not lie between exactly two triangles; Infinity for no mesh at all. */
+export function openMeshEdges(cad: OcctKernel, body: ShapeHandle, options = { linearDeflection: 0.1, angularDeflection: 0.5 }) {
+  const mesh = cad.tessellate(body, options);
   const { positions, indices } = mesh;
   const key = (index: number) => `${positions[index * 3].toFixed(4)},${positions[index * 3 + 1].toFixed(4)},${positions[index * 3 + 2].toFixed(4)}`;
   const uses = new Map<string, number>();
@@ -145,8 +166,9 @@ export function meshIsClosed(cad: OcctKernel, body: ShapeHandle) {
       uses.set(edge, (uses.get(edge) ?? 0) + 1);
     }
   }
-  for (const count of uses.values()) if (count !== 2) return false;
-  return uses.size > 0;
+  let open = 0;
+  for (const count of uses.values()) if (count !== 2) open += 1;
+  return uses.size > 0 ? open : Infinity;
 }
 
 function release(cad: OcctKernel, handles: ShapeHandle[]) {

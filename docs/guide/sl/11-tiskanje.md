@@ -27,6 +27,8 @@ Telo, ki sega čez rob tiskalne plošče, se označi. Zraven se pojavi sporočil
 
 Opozorilo ti ne preprečuje nadaljnjega dela. Je namig, da šele v rezalniku ne ugotoviš, da je del prevelik. Prevelik del je pogosto mogoče razdeliti: z {{ui:editor.tool.split}} ga razreži na dve polovici in ju natisni ločeno.
 
+Če dele namenoma odložiš ob plošči, klikni majhen križec v sporočilu. Opozorilo potem izgine prav za ta telesa. Ko eno od njih spet ustreza in ga pozneje premakneš ven ali ko kakšno drugo telo sega čez, se sporočilo vrne. Skrita telesa se nikoli ne štejejo, zato deluje tudi, če odložene dele skriješ.
+
 ## Pravilno položiti del
 
 Kako del leži na plošči, odloča o trdnosti in videzu. Pri tem pomagata dve orodji v področju {{ui:editor.group.arrange}}:
@@ -77,6 +79,17 @@ Z več tiskalniki najprej pod {{ui:workspace.printer}} izberi tistega, na katere
 
 Od takrat nove uporabe začnejo z zračnostjo namesto z vgrajeno vrednostjo: {{ui:lid.gap}} in {{ui:lid.hingePinPlay}} v orodju {{ui:editor.tool.lid}}, zračnost novih oblik {{ui:shape.dovetail}} in {{ui:shape.snapFit}}, {{ui:prop.clearance}} nove matice ali navojne luknje – dvojna zračnost, saj je to prostor čez ves premer – in {{ui:clearance.threshold}} pri {{ui:editor.tool.clearance}}. Prav tako {{ui:split.connectorClearance}} moznikov, čepov in lastovičjih repov pri {{ui:editor.tool.split}}. Dokler tako polje še ima to vrednost, »{{ui:printerPlay.fromFitTest}}« ob njem pove, od kod je številka. Tečaj, natisnjen v enem kosu, in zgibi orodja {{ui:editor.tool.flexi}} obdržijo svojih 0,4 mm: ko so natisnjeni v enem kosu, morajo njihove reže ostati odprte tudi med plastmi, tega pa zatič, natisnjen posebej, ne izmeri. Prostor za vtis magneta ali ključa Gridfinity in prostor za kupljeno vtičnico ali ploščo prav tako obdržita svoje vrednosti. Telesa, ki so že v projektu, se nikoli ne spremenijo, in tudi projekt, ki ga odpreš, ne.
 
+## Preverjanje mer na papirju
+
+Del, ki se mora nečemu prilegati - ventilatorju, tiskanemu vezju, razporedu lukenj -, hitro preverite na papirju pred 3D-tiskom. List papirja vzame nekaj sekund; poskusni tisk stane čas in filament, in če mera ni prava, ga je treba ponoviti.
+
+1. Izberite del, kliknite {{ui:editor.export}} in izberite format **2D**, nato PDF.
+2. Pod {{ui:export.drawing.paper}} izberite papir v tiskalniku, A4, A3, US Letter ali US Tabloid. Večja risba se razdeli na več strani.
+3. Tiskajte pri 100 % ali v »dejanski velikosti«, nikoli »prilagodi strani«.
+4. Z ravnilom izmerite eno skupno mero na listu. Če se ujema s številko ob njej, je izpis v merilu: nanj položite pravi del.
+
+Papir ne pokaže odstopanj vašega 3D-tiskalnika: plastika se malo skrči, luknje pa so tesnejše. To pokaže preizkus prileganja zgoraj. Več o risbi v poglavju [Datoteke, shranjevanje in deljenje](chapter:datoteke-in-shranjevanje).
+
 ## Preverjanje tiska
 
 {{ui:editor.tool.printCheck}} ob {{ui:editor.tool.clearance}} v skupini {{ui:editor.group.combine}} pregleda izbrane predmete ali vse vidne, če ni nič izbrano, in v enem oknu pove, kaj bi šlo pri tiskanju narobe. Vsaka od petih vrstic je zelena, če ni našla ničesar, in oranžna s tem, kaj in kje, če je:
@@ -90,6 +103,14 @@ Od takrat nove uporabe začnejo z zračnostjo namesto z vgrajeno vrednostjo: {{u
 ![Pladenj, katerega desna stena je debela le 0,6 mm: Preveri tisk jo pobarva rdeče in jo navede v oknu.](shot:print-check)
 
 {{ui:printCheck.show}} v vrstici pripelje kamero tja; izbere lebdeče dele, dele z majhnim stikom in odprte mreže, pri previsih pa vklopi **Pokaži previse**. Telesa, ki se prekrivajo, se preverijo združena, kot jih združi slicer. Če model spremenite, medtem ko je okno odprto, se pokaže {{ui:printCheck.stale}}; kliknite to ali {{ui:printCheck.checkAgain}}. [[Esc]] zapre okno. Na modelu se nič ne spremeni. UI naredi isto preverjanje z `layerling_check_print`. Okno samo preverja, nič ne natisne ali shrani: za tisk model izvozite za rezalnik z {{ui:editor.export}} v skupini {{ui:editor.group.file}}. {{ui:printCheck.openExport}} v oknu zapre preverjanje in odpre izvoz.
+
+### Analiza tiska in pogled plasti
+
+{{ui:editor.tool.layerCheck}} ob {{ui:editor.tool.printCheck}} gre korak dlje: izbrane predmete (ali vse vidne) razreže na plasti, ki jih nanaša tvoj tiskalnik, in vsako plast primerja s plastjo pod njo, vse naenkrat. Plasti ti ni treba listati, da bi našel težavo: okno našteje svoje **ugotovitve**, najprej težave (rdeče), nato namige (rumene), od spodaj navzgor. Vsaka vrstica pove, kje in kako hudo, na primer »Plasti 83–97 (16,6–19,4 mm): Previs 62°, 1,4 cm²«, in kaj pomaga. Zaporedne plasti z isto težavo na istem mestu dajo eno ugotovitev.
+
+Preden pogleda plasti, preveri celoto: del, ki sega v tiskalno podlago ({{ui:finding.kind.inBed}}; plasti pod delovno ravnino se ne štejejo), del, ki lebdi nad njo, mrežo, ki ni zaprta, del, večji od tiskalnika, izbranega v nastavitvah. Nato plast za plastjo: {{ui:finding.kind.unsupported}} (mesto, ki se začne brez česar koli pod sabo, na primer kraka črke T), {{ui:finding.kind.overhang}} (namig od 45°, težava od 60° od navpičnice), {{ui:finding.kind.bridge}} (namig od razpona 10 mm), {{ui:finding.kind.thinWall}} (pod dvema linijama šobe), {{ui:finding.kind.smallIsland}} (ločeno mesto pod 2 mm², ki se nadaljuje 2 mm ali več) in {{ui:finding.kind.adhesion}}. Na vrhu izberi {{ui:layerCheck.layerHeight}} in {{ui:layerCheck.nozzle}}; meje so pod {{ui:layerCheck.advanced}}. Mesta pod 0,05 mm², na primer konica ali zadnja plast, se ne ocenjujejo. Preverjanje teče v ozadju z vrstico napredka; {{ui:layerCheck.stop}} ga takoj ustavi.
+
+Klikni ugotovitev: **pogled plasti** se odpre pri prvi plasti, ki jo zadeva, kamera gre na mesto, mesto se na plasti pobarva rdeče ali rumeno, plasti pod njo pa ostanejo vidne. Drsnik stoji pokonci ob profilu prereza po višini; oznake ob njem kažejo, kje so ugotovitve, klik na eno skoči tja. Na drsniku [[↑]] in [[↓]] premakneta za eno plast, [[Page Up]] in [[Page Down]] za deset, [[Home]] in [[End]] skočita na konca, [[Space]] predvaja, [[N]] gre na naslednjo ugotovitev in [[Shift+N]] na prejšnjo. {{ui:layerCheck.view.mode}} pokaže {{ui:layerCheck.view.mode.upTo}}, {{ui:layerCheck.view.mode.only}} ali {{ui:layerCheck.view.mode.range}}; plasti, ki šele pridejo, so lahko prikazane kot bleda senca. Kjer ima Layerling za ugotovitev orodje, ga odpre gumb: {{ui:finding.action.dropToPlate}}, {{ui:finding.action.layFlat}} ali {{ui:finding.action.supportRib}}. Po spremembi je seznam označen kot zastarel, dokler ne klikneš {{ui:layerCheck.checkAgain}}. Ko zapreš okno, se kamera vrne tja, kjer je bila. To ni predogled slicerja: podpore, polnilo in čas tiska določi tvoj slicer.
 
 ## Ko gre zares
 

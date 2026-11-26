@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_SHELL_DIVIDERS, MAX_SHELL_GRID_CELLS, normalizeShellDividers, normalizeShellGrid, shellGridEstimate } from "@/lib/shellGridLimits";
+import { MAX_SHELL_DIVIDERS, MAX_SHELL_GRID_CELLS, normalizeShellDividers, normalizeShellGrid, SHELL_GRID_FLOOR, shellGridEstimate, shellGridFloor } from "@/lib/shellGridLimits";
 import { clampShellStackHeight } from "@/lib/shellStackLimits";
 
 describe("what the Gridfinity floor, the dividers and the stacking of a hollow box offer", () => {
@@ -9,6 +9,12 @@ describe("what the Gridfinity floor, the dividers and the stacking of a hollow b
     expect(normalizeShellGrid({ cells: "x" })).toBeNull();
     expect(normalizeShellGrid(null)).toBeNull();
     expect(normalizeShellGrid({ cells: 1e6, fit: "yes" })).toEqual({ cells: MAX_SHELL_GRID_CELLS, fit: false });
+    // Magnet and screw holes are kept only when switched on, and either makes the floor 2.4 mm thicker, once.
+    expect(normalizeShellGrid({ cells: 2, magnets: true, screws: true })).toEqual({ cells: 2, fit: false, magnets: true, screws: true });
+    expect(normalizeShellGrid({ cells: 2, screws: "yes" })).toEqual({ cells: 2, fit: false });
+    expect(shellGridFloor({ screws: true })).toBeCloseTo(SHELL_GRID_FLOOR + 2.4, 6);
+    expect(shellGridFloor({ magnets: true, screws: true })).toBeCloseTo(SHELL_GRID_FLOOR + 2.4, 6);
+    expect(shellGridFloor(null)).toBeCloseTo(SHELL_GRID_FLOOR, 6);
   });
 
   it("keeps the dividers to whole numbers up to the most", () => {
@@ -37,5 +43,20 @@ describe("what the Gridfinity floor, the dividers and the stacking of a hollow b
     expect(clampShellStackHeight(99)).toBe(10);
     expect(clampShellStackHeight(3.04)).toBe(3);
     expect(clampShellStackHeight(Number.NaN)).toBe(3);
+  });
+
+  it("keeps the dividers as a loose insert only where there are dividers, with a play of 0.05 to 1 mm", () => {
+    expect(normalizeShellDividers({ x: 1, z: 0, insert: true })).toEqual({ x: 1, z: 0, insert: true });
+    expect(normalizeShellDividers({ x: 1, z: 0, insert: true, insertPlay: 0.4 })).toEqual({ x: 1, z: 0, insert: true, insertPlay: 0.4 });
+    // The play it starts with is not stored, and what is asked for is held to what is offered.
+    expect(normalizeShellDividers({ x: 1, z: 0, insert: true, insertPlay: 0.25 })).toEqual({ x: 1, z: 0, insert: true });
+    expect(normalizeShellDividers({ x: 1, z: 0, insert: true, insertPlay: 9 })?.insertPlay).toBe(1);
+    expect(normalizeShellDividers({ x: 1, z: 0, insert: true, insertPlay: 0 })?.insertPlay).toBe(0.05);
+    expect(normalizeShellDividers({ x: 0, z: 2, insert: "yes", insertPlay: 0.4 })).toEqual({ x: 0, z: 2 });
+    // Walls set by hand count as dividers; scoops alone in a box without dividers have nothing to put on a plate.
+    expect(normalizeShellDividers({ x: 0, z: 0, manual: true, walls: [{ dir: "x", at: 20, from: 0, to: 60 }], insert: true })?.insert).toBe(true);
+    expect(normalizeShellDividers({ x: 0, z: 0, scoops: [{ x: 10, z: 10, side: "front" }], insert: true })?.insert).toBeUndefined();
+    // Scoops and pockets stay stored beside it, for when the dividers are fixed again.
+    expect(normalizeShellDividers({ x: 1, z: 1, insert: true, scoops: [{ x: 10, z: 10, side: "front" }] })).toMatchObject({ insert: true, scoops: [{ x: 10, z: 10, side: "front" }] });
   });
 });

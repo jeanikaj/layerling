@@ -1,7 +1,7 @@
 "use client";
 
 import * as THREE from "three";
-import { acceleratedRaycast, computeBoundsTree, disposeBoundsTree } from "three-mesh-bvh";
+import { acceleratedRaycast, computeBoundsTree, disposeBoundsTree, type MeshBVH } from "three-mesh-bvh";
 import { groupDisplayMergeable, groupShowsPartColors } from "@/lib/groupColors";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
@@ -9,6 +9,7 @@ import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeome
 import { type ResolvedAppTheme } from "@/lib/appTheme";
 import { createGearGeometry } from "@/lib/gearGeometry";
 import { createHirthGeometry } from "@/lib/hirthGeometry";
+import { createPattiesGeometry } from "@/lib/pattiesGeometry";
 import { createPulleyGeometry } from "@/lib/pulleyGeometry";
 import { createFinishingWasherGeometry } from "@/lib/finishingWasherGeometry";
 import { createStarGeometry } from "@/lib/starGeometry";
@@ -29,6 +30,7 @@ import { gridfinityLabelLetters } from "@/lib/gridfinityLabelText";
 import { gridfinityLabelColor, gridfinityLetterGroups, gridfinityLettersInBox } from "@/lib/gridfinityLetterColor";
 import { createKnurlGeometry } from "@/lib/knurlGeometry";
 import { createVaseGeometry, fittedVaseMesh } from "@/lib/vaseShape";
+import { vaseDraftBuild, vaseSettingsKey } from "@/lib/vaseSettings";
 import { createTeardropGeometry } from "@/lib/teardropGeometry";
 import { createPortGeometry } from "@/lib/portGeometry";
 import { createScrewHoleGeometry } from "@/lib/screwHoleGeometry";
@@ -47,7 +49,7 @@ import { customFontRevision } from "@/lib/textFonts";
 import { rulerTicks } from "@/lib/rulerDimensions";
 import { horizontalPlacementWorkplane, placementWorkplaneIsBase, placementWorkplaneQuaternion, type PlacementWorkplane } from "@/lib/placementWorkplane";
 import { groundFootprintForFrame, type SelectionFrame } from "@/lib/liftGeometry";
-import { regularPolygonFootprintScale } from "@/lib/regularPolygonFootprint";
+import { polygonFlatAngle, regularPolygonFootprintScale } from "@/lib/regularPolygonFootprint";
 import { createRoundedPolygonGeometry } from "@/lib/roundedPolygonGeometry";
 import { roundSideCount } from "@/lib/roundSideCount";
 import { createPyramidGeometry } from "@/lib/pyramidGeometry";
@@ -219,6 +221,24 @@ export let strongHoles = false;
 /** The hole opacity slider (#1566) in percent, 10 to 90; 0 is automatic and follows strongHoles. */
 export let holeOpacitySetting = 0;
 
+/**
+ * "Show texture clearly" (Discussion #1972): the body with this id is drawn in a plain, matt grey whatever its colour,
+ * so that the relief of its surface texture reads on a white body too. A look only, handed over like the edge lines.
+ */
+export let textureLookShapeId: string | null = null;
+export const TEXTURE_LOOK_COLOR = "#8f979e";
+
+export function setTextureLookShape(shapeId: string | null) {
+  const changed = textureLookShapeId !== shapeId;
+  textureLookShapeId = shapeId;
+  return changed;
+}
+
+/** Whether this body is drawn for a look at its texture; a hole stays a hole. */
+function drawnForTextureLook(shape: WorkplaneShape) {
+  return textureLookShapeId !== null && shape.id === textureLookShapeId && !shape.hole;
+}
+
 export function setEdgeLineStyle(enabled: boolean, color: string) {
   const changed = edgeLineStyle.enabled !== enabled || (enabled && edgeLineStyle.color !== color);
   edgeLineStyle = { enabled, color };
@@ -326,6 +346,7 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     centerHoleSize: shape.centerHoleSize,
     hirthSteepFlank: shape.hirthSteepFlank,
     hirthReverse: shape.hirthReverse,
+    patties: shape.patties,
     pulleyBeltWidth: shape.pulleyBeltWidth,
     pulleyFlange: shape.pulleyFlange,
     pulleyFlangeRise: shape.pulleyFlangeRise,
@@ -368,6 +389,7 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     springForm: shape.springForm,
     springPattern: shape.springPattern,
     springEnds: shape.springEnds,
+    springInner: shape.springInner,
     helixQuality: shape.helixQuality,
     gearProfile: shape.gearProfile,
     gearPressureAngle: shape.gearPressureAngle,
@@ -413,6 +435,10 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     gridfinityHalfGrid: shape.gridfinityHalfGrid,
     gridfinityLargePlate: shape.gridfinityLargePlate,
     gridfinitySwallowtail: shape.gridfinitySwallowtail,
+    gridfinityClipNotches: shape.gridfinityClipNotches,
+    gridfinityPuzzle: shape.gridfinityPuzzle,
+    gridfinityPuzzleSides: shape.gridfinityPuzzleSides,
+    gridfinityPuzzleFit: shape.gridfinityPuzzleFit,
     gridfinityLabelBack: shape.gridfinityLabelBack,
     gridfinityLabelFront: shape.gridfinityLabelFront,
     gridfinityLabelLeft: shape.gridfinityLabelLeft,
@@ -471,18 +497,19 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     gridfinityDividerPositionsX: shape.gridfinityDividerPositionsX,
     gridfinityDividerPositionsZ: shape.gridfinityDividerPositionsZ,
     gridfinityCompartmentLabels: shape.gridfinityCompartmentLabels,
+    gridfinityCompartmentSplits: shape.gridfinityCompartmentSplits,
     gridfinityOpenings: shape.gridfinityOpenings,
     gridfinityOpeningCorner: shape.gridfinityOpeningCorner,
     gridfinityOpeningCornerSize: shape.gridfinityOpeningCornerSize,
     gridfinityOutline: shape.gridfinityOutline,
-    // Label shelves, finger scoops and dividers are joined by Manifold, and a side's notch and an outline plate's sockets are cut by it; until it has loaded the bin is drawn without them (#455, #554, #1061).
-    labelKernel: shape.gridfinityLabelBack || shape.gridfinityLabelFront || shape.gridfinityLabelLeft || shape.gridfinityLabelRight || shape.gridfinityScoopBack || shape.gridfinityScoopFront || shape.gridfinityScoopLeft || shape.gridfinityScoopRight || (shape.gridfinityCompartmentsX ?? 1) > 1 || (shape.gridfinityCompartmentsZ ?? 1) > 1 || (shape.gridfinityOpenings?.length ?? 0) > 0 || (shape.gridfinityOutline?.length ?? 0) > 0 ? manifoldRevision() : undefined,
+    // Label shelves, finger scoops and dividers are joined by Manifold, and a side's notch, an outline plate's sockets and a plate's GridFlock puzzle are cut by it; until it has loaded the bin is drawn without them (#455, #554, #1061).
+    labelKernel: shape.gridfinityLabelBack || shape.gridfinityLabelFront || shape.gridfinityLabelLeft || shape.gridfinityLabelRight || shape.gridfinityScoopBack || shape.gridfinityScoopFront || shape.gridfinityScoopLeft || shape.gridfinityScoopRight || (shape.gridfinityCompartmentsX ?? 1) > 1 || (shape.gridfinityCompartmentsZ ?? 1) > 1 || (shape.gridfinityOpenings?.length ?? 0) > 0 || (shape.gridfinityOutline?.length ?? 0) > 0 || shape.gridfinityPuzzle === true ? manifoldRevision() : undefined,
     knurlPattern: shape.knurlPattern,
     knurlCount: shape.knurlCount,
     knurlDepth: shape.knurlDepth,
     knurlAngle: shape.knurlAngle,
     knurlChamfer: shape.knurlChamfer,
-    vase: shape.kind === "vase" ? JSON.stringify(shape.vase ?? null) : undefined,
+    vase: shape.kind === "vase" ? `${vaseSettingsKey(shape.vase ?? null)}${vaseDraftBuild(shape.id) ? "~draft" : ""}` : undefined,
     dovetailNeckWidth: shape.dovetailNeckWidth,
     dovetailClearance: shape.dovetailClearance,
     loftBottomOutline: shape.loftBottomOutline,
@@ -519,6 +546,7 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     // A dovetail cut-out grows by its clearance, so body and socket differ.
     dovetailHole: shape.kind === "dovetail" ? Boolean(shape.hole) : undefined,
     cornerFillet: shape.cornerFillet,
+    polygonFlat: shape.polygonFlat ? true : undefined,
     cornerFillets: shape.cornerFillets,
     topBottomFillet: shape.topBottomFillet,
         bottomFillet: shape.bottomFillet,
@@ -540,10 +568,14 @@ export function tapeShapeTopologyKey(shape: WorkplaneShape): string {
     textSpacing: shape.textSpacing,
     textKerning: shape.textKerning,
     textLetterWidth: shape.textLetterWidth,
+    textFullCircle: shape.textFullCircle,
     textKeyring: shape.textKeyring,
     textEdge: shape.textEdge,
+    textFlush: shape.textFlush,
+    textBack: shape.textBack,
+    textBackFill: shape.textBackFill,
     // A fill is built by the 2D kernel; until it has loaded the text is drawn plain (#215).
-    fillKernel: shape.textStroke || shape.textSilhouette || shape.textKeyring || shape.textEdge ? manifoldRevision() : undefined,
+    fillKernel: shape.textStroke || shape.textSilhouette || shape.textKeyring || shape.textEdge || shape.textFlush || shape.textBack ? manifoldRevision() : undefined,
     textCurved: shape.textCurved,
     textRadius: shape.textRadius,
     textSize: shape.textSize,
@@ -605,6 +637,7 @@ export function shapeMaterialSignature(shape: WorkplaneShape): string {
   return JSON.stringify({
     edgeLines: edgeLineStyle.enabled ? edgeLineStyle.color : "",
     color: shape.color,
+    textureLook: drawnForTextureLook(shape),
     // A bin's letters in a colour of their own (#1308) are drawn in a second material; the mesh stays as it is.
     letterColor: gridfinityLabelColor(shape),
     hole: shape.hole ? `${strongHoles ? "strong" : "plain"}:${holeOpacitySetting}` : false,
@@ -631,6 +664,11 @@ export function shapeMaterialSignature(shape: WorkplaneShape): string {
 export function polygonSidesForShape(shape: WorkplaneShape) {
   if (shape.kind === "polygon") return shape.sides ?? 6;
   return roundSideCount(shape.sides, shapeWidth(shape), shapeDepth(shape));
+}
+
+/** The turn of a Polygon with a flat side in front (#1787); cylinder and ellipse share the build and stay unturned. */
+function polygonFlatAngleForShape(shape: WorkplaneShape) {
+  return shape.kind === "polygon" ? polygonFlatAngle(shape.sides, shape.polygonFlat) : 0;
 }
 
 export function shapeGeometrySignature(shape: WorkplaneShape): string {
@@ -704,9 +742,9 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
   if (shape.kind === "polygon") {
     // Rounded corners are built in millimetres, so the size is part of the geometry.
     if ((shape.cornerFillet ?? 0) > 0) {
-      return JSON.stringify({ kind: "polygon", sides: shape.sides, cornerFillet: shape.cornerFillet, taper, deform, size: [shapeWidth(shape), shapeDepth(shape), shape.height] });
+      return JSON.stringify({ kind: "polygon", sides: shape.sides, flat: Boolean(shape.polygonFlat), cornerFillet: shape.cornerFillet, taper, deform, size: [shapeWidth(shape), shapeDepth(shape), shape.height] });
     }
-    return JSON.stringify({ kind: "polygon", sides: shape.sides, segments: shape.segments, taper, deform, size });
+    return JSON.stringify({ kind: "polygon", sides: shape.sides, flat: Boolean(shape.polygonFlat), segments: shape.segments, taper, deform, size });
   }
   if (shape.kind === "sphere") {
     return JSON.stringify({ kind: "sphere", steps: shape.steps, taper, deform, size });
@@ -780,6 +818,7 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     centerHoleSize: shape.centerHoleSize,
     hirthSteepFlank: shape.hirthSteepFlank,
     hirthReverse: shape.hirthReverse,
+    patties: shape.patties,
     pulleyBeltWidth: shape.pulleyBeltWidth,
     pulleyFlange: shape.pulleyFlange,
     pulleyFlangeRise: shape.pulleyFlangeRise,
@@ -822,6 +861,7 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     springForm: shape.springForm,
     springPattern: shape.springPattern,
     springEnds: shape.springEnds,
+    springInner: shape.springInner,
     helixQuality: shape.helixQuality,
     gearProfile: shape.gearProfile,
     gearPressureAngle: shape.gearPressureAngle,
@@ -867,6 +907,10 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     gridfinityHalfGrid: shape.gridfinityHalfGrid,
     gridfinityLargePlate: shape.gridfinityLargePlate,
     gridfinitySwallowtail: shape.gridfinitySwallowtail,
+    gridfinityClipNotches: shape.gridfinityClipNotches,
+    gridfinityPuzzle: shape.gridfinityPuzzle,
+    gridfinityPuzzleSides: shape.gridfinityPuzzleSides,
+    gridfinityPuzzleFit: shape.gridfinityPuzzleFit,
     gridfinityLabelBack: shape.gridfinityLabelBack,
     gridfinityLabelFront: shape.gridfinityLabelFront,
     gridfinityLabelLeft: shape.gridfinityLabelLeft,
@@ -927,18 +971,19 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     gridfinityDividerPositionsX: shape.gridfinityDividerPositionsX,
     gridfinityDividerPositionsZ: shape.gridfinityDividerPositionsZ,
     gridfinityCompartmentLabels: shape.gridfinityCompartmentLabels,
+    gridfinityCompartmentSplits: shape.gridfinityCompartmentSplits,
     gridfinityOpenings: shape.gridfinityOpenings,
     gridfinityOpeningCorner: shape.gridfinityOpeningCorner,
     gridfinityOpeningCornerSize: shape.gridfinityOpeningCornerSize,
     gridfinityOutline: shape.gridfinityOutline,
-    // Label shelves, finger scoops and dividers are joined by Manifold, and a side's notch and an outline plate's sockets are cut by it; until it has loaded the bin is drawn without them (#455, #554, #1061).
-    labelKernel: shape.gridfinityLabelBack || shape.gridfinityLabelFront || shape.gridfinityLabelLeft || shape.gridfinityLabelRight || shape.gridfinityScoopBack || shape.gridfinityScoopFront || shape.gridfinityScoopLeft || shape.gridfinityScoopRight || (shape.gridfinityCompartmentsX ?? 1) > 1 || (shape.gridfinityCompartmentsZ ?? 1) > 1 || (shape.gridfinityOpenings?.length ?? 0) > 0 || (shape.gridfinityOutline?.length ?? 0) > 0 ? manifoldRevision() : undefined,
+    // Label shelves, finger scoops and dividers are joined by Manifold, and a side's notch, an outline plate's sockets and a plate's GridFlock puzzle are cut by it; until it has loaded the bin is drawn without them (#455, #554, #1061).
+    labelKernel: shape.gridfinityLabelBack || shape.gridfinityLabelFront || shape.gridfinityLabelLeft || shape.gridfinityLabelRight || shape.gridfinityScoopBack || shape.gridfinityScoopFront || shape.gridfinityScoopLeft || shape.gridfinityScoopRight || (shape.gridfinityCompartmentsX ?? 1) > 1 || (shape.gridfinityCompartmentsZ ?? 1) > 1 || (shape.gridfinityOpenings?.length ?? 0) > 0 || (shape.gridfinityOutline?.length ?? 0) > 0 || shape.gridfinityPuzzle === true ? manifoldRevision() : undefined,
     knurlPattern: shape.knurlPattern,
     knurlCount: shape.knurlCount,
     knurlDepth: shape.knurlDepth,
     knurlAngle: shape.knurlAngle,
     knurlChamfer: shape.knurlChamfer,
-    vase: shape.kind === "vase" ? JSON.stringify(shape.vase ?? null) : undefined,
+    vase: shape.kind === "vase" ? `${vaseSettingsKey(shape.vase ?? null)}${vaseDraftBuild(shape.id) ? "~draft" : ""}` : undefined,
     dovetailNeckWidth: shape.dovetailNeckWidth,
     dovetailClearance: shape.dovetailClearance,
     loftBottomOutline: shape.loftBottomOutline,
@@ -975,6 +1020,7 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     // A dovetail cut-out grows by its clearance, so body and socket differ.
     dovetailHole: shape.kind === "dovetail" ? Boolean(shape.hole) : undefined,
     cornerFillet: shape.cornerFillet,
+    polygonFlat: shape.polygonFlat ? true : undefined,
     cornerFillets: shape.cornerFillets,
     topBottomFillet: shape.topBottomFillet,
         bottomFillet: shape.bottomFillet,
@@ -996,10 +1042,14 @@ export function shapeGeometrySignature(shape: WorkplaneShape): string {
     textSpacing: shape.textSpacing,
     textKerning: shape.textKerning,
     textLetterWidth: shape.textLetterWidth,
+    textFullCircle: shape.textFullCircle,
     textKeyring: shape.textKeyring,
     textEdge: shape.textEdge,
+    textFlush: shape.textFlush,
+    textBack: shape.textBack,
+    textBackFill: shape.textBackFill,
     // A fill is built by the 2D kernel; until it has loaded the text is drawn plain (#215).
-    fillKernel: shape.textStroke || shape.textSilhouette || shape.textKeyring || shape.textEdge ? manifoldRevision() : undefined,
+    fillKernel: shape.textStroke || shape.textSilhouette || shape.textKeyring || shape.textEdge || shape.textFlush || shape.textBack ? manifoldRevision() : undefined,
     textCurved: shape.textCurved,
     textRadius: shape.textRadius,
     textSize: shape.textSize,
@@ -1043,6 +1093,39 @@ export function boxDimensionsAlongWorkplane(shape: WorkplaneShape, workplane: Pl
   return boxDimensionsAlongAxes(shape, { x: workplane.xAxis, y: workplane.normal, z: workplane.zAxis });
 }
 
+/** How close to the workplane's normal an own axis counts as standing on it: about 0.8 degrees, as for the size fields (orientedMeasures.ts). */
+const LYING_ALIGNED = 1 - 1e-4;
+
+/**
+ * A body that lies on its side on a level workplane (Discussion #1838): one of its own sideways axes, its width or
+ * its length, stands upright there, as after a quarter turn about X or Z. Its handles then stand upright on the
+ * workplane too, as in Tinkercad - the height handle on top still pulls up - and not along the body's own axes,
+ * where the height handle pointed sideways. Returns the upright frame's axes, each along one of the body's own
+ * (it may still be turned about the upright by any angle), and the own measure that runs along each; null for a
+ * body that stands, hangs upside down or is tilted.
+ */
+export function lyingFrameAxes(shape: WorkplaneShape, workplane: PlacementWorkplane): { xAxis: THREE.Vector3; yAxis: THREE.Vector3; zAxis: THREE.Vector3; dimensions: BoxFrameDimensions } | null {
+  const up = new THREE.Vector3(workplane.normal.x, workplane.normal.y, workplane.normal.z).normalize();
+  // Only a level workplane: on one that stands on a side face the handles keep the body's own axes (#933).
+  if (up.y < LYING_ALIGNED) return null;
+  const quaternion = quaternionForShape(shape);
+  const own = [
+    { name: "width" as const, vector: new THREE.Vector3(1, 0, 0).applyQuaternion(quaternion) },
+    { name: "height" as const, vector: new THREE.Vector3(0, 1, 0).applyQuaternion(quaternion) },
+    { name: "depth" as const, vector: new THREE.Vector3(0, 0, 1).applyQuaternion(quaternion) },
+  ];
+  const upright = own.find((entry) => Math.abs(entry.vector.dot(up)) > LYING_ALIGNED);
+  if (!upright || upright.name === "height") return null;
+  const flat = own.filter((entry) => entry !== upright);
+  const along = new THREE.Vector3(workplane.xAxis.x, workplane.xAxis.y, workplane.xAxis.z).normalize();
+  // The frame's x is the own axis nearer the workplane's x, so a body turned by right angles gets the workplane's axes.
+  const first = Math.abs(flat[1].vector.dot(along)) > Math.abs(flat[0].vector.dot(along)) + 1e-6 ? flat[1] : flat[0];
+  const second = first === flat[0] ? flat[1] : flat[0];
+  const xAxis = first.vector.clone().multiplyScalar(first.vector.dot(along) < 0 ? -1 : 1).normalize();
+  const zAxis = new THREE.Vector3().crossVectors(xAxis, up).normalize();
+  return { xAxis, yAxis: up, zAxis, dimensions: { x: first.name, y: upright.name, z: second.name } };
+}
+
 export function selectionFrameForShapes(
   shapes: WorkplaneShape[],
   selectedIds: string[],
@@ -1073,18 +1156,23 @@ export function selectionFrameForShapes(
     })();
   const useWorkplane = Boolean(workplane) && !placementWorkplaneIsBase(workplane!)
     && (!singleShape || (alongWorkplane(new THREE.Vector3(0, 1, 0), workplane!.normal) && alongWorkplane(new THREE.Vector3(1, 0, 0), workplane!.xAxis)) || onSideFace);
+  // A body lying on its side on a level workplane (Discussion #1838): the handles stand upright on the workplane.
+  // Only where a workplane is passed, for the handles and their marks: without one the frame stays the body's own.
+  const lying = singleShape && workplane && !useWorkplane ? lyingFrameAxes(singleShape, workplane) : null;
   const quaternion = useWorkplane
     ? placementWorkplaneQuaternion(workplane!)
-    : singleShape ? quaternionForShape(singleShape) : new THREE.Quaternion();
+    : lying
+      ? new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(lying.xAxis, lying.yAxis, lying.zAxis)).normalize()
+      : singleShape ? quaternionForShape(singleShape) : new THREE.Quaternion();
   const xAxis = useWorkplane
     ? new THREE.Vector3(workplane!.xAxis.x, workplane!.xAxis.y, workplane!.xAxis.z).normalize()
-    : new THREE.Vector3(1, 0, 0).applyQuaternion(quaternion).normalize();
+    : lying ? lying.xAxis : new THREE.Vector3(1, 0, 0).applyQuaternion(quaternion).normalize();
   const yAxis = useWorkplane
     ? new THREE.Vector3(workplane!.normal.x, workplane!.normal.y, workplane!.normal.z).normalize()
-    : new THREE.Vector3(0, 1, 0).applyQuaternion(quaternion).normalize();
+    : lying ? lying.yAxis : new THREE.Vector3(0, 1, 0).applyQuaternion(quaternion).normalize();
   const zAxis = useWorkplane
     ? new THREE.Vector3(workplane!.zAxis.x, workplane!.zAxis.y, workplane!.zAxis.z).normalize()
-    : new THREE.Vector3(0, 0, 1).applyQuaternion(quaternion).normalize();
+    : lying ? lying.zAxis : new THREE.Vector3(0, 0, 1).applyQuaternion(quaternion).normalize();
   const localMin = new THREE.Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
   const localMax = new THREE.Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
   const origin = useWorkplane
@@ -1124,6 +1212,7 @@ export function selectionFrameForShapes(
     min: new THREE.Vector3(-width / 2, -height / 2, -depth / 2),
     max: new THREE.Vector3(width / 2, height / 2, depth / 2),
     singleShape,
+    ...(lying ? { lying: lying.dimensions } : {}),
   };
 }
 
@@ -1169,7 +1258,7 @@ export function syncShapeObjectDimensions(object: THREE.Group, shape: WorkplaneS
     scale = new THREE.Vector3(width, shape.height, depth);
   } else if ((shape.kind === "cylinder" && shapeDrillPointLength(shape) === 0) || shape.kind === "ellipse" || (shape.kind === "polygon" && !((shape.cornerFillet ?? 0) > 0))) {
     // A drilled hole is no unit body (Discussion #621): it was built at its size and is built again when that changes.
-    const fit = regularPolygonFootprintScale(width, depth, polygonSidesForShape(shape));
+    const fit = regularPolygonFootprintScale(width, depth, polygonSidesForShape(shape), polygonFlatAngleForShape(shape));
     scale = new THREE.Vector3(fit.x, shape.height, fit.z);
     offsetX = fit.offsetX;
     offsetZ = fit.offsetZ;
@@ -1894,14 +1983,18 @@ function gridfinityMaterials(shape: WorkplaneShape, material: THREE.MeshStandard
 }
 
 export function sharedShapeMaterial(shape: WorkplaneShape, vertexColors = false) {
-  const seeThrough = !shape.hole && Boolean(shape.transparent);
-  const color = shape.hole ? (strongHoles ? STRONG_HOLE_COLOR : "#b7c0c9") : vertexColors ? "#ffffff" : shape.color;
+  // For a look at the texture the body is one plain grey: no colour of its own, no painted or part colours, not see-through.
+  const look = drawnForTextureLook(shape);
+  if (look) vertexColors = false;
+  const seeThrough = !look && !shape.hole && Boolean(shape.transparent);
+  const color = look ? TEXTURE_LOOK_COLOR : shape.hole ? (strongHoles ? STRONG_HOLE_COLOR : "#b7c0c9") : vertexColors ? "#ffffff" : shape.color;
+  const roughness = look ? 0.82 : shape.hole ? 0.88 : 0.57;
   const key = JSON.stringify({
     color,
     vertexColors,
     transparent: Boolean(shape.hole) || seeThrough,
     opacity: shape.hole ? holeOpacity(shape) : seeThrough ? TRANSPARENT_SOLID_OPACITY : 1,
-    roughness: shape.hole ? 0.88 : 0.57,
+    roughness,
     depthWrite: !seeThrough,
     side: "double",
   });
@@ -1916,7 +2009,7 @@ export function sharedShapeMaterial(shape: WorkplaneShape, vertexColors = false)
     vertexColors,
     transparent: Boolean(shape.hole) || seeThrough,
     opacity: shape.hole ? holeOpacity(shape) : seeThrough ? TRANSPARENT_SOLID_OPACITY : 1,
-    roughness: shape.hole ? 0.88 : 0.57,
+    roughness,
     metalness: 0.02,
     depthWrite: !seeThrough,
     side: THREE.DoubleSide,
@@ -2168,13 +2261,14 @@ export function createShapeObject(
       }
       if (shape.kind === "polygon" && (shape.cornerFillet ?? 0) > 0) {
         // Rounded corners: built at its size, the rounding stays round when the polygon is stretched.
-        addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createRoundedPolygonGeometry(width, height, depth, sides, shape.cornerFillet ?? 0)), material, shape);
+        addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createRoundedPolygonGeometry(width, height, depth, sides, shape.cornerFillet ?? 0, Boolean(shape.polygonFlat))), material, shape);
         break;
       }
-      const fit = regularPolygonFootprintScale(width, depth, sides);
+      const flatAngle = polygonFlatAngleForShape(shape);
+      const fit = regularPolygonFootprintScale(width, depth, sides, flatAngle);
       addMesh(
         group,
-        sharedShapeGeometry(geometryCacheKey, () => new THREE.CylinderGeometry(1, 1, 1, sides, shape.segments ?? 1)),
+        sharedShapeGeometry(geometryCacheKey, () => shape.kind === "polygon" ? flatSidedPrismGeometry(sides, shape.segments ?? 1, flatAngle) : new THREE.CylinderGeometry(1, 1, 1, sides, shape.segments ?? 1, false, flatAngle)),
         material,
         shape,
         new THREE.Vector3(fit.offsetX, 0, fit.offsetZ),
@@ -2201,7 +2295,7 @@ export function createShapeObject(
       addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createKnurlGeometry({ width, height, knurlPattern: shape.knurlPattern, knurlCount: shape.knurlCount, knurlDepth: shape.knurlDepth, knurlAngle: shape.knurlAngle, knurlChamfer: shape.knurlChamfer })), material, shape);
       break;
     case "vase":
-      addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createVaseGeometry({ width, depth, height, vase: shape.vase })), material, shape);
+      addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createVaseGeometry({ id: shape.id, width, depth, height, vase: shape.vase })), material, shape);
       break;
     case "hinge":
       addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createHingeGeometry({
@@ -2241,6 +2335,10 @@ export function createShapeObject(
         gridfinityHalfGrid: shape.gridfinityHalfGrid,
         gridfinityLargePlate: shape.gridfinityLargePlate,
         gridfinitySwallowtail: shape.gridfinitySwallowtail,
+        gridfinityClipNotches: shape.gridfinityClipNotches,
+        gridfinityPuzzle: shape.gridfinityPuzzle,
+        gridfinityPuzzleSides: shape.gridfinityPuzzleSides,
+        gridfinityPuzzleFit: shape.gridfinityPuzzleFit,
         gridfinityLabelBack: shape.gridfinityLabelBack,
         gridfinityLabelFront: shape.gridfinityLabelFront,
         gridfinityLabelLeft: shape.gridfinityLabelLeft,
@@ -2295,6 +2393,7 @@ export function createShapeObject(
         gridfinityDividerPositionsX: shape.gridfinityDividerPositionsX,
         gridfinityDividerPositionsZ: shape.gridfinityDividerPositionsZ,
         gridfinityCompartmentLabels: shape.gridfinityCompartmentLabels,
+        gridfinityCompartmentSplits: shape.gridfinityCompartmentSplits,
         gridfinityOpenings: shape.gridfinityOpenings,
         gridfinityOpeningCorner: shape.gridfinityOpeningCorner,
         gridfinityOpeningCornerSize: shape.gridfinityOpeningCornerSize,
@@ -2445,6 +2544,9 @@ export function createShapeObject(
     case "hirth":
       addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createHirthGeometry(width, height, depth, shape)), material, shape);
       break;
+    case "patties":
+      addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createPattiesGeometry(width, height, depth, shape)), material, shape);
+      break;
     case "pulley":
       addMesh(group, sharedShapeGeometry(geometryCacheKey, () => createPulleyGeometry(shape)), material, shape);
       break;
@@ -2526,6 +2628,7 @@ export function createShapeObject(
         springForm: shape.springForm,
         springPattern: shape.springPattern,
         springEnds: shape.springEnds,
+        springInner: shape.springInner,
       })), material, shape);
       break;
     case "wedge":
@@ -3063,7 +3166,7 @@ export function addShapeEdgeDecorations(group: THREE.Group, mesh: THREE.Mesh, pr
   const complexEdges =
     shape.kind === "mesh" ||
     Boolean(shape.importedMesh) ||
-    ["cone", "pyramid", "roof", "roundRoof", "halfSphere", "paraboloid", "curvedCone", "torus", "tube", "ring", "star", "gear", "hirth", "pulley", "wedge", "polygon", "heart", "crescent", "sector", "slot", "dovetail", "screwBoss", "snapFit", "rib", "hinge", "gridfinity", "knurl", "teardrop", "port", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "honeycomb", "loft"].includes(shape.kind);
+    ["cone", "pyramid", "roof", "roundRoof", "halfSphere", "paraboloid", "curvedCone", "torus", "tube", "ring", "star", "gear", "hirth", "pulley", "wedge", "polygon", "heart", "crescent", "sector", "slot", "dovetail", "screwBoss", "snapFit", "rib", "hinge", "gridfinity", "knurl", "teardrop", "port", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "honeycomb", "patties", "loft"].includes(shape.kind);
   const importedTriangleCount = shape.importedMesh?.triangleCount ?? 0;
   // A vase's relief has an edge at every rib: drawn like a heavy imported mesh, without the lines.
   const skipHeavyImportedEdges = (Boolean(shape.importedMesh) && importedTriangleCount > IMPORTED_SELECTED_EDGE_TRIANGLE_LIMIT)
@@ -3469,7 +3572,7 @@ function splitTriangleByPartFaces(
   const corner = new THREE.Vector3();
   const faceNormal = new THREE.Vector3();
   for (const solid of reaching) {
-    const tree = solid.probe.geometry.boundsTree;
+    const tree = solid.probe.geometry.boundsTree as MeshBVH | undefined;
     if (!tree) continue;
     tree.shapecast({
       intersectsBounds: (box) => box.intersectsBox(triangleBox),
@@ -3593,6 +3696,18 @@ export function calmEdgesGeometry(shape: WorkplaneShape, geometry: THREE.BufferG
 export function addTextShape(group: THREE.Group, material: THREE.MeshStandardMaterial, shape: WorkplaneShape, geometryCacheKey: string) {
   const geometry = sharedShapeGeometry(geometryCacheKey, () => textDisplayGeometry(shape));
   addMesh(group, geometry, material, shape);
+}
+
+/**
+ * The unit polygon prism with each side shaded flat: a three.js cylinder shades its sides as one round
+ * surface, which on a polygon (the roof's three sides, #1956) shows as a light-to-dark run across each face.
+ */
+export function flatSidedPrismGeometry(sides: number, segments: number, flatAngle: number) {
+  const round = new THREE.CylinderGeometry(1, 1, 1, sides, segments, false, flatAngle);
+  const flat = round.toNonIndexed();
+  round.dispose();
+  flat.computeVertexNormals();
+  return flat;
 }
 
 export function createRoofGeometry(width: number, height: number, depth: number) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_GRIDFINITY_SWALLOWTAIL_CLEARANCE, GRIDFINITY_LIP_HEIGHT, GRIDFINITY_SWALLOWTAIL_KEY_THICKNESS, GRIDFINITY_SWALLOWTAIL_LIP_HEIGHT, MAX_GRIDFINITY_SWALLOWTAIL_CLEARANCE, gridfinitySwallowtailKeyOutline, gridfinityTriangles } from "@/lib/gridfinityGeometry";
+import { DEFAULT_GRIDFINITY_SWALLOWTAIL_CLEARANCE, GRIDFINITY_LIP_HEIGHT, GRIDFINITY_SWALLOWTAIL_KEY_THICKNESS, GRIDFINITY_SWALLOWTAIL_LIP_HEIGHT, MAX_GRIDFINITY_SWALLOWTAIL_CLEARANCE, gridfinityClipOutline, gridfinityPlan, gridfinitySwallowtailKeyOutline, gridfinityTriangles } from "@/lib/gridfinityGeometry";
 import { gridfinityPartSolid } from "@/lib/gridfinitySolid";
 import { cad, bin, plate, meshVolume, trianglesVolume, meshBounds, overlap, material, expectBuilt } from "./helpers/gridfinityHarness";
 
@@ -30,6 +30,68 @@ describe("exact Gridfinity bodies", () => {
 
   it("builds a Swallowtail plate of 12 x 12 units, its 48 pockets in the same cut as its sockets", () => {
     expectBuilt(plate({ width: 504, depth: 504, gridfinityLargePlate: true, gridfinitySwallowtail: true }));
+  });
+
+  it("builds plates with the GridFlock puzzle as one valid solid with the mesh's volume and box, set off as the mesh is", () => {
+    const sides = ["back", "front", "left", "right"] as const;
+    for (const fields of [
+      { width: 85.77, depth: 43.77, gridfinityPuzzleSides: [...sides], gridfinityPuzzleFit: 1 },
+      { width: 43.19, depth: 84, gridfinityPuzzleSides: ["right" as const] },
+      { width: 42.26, depth: 84, gridfinityPuzzleSides: ["left" as const], gridfinityPuzzleFit: 0 },
+      { width: 137.19, depth: 94.48, gridfinityPaddingLeft: 10, gridfinityPaddingBack: 10, gridfinityPuzzleSides: [...sides] },
+      { width: 85.19, depth: 85.19, gridfinityPuzzleSides: ["back" as const, "right" as const], gridfinitySwallowtail: true },
+      { width: 85.67, depth: 85.67, gridfinityPuzzleSides: [...sides], gridfinityClipNotches: true },
+    ]) {
+      const part = plate({ gridfinityPuzzle: true, ...fields });
+      const context = JSON.stringify(part);
+      const plan = gridfinityPlan(part);
+      expect(plan.box, context).toEqual({ width: part.width, depth: part.depth });
+      const solid = gridfinityPartSolid(cad, part);
+      expect(cad.isValid(solid), context).toBe(true);
+      expect(cad.isSolid(solid) ? 1 : cad.getSubShapes(solid, "solid").length, context).toBe(1);
+      const exact = Math.abs(cad.getVolume(solid));
+      expect(Math.abs(exact - meshVolume(part)) / exact, context).toBeLessThan(0.002);
+      // The mesh is drawn round the body's middle and set off in the box by the plan's offset, as the body is built.
+      const box = cad.getBoundingBox(solid);
+      const { min, max } = meshBounds(part);
+      [box.xmin - min[0] - plan.offset.x, box.ymin - min[1], box.zmin - min[2] - plan.offset.z, box.xmax - max[0] - plan.offset.x, box.ymax - max[1], box.zmax - max[2] - plan.offset.z].forEach((d) => expect(Math.abs(d), context).toBeLessThan(0.01));
+      [box.xmin + part.width / 2, box.xmax - part.width / 2, box.zmin + part.depth / 2, box.zmax - part.depth / 2].forEach((d) => expect(Math.abs(d), context).toBeLessThan(0.02));
+    }
+    // Two plates side by side: the tabs of the left one stand in the sockets of the right one, touching at most in slivers.
+    const left = gridfinityPartSolid(cad, plate({ gridfinityPuzzle: true, width: 43.19, depth: 84, gridfinityPuzzleSides: ["right"] }));
+    const right = gridfinityPartSolid(cad, plate({ gridfinityPuzzle: true, width: 42.48, depth: 84, gridfinityPuzzleSides: ["left"] }));
+    const leftBody = cad.translate(left, -21 + 0.595, 0, 0);
+    const rightBody = cad.translate(right, 21 - 0.24, 0, 0);
+    expect(overlap(leftBody, rightBody)).toBeLessThan(0.15);
+    expect(cad.getBoundingBox(leftBody).xmax).toBeCloseTo(1.18, 2);
+  });
+
+  it("builds plates with clip notches as one valid solid with the mesh's volume and box, and leaves the clip's wall and room", () => {
+    for (const part of [plate({ gridfinityClipNotches: true }), plate({ width: 42, gridfinityClipNotches: true }), plate({ width: 136, depth: 84, gridfinityPaddingRight: 10, gridfinityClipNotches: true }), plate({ gridfinityClipNotches: true, gridfinitySwallowtail: true })]) expectBuilt(part);
+    // One cell, its right side at x = 21: the wall kept at the side is whole, 1 x 1.5 x 10.2 mm from the clip's seat at
+    // 1 mm, and nothing is left where the clip goes, behind the wall and over it.
+    const solid = gridfinityPartSolid(cad, plate({ width: 42, gridfinityClipNotches: true }));
+    const box = (x0: number, x1: number, y0: number, y1: number) => cad.translate(cad.makeBox(x1 - x0, y1 - y0, 10.2), x0, y0, -5.1);
+    expect(overlap(box(20, 21, 1, 2.5), solid)).toBeCloseTo(15.3, 3);
+    expect(overlap(box(15.9, 20, 1, 5), solid)).toBeLessThan(1e-6);
+    expect(overlap(box(20, 21, 2.5, 5), solid)).toBeLessThan(1e-6);
+    // Under the seat the rim is as it was.
+    expect(overlap(box(18.2, 21, 0, 0.3), solid)).toBeGreaterThan(8);
+    // Two plates side by side take Gridfinity Extended's clip across the seam at x = 21: a block of 10 x 10 mm from where
+    // the socket's wall turns upright, 3.2 mm tall, with a slot of 2.1 x 1.7 mm for the two kept walls. All of it is free.
+    const next = cad.translate(solid, 42, 0, 0);
+    const clip = cad.cut(cad.translate(cad.makeBox(10, 3.2, 10), 16, 1.05, -5), cad.translate(cad.makeBox(2.1, 1.7, 10), 19.95, 1.05, -5));
+    expect(overlap(clip, solid) + overlap(clip, next)).toBeLessThan(1e-6);
+    // The clip laid out for the plate, its section standing across the seam on its seat, 10 mm long: free as well, and
+    // 0.1 mm clear of each end of the notch.
+    const section = gridfinityClipOutline().map((p) => ({ x: 21 + p.x, y: 1.05 + p.z, z: -5 }));
+    const made = cad.extrude(cad.makeFace(cad.makeWire(section.map((p, i) => cad.makeLineEdge(p, section[(i + 1) % section.length])))), 0, 0, 10);
+    expect(Math.abs(cad.getVolume(made))).toBeGreaterThan(60);
+    expect(overlap(made, solid) + overlap(made, next)).toBeLessThan(1e-6);
+    expect(overlap(made, clip)).toBeCloseTo(Math.abs(cad.getVolume(made)), 4);
+    // The kept walls fill the slot but for the tolerance: 2 x 1.45 of its 2.1 x 1.7 mm2 over the clip's 10 mm.
+    const slot = cad.translate(cad.makeBox(2.1, 1.7, 10), 19.95, 1.05, -5);
+    expect(overlap(slot, solid) + overlap(slot, next)).toBeCloseTo(2 * 1.45 * 10, 3);
   });
 
   it("holds a key across the seam of two Swallowtail plates: clear above the lip, caught by it below up to the most clearance", () => {

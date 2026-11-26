@@ -3,7 +3,7 @@ title: Keyboard shortcuts
 summary: All keys at a glance, taken straight from the program so the list is always right.
 ---
 
-The shortcuts work as long as the workplane has the focus. While you type in a field they keep out of the way. On the Mac, [[Cmd]] applies wherever [[Ctrl]] is listed here.
+The shortcuts work as long as the workplane has the focus. While you type in a field they keep out of the way. On the Mac, [[Cmd]] applies wherever [[Ctrl]] is listed here. The keys carry the names on the keyboard of your language. A letter is the letter on your keyboard; on a keyboard of another script (Cyrillic, Greek, Arabic, Hebrew) the key in the place of the Latin letter counts.
 
 In the editor, {{ui:editor.keyboardShortcuts}} in the {{ui:editor.group.help}} area opens the same list as a window. The printer button in the window ({{ui:shortcuts.print}}) prints the list on its own, black on white, the whole list on one side of an A4 or Letter sheet in three columns, to keep at hand as a quick reference; the print dialog of the browser also offers to save it as a PDF.
 
@@ -19,7 +19,7 @@ Can't find a tool? Press [[Ctrl]]+[[K]] or click the magnifying glass in the {{u
 - Every entry shows the keys that do the same and the group of the ribbon it lives in, so you learn where it is.
 - Entries that are greyed out cannot run right now, mostly because nothing is selected. They stay in the list so the search still tells you where the tool is.
 
-The guide you are reading has a search box too, at the top of every page: type a word or two and it lists the sections that contain all of them, with the matching words marked. Click one, or press [[Enter]] for the first, to jump straight there. The page it opens marks every place your words appear and scrolls to the first one in that section; [[Esc]] or a click on a mark clears them.
+The guide you are reading has a search box too, at the top of every page: type a word or two and it lists the sections that contain all of them, with the matching words marked. Click one, or press [[Enter]] for the first, to jump straight there. The page it opens marks every place your words appear and scrolls to the first one in that section; [[Esc]] or a click on a mark clears them. Words in quotation marks are searched as an exact phrase: "circular arc" lists only the sections where these words stand next to each other in this order, and a single word in quotation marks is found only as a whole word, not as part of a longer one.
 - A shape's name adds that shape to the workplane, just like clicking it in the shapes menu.
 - With an empty field the search lists the commands you used last at the top.
 - The name of a body in your design finds that body and selects it, which helps in a design with many parts. Bodies only appear once you type.

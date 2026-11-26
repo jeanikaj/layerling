@@ -2,13 +2,15 @@ import * as THREE from "three";
 import type { CrossSection, ManifoldToplevel } from "manifold-3d";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { toCreasedNormals } from "@/lib/creasedNormals";
+import { flushLayerSolid } from "@/lib/flushLayers";
+import { backInsideOutline, cachedBackInside, tagBackRegion, tagLayerSolid } from "@/lib/tagBack";
 import { extrudeOutline, type OutlinePoint } from "@/lib/gearGeometry";
-import { normalizeTextEdge, textEdgeLevels, textHasEdge } from "@/lib/textEdge";
+import { maxTextEdgeSize, normalizeTextEdge, textEdgeProfile, textEdgeSide, textHasEdge } from "@/lib/textEdge";
 import { loftedTextEdge } from "@/lib/textEdgeLoft";
 import { loadedManifoldRuntime, requestManifoldRuntime } from "@/lib/manifoldHandle";
 import { normalizeSketchStroke, strokeRegion, type Keep } from "@/lib/sketchStroke";
-import { createTextGeometry, freeKeyringStrip, keyringBandCenter, keyringEarRadius, textGlyphShapes, textKeyringCenter, textKeyringOf, textLetterOffset } from "@/lib/textGeometry";
-import type { TextKeyringSide, WorkplaneShape } from "@/types/layerling";
+import { createTextGeometry, freeKeyringStrip, keyringBandCenter, keyringEarRadius, textFillExtent, textGlyphShapes, textKeyringCenter, textKeyringOf, textLetterBox, textLetterOffset } from "@/lib/textGeometry";
+import type { TextEdge, TextKeyringSide, WorkplaneShape } from "@/types/layerling";
 
 /**
  * Fill modes for the Text shape (#215, as similar tools's): instead of the filled letters, a line
@@ -23,7 +25,7 @@ export type TextFillComponent = { outer: OutlinePoint[]; holes: OutlinePoint[][]
 
 /** Whether this text is drawn through the fill path at all - a key ring hole (#215) is cut there too. */
 export function textHasFill(shape: WorkplaneShape) {
-  return shape.kind === "text" && (Boolean(normalizeSketchStroke(shape.textStroke)) || Boolean(shape.textSilhouette) || Boolean(textKeyringOf(shape)));
+  return shape.kind === "text" && (Boolean(normalizeSketchStroke(shape.textStroke)) || Boolean(shape.textSilhouette) || Boolean(textKeyringOf(shape)) || Boolean(shape.textFlush?.pocket) || Boolean(shape.textBack));
 }
 
 const signedArea = (points: OutlinePoint[]) => points.reduce((sum, point, index) => {
@@ -274,14 +276,138 @@ export function textFillClosedGeometry(runtime: ManifoldToplevel, shape: Workpla
     return item;
   };
   try {
+    if (shape.textBack) {
+      // Text on the back: sunk into the bottom layer's underside, or, for its fill, the letters alone (tagBack.ts),
+      // kept inside the layer's outline. The fill has the bottom layer's outline, so both are cut off alike. The view,
+      // the snapping and the export each ask for the same body: it is built once and remembered.
+      const key = textBackSolidKey(shape);
+      const known = backSolidCache.get(key);
+      const solid = known !== undefined ? known : (() => {
+        if (shape.textBackFill) return tagLayerSolid(runtime, null, null, 0, 0, textBackInside(runtime, keep as Keep, shape).region, shape.height);
+        const own = textBodyRegion(runtime, keep as Keep, shape);
+        if (!own) return null;
+        const back = textBackInside(runtime, keep as Keep, shape, own).region;
+        const pocket = flushPocketRegion(runtime, keep as Keep, shape);
+        return tagLayerSolid(runtime, own, pocket, shape.height, pocket && shape.textFlush ? shape.textFlush.depth : 0, back, shape.textBack!.depth);
+      })();
+      if (known === undefined) {
+        backSolidCache.set(key, solid);
+        if (backSolidCache.size > 16) backSolidCache.delete(backSolidCache.keys().next().value!);
+      }
+      return solid ? indexedGeometry(solid.positions, solid.indices) : null;
+    }
     const region = textBodyRegion(runtime, keep as Keep, shape);
     if (!region) return null;
+    const flushed = flushPocketRegion(runtime, keep as Keep, shape);
+    if (flushed && shape.textFlush) {
+      // A layer laid in flush (#215): the layer above it lies in a pocket in its top.
+      const solid = flushLayerSolid(runtime, region, flushed, shape.height, shape.textFlush.depth);
+      return solid ? indexedGeometry(solid.positions, solid.indices) : null;
+    }
     return extrudedRegionGeometry(keep, region, shape.height);
   } catch {
     return null;
   } finally {
     new Set(made).forEach((item) => item.delete());
   }
+}
+
+/**
+ * A name tag layer's outline without its key ring ear, where its letters stand in it: what the back text is kept inside
+ * (tagBack.ts), so no letter runs into the tab or round the hole. Null when nothing is left.
+ */
+function textPlateRegion(runtime: ManifoldToplevel, keep: Keep, shape: WorkplaneShape): CrossSection | null {
+  const { textKeyring: _keyring, textFlush: _flush, textBack: _back, textBackFill: _fill, ...plain } = shape;
+  const letters = textLetterBox(shape);
+  const reach = textFillExtent(shape);
+  const width = letters.width + 2 * reach;
+  const depth = letters.depth + 2 * reach;
+  const region = textRegion(runtime, keep, { ...plain, width, depth, size: Math.max(width, depth) });
+  if (!region || region.isEmpty()) return null;
+  const middle = textLetterOffset(shape);
+  const placed = middle.x || middle.z ? keep(region.translate([middle.x, middle.z])) : region;
+  return shape.textSilhouette ? withoutHoles(runtime, keep, placed) : placed;
+}
+
+/** A bottom layer with back text, or its fill, as built: by what it is made of, not where it stands or its colour. */
+const backSolidCache = new Map<string, { positions: Float32Array; indices: Uint32Array } | null>();
+
+function textBackSolidKey(shape: WorkplaneShape) {
+  const { id: _id, name: _name, color: _color, x: _x, z: _z, elevation: _elevation, rotation: _rotation, rotationX: _rx, rotationZ: _rz, locked: _locked, hidden: _hidden, ...made } = shape;
+  return JSON.stringify(made);
+}
+
+/**
+ * A name tag layer's back text kept inside its outline without the ear (tagBack.ts), worked out once for the layer, its
+ * fill and the card: remembered by what the outline and the text are made of. `own` is the layer's outline if known.
+ */
+function textBackInside(runtime: ManifoldToplevel, keep: Keep, shape: WorkplaneShape, own?: CrossSection | null) {
+  const back = shape.textBack!;
+  const { id: _id, name: _name, color: _color, x: _x, z: _z, elevation: _elevation, height: _height, rotation: _rotation, rotationX: _rx, rotationZ: _rz, textFlush: _flush, textBackFill: _fill, textEdge: _edge, locked: _locked, hidden: _hidden, ...outline } = shape;
+  const key = JSON.stringify({ ...outline, textBack: { text: back.text, size: back.size, font: back.font } });
+  return cachedBackInside(runtime, keep, key, () => {
+    // Without an ear the layer's own outline is the plate; with one, the plate is worked out without it.
+    const plate = shape.textKeyring ? textPlateRegion(runtime, keep, shape) : own ?? textPlateRegion(runtime, keep, shape);
+    return plate ? backInsideOutline(keep, tagBackRegion(runtime, keep, back, textLetterOffset(shape)), plate) : { region: null, clipped: false };
+  });
+}
+
+/** Whether a name tag's bottom layer cuts some of its back text off at its outline (tagBack.ts); false without the 2D kernel. */
+export function textBackClipped(runtime: ManifoldToplevel, shape: WorkplaneShape): boolean {
+  if (!shape.textBack) return false;
+  const made: { delete: () => void }[] = [];
+  const keep = <T extends { delete: () => void }>(item: T): T => {
+    made.push(item);
+    return item;
+  };
+  try {
+    return textBackInside(runtime, keep as Keep, shape).clipped;
+  } catch {
+    return false;
+  } finally {
+    new Set(made).forEach((item) => item.delete());
+  }
+}
+
+/**
+ * The pocket a name tag layer laid in flush (#215) has in its top: the outline of the layer above it - the same letters with
+ * that layer's widening, corners and holes, without a key ring. Null when the layer has none.
+ */
+function flushPocketRegion(runtime: ManifoldToplevel, keep: Keep, shape: WorkplaneShape): CrossSection | null {
+  const pocket = shape.textFlush?.pocket;
+  if (!pocket) return null;
+  const { textKeyring: _keyring, textStroke: _stroke, textSilhouette: _silhouette, ...plain } = shape;
+  const stroke = pocket.grow > 0 ? { width: pocket.grow, align: "grow" as const, join: pocket.join ?? "round", cap: "flat" as const } : undefined;
+  // The letters are fitted into a text's box less its fill's reach and its ear: the layer above has a box of its own
+  // round the same letters, and the letters stand where they stand in this layer (off its middle beside an ear).
+  const letters = textLetterBox(shape);
+  const reach = textFillExtent({ textStroke: stroke });
+  const width = letters.width + 2 * reach;
+  const depth = letters.depth + 2 * reach;
+  const above: WorkplaneShape = {
+    ...plain,
+    width,
+    depth,
+    size: Math.max(width, depth),
+    ...(stroke ? { textStroke: stroke } : {}),
+    ...(pocket.silhouette ? { textSilhouette: true } : {}),
+  };
+  const region = textRegion(runtime, keep, above);
+  if (!region || region.isEmpty()) return null;
+  const middle = textLetterOffset(shape);
+  const placed = middle.x || middle.z ? keep(region.translate([middle.x, middle.z])) : region;
+  return pocket.silhouette ? withoutHoles(runtime, keep, placed) : placed;
+}
+
+/** Triangles with y up as a display body, its normals creased as a 2D kernel extrusion's. */
+function indexedGeometry(positions: Float32Array, indices: Uint32Array): THREE.BufferGeometry {
+  const indexed = new THREE.BufferGeometry();
+  indexed.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  indexed.setIndex(Array.from(indices));
+  const geometry = toCreasedNormals(indexed, THREE.MathUtils.degToRad(12));
+  indexed.dispose();
+  geometry.computeBoundingBox();
+  return geometry;
 }
 
 /** A region of the text's x/z plane as one closed body from the floor to `height`, extruded by the 2D kernel. */
@@ -402,6 +528,8 @@ export function textDisplayGeometry(shape: WorkplaneShape): THREE.BufferGeometry
   // pieces built by hand could leave gaps along letters that touch (a line round a block font, #352).
   const closed = textFillClosedGeometry(runtime, shape);
   if (closed) return closed;
+  // A back text's fill is its letters alone; the text's own letters are no stand-in for them.
+  if (shape.textBackFill) return new THREE.BoxGeometry(0.001, shape.height, 0.001);
   const components = textFillComponents(runtime, shape);
   if (!components) return new THREE.BoxGeometry(0.001, shape.height, 0.001);
   const pieces = components.map((component) => textFillPieceGeometry(component, shape.height));
@@ -411,14 +539,65 @@ export function textDisplayGeometry(shape: WorkplaneShape): THREE.BufferGeometry
   return merged;
 }
 
-/** Steps the edge is built in: about 0.08 mm each, below what a printer lays down, within these limits. */
+/** Steps the slabs of an edge are built in: about 0.08 mm each, below what a printer lays down, within these limits. */
 const EDGE_STEP = 0.08;
 const MIN_EDGE_STEPS = 3;
 const MAX_EDGE_STEPS = 12;
+/**
+ * A chamfer's slabs: about 0.1 mm each up to 24 of them, so a chamfer cut into a side wall leaves ledges
+ * of 0.1 mm up to 2.4 mm and of 0.21 at 5 mm, not of 0.42. Each slab adds to the build's time, which
+ * grows with their number; the round keeps its 12, whose steps follow the curve more closely.
+ */
+const CHAMFER_SLAB_STEP = 0.1;
+const MAX_CHAMFER_SLAB_STEPS = 24;
+
+/** How large the edge is built: as set, at most what its side of a text this high takes. */
+function builtEdgeSize(edge: TextEdge, height: number) {
+  return Math.min(edge.size, maxTextEdgeSize(height, textEdgeSide(edge)));
+}
 
 /**
- * The text with its top edge rounded or chamfered (#225): one smooth skin where the outlines allow
- * it (textEdgeLoft), else slabs. Null when the letters leave nothing to stand on.
+ * Marks an edge on the bottom (or both ends) to stand where it is built: where every stroke runs out
+ * before the underside, nothing reaches it, and a hole or an export must not move the letters down
+ * onto it, or the cut would go deeper than the view shows (editorMeshCore's bufferGeometryToMeshData).
+ */
+function keepEdgeHeight(geometry: THREE.BufferGeometry, edge: TextEdge) {
+  if (textEdgeSide(edge) !== "top") geometry.userData.keepsItsHeight = true;
+  return geometry;
+}
+
+/**
+ * The letters stepped in by `inset`, each made once. Stepping in only ever takes away, so once an
+ * inset leaves nothing, no deeper one is made: an offset of 40 letters costs the 2D kernel about
+ * half a second however deep it goes (measured 21.11.2026, Script), and an edge larger than the
+ * strokes are wide would otherwise make every one of them. Asked shallow to deep, the first empty
+ * one ends the work.
+ */
+function insetSections(region: CrossSection, keep: Keep) {
+  const sections = new Map<number, CrossSection | null>([[0, region]]);
+  let emptyFrom = Infinity;
+  return (inset: number): CrossSection | null => {
+    if (inset >= emptyFrom) return null;
+    if (!sections.has(inset)) {
+      const section = keep(region.offset(-inset, "Round", 2, 48));
+      if (section.area() <= 1e-9) {
+        emptyFrom = inset;
+        sections.set(inset, null);
+      } else {
+        sections.set(inset, section);
+      }
+    }
+    return sections.get(inset) ?? null;
+  };
+}
+
+/** The insets of a profile from shallow to deep, each once: the order insetSections works best in. */
+const insetsShallowFirst = (profile: { inset: number }[]) => [...new Set(profile.map((point) => point.inset))].sort((a, b) => a - b);
+
+/**
+ * The text with the edge of its letters rounded or chamfered (#225), on the top, the bottom or
+ * both: one smooth skin where the outlines allow it (textEdgeLoft), else slabs. Null when the
+ * letters leave nothing to stand on.
  */
 export function textEdgeGeometry(runtime: ManifoldToplevel, shape: WorkplaneShape): THREE.BufferGeometry | null {
   const edge = normalizeTextEdge(shape.textEdge);
@@ -431,43 +610,60 @@ export function textEdgeGeometry(runtime: ManifoldToplevel, shape: WorkplaneShap
   try {
     const region = textBodyRegion(runtime, keep as Keep, shape);
     if (!region) return null;
-    const size = Math.min(edge.size, shape.height);
+    const size = builtEdgeSize(edge, shape.height);
+    const sectionAt = insetSections(region, keep as Keep);
+    // The letters stepped in, as rings: the 2D kernel makes them, so they are valid whatever the corners.
+    // One array for each inset, so the full outline at both ends of a wall is the same and makes the wall.
+    const ringsByInset = new Map<number, { x: number; z: number }[][] | null>();
+    const ringsAt = (inset: number) => {
+      if (!ringsByInset.has(inset)) {
+        const section = sectionAt(inset);
+        ringsByInset.set(inset, section ? section.toPolygons().map((polygon) => polygon.map(([x, z]) => ({ x, z }))) : null);
+      }
+      return ringsByInset.get(inset) ?? null;
+    };
+    const skinOf = (steps: number) => {
+      const profile = textEdgeProfile(edge, size, shape.height, steps);
+      if (insetsShallowFirst(profile).some((inset) => !ringsAt(inset))) return null;
+      return loftedTextEdge(profile.map((point) => ringsAt(point.inset)!), profile.map((point) => point.height));
+    };
     // A chamfer is one slope; a round edge a few segments, fewer for a small one: a printer lays down no finer.
-    const steps = edge.kind === "chamfer" ? 1 : Math.min(8, Math.max(3, Math.ceil(size / 0.12)));
-    const levels = textEdgeLevels({ kind: edge.kind, size }, steps);
-    // The letters stepped in for each boundary of the edge, as rings: the 2D kernel makes them, so they are valid whatever the corners.
-    const rings: { x: number; z: number }[][][] = [];
-    for (const level of levels) {
-      const section = level.inset === 0 ? region : keep(region.offset(-level.inset, "Round", 2, 48));
-      if (section.area() <= 1e-9) break;
-      rings.push(section.toPolygons().map((polygon) => polygon.map(([x, z]) => ({ x, z }))));
-    }
-    const skin = rings.length === levels.length ? loftedTextEdge(rings, levels.map((level) => shape.height - size + level.height)) : null;
+    // A chamfer whose one slope would fold (a long one, a sharp inner corner) tries again in a few shorter
+    // ones - not where the strokes run out before its narrow end, which no number of slopes mends.
+    const roundSteps = Math.min(8, Math.max(3, Math.ceil(size / 0.12)));
+    const skin = edge.kind === "chamfer"
+      ? skinOf(1) ?? (sectionAt(size) ? skinOf(Math.min(8, Math.max(2, Math.ceil(size / 0.25)))) : null)
+      : skinOf(roundSteps);
     if (skin) {
       const indexed = new THREE.BufferGeometry();
       indexed.setAttribute("position", new THREE.Float32BufferAttribute(skin.positions, 3));
       indexed.setIndex(skin.indices);
       const geometry = toCreasedNormals(indexed, THREE.MathUtils.degToRad(12));
       geometry.computeBoundingBox();
-      return geometry;
+      return keepEdgeHeight(geometry, edge);
     }
-    return textEdgeSlabGeometry(runtime, shape);
+    const slabs = textEdgeSlabGeometry(runtime, keep, edge, size, shape.height, sectionAt);
+    return slabs ? keepEdgeHeight(slabs, edge) : null;
   } finally {
     new Set(made).forEach((item) => item.delete());
   }
 }
 
+const footFloats = new WeakMap<WorkplaneShape, boolean>();
+
 /**
- * The same edge built as slabs, which always stand: the body up to where the edge begins,
- * then slabs on top of it, each the outline stepped in by how far the edge has come in at its
- * upper side, so the steps lie inside the true edge and the top is exactly as far in as asked.
- * The slabs are one union, so the mesh has no faces inside and no gaps. Where the letters are
- * thinner than twice the edge the slabs run out and the edge simply ends in a narrower top.
- * Null when the letters leave nothing to stand on.
+ * Whether a piece of the letters is thinner everywhere than twice its edge on the bottom, so that
+ * it starts above the underside and would be printed in the air - for a text standing on the bed;
+ * a text cut out of a body just cuts shallower there, as a V-shaped bit does. False for an edge on
+ * the top, null before the kernel is there. Kept per shape, which changes as a whole when edited.
  */
-function textEdgeSlabGeometry(runtime: ManifoldToplevel, shape: WorkplaneShape): THREE.BufferGeometry | null {
+export function textEdgeFootFloats(shape: WorkplaneShape): boolean | null {
   const edge = normalizeTextEdge(shape.textEdge);
-  if (!edge || shape.height <= 0) return null;
+  if (!edge || textEdgeSide(edge) === "top" || !textHasEdge(shape) || shape.height <= 0) return false;
+  const known = footFloats.get(shape);
+  if (known !== undefined) return known;
+  const runtime = loadedManifoldRuntime();
+  if (!runtime) return null;
   const made: { delete: () => void }[] = [];
   const keep = <T extends { delete: () => void }>(item: T): T => {
     made.push(item);
@@ -475,36 +671,62 @@ function textEdgeSlabGeometry(runtime: ManifoldToplevel, shape: WorkplaneShape):
   };
   try {
     const region = textBodyRegion(runtime, keep as Keep, shape);
-    if (!region) return null;
-    const size = Math.min(edge.size, shape.height);
-    const steps = Math.min(MAX_EDGE_STEPS, Math.max(MIN_EDGE_STEPS, Math.ceil(size / EDGE_STEP)));
-    const levels = textEdgeLevels({ kind: edge.kind, size }, steps);
-    const start = shape.height - size;
-    // The slabs are made standing on the plane with the outline's z as y, then turned up: a
-    // quarter turn about x takes (x, y, z) to (x, -z, y), so a slab from height a to b is placed from -b to -a.
-    const slab = (footprint: CrossSection, from: number, to: number) => keep(keep(runtime.Manifold.extrude(footprint, to - from)).translate([0, 0, -to]));
-    const slabs: InstanceType<ManifoldToplevel["Manifold"]>[] = [];
-    if (start > 1e-4) slabs.push(slab(region, 0, start));
-    for (let step = 1; step < levels.length; step += 1) {
-      const footprint = keep(region.offset(-levels[step].inset, "Round", 2, 48));
-      if (footprint.area() <= 1e-9) break;
-      slabs.push(slab(footprint, start + levels[step - 1].height, start + levels[step].height));
-    }
-    if (!slabs.length) return null;
-    const body = keep(keep(runtime.Manifold.union(slabs)).rotate([90, 0, 0]));
-    const mesh = body.getMesh();
-    if (mesh.triVerts.length < 9) return null;
-    const positions: number[] = [];
-    for (let offset = 0; offset + 2 < mesh.vertProperties.length; offset += mesh.numProp) {
-      positions.push(mesh.vertProperties[offset], mesh.vertProperties[offset + 1], mesh.vertProperties[offset + 2]);
-    }
-    const indexed = new THREE.BufferGeometry();
-    indexed.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-    indexed.setIndex(Array.from(mesh.triVerts));
-    const geometry = toCreasedNormals(indexed, THREE.MathUtils.degToRad(12));
-    geometry.computeBoundingBox();
-    return geometry;
+    const size = builtEdgeSize(edge, shape.height);
+    const floats = Boolean(region) && region!.decompose().map(keep).some((piece) => keep(piece.offset(-size, "Round", 2, 48)).area() <= 1e-9);
+    footFloats.set(shape, floats);
+    return floats;
   } finally {
     new Set(made).forEach((item) => item.delete());
   }
+}
+
+/**
+ * The same edge built as slabs, which always stand: one slab between each two heights of the
+ * outline's profile (textEdgeProfile), each the outline stepped in by the more it stands in at
+ * either end, so the steps lie inside the true edge and its narrow end is exactly as far in as
+ * asked. The slabs are one union, so the mesh has no faces inside and no gaps. Where the letters
+ * are thinner than twice the edge the slabs run out and the edge simply ends in a narrower top,
+ * or on the bottom a narrower foot that starts above the underside. Takes the stepped-in outlines
+ * the skin already made (`sectionAt`) and leaves what it makes to `keep`, which deletes them.
+ * Null when the letters leave nothing to stand on.
+ */
+function textEdgeSlabGeometry(
+  runtime: ManifoldToplevel,
+  keep: <T extends { delete: () => void }>(item: T) => T,
+  edge: TextEdge,
+  size: number,
+  height: number,
+  sectionAt: (inset: number) => CrossSection | null,
+): THREE.BufferGeometry | null {
+  const steps = edge.kind === "chamfer"
+    ? Math.min(MAX_CHAMFER_SLAB_STEPS, Math.max(MIN_EDGE_STEPS, Math.ceil(size / CHAMFER_SLAB_STEP)))
+    : Math.min(MAX_EDGE_STEPS, Math.max(MIN_EDGE_STEPS, Math.ceil(size / EDGE_STEP)));
+  const profile = textEdgeProfile(edge, size, height, steps);
+  // The slabs are made standing on the plane with the outline's z as y, then turned up: a
+  // quarter turn about x takes (x, y, z) to (x, -z, y), so a slab from height a to b is placed from -b to -a.
+  const slab = (footprint: CrossSection, from: number, to: number) => keep(keep(runtime.Manifold.extrude(footprint, to - from)).translate([0, 0, -to]));
+  // Shallow to deep first, so the first inset that leaves nothing spares every deeper one.
+  insetsShallowFirst(profile).forEach(sectionAt);
+  const slabs: InstanceType<ManifoldToplevel["Manifold"]>[] = [];
+  for (let step = 1; step < profile.length; step += 1) {
+    const from = profile[step - 1];
+    const to = profile[step];
+    if (to.height - from.height <= 1e-6) continue;
+    const footprint = sectionAt(Math.max(from.inset, to.inset));
+    if (footprint) slabs.push(slab(footprint, from.height, to.height));
+  }
+  if (!slabs.length) return null;
+  const body = keep(keep(runtime.Manifold.union(slabs)).rotate([90, 0, 0]));
+  const mesh = body.getMesh();
+  if (mesh.triVerts.length < 9) return null;
+  const positions: number[] = [];
+  for (let offset = 0; offset + 2 < mesh.vertProperties.length; offset += mesh.numProp) {
+    positions.push(mesh.vertProperties[offset], mesh.vertProperties[offset + 1], mesh.vertProperties[offset + 2]);
+  }
+  const indexed = new THREE.BufferGeometry();
+  indexed.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  indexed.setIndex(Array.from(mesh.triVerts));
+  const geometry = toCreasedNormals(indexed, THREE.MathUtils.degToRad(12));
+  geometry.computeBoundingBox();
+  return geometry;
 }

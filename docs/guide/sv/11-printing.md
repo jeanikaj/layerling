@@ -79,6 +79,17 @@ Har du flera skrivare väljer du först den skrivare du ska skriva ut på under 
 
 Från och med då utgår nya verktyg från ditt uppmätta spel i stället för standardvärdet: {{ui:lid.gap}} och {{ui:lid.hingePinPlay}} i verktyget {{ui:editor.tool.lid}}, spelet hos nya {{ui:shape.dovetail}} och {{ui:shape.snapFit}}, {{ui:prop.clearance}} för nya muttrar och gängade hål – dubbla spelet eftersom utrymmet gäller runt hela diametern – samt {{ui:clearance.threshold}} i {{ui:editor.tool.clearance}}. Detsamma gäller {{ui:split.connectorClearance}} för styrstift, pluggar och laxstjärtar i {{ui:editor.tool.split}}. Så länge ett sådant fält behåller det värdet visar ”{{ui:printerPlay.fromFitTest}}” bredvid var siffran kommer ifrån. Ett färdigmonterat gångjärn som skrivs ut i ett stycke och lederna i {{ui:editor.tool.flexi}} behåller sina 0,4 mm: utskrivna i ett stycke måste mellanrummen också hållas öppna mellan utskriftslagren i höjdled, vilket en fristående tapp inte mäter. Utrymme för att trycka in magneter eller en Gridfinity-nyckel samt mått för köpta kontakter och kort behåller också sina egna värden. Kroppar som redan finns i en design ändras aldrig, och inte heller designer du öppnar.
 
+## Kontrollera måtten på papper
+
+En del som ska passa till något - en fläkt, ett kretskort, ett hålmönster - kontrolleras snabbt på papper innan du skriver ut den i 3D. Ett papper tar sekunder; en provutskrift kostar tid och filament, och stämmer ett mått inte måste den göras om.
+
+1. Markera delen, klicka på {{ui:editor.export}} och välj formatet **2D**, sedan PDF.
+2. Under {{ui:export.drawing.paper}} väljer du pappret i din skrivare, A4, A3, US Letter eller US Tabloid. En större ritning delas upp på flera sidor.
+3. Skriv ut i 100 % eller "verklig storlek", aldrig "anpassa till sida".
+4. Mät ett totalmått på arket med en linjal. Stämmer det med siffran bredvid är utskriften skalenlig: lägg den riktiga delen på den.
+
+Pappret visar inte hur din 3D-skrivare avviker: plasten krymper lite och hål blir trängre. Det visar passningstestet ovan. Mer om ritningen i [Filer, spara och dela](chapter:files-and-saving).
+
 ## Kontrollera utskriften
 
 {{ui:editor.tool.printCheck}}, bredvid {{ui:editor.tool.clearance}} under {{ui:editor.group.combine}}, granskar de markerade objekten, eller alla synliga objekt när inget är markerat, och samlar i ett enda fönster vad som skulle kunna krångla vid utskrift. Var och en av de fem raderna lyser grönt om inget hittades, och orange med vad och var om något upptäcktes:
@@ -92,6 +103,14 @@ Från och med då utgår nya verktyg från ditt uppmätta spel i stället för s
 ![En bricka vars högra vägg bara är 0,6 mm tjock: Utskriftskontroll färgar den röd och nämner det i fönstret.](shot:print-check)
 
 {{ui:printCheck.show}} på en rad flyttar kameran dit; den markerar svävande delar, delar med för liten bas och öppna nät, och för överhäng slår den på **Visa överhäng**. Kroppar som överlappar varandra kontrolleras sammanslagna, så som slicern tolkar dem. Om du ändrar designen medan fönstret är öppet visas {{ui:printCheck.stale}}; klicka på det eller på {{ui:printCheck.checkAgain}}. [[Esc]] stänger fönstret. Ingenting i designen ändras. En AI kan köra samma kontroll med `layerling_check_print`. Fönstret kontrollerar bara, det skriver inte ut eller sparar något: för att skriva ut exporterar du designen till din slicer med {{ui:editor.export}} i gruppen {{ui:editor.group.file}}. {{ui:printCheck.openExport}} i fönstret stänger kontrollen och öppnar exporten.
+
+### Utskriftsanalys och lagervy
+
+{{ui:editor.tool.layerCheck}}, bredvid {{ui:editor.tool.printCheck}}, går ett steg längre: den delar de markerade objekten (eller alla synliga) i de lager som skrivaren lägger och jämför varje lager med lagret under, allt i ett svep. Du behöver inte bläddra igenom lagren för att hitta ett problem: fönstret listar sina **fynd**, problem (röda) först, sedan tips (gula), nerifrån och upp. Varje rad säger var och hur illa, till exempel ”Lager 83–97 (16,6–19,4 mm): Överhäng 62°, 1,4 cm²”, och vad som hjälper. Lager i följd med samma problem på samma ställe blir ett enda fynd.
+
+Innan den tittar på lagren kontrollerar den helheten: en del som når ner i byggplattan ({{ui:finding.kind.inBed}}; lager under arbetsplanet räknas inte), en del som svävar ovanför den, ett nät som inte är slutet, en del som är större än skrivaren som valts i inställningarna. Sedan, lager för lager: {{ui:finding.kind.unsupported}} (ett ställe som börjar utan något under sig, som armarna på ett T), {{ui:finding.kind.overhang}} (tips från 45°, problem från 60° från lodrätt), {{ui:finding.kind.bridge}} (tips från en spännvidd på 10 mm), {{ui:finding.kind.thinWall}} (under två linjer från munstycket), {{ui:finding.kind.smallIsland}} (ett separat ställe under 2 mm² som fortsätter i 2 mm eller mer) och {{ui:finding.kind.adhesion}}. Välj {{ui:layerCheck.layerHeight}} och {{ui:layerCheck.nozzle}} överst; gränserna finns under {{ui:layerCheck.advanced}}. Ställen under 0,05 mm², som en spets eller det sista lagret, bedöms inte. Kontrollen körs i bakgrunden med en förloppsindikator; {{ui:layerCheck.stop}} stoppar den direkt.
+
+Klicka på ett fynd: **lagervyn** öppnas vid det första lagret det gäller, kameran går till stället, stället målas rött eller gult på lagret, och lagren under förblir synliga. Reglaget står upprätt bredvid en profil av tvärsnittet över höjden; markeringar vid sidan visar var fynden finns, och ett klick på en hoppar dit. På reglaget flyttar [[↑]] och [[↓]] ett lager, [[Page Up]] och [[Page Down]] tio, [[Home]] och [[End]] går till ändarna, [[Space]] spelar upp, [[N]] går till nästa fynd och [[Shift+N]] till föregående. {{ui:layerCheck.view.mode}} visar {{ui:layerCheck.view.mode.upTo}}, {{ui:layerCheck.view.mode.only}} eller {{ui:layerCheck.view.mode.range}}; lagren som ännu inte kommit kan visas som en svag skugga. Där Layerling har ett verktyg för fyndet öppnar en knapp det: {{ui:finding.action.dropToPlate}}, {{ui:finding.action.layFlat}} eller {{ui:finding.action.supportRib}}. Efter en ändring markeras listan som inaktuell tills du klickar på {{ui:layerCheck.checkAgain}}. När fönstret stängs går kameran tillbaka dit den var. Det här är ingen förhandsvisning från slicern: stöd, utfyllnad och utskriftstid kommer från din slicer.
 
 ## När du är klar
 

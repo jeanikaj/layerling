@@ -133,6 +133,7 @@ För att frigöra den klickar du på hänglåset i dess hörn medan den är mark
 
 ::: icon=refine {{ui:sketch.refine}} | [[4]]
 Klicka på en sträcka för att lägga till en punkt.
+Med {{ui:sketch.select}} lägger ett dubbelklick på en linje också till en punkt där.
 Klicka på en punkt för att ta bort den.
 => layerling binder samman dess två grannar, så att konturen förblir sluten.
 :::
@@ -188,7 +189,7 @@ När inget är markerat dubbelklickar du på en tom plats för att skjuta den ti
 ::: Mått
 Klicka på en linje eller en punkt.
 => Skissen visar linjens längd, eller för en punkt längderna på de linjer som möts där.
-{{ui:sketch.showMeasurements}} i skissverktygsfältet döljer och visar de här måtten när de är i vägen, till exempel medan du formar kurvor.
+{{ui:sketch.showMeasurements}} i skissverktygsfältet döljer och visar de här måtten när de är i vägen, till exempel medan du formar kurvor. När pekaren vilar på en punkt visar en liten etikett bredvid punktens X och Y, i mm från skissens origo, och den följer med medan punkten dras; knappen döljer även den etiketten.
 {{ui:camera.tapeTools}} i skissverktygsfältet mäter avståndet mellan två punkter; det fortsätter fungera även när måtten är dolda.
 :::
 

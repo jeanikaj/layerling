@@ -3,7 +3,7 @@ title: Skróty klawiszowe
 summary: Wszystkie klawisze w jednym miejscu, pobrane prosto z programu, więc lista zawsze się zgadza.
 ---
 
-Skróty działają, dopóki płaszczyzna robocza jest aktywna. Gdy piszesz w polu, nie przeszkadzają. Na Macu [[Cmd]] działa wszędzie tam, gdzie wymieniony jest [[Ctrl]].
+Skróty działają, dopóki płaszczyzna robocza jest aktywna. Gdy piszesz w polu, nie przeszkadzają. Na Macu [[Cmd]] działa wszędzie tam, gdzie wymieniony jest [[Ctrl]]. Klawisze noszą nazwy z klawiatury twojego języka. Litera to litera na twojej klawiaturze; na klawiaturze z innym pismem (cyrylica, greckie, arabskie, hebrajskie) liczy się klawisz w miejscu litery łacińskiej.
 
 W edytorze {{ui:editor.keyboardShortcuts}} w sekcji {{ui:editor.group.help}} otwiera tę samą listę jako okno. Przycisk drukarki w oknie ({{ui:shortcuts.print}}) drukuje samą listę, czarno na białym, całą na jednej stronie arkusza A4 albo Letter w trzech kolumnach, żeby mieć ją pod ręką jako ściągę. Okno drukowania przeglądarki pozwala też zapisać ją jako PDF.
 
@@ -19,7 +19,7 @@ Nie możesz znaleźć narzędzia? Naciśnij [[Ctrl]]+[[K]] albo kliknij lupę w 
 - Każdy wpis pokazuje klawisze, które robią to samo, i sekcję paska narzędzi, w której się znajduje, więc uczysz się, gdzie to jest.
 - Wpisy wyszarzone nie mogą się teraz wykonać, najczęściej dlatego, że nic nie jest zaznaczone. Zostają na liście, żeby wyszukiwanie i tak mówiło, gdzie jest narzędzie.
 
-Instrukcja, którą czytasz, też ma pole wyszukiwania, na górze każdej strony: wpisz słowo albo dwa, a pokaże części, które zawierają je wszystkie, z zaznaczonymi pasującymi słowami. Kliknij jedną albo naciśnij [[Enter]] dla pierwszej, aby od razu tam przejść. Otwarta strona zaznacza każde miejsce, w którym występują twoje słowa, i przewija do pierwszego w wybranej części; [[Esc]] albo kliknięcie zaznaczenia je usuwa.
+Instrukcja, którą czytasz, też ma pole wyszukiwania, na górze każdej strony: wpisz słowo albo dwa, a pokaże części, które zawierają je wszystkie, z zaznaczonymi pasującymi słowami. Kliknij jedną albo naciśnij [[Enter]] dla pierwszej, aby od razu tam przejść. Otwarta strona zaznacza każde miejsce, w którym występują twoje słowa, i przewija do pierwszego w wybranej części; [[Esc]] albo kliknięcie zaznaczenia je usuwa. Słowa w cudzysłowie są wyszukiwane jako dokładna fraza: pokazują się tylko części, w których stoją obok siebie w tej kolejności, a pojedyncze słowo w cudzysłowie jest znajdowane tylko jako całe słowo, nie jako część dłuższego.
 - Nazwa kształtu dodaje ten kształt na płaszczyznę roboczą, tak jak kliknięcie go w menu kształtów.
 - Przy pustym polu wyszukiwanie pokazuje na górze ostatnio używane polecenia.
 - Nazwa bryły w Twoim projekcie znajduje tę bryłę i ją zaznacza, co pomaga w projekcie z wieloma częściami. Bryły pojawiają się dopiero, gdy zaczniesz pisać.

@@ -21,7 +21,7 @@ import { type RotationAxis } from "@/components/workplane/TransformOverlay";
 import { type AlignAxes, type FrameCuboid } from "@/lib/alignFrame";
 import type { MeasurementAccuracy, MouseScheme, WorkplaneNote, WorkplaneShape, WorkplaneWorkspaceSettings } from "@/types/layerling";
 import { NOTE_TEXT_LIMIT } from "@/lib/workplaneNotes";
-import { measurementMiddle } from "@/lib/referencePoints";
+import { measurementMiddle, sameReferencePoint, type ReferencePosition } from "@/lib/referencePoints";
 import type { MoveDimensionLift } from "@/lib/moveDimensionLines";
 import { placeTapeLabel, screenPolylineMiddle, tapeAxisSpans, tapeAxisTag, tapeDeltaAxes, tapeLabelSize } from "@/lib/tapeLabels";
 import { roundEdgeMeasure } from "@/lib/tapeCircle";
@@ -239,6 +239,8 @@ export type TapeOverlayState = {
     preview?: string;
     centre?: TapeCentreKind;
     centres?: Array<{ screenX: number; screenY: number }>;
+    /** How thick the body is under the pointer, and where the line through it comes out (Discussion #1820). */
+    thickness?: { screenX: number; screenY: number; text: string };
   } | null;
 };
 
@@ -270,6 +272,11 @@ export type TapeCandidate = {
   centre?: TapeCentreKind;
   /** The centres on offer near the pointer, the one the point sits on included, each shown with a mark. */
   centres?: TapeCentre[];
+  /**
+   * On a face, before the first point is placed: how thick the body is there, measured straight in to `exit`, where
+   * the material ends (Discussion #1820).
+   */
+  thickness?: { exit: [number, number, number]; value: number };
 };
 
 export type RotationHandleSide = "near" | "right" | "far" | "left";
@@ -771,6 +778,10 @@ export function syncTapeOverlay(
         return [{ screenX: screen.x, screenY: screen.y }];
       })
     : [];
+  // Before the first point is placed, on a face: how thick the body is there (Discussion #1820).
+  const thicknessExit = hoverWorld && !startPoint && model.hover?.thickness
+    ? projectToScreen(new THREE.Vector3(...model.hover.thickness.exit), state)
+    : null;
   const next: TapeOverlayState = {
     points,
     segments,
@@ -781,6 +792,9 @@ export function syncTapeOverlay(
       preview,
       ...(model.hover?.centre ? { centre: model.hover.centre } : {}),
       ...(centres.length ? { centres } : {}),
+      ...(thicknessExit && model.hover?.thickness
+        ? { thickness: { screenX: thicknessExit.x, screenY: thicknessExit.y, text: formatMeasure(model.hover.thickness.value, accuracy) } }
+        : {}),
     } : null,
   };
   const previous = overlayRef.current;
@@ -815,6 +829,9 @@ export function syncTapeOverlay(
       (previous.hover && next.hover
         && previous.hover.edgeScreenPoints === next.hover.edgeScreenPoints
         && previous.hover.preview === next.hover.preview
+        && previous.hover.thickness?.text === next.hover.thickness?.text
+        && Math.abs((previous.hover.thickness?.screenX ?? 0) - (next.hover.thickness?.screenX ?? 0)) < 0.2
+        && Math.abs((previous.hover.thickness?.screenY ?? 0) - (next.hover.thickness?.screenY ?? 0)) < 0.2
         && previous.hover.centre === next.hover.centre
         && (previous.hover.centres?.length ?? 0) === (next.hover.centres?.length ?? 0)
         && (previous.hover.centres ?? []).every((centre, index) => {
@@ -1071,8 +1088,11 @@ export function NoteOverlay({
   pointCardOffsets,
   onPointCardOffsetChange,
   onRemoveAllPoints,
+  coveredPivot,
 }: {
   overlay: NoteOverlayState;
+  /** The rotation pivot while its marker shows: a reference point on it steps back, so the marker can be dragged. */
+  coveredPivot?: ReferencePosition | null;
   /** Where a card stands that was not moved on its own yet. */
   pointCardOffset: PointCardOffset;
   /** The cards that were moved, by point. */
@@ -1113,7 +1133,7 @@ export function NoteOverlay({
           >
             <button
               type="button"
-              className={`note-pin ${note.attached ? "attached" : ""} ${note.point ? "point-pin" : ""}`}
+              className={`note-pin ${note.attached ? "attached" : ""} ${note.point ? "point-pin" : ""} ${note.point && coveredPivot && sameReferencePoint(note, coveredPivot) ? "under-pivot" : ""}`}
               title={note.point ? t("point.move") : t("note.move")}
               aria-label={note.point ? t("point.title") : `${t("editor.tool.note")} ${note.index}`}
               onPointerDown={(event) => onPinPointerDown(event, note.id)}
@@ -1317,6 +1337,13 @@ export function TapeOverlay({
         ))}
         {active && overlay.hover?.edgeScreenPoints ? <polyline className="tape-hover-edge" points={overlay.hover.edgeScreenPoints} fill="none" /> : null}
         {/* A centre on offer is a cross in a circle, unlike a corner; the one the point sits on is drawn in full (Discussion #610). */}
+        {/* Through the body from the point under the pointer to where the material ends: the thickness read there (Discussion #1820). */}
+        {active && overlay.hover?.thickness ? (
+          <>
+            <line className="tape-thickness-line" x1={overlay.hover.screenX} y1={overlay.hover.screenY} x2={overlay.hover.thickness.screenX} y2={overlay.hover.thickness.screenY} />
+            <circle className="tape-thickness-end" cx={overlay.hover.thickness.screenX} cy={overlay.hover.thickness.screenY} r="3" />
+          </>
+        ) : null}
         {active ? overlay.hover?.centres?.map((centre, index) => <TapeCentreMark key={`centre-${index}`} x={centre.screenX} y={centre.screenY} />) : null}
         {active && overlay.hover ? (
           overlay.hover.centre
@@ -1385,6 +1412,11 @@ export function TapeOverlay({
       {active && overlay.hover?.centre ? (
         <span className="tape-tip above tape-centre-hint" style={{ left: overlay.hover.screenX, top: overlay.hover.screenY - 12 }}>
           {t(TAPE_CENTRE_HINTS[overlay.hover.centre])}
+        </span>
+      ) : null}
+      {active && overlay.hover?.thickness && !overlay.hover.centre ? (
+        <span className="tape-tip tape-thickness-tip" style={{ left: overlay.hover.screenX, top: overlay.hover.screenY + 16 }}>
+          {t("camera.tapeThickness", { thickness: `${overlay.hover.thickness.text} ${currentLengthUnitLabel()}` })}
         </span>
       ) : null}
       {active && overlay.hover?.preview ? (

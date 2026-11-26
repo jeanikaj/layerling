@@ -77,6 +77,17 @@ S více tiskárnami nejprve v {{ui:workspace.printer}} vyberte tu, na které tis
 
 Od té chvíle začínají nová použití s vůlí místo vestavěné hodnoty: {{ui:lid.gap}} a {{ui:lid.hingePinPlay}} v nástroji {{ui:editor.tool.lid}}, vůle nových tvarů {{ui:shape.dovetail}} a {{ui:shape.snapFit}}, {{ui:prop.clearance}} nové matice nebo závitového otvoru – dvojnásobek vůle, protože jde o místo přes celý průměr – a {{ui:clearance.threshold}} v nástroji {{ui:editor.tool.clearance}}. Stejně tak {{ui:split.connectorClearance}} kolíků, čepů a rybin v nástroji {{ui:editor.tool.split}}. Dokud takové pole tuto hodnotu drží, říká „{{ui:printerPlay.fromFitTest}}“ vedle něj, odkud číslo pochází. Pant tištěný vcelku a klouby nástroje {{ui:editor.tool.flexi}} si nechávají svých 0,4 mm: při tisku v jednom kuse musí jejich mezery zůstat otevřené i mezi vrstvami, a to čep vytištěný zvlášť neměří. Místo pro zalisování magnetu nebo klíče Gridfinity a místo pro koupenou zásuvku či desku si také nechávají své vlastní hodnoty. Tělesa, která už v projektu jsou, se nikdy nezmění, a stejně tak projekt, který otevřete.
 
+## Kontrola rozměrů na papíře
+
+Díl, který má k něčemu pasovat - k ventilátoru, desce plošných spojů, rozteči otvorů - rychle ověříte na papíře před 3D tiskem. List papíru zabere vteřiny; zkušební výtisk stojí čas a filament, a když rozměr nesedí, musí se tisknout znovu.
+
+1. Vyberte díl, klikněte na {{ui:editor.export}} a zvolte formát **2D**, potom PDF.
+2. V poli {{ui:export.drawing.paper}} vyberte papír v tiskárně, A4, A3, US Letter nebo US Tabloid. Větší výkres se rozdělí na více stránek.
+3. Tiskněte na 100 % nebo ve „skutečné velikosti“, nikdy „přizpůsobit stránce“.
+4. Změřte na listu pravítkem jeden celkový rozměr. Souhlasí-li s uvedeným číslem, je výtisk v měřítku: přiložte skutečný díl.
+
+Papír neukáže odchylky vaší 3D tiskárny: plast se trochu smrští a otvory vyjdou těsnější. To ukáže test lícování výše. Více o výkresu je v kapitole [Soubory, ukládání a sdílení](chapter:files-and-saving).
+
 ## Kontrola tisku
 
 {{ui:editor.tool.printCheck}} vedle {{ui:editor.tool.clearance}} ve skupině {{ui:editor.group.combine}} projde vybrané objekty, nebo všechny viditelné, když není nic vybráno, a v jednom okně řekne, co by se při tisku pokazilo. Každý z pěti řádků je zelený, když nic nenašel, a oranžový s tím, co a kde, když ano:
@@ -93,9 +104,11 @@ Od té chvíle začínají nová použití s vůlí místo vestavěné hodnoty: 
 
 ### Analýza tisku a zobrazení vrstev
 
-{{ui:editor.tool.layerCheck}} vedle {{ui:editor.tool.printCheck}} rozřeže vybrané objekty (nebo všechny viditelné) na vrstvy, které tiskárna klade, a porovná každou vrstvu s tou pod ní, najednou. Okno vypíše **nálezy**: nejprve problémy (červeně), pak upozornění (žlutě), odspodu nahoru, u každého kde, jak vážné a co pomůže. Nejprve se kontroluje celek ({{ui:finding.kind.inBed}}, díly ve vzduchu, neuzavřené sítě, díl větší než tiskárna), pak vrstva po vrstvě: {{ui:finding.kind.unsupported}}, {{ui:finding.kind.overhang}}, {{ui:finding.kind.bridge}}, {{ui:finding.kind.thinWall}}, {{ui:finding.kind.smallIsland}} a {{ui:finding.kind.adhesion}}. {{ui:layerCheck.layerHeight}} a {{ui:layerCheck.nozzle}} zvolíte nahoře; {{ui:layerCheck.stop}} kontrolu hned zastaví.
+{{ui:editor.tool.layerCheck}} vedle {{ui:editor.tool.printCheck}} jde o krok dál: rozřeže vybrané objekty (nebo všechny viditelné) na vrstvy, které tiskárna klade, a porovná každou vrstvu s tou pod ní, a to najednou. Nemusíte listovat vrstvami, abyste problém našli: okno vypíše své **nálezy**, nejprve problémy (červeně), pak upozornění (žlutě), odspodu nahoru. Každý řádek říká kde a jak vážné, například „Vrstva 83–97 (16,6–19,4 mm): Převis 62°, 1,4 cm²“, a co pomůže. Vrstvy za sebou se stejným problémem na stejném místě tvoří jeden nález.
 
-Klik na nález otevře **zobrazení vrstev** na jeho první vrstvě, kamera přejede k místu a místo se na vrstvě obarví. Posuvník stojí svisle vedle profilu plochy průřezu; značky vedle něj ukazují nálezy. [[↑]] a [[↓]] posunou o vrstvu, [[Space]] přehrává, [[N]] přejde na další nález. Tlačítko otevře vhodný nástroj, třeba {{ui:finding.action.dropToPlate}} nebo {{ui:finding.action.supportRib}}. Po zavření se kamera vrátí. Není to náhled sliceru: podpory, výplň a čas tisku určuje slicer.
+Než se podívá na vrstvy, zkontroluje celek: díl, který zasahuje do tiskové podložky ({{ui:finding.kind.inBed}}; vrstvy pod pracovní rovinou se nepočítají), díl, který se nad ní vznáší, síť, která není uzavřená, díl větší než tiskárna zvolená v nastavení. Pak vrstvu po vrstvě: {{ui:finding.kind.unsupported}} (místo, které začíná bez ničeho pod sebou, třeba ramena písmene T), {{ui:finding.kind.overhang}} (upozornění od 45°, problém od 60° od svislice), {{ui:finding.kind.bridge}} (upozornění od rozpětí 10 mm), {{ui:finding.kind.thinWall}} (pod dvě šířky čáry trysky), {{ui:finding.kind.smallIsland}} (samostatné místo pod 2 mm², které pokračuje 2 mm nebo víc) a {{ui:finding.kind.adhesion}}. {{ui:layerCheck.layerHeight}} a {{ui:layerCheck.nozzle}} zvolíte nahoře; meze jsou pod {{ui:layerCheck.advanced}}. Místa pod 0,05 mm², třeba špička nebo poslední vrstva, se nehodnotí. Kontrola běží na pozadí s ukazatelem průběhu; {{ui:layerCheck.stop}} ji hned zastaví.
+
+Klikněte na nález: **zobrazení vrstev** se otevře na první vrstvě, které se týká, kamera přejede k místu, místo se na vrstvě obarví červeně nebo žlutě a vrstvy pod ním zůstanou vidět. Posuvník stojí svisle vedle profilu průřezu po výšce; značky vedle něj ukazují, kde jsou nálezy, a klik na značku tam skočí. Na posuvníku [[↑]] a [[↓]] posunou o jednu vrstvu, [[Page Up]] a [[Page Down]] o deset, [[Home]] a [[End]] skočí na konce, [[Space]] přehrává, [[N]] přejde na další nález a [[Shift+N]] na předchozí. {{ui:layerCheck.view.mode}} ukazuje {{ui:layerCheck.view.mode.upTo}}, {{ui:layerCheck.view.mode.only}} nebo {{ui:layerCheck.view.mode.range}}; vrstvy, které teprve přijdou, se mohou zobrazit jako slabý stín. Kde má Layerling pro nález nástroj, otevře ho tlačítko: {{ui:finding.action.dropToPlate}}, {{ui:finding.action.layFlat}} nebo {{ui:finding.action.supportRib}}. Po změně se seznam označí jako zastaralý, dokud nekliknete na {{ui:layerCheck.checkAgain}}. Zavření okna vrátí kameru, kde byla. Není to náhled sliceru: podpory, výplň a čas tisku určuje slicer.
 
 ## Dokončení
 

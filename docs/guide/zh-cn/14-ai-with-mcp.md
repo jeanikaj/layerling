@@ -102,6 +102,7 @@ AI 使用与你相同的功能，走的是与你在编辑器中的操作相同�
 | `layerling_place_on_face` | 把对象放到另一个对象的某个面上，斜面也可以，如同 C 键 |
 | `layerling_perforate_face` | 在平面上或绕圆柱、圆管、孔的侧壁切出孔阵列；孔仍作为孔与实体分组在一起 |
 | `layerling_thread_insert` | 在平面上或圆柱、圆管的外侧壁上做出热熔螺纹嵌件的孔（M2 至 M8、1/4-20 或自定义尺寸），事先检查孔旁的壁厚和孔后的深度是否足够；孔仍作为孔与实体分组在一起 |
+| `layerling_magnet_pocket` | 在平面或圆柱、圆管外壁上为圆形磁铁（2 × 1 到 12 × 3 毫米或自定义尺寸）挖槽，下方带较窄的胶槽，检查方式相同，并在此处贴合的零件上正对着挖同样的槽；每个槽都是与零件编组的孔 |
 | `layerling_sweep_sketch` | 沿一条由点构成的路径拉出矩形或圆形截面，成为一个精确实体；闭合路径会形成圆环 |
 | `layerling_push_face` | 把平面推出，或在其中挖出凹槽，可设置距边缘的内缩和圆角半径；新部分是一个与实体分组的草图实体 |
 | `layerling_paint` | 为多色打印给实体的部分表面上自己的颜色（上色）：把面填充到锐利边缘、圆斑，或在平面视图中画的套索；橡皮擦、全部清除；随实体保存，并在 3MF 中写成已上色的面 |
@@ -136,11 +137,12 @@ AI 使用与你相同的功能，走的是与你在编辑器中的操作相同�
 | `layerling_delete_faces` | 删除面并闭合缺口 |
 | `layerling_array_objects` | 按行、按网格或沿圆周复制 |
 | `layerling_bundle_objects` | 像 Ctrl+B 一样捆绑对象：它们一起移动，保留各自颜色和类型，导出时分开输出 |
-| `layerling_layer_text` | 把文字变成用于多色打印的分层堆叠（字母、更宽的边沿、无孔底板），或重新构建堆叠，可加钥匙孔、设置每层圆角和圆角或倒角的字母边缘；给出名称列表时，每个名称生成一个名牌 |
+| `layerling_layer_text` | 把文字变成用于多色打印的分层堆叠（字母、更宽的边沿、无孔底板），或重新构建堆叠，可加钥匙孔、设置每层圆角和圆角或倒角的字母边缘；给出名称列表时，每个名称生成一个名牌；`flush` 把各层嵌入最底层，使所有颜色终止于同一个平面（true、false 或 0.2 至 5 毫米的深度） |
 | `layerling_text_block` | 生成文本块：一段文字成为多行中的第一行，每行都是上一行下方的独立文字，左对齐、居中或右对齐，每行大小相同或更小 |
-| `layerling_layer_icon` | 把 SVG 图标（文件文本或拉伸的草图实体）变成用于多色打印的分层图标牌——图标、更宽的边沿、无孔底板——或用新的宽度或层数重新构建；给出数量时用副本铺满底板 |
+| `layerling_layer_icon` | 把 SVG 图标（文件文本或拉伸的草图实体）变成用于多色打印的分层图标牌——图标、更宽的边沿、无孔底板——或用新的宽度或层数重新构建；给出数量时用副本铺满底板；`flush` 把各层嵌入最底层，使所有颜色终止于同一个平面（true、false 或 0.2 至 5 毫米的深度） |
 | `layerling_create_qr_code` | 从文字或网址生成二维码，如同形状库中的 {{ui:shape.qrCode}}——可仅二维码、在底板上凸起或雕刻，可设置纠错级别、宽度、高度、静区，也可按需作为孔；模块小于 0.8 mm 时会发出警告 |
 | `layerling_create_sbc_board` | 放置按实际尺寸的 SBC 主板，如同形状库中的 {{ui:shape.sbcBoard}}——Raspberry Pi 5、4、3 B+、Zero 2 W 或 BIGTREETECH Pi，带孔和接口，可设置边缘接口的间隙和位置，也可作为孔来切割外壳 |
+| `layerling_create_fan` | 放置按实际尺寸的风扇，如同形状库中的 {{ui:shape.fan}}——5015 鼓风机或 30 x 10 轴流风扇；进风口、出风口和螺丝孔可以向外延伸以切穿墙壁 |
 | `layerling_reference_image` | 像 {{ui:import.referenceImage}} 一样从图片添加参考图片，或移动、旋转、校准（图片上的两个点及其实际距离）、淡化或锁定参考图片——这是一种永远不会被导出或打印的辅助参考；`trace` 将其暗部或亮部变为立在其上的草图实体 |
 | `layerling_measure_section` | 在吸附到轮廓的两点之间的剖切平面上测量——壁厚、间隙、配合 |
 | `layerling_show_overhangs` | 开启或关闭悬垂剖面线，设置角度，并报告每个实体需要支撑的面积 |
@@ -160,6 +162,7 @@ AI 使用与你相同的功能，走的是与你在编辑器中的操作相同�
 | `layerling_remove_notes` | 按 id 删除备注 |
 | `layerling_inspect_errors` | 显示最后一条消息和最后一个错误，以及本次会话的消息和错误 |
 | `layerling_wrap_around_cylinder` | 把平躺的实体（例如 SVG 或文字）包裹到圆柱上，可向外，也可向内作为雕刻 |
+| `layerling_take_rotation_as_zero` | 把旋转后的网格的当前姿态设为零：实体保持原位，角度为 0 |
 | `layerling_texture_surface` | 给实体加上表面纹理：凹槽、滚花、蜂窝或凸点，用于防滑或美观，之后还可以修改或去除 |
 | `layerling_simplify_mesh` | 减少导入网格的三角面数，可缩减到百分比比例或指定三角面数量 |
 | `layerling_make_exact` | 将导入网格转为精确的 CAD 实体：平面、圆柱面、圆锥面、球面和圆环面成为真正的面，边能干净地倒圆角，STEP 也会带上它们 |
@@ -169,6 +172,7 @@ AI 使用与你相同的功能，走的是与你在编辑器中的操作相同�
 | `layerling_delete_custom_shape` | 移除自定义形状；已插入的实体保留 |
 | `layerling_show_workplane` | 隐藏和显示带网格的平台，例如为了拍摄底部图片（仅改变视图） |
 | `layerling_focus_mode` | 开启或关闭专注模式：隐藏标题栏和页脚以留出更多空间（只影响编辑器框架） |
+| `layerling_detail_level` | 读取或设置编辑器或草图的细节级别：模型周围绘制多少辅助显示（仅改变视图） |
 | `layerling_set_section_view` | 沿一个平面把视图剖开以便查看内部（仅改变视图，不会真正切开任何东西） |
 | `layerling_measurements` | 显示或隐藏卷尺的测量，并列出它们及其长度，并像 [[Q]] 一样隐藏或显示所选对象周围的尺寸，并可为其中一个测量输入长度，像点击其数字一样移动其一端的物体 |
 | `layerling_measure_angle` | 像量角器一样测量角度：三点的顶点处或两个平面之间，并在视图中显示 |
@@ -185,6 +189,7 @@ AI 使用与你相同的功能，走的是与你在编辑器中的操作相同�
 | `layerling_export_drawing` | 制作“2D”导出的工作图：在 ISO 图纸上以 1:1 绘制三个视图，标注总体尺寸并列出圆孔表格，可输出 SVG 文本或 PDF |
 | `layerling_export_mesh` | 按导出窗口写出 STL、3MF、OBJ、SVG（顶视图、轮廓或可见边）或用于激光切割的 DXF文件，所用实体相同；可写到这台电脑上的路径，或写成 base64 |
 | `layerling_save_project` | 把整个可编辑设计保存为 .lyl 文件，写到运行 MCP 服务器的电脑上的路径，不弹出对话框；只有给出 `overwrite` 才会替换已有文件，写入会经过临时文件，编辑器中 Ctrl+S 的目标保持不变 |
+| `layerling_open_project` | 从运行 MCP 服务器的电脑上的路径打开已保存的 .lyl 文件，作为一个新设计，就像你自己打开该文件一样；新设计与文件没有关联，要把修改写回去，请用 `layerling_save_project` 写到同一路径并给出 `overwrite` |
 | `layerling_list_attachments` | 列出附加到设计的文件（名称、类型、大小），与“Attachments”面板显示的一致 |
 | `layerling_get_attachment` | 读取一个附件，以 base64 返回其字节，与面板中的“Download”相同 |
 | `layerling_add_attachment` | 附加一个以 base64 给出的文件，并经过面板的检查；已附加的同名文件只有在 `replace` 时才会被覆盖 |

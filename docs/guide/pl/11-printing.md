@@ -79,6 +79,17 @@ Przy kilku drukarkach wybierz najpierw w {{ui:workspace.printer}} tę, na które
 
 Od tej pory nowe użycia zaczynają od luzu zamiast od wbudowanej wartości: {{ui:lid.gap}} i {{ui:lid.hingePinPlay}} w narzędziu {{ui:editor.tool.lid}}, luz nowego kształtu {{ui:shape.dovetail}} i {{ui:shape.snapFit}}, {{ui:prop.clearance}} nowej nakrętki lub otworu gwintowanego (podwójny luz, bo to miejsce na całej średnicy) oraz {{ui:clearance.threshold}} w {{ui:editor.tool.clearance}}. Tak samo {{ui:split.connectorClearance}} kołków, czopów i jaskółczych ogonów w {{ui:editor.tool.split}}. Dopóki takie pole ma tę wartość, napis „{{ui:printerPlay.fromFitTest}}” obok mówi, skąd pochodzi liczba. Zawias drukowany w jednym kawałku i przeguby narzędzia {{ui:editor.tool.flexi}} zachowują swoje 0,4 mm: drukowane w jednym kawałku, ich szczeliny muszą pozostać otwarte także między warstwami, a tego sworzeń wydrukowany osobno nie mierzy. Miejsce na wciśnięcie magnesu lub klucza Gridfinity oraz miejsce na kupione gniazdo lub płytkę także zachowują własne wartości. Bryły, które już są w projekcie, nigdy się nie zmieniają, podobnie jak projekt, który otwierasz.
 
+## Sprawdzanie wymiarów na papierze
+
+Część, która ma do czegoś pasować - wentylatora, płytki, rozstawu otworów - szybko sprawdzisz na papierze przed drukiem 3D. Kartka zajmuje kilka sekund; wydruk próbny kosztuje czas i filament, a gdy wymiar się nie zgadza, trzeba go powtórzyć.
+
+1. Zaznacz część, kliknij {{ui:editor.export}} i wybierz format **2D**, a potem PDF.
+2. W polu {{ui:export.drawing.paper}} wybierz papier w drukarce, A4, A3, US Letter lub US Tabloid. Większy rysunek zostanie podzielony na kilka stron.
+3. Drukuj w skali 100 % lub w „rzeczywistym rozmiarze”, nigdy „dopasuj do strony”.
+4. Zmierz linijką jeden wymiar gabarytowy na kartce. Jeśli zgadza się z podaną liczbą, wydruk jest w skali: połóż na nim prawdziwą część.
+
+Papier nie pokaże odchyłek drukarki 3D: plastik nieco się kurczy, a otwory wychodzą ciaśniejsze. Pokazuje to test pasowania powyżej. Więcej o rysunku w rozdziale [Pliki, zapis i udostępnianie](chapter:files-and-saving).
+
 ## Sprawdzanie wydruku
 
 {{ui:editor.tool.printCheck}} obok {{ui:editor.tool.clearance}} w grupie {{ui:editor.group.combine}} przegląda zaznaczone obiekty, a gdy nic nie jest zaznaczone, wszystkie widoczne, i w jednym oknie mówi, co poszłoby źle przy drukowaniu. Każdy z pięciu wierszy jest zielony, gdy nic nie znalazł, i pomarańczowy z informacją co i gdzie, gdy coś znalazł:
@@ -92,6 +103,14 @@ Od tej pory nowe użycia zaczynają od luzu zamiast od wbudowanej wartości: {{u
 ![Tacka, której prawa ścianka ma tylko 0,6 mm: Sprawdź wydruk maluje ją na czerwono i podaje w oknie.](shot:print-check)
 
 {{ui:printCheck.show}} przy wierszu przenosi tam kamerę; zaznacza części w powietrzu, te z małym stykiem i otwarte siatki, a przy nawisach włącza **Pokaż nawisy**. Bryły, które się nakładają, są sprawdzane połączone, tak jak łączy je slicer. Jeśli zmienisz projekt, gdy okno jest otwarte, pojawi się {{ui:printCheck.stale}}; kliknij to albo {{ui:printCheck.checkAgain}}. [[Esc]] zamyka okno. W projekcie nic się nie zmienia. AI wykonuje to samo sprawdzenie przez `layerling_check_print`. Okno tylko sprawdza, niczego nie drukuje ani nie zapisuje: aby drukować, wyeksportuj projekt do slicera przyciskiem {{ui:editor.export}} w grupie {{ui:editor.group.file}}. {{ui:printCheck.openExport}} w oknie zamyka sprawdzanie i otwiera eksport.
+
+### Analiza wydruku i widok warstw
+
+{{ui:editor.tool.layerCheck}} obok {{ui:editor.tool.printCheck}} idzie o krok dalej: tnie zaznaczone obiekty (albo wszystkie widoczne) na warstwy, które układa twoja drukarka, i porównuje każdą warstwę z tą pod nią, wszystko za jednym razem. Nie musisz przeglądać warstw, żeby znaleźć problem: okno wymienia swoje **wyniki**, najpierw problemy (czerwone), potem wskazówki (żółte), od dołu do góry. Każdy wiersz mówi, gdzie i jak poważnie, na przykład „Warstwy 83–97 (16,6–19,4 mm): Nawis 62°, 1,4 cm²”, i co pomaga. Kolejne warstwy z tym samym problemem w tym samym miejscu tworzą jeden wynik.
+
+Zanim przejdzie do warstw, sprawdza całość: część, która wchodzi w stół drukarki ({{ui:finding.kind.inBed}}; warstwy poniżej płaszczyzny roboczej nie są liczone), część unoszącą się nad nim, niezamkniętą siatkę, część większą niż drukarka wybrana w ustawieniach. Potem warstwa po warstwie: {{ui:finding.kind.unsupported}} (miejsce, które zaczyna się bez niczego pod spodem, jak ramiona litery T), {{ui:finding.kind.overhang}} (wskazówka od 45°, problem od 60° od pionu), {{ui:finding.kind.bridge}} (wskazówka od rozpiętości 10 mm), {{ui:finding.kind.thinWall}} (poniżej dwóch ścieżek dyszy), {{ui:finding.kind.smallIsland}} (osobne miejsce poniżej 2 mm², które ciągnie się przez 2 mm lub więcej) i {{ui:finding.kind.adhesion}}. U góry wybierz {{ui:layerCheck.layerHeight}} i {{ui:layerCheck.nozzle}}; limity są w {{ui:layerCheck.advanced}}. Miejsca poniżej 0,05 mm², jak czubek albo ostatnia warstwa, nie są oceniane. Sprawdzanie działa w tle z paskiem postępu; {{ui:layerCheck.stop}} od razu je przerywa.
+
+Kliknij wynik: **widok warstw** otwiera się na pierwszej warstwie, której dotyczy, kamera przechodzi w to miejsce, miejsce jest malowane na warstwie na czerwono lub żółto, a warstwy pod nią pozostają widoczne. Suwak stoi pionowo obok profilu przekroju na całej wysokości; znaczniki z boku pokazują, gdzie są wyniki, a kliknięcie znacznika przenosi do niego. Na suwaku [[↑]] i [[↓]] przesuwają o jedną warstwę, [[Page Up]] i [[Page Down]] o dziesięć, [[Home]] i [[End]] przechodzą na końce, [[Space]] odtwarza, [[N]] przechodzi do następnego wyniku, a [[Shift+N]] do poprzedniego. {{ui:layerCheck.view.mode}} pokazuje {{ui:layerCheck.view.mode.upTo}}, {{ui:layerCheck.view.mode.only}} albo {{ui:layerCheck.view.mode.range}}; warstwy, które dopiero przyjdą, mogą być widoczne jako blady cień. Tam, gdzie Layerling ma narzędzie na dany wynik, otwiera je przycisk: {{ui:finding.action.dropToPlate}}, {{ui:finding.action.layFlat}} albo {{ui:finding.action.supportRib}}. Po zmianie lista jest oznaczona jako nieaktualna, dopóki nie klikniesz {{ui:layerCheck.checkAgain}}. Zamknięcie okna przywraca kamerę tam, gdzie była. To nie jest podgląd slicera: podpory, wypełnienie i czas druku podaje twój slicer.
 
 ## Gdy wszystko gotowe
 

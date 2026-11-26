@@ -12,7 +12,7 @@ layerling 可以像普通程序一样安装。安装后它会有自己的图标�
 - **Chrome 和 Edge：** 点击地址栏右侧的安装图标，或在浏览器菜单中选择“安装为应用”。
 - **Mac 上的 Safari：** “文件”菜单 →“添加到程序坞”。
 - **iPhone 和 iPad 上的 Safari：** 分享图标 →“添加到主屏幕”。
-- **Firefox：** 无法安装应用。layerling 仍可在其标签页中离线启动。
+- **Firefox：** 在 Windows 上，从版本 143 起，点击地址栏右侧的“将标签页添加到任务栏”图标；隐私窗口中没有该图标。你的设计保持不变。在其他系统上，layerling 仍可在标签页中离线启动。
 
 起始页上的提示可用 {{ui:installHint.dismiss}} 关闭。在 Chrome 或 Edge 中再次启动已安装的应用时，会把已打开的窗口带到前台，而不是再开一个。
 
@@ -38,11 +38,11 @@ layerling 是自由软件（AGPL-3.0），可以运行在你自己的电脑或�
 - **Docker：** 适用于 NAS 设备和家用服务器，无需安装 Node.js。每个版本都提供现成镜像 `henmedia/layerling`（Docker Hub，也在 `ghcr.io/henmedia/layerling`），支持 amd64 和 arm64；`docker run -d -p 3000:3000 -v layerling-thumbnails:/app/.codex/project-thumbnails henmedia/layerling:latest` 可启动它，在 NAS 上可在容器管理器的镜像仓库中搜索。卷 `layerling-thumbnails` 能让起始页的预览图在更新后保留；没有它，每次重新创建容器后预览图都会缺失，直到你打开相应设计。
 - **静态导出：** 结果是普通文件，任何 Web 服务器都能提供。它们应位于地址根目录（`https://layerling.example.com/` 或 `http://192.168.0.5:8080/`），不能放在子文件夹中，也不能从磁盘直接打开；具体步骤见 README。如果 `index.html` 旁边有可写文件夹 `store`，并且服务器装有 PHP，它还会成为设计的共享存储。
 
-用于 AI 助手的 MCP 桥接只存在于开发服务器中，见[用 AI 构建](chapter:ai-with-mcp)。
+用于 AI 助手的 MCP 桥接只存在于开发服务器中，或存在于你自己托管并开启了它的副本中，见[用 AI 构建](chapter:ai-with-mcp)。
 
 ## 帮助与反馈
 
-- 在编辑器中，{{ui:editor.group.help}} 区域包含 {{ui:editor.guide}}，其中有最重要的操作和[键盘快捷键](chapter:shortcuts)总览。快速指南的每一节都有一个问号，点击可跳转到此处对应的章节。
+- 在编辑器中，{{ui:editor.group.help}} 区域包含 {{ui:editor.guide}}，其中有最重要的操作和[键盘快捷键](chapter:shortcuts)总览。快速指南的每一节都有一个问号，点击可跳转到此处对应的章节。快速指南顶部的 {{ui:guide.fullGuide}} 会打开本指南；命令搜索（[[Ctrl]]+[[K]]）也能找到它。
 
 ![编辑器中的快速指南。顶部列出他人的视频，每一节都带有问号。](shot:quick-guide)
 

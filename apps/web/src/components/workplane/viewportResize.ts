@@ -4,10 +4,10 @@ import * as THREE from "three";
 import { type ShapeInspectorUpdateOptions } from "@/components/workplane/ShapeInspector";
 import { cadModifierPrimitiveForBakedShape, cadTransformFromMatrix, cadTransformToMatrix } from "@/lib/cadBakeMetadata";
 import { starSettingsForSize } from "@/lib/starGeometry";
-import { gridfinityFootprintPatch } from "@/lib/gridfinityGeometry";
+import { gridfinityFootprintPatch, normalizeGridfinityOutline, normalizeGridfinityType } from "@/lib/gridfinityGeometry";
 import { pulleyFootprint, pulleyFromSize, pulleySizedPatch } from "@/lib/pulleyGeometry";
 import { type SelectionFrame } from "@/lib/liftGeometry";
-import type { EdgeSnapTarget, SnapBox } from "@/lib/objectSnap";
+import { edgeSnapGuide, snapResizeEdge, type EdgeSnapTarget, type MoveWallSnap, type ObjectSnapGuide, type SnapBox } from "@/lib/objectSnap";
 import { scaledHorizontalShapePatch, worldBoxOfShapes } from "@/lib/scaleByPercent";
 import { POSITION_TYPED_LIMIT } from "@/lib/workplaneSettings";
 import { heightPatchKeepingBase, shapeIsTurned } from "@/lib/rotationPivot";
@@ -27,6 +27,20 @@ export type ResizeAnchorMemory = {
   handleKey: string;
   signs: ResizeSigns;
   pressedY: "top" | "bottom" | null;
+};
+/**
+ * One dragged side of a side or corner handle: it stops at the edges and middles of other bodies and at the walls it
+ * runs into. `frameAxis` is the selection's own axis the side moves along, `worldAxis` the scene axis it lies on and
+ * `worldDirection` the way the side moves along it as the body grows; `movingFrom`/`movingTo` its stretch across, for a
+ * side handle's guide line.
+ */
+export type ResizeSnapSide = {
+  frameAxis: "x" | "z";
+  worldAxis: "x" | "z";
+  worldDirection: 1 | -1;
+  targets: EdgeSnapTarget[];
+  movingFrom: number;
+  movingTo: number;
 };
 export type TransformDragState = {
   id: string;
@@ -51,25 +65,17 @@ export type TransformDragState = {
   liftStartPoint?: THREE.Vector3;
   liftHandlePoint?: THREE.Vector3;
   liftStartValue?: number;
+  /** A lift or slide arrow along the shape's own axes (J held, or the setting): whole grid steps from the start. */
+  alongShape?: boolean;
   /** Alt was held when a lift began: the shapes stand in for a copy that is made on release (#865). */
   duplicate?: { standIns: THREE.Object3D[] };
-  /** An X or Y arrow on the flat workplane (Discussion #1434): the footprints it snaps to, as a drag does; guideY: where its lines are drawn. */
-  slideSnap?: { moving: SnapBox; targets: SnapBox[]; guideY: number };
   /**
-   * A side handle on the flat workplane (Discussion #1647): the dragged side stops at the edges and middles of other
-   * bodies and at the walls it runs into. `frameAxis` is the selection's own axis the handle pulls along, `worldAxis`
-   * the scene axis it lies on and `worldDirection` the way the dragged side moves along it as the body grows;
-   * `movingFrom`/`movingTo` its stretch across, for the guide line.
+   * An X or Y arrow on the flat workplane (Discussion #1434): the footprints and walls it snaps to, as a drag does;
+   * guideY: where its lines are drawn.
    */
-  resizeSnap?: {
-    frameAxis: "x" | "z";
-    worldAxis: "x" | "z";
-    worldDirection: 1 | -1;
-    targets: EdgeSnapTarget[];
-    movingFrom: number;
-    movingTo: number;
-    guideY: number;
-  };
+  slideSnap?: { moving: SnapBox; targets: SnapBox[]; walls?: MoveWallSnap; guideY: number };
+  /** A side or corner handle on the flat workplane (Discussion #1647): one side for a side handle, two for a corner; guideY: where its lines are drawn. */
+  resizeSnap?: { sides: ResizeSnapSide[]; guideY: number };
   rotationAxisVector?: THREE.Vector3;
   rotationPivot?: THREE.Vector3;
   /** A pivot the user set; the shapes then move around it instead of spinning in place. */
@@ -289,10 +295,10 @@ export function resizeShapeFromFrameHandle(
   altKey: boolean,
   step: number,
   maxSize: number,
-  freeAxis?: "x" | "z",
+  freeAxes: readonly ("x" | "z")[] = [],
 ): Partial<WorkplaneShape> {
   // A GT2 pulley (Discussion #1319) takes the size as teeth and belt width.
-  return pulleySizedPatch(transform.startShape, resizeShapeFromFrameHandleBox(transform, point, handleKey, shiftKey, altKey, step, maxSize, freeAxis));
+  return pulleySizedPatch(transform.startShape, resizeShapeFromFrameHandleBox(transform, point, handleKey, shiftKey, altKey, step, maxSize, freeAxes));
 }
 
 function resizeShapeFromFrameHandleBox(
@@ -303,7 +309,7 @@ function resizeShapeFromFrameHandleBox(
   altKey: boolean,
   step: number,
   maxSize: number,
-  freeAxis?: "x" | "z",
+  freeAxes: readonly ("x" | "z")[] = [],
 ): Partial<WorkplaneShape> {
   const shape = transform.startShape;
   const frame = transform.selectionFrame;
@@ -323,8 +329,8 @@ function resizeShapeFromFrameHandleBox(
     return { size: snapDimension(Math.abs(raw), free ? 0 : step, MIN_SHAPE_SIZE, maxSize), flipped: raw < 0 && !altKey };
   };
 
-  const resizedX = axisResize(width, localDelta.x, signs.x, freeAxis === "x");
-  const resizedZ = axisResize(depth, localDelta.z, signs.z, freeAxis === "z");
+  const resizedX = axisResize(width, localDelta.x, signs.x, freeAxes.includes("x"));
+  const resizedZ = axisResize(depth, localDelta.z, signs.z, freeAxes.includes("z"));
   let nextWidth = resizedX.size;
   let nextDepth = resizedZ.size;
   let flipX = resizedX.flipped;
@@ -334,13 +340,15 @@ function resizeShapeFromFrameHandleBox(
   // drives the one shared diameter instead of stretching width and depth
   // independently into an ellipse.
   // A Hirth joint too: stretched, its teeth no longer interlock all round (#1016).
-  if ((shape.kind === "cylinder" || shape.kind === "star" || shape.kind === "hirth" || shape.kind === "pulley" || shape.kind === "finishingWasher") && (signs.x || signs.z)) {
+  // Not for a body lying on its side (Discussion #1838): its footprint is then its length and one diameter (see below).
+  const lying = Boolean(frame.lying);
+  if (!lying && (shape.kind === "cylinder" || shape.kind === "star" || shape.kind === "hirth" || shape.kind === "pulley" || shape.kind === "finishingWasher") && (signs.x || signs.z)) {
     const diameter = signs.x && signs.z ? (nextWidth + nextDepth) / 2 : signs.x ? nextWidth : nextDepth;
     nextWidth = diameter;
     nextDepth = diameter;
   }
   // A GT2 pulley is whole teeth: its width is rounded to them before the middle is placed.
-  if (shape.kind === "pulley" && (signs.x || signs.z)) {
+  if (!lying && shape.kind === "pulley" && (signs.x || signs.z)) {
     nextWidth = pulleyFootprint({ ...shape, ...pulleyFromSize(shape, { width: nextWidth }) }).width;
     nextDepth = nextWidth;
   }
@@ -358,7 +366,7 @@ function resizeShapeFromFrameHandleBox(
   }
   // A Gridfinity bin or baseplate is whole grid units (a tray's size is free): the box is rounded to them before the
   // middle is placed, so the side that is not dragged stays where it is.
-  if (shape.kind === "gridfinity" && (signs.x || signs.z)) {
+  if (!lying && shape.kind === "gridfinity" && (signs.x || signs.z)) {
     const footprint = gridfinityFootprintPatch({ ...shape, width: nextWidth, depth: nextDepth });
     nextWidth = footprint.width;
     nextDepth = footprint.depth;
@@ -391,6 +399,22 @@ function resizeShapeFromFrameHandleBox(
       height: dims.height,
       size: resizedShapeSize(dims.width, dims.depth),
     };
+  }
+  // A body lying on its side on a level workplane (Discussion #1838): its handles stand upright on the workplane,
+  // so each size goes to the body's own measure that runs along the handle's axis, as for a turned body of a
+  // selection (#1645). The side that is not dragged and the bottom stay where they are.
+  if (lying) {
+    return turnedItemScalePatch(
+      shape,
+      frame,
+      nextWidth / Math.max(MIN_SHAPE_SIZE, width),
+      nextDepth / Math.max(MIN_SHAPE_SIZE, depth),
+      uniformScale,
+      nextCenter,
+      heightAnchorY,
+      // Rounded, for the frame is measured from the turned body and 38 came out as 37.99999999999999.
+      (size) => Math.round(clamp(size, MIN_SHAPE_SIZE, maxSize) * 1e6) / 1e6,
+    );
   }
   if (shapeHasTaper(shape)) {
     const scaleX = nextWidth / Math.max(MIN_SHAPE_SIZE, width);
@@ -596,6 +620,24 @@ function resizeShapeAlongFrameNormalBox(
     x: cleanNearZero(nextCenter.x, 0.0005),
     z: cleanNearZero(nextCenter.z, 0.0005),
   };
+  // A body lying on its side (Discussion #1838): the height handle pulls one of its sideways measures. A round body
+  // keeps its diameter round, and a cone, a star or a tapered body the settings that follow its width and length.
+  if (frame.lying && dimensionAxis.axis !== "height") {
+    const round = keepsRoundFootprint(shape);
+    const scaleX = dimensionAxis.axis === "width" || round ? Math.abs(scale) : 1;
+    const scaleZ = dimensionAxis.axis === "depth" || round ? Math.abs(scale) : 1;
+    // The frame is measured from the turned body: without rounding a height of 21 came out as 20.999999999999993.
+    const tidy = (value: number) => Math.round(value * 1e6) / 1e6;
+    const sized = scaledHorizontalShapePatch(shape, scaleX, scaleZ);
+    return {
+      ...patch,
+      ...sized,
+      ...(typeof sized.width === "number" ? { width: tidy(sized.width) } : {}),
+      ...(typeof sized.depth === "number" ? { depth: tidy(sized.depth) } : {}),
+      ...(typeof sized.size === "number" ? { size: tidy(sized.size) } : {}),
+      elevation: cleanNearZero(tidy(nextCenter.y - shape.height / 2), 0.0005),
+    };
+  }
   if (dimensionAxis.axis === "width") {
     patch.width = Math.max(MIN_SHAPE_SIZE, shapeWidth(shape) * Math.abs(scale));
     patch.size = resizedShapeSize(patch.width, shapeDepth(shape));
@@ -619,7 +661,7 @@ export function resizeSelectionFromHandle(
   altKey: boolean,
   step: number,
   maxSize: number,
-  freeAxis?: "x" | "z",
+  freeAxes: readonly ("x" | "z")[] = [],
 ) {
   const frame = transform.selectionFrame;
   const localDelta = transform.scaleStartPoint ? frameLocalDelta(frame, transform.scaleStartPoint, point) : new THREE.Vector3();
@@ -646,8 +688,8 @@ export function resizeSelectionFromHandle(
     };
   };
 
-  let nextX = axisResize(frame.width, localDelta.x, signs.x, freeAxis === "x");
-  let nextZ = axisResize(frame.depth, localDelta.z, signs.z, freeAxis === "z");
+  let nextX = axisResize(frame.width, localDelta.x, signs.x, freeAxes.includes("x"));
+  let nextZ = axisResize(frame.depth, localDelta.z, signs.z, freeAxes.includes("z"));
   let uniformScale = 1;
   if (shiftKey && signs.x && signs.z) {
     const scale = proportionalResizeScale(frame.width, frame.depth, nextX.size, nextZ.size);
@@ -730,6 +772,76 @@ export function scaleSelectionItems(
 function keepsRoundFootprint(shape: WorkplaneShape) {
   if (shape.kind === "gear") return shape.gearType !== "rack" && (shape.gearProfile === "involute" || shape.gearProfile === "round");
   return shape.kind === "cylinder" || shape.kind === "star" || shape.kind === "knurl" || shape.kind === "hirth" || shape.kind === "pulley" || shape.kind === "finishingWasher";
+}
+
+/**
+ * Whether a body keeps both sizes a corner handle pulls its sides to: not one that keeps one diameter, a thread, a
+ * Gridfinity bin or a baseplate in whole units, or a text whose box can be rebuilt round its letters (only a straight,
+ * stretched one fills its box), as gridfinityFootprintPatch and textFitScale decide.
+ */
+export function cornerKeepsBothSides(shape: WorkplaneShape) {
+  if (keepsRoundFootprint(shape) || shape.kind === "thread") return false;
+  if (shape.kind === "gridfinity") {
+    const type = normalizeGridfinityType(shape.gridfinityType);
+    return type === "tray" || (type === "baseplate" && Boolean(normalizeGridfinityOutline(shape.gridfinityOutline)));
+  }
+  if (shape.kind === "text") return Boolean(shape.textStretch) && !shape.textCurved;
+  return true;
+}
+
+/**
+ * Where the dragged sides of a side or corner handle snap to (Discussion #1647), each on its own along its frame axis:
+ * the axes are square to each other, so pulling one side does not move the other. `pull` is the pointer's way from
+ * where the drag began, `shape` the body when it is resized on its own. Gives the shift to add to the pointer, the axes
+ * whose size goes off the grid, and a guide for each snapped side.
+ */
+export function snapResizeSides(
+  snaps: readonly ResizeSnapSide[],
+  frame: SelectionFrame,
+  signs: ResizeSigns,
+  pull: THREE.Vector3 | null,
+  anchorPoint: THREE.Vector3,
+  altKey: boolean,
+  step: number,
+  maxSize: number,
+  threshold: number,
+  shape?: WorkplaneShape,
+) {
+  const factor = altKey ? 2 : 1;
+  const sides = snaps.map((side) => {
+    const axisVector = side.frameAxis === "x" ? frame.xAxis : frame.zAxis;
+    const sign = side.frameAxis === "x" ? signs.x : signs.z;
+    const current = side.frameAxis === "x" ? frame.width : frame.depth;
+    const delta = pull ? pull.dot(axisVector) : 0;
+    const rawSize = current + sign * delta * factor;
+    const hit = rawSize > 0
+      ? snapResizeEdge({ anchor: anchorPoint[side.worldAxis], direction: side.worldDirection, size: rawSize, symmetric: altKey }, side.targets, threshold, MIN_SHAPE_SIZE)
+      : null;
+    // On a corner the other side's guide reaches over this side where the resize lands it: on the grid unless it snapped,
+    // within the size limit, past its anchor too as the body flips, and a Gridfinity tray or outlined baseplate on its own
+    // within its own limits, as resizeShapeFromFrameHandle keeps it.
+    const limited = snapDimension(Math.abs(hit ? hit.size : rawSize), hit ? 0 : step, MIN_SHAPE_SIZE, maxSize);
+    const dimension = side.frameAxis === "x" ? "width" : "depth";
+    const kept = shape?.kind === "gridfinity" ? gridfinityFootprintPatch({ ...shape, [dimension]: limited })[dimension] : limited;
+    const size = (rawSize < 0 ? -1 : 1) * kept;
+    return { side, axisVector, hit, size, along: hit ? (hit.size - current) / (sign * factor) - delta : 0 };
+  });
+  const shift = new THREE.Vector3();
+  const freeAxes: ("x" | "z")[] = [];
+  const guides: ObjectSnapGuide[] = [];
+  for (const { side, axisVector, hit, along } of sides) {
+    if (!hit) continue;
+    shift.addScaledVector(axisVector, along);
+    freeAxes.push(side.frameAxis);
+    const other = sides.find((candidate) => candidate.side !== side);
+    let reach = [side.movingFrom, side.movingTo];
+    if (other) {
+      const at = anchorPoint[other.side.worldAxis];
+      reach = altKey ? [at - other.size / 2, at + other.size / 2] : [at, at + other.side.worldDirection * other.size];
+    }
+    guides.push(edgeSnapGuide(side.worldAxis, hit.target, Math.min(...reach), Math.max(...reach)));
+  }
+  return { shift, freeAxes, guides };
 }
 
 /**

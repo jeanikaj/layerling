@@ -98,6 +98,7 @@ AI používá stejné funkce a stejné zpracování příkazů jako ruční ovl�
 | `layerling_place_on_face` | umístí objekty na plochu jiného tělesa, i šikmou, jako klávesa C |
 | `layerling_perforate_face` | vytvoří rastr otvorů na rovinné ploše nebo dokola na stěně válce, trubky či díry; výřezy zůstanou sloučené s tělesem |
 | `layerling_thread_insert` | vytvoří otvor pro zalisovací závitovou vložku (M2 až M8, 1/4-20 nebo vlastní velikost) na rovinné ploše nebo na vnější stěně válce či trubky poté, co ověří, že stěna vedle otvoru i hloubka za ním stačí; výřez zůstane sloučený s tělesem |
+| `layerling_magnet_pocket` | vyřízne kapsu na kulatý magnet (2 × 1 až 12 × 3 mm nebo vlastní velikost) s užší jamkou na lepidlo pod ní do rovné plochy nebo vnější stěny válce či trubky, po stejné kontrole, a stejnou kapsu naproti v přiléhajícím dílu; každá zůstane otvorem seskupeným se svým dílem |
 | `layerling_sweep_sketch` | protáhne obdélníkový nebo kruhový průřez podél dráhy z bodů jako jedno přesné těleso; uzavřená dráha dá prstenec |
 | `layerling_push_face` | vysune rovinnou plochu ven nebo do ní vyřízne kapsu, s odsazením od okraje a poloměrem rohů; nový díl je těleso z náčrtu sloučené s tělesem |
 | `layerling_paint` | obarví části tělesa vlastními barvami pro tisk více barvami (Malování): vyplnit plochu k ostrým hranám, kulatá skvrna nebo laso v rovinném pohledu; gumovat, smazat vše; uloží se s tělesem a do 3MF se zapíše jako obarvené plochy |
@@ -132,11 +133,12 @@ AI používá stejné funkce a stejné zpracování příkazů jako ruční ovl�
 | `layerling_delete_faces` | smaže plochy a uzavře mezeru |
 | `layerling_array_objects` | opakuje objekty v řadě, v mřížce nebo po kružnici |
 | `layerling_bundle_objects` | seskupí objekty jako Ctrl+B: společný pohyb, zachované barvy a typy, samostatná tělesa při exportu |
-| `layerling_layer_text` | vytvoří vrstvenou jmenovku: písmena, širší okraje a souvislou podložku; podporuje otvor na kroužek, rohy po vrstvách, úpravu hran písmen a seznam jmen |
+| `layerling_layer_text` | vytvoří vrstvenou jmenovku: písmena, širší okraje a souvislou podložku; podporuje otvor na kroužek, rohy po vrstvách, úpravu hran písmen a seznam jmen; `flush` zapustí vrstvy do spodní, takže všechny barvy končí v jedné rovné ploše (true, false nebo hloubka 0,2 až 5 mm) |
 | `layerling_text_block` | vytvoří textový blok: text se stane prvním z několika řádků, každý samostatným textem pod tím nad ním, zarovnaných vlevo, na střed nebo vpravo, každý řádek stejně velký nebo menší |
-| `layerling_layer_icon` | vytvoří vrstvený štítek ze SVG nebo vysunutého náčrtu, s rozšířenými okraji a souvislou podložkou; umožní změnit šířku a vrstvy i rozmístit více kopií na podložku |
+| `layerling_layer_icon` | vytvoří vrstvený štítek ze SVG nebo vysunutého náčrtu, s rozšířenými okraji a souvislou podložkou; umožní změnit šířku a vrstvy i rozmístit více kopií na podložku; `flush` zapustí vrstvy do spodní, takže všechny barvy končí v jedné rovné ploše (true, false nebo hloubka 0,2 až 5 mm) |
 | `layerling_create_qr_code` | vytvoří z textu nebo webové adresy QR kód jako {{ui:shape.qrCode}} v knihovně tvarů – samotný kód, vystouplý na destičce nebo vyrytý, s opravou chyb, šířkou, výškou, klidovou zónou a na přání jako otvor; varuje, když modul klesne pod 0,8 mm |
 | `layerling_create_sbc_board` | vloží desku SBC ve skutečné velikosti jako {{ui:shape.sbcBoard}} v knihovně tvarů – Raspberry Pi 5, 4, 3 B+, Zero 2 W nebo BIGTREETECH Pi, s otvory a konektory, vůlí kolem okrajových konektorů, polohou a jako výřez pro krabičku |
+| `layerling_create_fan` | vloží ventilátor ve skutečné velikosti jako {{ui:shape.fan}} v knihovně tvarů – radiální 5015 nebo axiální 30 x 10; sání, výfuk a otvory pro šrouby mohou vyčnívat a prořezat stěnu |
 | `layerling_reference_image` | přidá referenční obrázek z obrázku jako {{ui:import.referenceImage}}, nebo jeden posune, otočí, kalibruje (dva body obrázku a jejich skutečná vzdálenost), zprůhlední nebo zamkne - pomůcka, která se nikdy neexportuje ani netiskne; `trace` udělá z tmavé nebo světlé části těleso náčrtu, které na něm stojí |
 | `layerling_measure_section` | změří tloušťku stěny, mezeru či vůli v řezu mezi body přichycenými k obrysu |
 | `layerling_show_overhangs` | zapne šrafování převisů, nastaví úhel a oznámí plochu vyžadující podpěry pro každé těleso |
@@ -156,6 +158,7 @@ AI používá stejné funkce a stejné zpracování příkazů jako ruční ovl�
 | `layerling_remove_notes` | smaže poznámky podle id |
 | `layerling_inspect_errors` | přečte poslední hlášení a chybu i zprávy z celé relace |
 | `layerling_wrap_around_cylinder` | obtočí rovinné těleso, SVG nebo text kolem válce jako reliéf či rytinu |
+| `layerling_take_rotation_as_zero` | vezme současné natočení sítě jako 0: těleso zůstane stát, jeho úhly jsou 0 |
 | `layerling_texture_surface` | nanese na těleso povrchovou texturu: drážky, vroubkování, plástev nebo výstupky; později ji také změní nebo odebere |
 | `layerling_simplify_mesh` | sníží počet trojúhelníků sítě na zadané procento nebo počet |
 | `layerling_make_exact` | převede importovanou síť na přesné CAD těleso: roviny, válce, kužele, koule a toroidy se stanou skutečnými plochami, hrany se čistě zaoblí a STEP je ponese |
@@ -165,6 +168,7 @@ AI používá stejné funkce a stejné zpracování příkazů jako ruční ovl�
 | `layerling_delete_custom_shape` | odstraní uložený vlastní tvar; vložená tělesa zůstanou |
 | `layerling_show_workplane` | skryje nebo zobrazí podložku s mřížkou, pouze změna pohledu |
 | `layerling_focus_mode` | zapne a vypne režim soustředění: skryje titulní řádek a zápatí pro více místa (jen rámec editoru) |
+| `layerling_detail_level` | přečte nebo nastaví úroveň detailů editoru či náčrtu: kolik pomůcek se kolem modelu kreslí (jen zobrazení) |
 | `layerling_set_section_view` | zapne pohled v řezu, aniž by skutečně rozdělil tělesa |
 | `layerling_measurements` | zobrazí nebo skryje měření měřicího nástroje a vypíše je s jejich délkami, a skryje nebo zobrazí rozměry kolem výběru jako [[Q]], a zadá délku pro jedno z nich, což posune těleso na jeho konci jako kliknutí na číslo |
 | `layerling_measure_angle` | měří úhel jako úhloměr: ve vrcholu ze tří bodů nebo mezi dvěma rovnými plochami, a ukáže ho v pohledu |
@@ -181,6 +185,7 @@ AI používá stejné funkce a stejné zpracování příkazů jako ruční ovl�
 | `layerling_export_drawing` | vytvoří technický výkres tří pohledů v měřítku 1:1 na listu ISO s celkovými rozměry a tabulkou kruhových otvorů, jako SVG nebo PDF |
 | `layerling_export_mesh` | zapíše soubor exportního okna jako STL, 3MF, OBJ, SVG (pohled shora, půdorys nebo viditelné hrany) nebo DXF pro laserové řezání ze stejných těles; na cestu v tomto počítači nebo jako base64 |
 | `layerling_save_project` | uloží celý upravitelný návrh jako soubor .lyl na cestu v počítači, kde běží server MCP, bez dialogu; existující soubor se nahradí jen s `overwrite`, zapisuje se přes dočasný soubor a cíl Ctrl+S v editoru zůstává, jaký byl |
+| `layerling_open_project` | otevře uložený soubor .lyl z cesty v počítači, kde běží server MCP, jako nový návrh, stejně jako když soubor otevřete sami; nový návrh není se souborem spojený, změny zapíšete zpět pomocí `layerling_save_project` na stejnou cestu s `overwrite` |
 | `layerling_list_attachments` | vypíše soubory připojené k návrhu (název, typ, velikost), jak je ukazuje panel Přílohy |
 | `layerling_get_attachment` | přečte jeden připojený soubor, jeho bajty jako base64, jako Stáhnout v panelu |
 | `layerling_add_attachment` | připojí soubor zadaný jako base64, s kontrolami panelu; už připojený název přepíše jen s `replace` |

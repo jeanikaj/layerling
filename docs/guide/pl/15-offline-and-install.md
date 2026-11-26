@@ -12,7 +12,7 @@ Jeśli Twoja przeglądarka to potrafi, na stronie startowej pojawia się wskazó
 - **Chrome i Edge:** kliknij ikonę instalacji po prawej stronie paska adresu albo wybierz w menu przeglądarki „Zainstaluj jako aplikację”.
 - **Safari na Macu:** menu „Plik”, potem „Dodaj do Docka”.
 - **Safari na iPhonie i iPadzie:** ikona Udostępnij, potem „Do ekranu początkowego”.
-- **Firefox:** nie instaluje aplikacji. layerling i tak uruchamia się tam offline w karcie.
+- **Firefox:** w systemie Windows od wersji 143 kliknij ikonę „Dodaj kartę do paska zadań” po prawej stronie paska adresu; w oknie prywatnym jej nie ma. Twoje projekty pozostają bez zmian. Gdzie indziej layerling uruchamia się offline w karcie.
 
 Wskazówkę na stronie startowej zamkniesz przyciskiem {{ui:installHint.dismiss}}. Ponowne uruchomienie zainstalowanej aplikacji w Chrome albo Edge przenosi na wierzch otwarte okno, zamiast otwierać kolejne.
 
@@ -38,11 +38,11 @@ layerling to wolne oprogramowanie (AGPL-3.0) i można go uruchomić na własnym 
 - **Docker:** dla urządzeń NAS i serwerów domowych, bez potrzeby instalowania Node.js. Każde wydanie jest dostępne jako gotowy obraz `henmedia/layerling` na Docker Hub (także `ghcr.io/henmedia/layerling`) dla amd64 i arm64. `docker run -d -p 3000:3000 -v layerling-thumbnails:/app/.codex/project-thumbnails henmedia/layerling:latest` go uruchamia, a na NAS-ie szukasz go w rejestrze menedżera kontenerów. Wolumin `layerling-thumbnails` zachowuje obrazki podglądu ze strony startowej przy aktualizacji. Bez niego brakuje ich po każdym ponownym utworzeniu kontenera, dopóki nie otworzysz projektu.
 - **Eksport statyczny:** wynikiem są zwykłe pliki, które może serwować każdy serwer WWW. Muszą leżeć w katalogu głównym adresu (`https://layerling.example.com/` albo `http://192.168.0.5:8080/`), a nie w podfolderze ani otwierane z dysku. README podaje kroki. Z zapisywalnym folderem `store` obok `index.html` i PHP na serwerze staje się też wspólnym magazynem projektów.
 
-Most MCP dla asystentów AI istnieje tylko w serwerze deweloperskim, zobacz [Budowanie z AI](chapter:ai-with-mcp).
+Most MCP dla asystentów AI istnieje tylko w serwerze deweloperskim albo w kopii, którą hostujesz samodzielnie i która go włącza, zobacz [Budowanie z AI](chapter:ai-with-mcp).
 
 ## Pomoc i opinie
 
-- W edytorze sekcja {{ui:editor.group.help}} zawiera {{ui:editor.guide}} z najważniejszymi ruchami oraz przegląd [skrótów klawiszowych](chapter:shortcuts). Każda część krótkiego przewodnika ma znak zapytania, który prowadzi do pasującego rozdziału tutaj.
+- W edytorze sekcja {{ui:editor.group.help}} zawiera {{ui:editor.guide}} z najważniejszymi ruchami oraz przegląd [skrótów klawiszowych](chapter:shortcuts). Każda część krótkiego przewodnika ma znak zapytania, który prowadzi do pasującego rozdziału tutaj. U góry krótkiego przewodnika {{ui:guide.fullGuide}} otwiera tę instrukcję; znajduje ją też wyszukiwarka poleceń ([[Ctrl]]+[[K]]).
 
 ![Krótki przewodnik w edytorze. Na górze są wymienione filmy innych osób, a każda część ma znak zapytania.](shot:quick-guide)
 

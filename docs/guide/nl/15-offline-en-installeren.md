@@ -12,7 +12,7 @@ Op de startpagina verschijnt een hint met {{ui:installHint.install}} als je brow
 - **Chrome en Edge:** Klik op het installatiepictogram rechts in de adresbalk, of kies "Installeren als app" in het browsermenu.
 - **Safari op de Mac:** Menu "Archief", dan "Voeg toe aan Dock".
 - **Safari op iPhone en iPad:** Deelpictogram, dan "Zet op beginscherm".
-- **Firefox:** kan geen apps installeren. layerling start daar wel offline in een tabblad.
+- **Firefox:** klik in Windows vanaf versie 143 rechts in de adresbalk op het pictogram ‘Tabblad aan taakbalk toevoegen’; in een privévenster ontbreekt het. Je ontwerpen blijven zoals ze zijn. Elders start layerling offline in een tabblad.
 
 De hint op de startpagina kun je sluiten met {{ui:installHint.dismiss}}. Start je de geïnstalleerde app in Chrome of Edge een tweede keer, dan komt het geopende venster naar voren in plaats van dat er een nieuw opent.
 
@@ -38,11 +38,11 @@ layerling is vrije software (AGPL-3.0) en kan op je eigen computer of server dra
 - **Docker:** Voor NAS-apparaten en thuisservers, zonder dat Node.js geïnstalleerd hoeft te zijn. Elke release komt als kant-en-klare image `henmedia/layerling` op Docker Hub (ook `ghcr.io/henmedia/layerling`) voor amd64 en arm64; `docker run -d -p 3000:3000 -v layerling-thumbnails:/app/.codex/project-thumbnails henmedia/layerling:latest` start hem, en op een NAS zoek je hem op in het register van de containerbeheerder.
 - **Statische export:** Het resultaat bestaat uit gewone bestanden die elke webserver kan uitleveren. Ze horen in de root van een adres (`https://layerling.example.com/` of `http://192.168.0.5:8080/`), niet in een submap en niet vanaf de schijf geopend; de README beschrijft de stappen. Met een beschrijfbare map `store` naast `index.html` en PHP op de server wordt het ook de gedeelde opslag voor ontwerpen.
 
-De MCP-brug voor AI-assistenten bestaat alleen in de ontwikkelserver, zie [Bouwen met een AI](chapter:ai-met-mcp).
+De MCP-brug voor AI-assistenten bestaat alleen in de ontwikkelserver of in een kopie die je zelf host en die hem inschakelt, zie [Bouwen met een AI](chapter:ai-met-mcp).
 
 ## Hulp en feedback
 
-- In de editor bevat het gebied {{ui:editor.group.help}} de {{ui:editor.guide}} met de belangrijkste handelingen en het overzicht van [sneltoetsen](chapter:sneltoetsen). Elk onderdeel van de beknopte handleiding heeft een vraagteken dat naar het bijbehorende hoofdstuk hier leidt.
+- In de editor bevat het gebied {{ui:editor.group.help}} de {{ui:editor.guide}} met de belangrijkste handelingen en het overzicht van [sneltoetsen](chapter:sneltoetsen). Elk onderdeel van de beknopte handleiding heeft een vraagteken dat naar het bijbehorende hoofdstuk hier leidt. Bovenaan de snelgids opent {{ui:guide.fullGuide}} deze handleiding; ook de opdrachtzoekfunctie ([[Ctrl]]+[[K]]) vindt haar.
 
 ![De beknopte handleiding in de editor. Video's van anderen staan bovenaan, en elk onderdeel heeft een vraagteken.](shot:quick-guide)
 

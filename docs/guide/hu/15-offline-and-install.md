@@ -12,7 +12,7 @@ A kezdőlapon megjelenik egy {{ui:installHint.install}} feliratú jelzés, ha a 
 - **Chrome és Edge:** Kattints a címsor jobb oldalán lévő telepítés ikonra, vagy válaszd a böngésző menüjében az alkalmazásként való telepítést.
 - **Safari Macen:** a Fájl menü, majd a Dockhoz adás.
 - **Safari iPhone-on és iPaden:** a Megosztás ikon, majd a Főképernyőhöz adás.
-- **Firefox:** nem tud alkalmazásokat telepíteni. A layerling ott is elindul offline egy lapon.
+- **Firefox:** Windowson a 143-as verziótól kattints a címsor jobb oldalán a „Lap hozzáadása a tálcához” ikonra; privát ablakban nincs. A terveid megmaradnak. Máshol a layerling egy lapon indul el offline.
 
 A kezdőlapon lévő jelzést az {{ui:installHint.dismiss}} gombbal zárhatod be. Ha Chrome-ban vagy Edge-ben másodszor is elindítod a telepített alkalmazást, egy újabb ablak megnyitása helyett a nyitott ablakot hozza előre.
 
@@ -38,11 +38,11 @@ A layerling szabad szoftver (AGPL-3.0), és futtatható a saját számítógépe
 - **Docker:** NAS-eszközökhöz és otthoni szerverekhez, anélkül, hogy telepíteni kellene a Node.js-t. Minden kiadás kész image-ként érkezik `henmedia/layerling` néven a Docker Hubon (és `ghcr.io/henmedia/layerling` néven is) amd64-hez és arm64-hez; a `docker run -d -p 3000:3000 -v layerling-thumbnails:/app/.codex/project-thumbnails henmedia/layerling:latest` elindítja, NAS-on pedig a konténerkezelő regisztrijében keresed meg.
 - **Statikus export:** Az eredmény egyszerű fájlok, amelyeket bármely webszerver kiszolgálhat. Egy cím gyökerébe valók (`https://layerling.example.com/` vagy `http://192.168.0.5:8080/`), nem egy almappába, és nem lemezről megnyitva; a lépések a README-ben vannak. Egy írható `store` mappával az `index.html` mellett és PHP-val a szerveren a tervek közös tárolója is lesz belőle.
 
-Az MI-asszisztenseknek szóló MCP-híd csak a fejlesztői szerverben létezik, lásd az [Építés MI-vel](chapter:ai-with-mcp) fejezetet.
+Az MI-asszisztenseknek szóló MCP-híd csak a fejlesztői szerverben létezik, vagy egy saját magad által üzemeltetett példányban, amely bekapcsolja, lásd az [Építés MI-vel](chapter:ai-with-mcp) fejezetet.
 
 ## Segítség és visszajelzés
 
-- A szerkesztőben a {{ui:editor.group.help}} területen található a {{ui:editor.guide}} a legfontosabb mozdulatokkal és a [billentyűparancsok](chapter:shortcuts) áttekintése. A rövid útmutató minden részében van egy kérdőjel, amely az itteni megfelelő fejezethez visz.
+- A szerkesztőben a {{ui:editor.group.help}} területen található a {{ui:editor.guide}} a legfontosabb mozdulatokkal és a [billentyűparancsok](chapter:shortcuts) áttekintése. A rövid útmutató minden részében van egy kérdőjel, amely az itteni megfelelő fejezethez visz. A rövid útmutató tetején a(z) {{ui:guide.fullGuide}} megnyitja ezt az útmutatót; a parancskereső ([[Ctrl]]+[[K]]) is megtalálja.
 
 ![A rövid útmutató a szerkesztőben. Felül mások videói vannak felsorolva, és minden résznek van egy kérdőjele.](shot:quick-guide)
 

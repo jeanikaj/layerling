@@ -5,7 +5,7 @@ import { splitBoltForShape, type BoltSplitOptions } from "@/lib/boltSplit";
 import { buildMessage } from "@/lib/buildStamp";
 import { checkClearance, type ClearanceOptions } from "@/lib/clearanceCheck";
 import { articulateShapes, type FlexiOptions } from "@/lib/flexiJoints";
-import { lidForShapes, lidTopForShapes, type LidOptions } from "@/lib/lidTool";
+import { lidForShapes, lidRoomsForShapes, lidTopForShapes, type LidOptions } from "@/lib/lidTool";
 import { analyseMoldForShapes, moldForShapes, type MoldOptions } from "@/lib/moldTool";
 import { checkPrint, type PrintCheckOptions } from "@/lib/printCheck";
 import { checkLayers, type LayerCheckOptions } from "@/lib/layerCheck";
@@ -16,7 +16,7 @@ import { resultMeshes, type GeometryWorkerRequest, type GeometryWorkerResponse }
 import { prepareImportedMeshDisplay } from "@/lib/importedMeshDisplay";
 import { simplifyTrianglePositions, type SimplifyOptions } from "@/lib/meshSimplify";
 import { importedShapesFromObj } from "@/lib/objImport";
-import { importedShapeFromStl, type StlReadOptions } from "@/lib/stlImport";
+import { importedShapeFromStl, type MeshPlacement, type StlReadOptions } from "@/lib/stlImport";
 import { importedShapesFromStepFile } from "@/lib/stepFileImport";
 import { setLanguage } from "@/lib/i18n";
 import type { ModelSplitPlane } from "@/lib/modelSplit";
@@ -91,12 +91,15 @@ self.onmessage = async (event: MessageEvent<GeometryWorkerRequest>) => {
     } else if (request.task === "lidTop") {
       const { targets } = args as { targets: WorkplaneShape[] };
       result = await lidTopForShapes(targets);
+    } else if (request.task === "lidRooms") {
+      const { targets } = args as { targets: WorkplaneShape[] };
+      result = await lidRoomsForShapes(targets);
     } else if (request.task === "stl") {
       const { fileName, buffer, options } = args as { fileName: string; buffer: ArrayBuffer; options?: StlReadOptions };
       result = importedShapeFromStl(fileName, buffer, options);
     } else if (request.task === "obj") {
-      const { fileName, text, mtlSources } = args as { fileName: string; text: string; mtlSources: string[] };
-      result = importedShapesFromObj(fileName, text, mtlSources);
+      const { fileName, text, mtlSources, placement } = args as { fileName: string; text: string; mtlSources: string[]; placement?: MeshPlacement };
+      result = importedShapesFromObj(fileName, text, mtlSources, placement);
     } else if (request.task === "step") {
       // The CAD kernel loads here the first time a STEP file comes; reading a file of 390 parts held the page for 4 s.
       const { fileName, buffer } = args as { fileName: string; buffer: ArrayBuffer };

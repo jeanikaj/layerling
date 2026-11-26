@@ -7,7 +7,7 @@ For at bygge en del præcist skal man måle. layerling har flere værktøjer til
 
 ## Målebåndet
 
-Målebåndet sidder for neden i visningsbjælken ved venstre kant ({{ui:camera.tapeTools}}). Det måler afstande mellem hjørner, kanter og flader. Et klik på den åbner fem knapper. Dækker de det du vil måle, så træk dem i grebet til venstre, et hvilket som helst sted på arbejdsplanet; et dobbeltklik på grebet sætter dem tilbage:
+Målebåndet sidder for neden i visningsbjælken ved venstre kant ({{ui:camera.tapeTools}}). Det måler afstande mellem hjørner, kanter og flader. Et klik på den åbner fem knapper. {{ui:camera.addMeasurement}} er slået til med det samme, så de næste to klik i visningen måler; et klik mere på knappen lægger værktøjet væk, og knapperne bliver åbne. Er målingerne skjult, bliver den slået fra, indtil du klikker på den. Dækker de det du vil måle, så træk dem i grebet til venstre, et hvilket som helst sted på arbejdsplanet; et dobbeltklik på grebet sætter dem tilbage:
 
 ![Målebåndet med dets knapper: tilføj mål, flyt målepunkter, fjern mål, hele kanter, slet alle mål.](shot:tape-menu)
 
@@ -20,6 +20,7 @@ Målebåndet sidder for neden i visningsbjælken ved venstre kant ({{ui:camera.t
 5. **{{ui:camera.deleteAllMeasurements}}:** Fjerner hvert mål på én gang. Da det ikke kan fortrydes, spørger layerling først; uden mål er der intet at gøre.
 6. **{{ui:camera.tapeMarkMiddle}}:** Midt på hvert mål sidder et lille rundt mærke med den nederste halvdel udfyldt. Den sætter et [referencepunkt](#referencepunkter) midt i målet: efter et klik på en rund kant, såsom kanten af et hul, i midten af den cirkel - også på et importeret mesh, hvor intet andet markerer midten af et hul - og for en diameter eller et hvilket som helst lige mål halvvejs langs det. En form du trækker snapper så til punktet med sit centrum. Et punkt der allerede er der laves ikke to gange.
 7. **{{ui:camera.tapeTypeLength}}:** Når mindst én ende af en lige måling sidder på et legeme, kan tallet klikkes. Skriv en ny længde og tryk [[Enter]]: legemet ved det andet punkt flyttes langs den målte linje, til afstanden er præcis den, som med linealen i Tinkercad. Er kun legemet ved det første punkt valgt, flyttes det i stedet. Målepunkterne bliver på legemet, så målingen følger med. Mål fra et hjørne, en kant eller midten af en flade eller et hul for at placere dele i en præcis afstand: fra midten af et hul til midten af toppen af en cylinder flyttes cylinderen fra midte til midte. En negativ længde flytter det så langt forbi det første punkt, for eksempel 5 mm inden for kanten af en kasse. Et [referencepunkt](#referencepunkter) hører ikke til noget legeme, så mellem to referencepunkter flytter intet sig. Går målingen langs to eller tre akser, har feltet under længden også en boks til hver af dem (ΔX, ΔY, ΔZ, de afstande der vises, når du peger på tallet): skriv der i stedet, så flyttes legemet kun langs den akse. [[Tab]] springer fra boks til boks, [[Esc]] lukker feltet uden at flytte noget. Peger du på tallet, står der, hvilket legeme der flyttes, eller hvorfor intet kan: det er låst, begge punkter ligger på samme legeme, eller ingen af dem ligger på et legeme. Beskeden bagefter siger, hvad der blev flyttet og hvor langt; én fortryd tager det tilbage.
+8. **Tykkelse under markøren:** Så længe **{{ui:camera.addMeasurement}}** er aktiv, og der endnu ikke er sat et punkt, viser det at pege på en flade, hvor tyk kroppen er dér: målt lige ind, vinkelret på fladen, til dér hvor materialet slutter, med en stiplet linje gennem kroppen. På en udhulet kasse er det væggen, på en massiv klods hele klodsen, på siden af en cylinder dens diameter. Før markøren hen over delen for at tjekke dens vægge uden at sætte et mål.
    Målebåndet snapper til et referencepunkt som til et hjørne, så du kan måle fra centrum af en cirkel eller fra midten af en linje: markér punktet, og klik så på det.
 
 [[Esc]] forlader måletilstand.
@@ -72,6 +73,8 @@ Med {{ui:workspace.dimensionsAlwaysVisible}} bliver dimensionerne permanent synl
 Med {{ui:workspace.dimensionAxisColors}} får hvert felt farven på sin akse, ligesom håndtagene: rød for X, grøn for Y og blå for Z. Så ser du også på en lille del med det samme, hvilket tal der er hvilket.
 
 Står de i vejen et øjeblik, så tryk [[Q]]: målene og afstandene omkring markeringen forsvinder, så en del du flytter er nem at se. [[Q]] igen henter dem tilbage. Et håndtag du peger på viser stadig sit mål.
+
+På en meget lille del kan selve håndtagene stå i vejen. [[Shift+Q]] skjuler dem alle - firkanterne til størrelsen og pilene til at løfte, skubbe og dreje - og [[Shift+Q]] igen henter dem tilbage. Uden dem kan du stadig trække delen og skrive dens mål til højre, og objektlisten viser, hvilken del der er markeret.
 
 ## Tjek spillerum
 
@@ -126,6 +129,7 @@ Et referencebillede er et billede at rette dele ind efter: læg et foto af et pr
 - Flyt, drej og skaler det med håndtagene som enhver form. En form foran det vælges først, så arbejde oven på det griber ikke billedet.
 - {{ui:referenceImage.seeThrough}} i dets indstillinger falmer det fra helt dækkende til næsten usynligt.
 - {{ui:referenceImage.calibrate}} giver det dets rigtige størrelse, som i skitsen: klik på to punkter på billedet, hvis virkelige afstand du kender - f.eks. to monteringshuller på printkortet - og skriv afstanden i {{ui:referenceImage.distance}}. Billedet beholder sine proportioner og sin midte.
+- I en skitse på pladen vises billedet under din tegning: på sin plads, i sin størrelse og drejning, spejlet hvis du har spejlet det, og med sin indstilling for {{ui:referenceImage.seeThrough}}, så du kan tegne ovenpå. Et billede, der hælder eller er spejlet op/ned, og ethvert billede i en skitse på en flade viser kun sit omrids.
 - Lås det med låsen i overskriften af dets indstillinger, så bliver det liggende: klik går så igennem det til pladen. Vælg det i objektlisten for at låse det op.
 - Billedet gemmes kun én gang i designfilen, uanset hvor ofte det kopieres eller fortrydes. Et stort billede gør filen tilsvarende større; beskeden, når du tilføjer det, siger hvor stort det er.
 - En AI tilføjer, flytter, kalibrerer, falmer og låser et med `layerling_reference_image`. Med `trace` optegner den billedet til et skitselegeme, der står på det, som {{ui:sketch.traceImage}} i skitsen.

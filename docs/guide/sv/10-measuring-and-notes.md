@@ -7,7 +7,7 @@ För att bygga en del exakt behöver du kunna mäta. layerling har flera verktyg
 
 ## Måttbandet
 
-Måttbandet sitter längst ned i vyfältet längs vänsterkanten ({{ui:camera.tapeTools}}). Det mäter avstånd mellan hörn, kanter och ytor. Ett klick öppnar fem knappar. Om de täcker det du ska mäta kan du dra dem i greppet till vänster var som helst på arbetsytan; ett dubbelklick på greppet sätter tillbaka dem:
+Måttbandet sitter längst ned i vyfältet längs vänsterkanten ({{ui:camera.tapeTools}}). Det mäter avstånd mellan hörn, kanter och ytor. Ett klick öppnar fem knappar. {{ui:camera.addMeasurement}} är påslaget direkt, så de två följande klicken i vyn mäter; ett klick till på den knappen lägger undan verktyget och knapparna förblir öppna. Är måtten dolda förblir den avstängd tills du klickar på den. Om de täcker det du ska mäta kan du dra dem i greppet till vänster var som helst på arbetsytan; ett dubbelklick på greppet sätter tillbaka dem:
 
 ![Måttbandet med sina knappar: lägg till mätning, flytta mätpunkter, ta bort mätning, hela kanter, radera alla mätningar.](shot:tape-menu)
 
@@ -18,6 +18,7 @@ Måttbandet sitter längst ned i vyfältet längs vänsterkanten ({{ui:camera.ta
 5. **{{ui:camera.deleteAllMeasurements}}:** Tar bort alla mätningar på en gång. Eftersom detta inte kan ångras frågar layerling först; finns inga mätningar gör knappen inget.
 6. **{{ui:camera.tapeMarkMiddle}}:** Mitt på varje mätning sitter ett litet runt märke med undre halvan ifylld. Det sätter en [referenspunkt](#referenspunkter) mitt på mätningen: efter ett klick på en rund kant – som öppningen av ett hål – hamnar punkten i cirkelns centrum (även på ett importerat nät där inget annat märker ut hålets mitt), och vid en diameter eller annan rak mätning mitt på sträckan. En form som du drar fäster sedan med sitt centrum mot punkten. En punkt som redan finns där skapas inte dubbelt. Måttbandet fäster mot en referenspunkt på samma sätt som mot ett hörn, så att du kan mäta från centrum av en cirkel eller mitt på en linje: märk ut punkten och klicka sedan på den.
 7. **{{ui:camera.tapeTypeLength}}:** När minst ena änden av en rak mätning sitter på en kropp går det att klicka på siffran. Skriv in en ny längd och tryck [[Enter]]: kroppen vid den andra punkten flyttas längs mätlinjen tills avståndet blir exakt det angivna, precis som med linjalen i Tinkercad. Om bara kroppen vid den första punkten är markerad flyttas den i stället. Mätpunkterna sitter kvar på kroppen så att mätningen följer med. Mät från ett hörn, en kant eller mitten av en yta eller ett hål för att placera delar med exakt avstånd: från mitten av ett hål till toppen på en cylinder flyttas cylindern centrum till centrum. En negativ längd flyttar den lika långt förbi den första punkten, till exempel 5 mm innanför kanten på en låda. En [referenspunkt](#referenspunkter) hör inte till någon kropp, så mellan två sådana flyttas ingenting. När mätningen löper längs två eller tre axlar har rutan också ett fält under längden för varje axel (ΔX, ΔY, ΔZ – räckvidden som syns när du pekar på siffran): skriv där i stället så flyttas kroppen enbart längs den axeln. [[Tab]] flyttar mellan rutorna och [[Esc]] stänger fältet utan att flytta något. Pekar du på siffran står det vilken kropp som kommer att flyttas, eller varför ingen kan flyttas: att den är låst, att båda punkterna ligger på samma kropp eller att ingen ligger på en kropp. Meddelandet efteråt anger vad som flyttades och hur långt; ett ångra-steg tar tillbaka det.
+8. **Tjocklek under pekaren:** Så länge **{{ui:camera.addMeasurement}}** är aktivt och ingen punkt har satts ännu visar en pekning på en yta hur tjock kroppen är där: mätt rakt in, vinkelrätt mot ytan, dit där materialet tar slut, med en streckad linje genom kroppen. På en urholkad låda är det väggen, på ett massivt block hela blocket, på sidan av en cylinder dess diameter. För pekaren över delen för att kontrollera dess väggar utan att sätta ett mått.
 
 [[Esc]] avslutar mätläget.
 
@@ -68,6 +69,8 @@ Med {{ui:workspace.dimensionsAlwaysVisible}} förblir måtten synliga hela tiden
 Med {{ui:workspace.dimensionAxisColors}} tar varje måttruta sin axels färg precis som handtagen: rött för X, grönt för Y och blått för Z. På en liten del ser du då direkt vilket mått som är vilket.
 
 För en stund utan dem trycker du [[Q]]: måtten och avstånden kring markeringen försvinner så att delen du flyttar syns tydligt. Tryck [[Q]] igen för att få tillbaka dem. Handtag du pekar på visar fortfarande sina mått.
+
+På en mycket liten del kan handtagen själva vara i vägen. [[Shift+Q]] döljer dem alla - rutorna för storleken och pilarna för att lyfta, skjuta och vrida - och [[Shift+Q]] igen tar tillbaka dem. Utan dem kan du fortfarande dra delen och skriva dess mått till höger, och objektlistan visar vilken del som är markerad.
 
 ## Kontrollera spelrum
 
@@ -120,6 +123,7 @@ En referensbild är en bild att rikta in delar efter: lägg ett foto av ett kret
 - Flytta, vrid och ändra storlek på den med handtagen som med vilken form som helst. En kropp framför bilden väljs i första hand så att du inte råkar ta tag i bilden när du bygger ovanpå den.
 - {{ui:referenceImage.seeThrough}} i inställningarna tonar den från helt täckande till knappt skönjbar.
 - {{ui:referenceImage.calibrate}} ger bilden dess verkliga storlek, precis som i skissläget: klicka på två punkter i bilden vars verkliga avstånd du känner till – till exempel två monteringshål på kortet – och skriv in det avståndet i {{ui:referenceImage.distance}}. Bilden behåller sina proportioner och sin mittpunkt.
+- I en skiss på plattan syns bilden under din teckning: på sin plats, med sin storlek och vridning, speglad om du har speglat den, och med sin inställning {{ui:referenceImage.seeThrough}}, så att du kan rita ovanpå. En bild som lutar eller är speglad uppifrån och ner, och varje bild i en skiss på en yta, visar bara sin kontur.
 - Lås den med hänglåset i rubriken till dess inställningar så ligger den still: klick går då rakt igenom den ned till plattan. Välj den i objektlistan för att låsa upp den igen.
 - Bilden sparas en enda gång i designfilen oavsett hur många gånger den kopieras eller ångras. En stor bild ökar filstorleken med motsvarande; meddelandet när du lägger till den anger hur stor den är.
 - En AI lägger till, flyttar, kalibrerar, tonar och låser en bild med `layerling_reference_image`. Med `trace` spårar den bilden till en skisskropp som står på den, precis som skissens {{ui:sketch.traceImage}}.

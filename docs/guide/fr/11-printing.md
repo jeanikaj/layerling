@@ -27,6 +27,8 @@ Un corps qui dépasse du bord de la plaque d'impression est marqué. Un message 
 
 L'avertissement ne vous empêche pas de travailler. C'est un indice pour que vous ne découvriez pas seulement dans la trancheuse que la pièce est trop grosse. Une pièce trop grande peut souvent être divisée : coupez-la en deux avec {{ui:editor.tool.split}} et imprimez les deux moitiés séparément.
 
+Si vous rangez exprès des pièces à côté du plateau, cliquez sur la petite croix du message. L'avertissement disparaît alors pour exactement ces corps. Dès que l'un d'eux tient de nouveau et que vous le sortez plus tard, ou qu'un autre corps dépasse, le message revient. Les corps masqués ne comptent jamais, donc masquer les pièces rangées fonctionne aussi.
+
 ## Poser correctement la pièce
 
 La façon dont une pièce repose sur la plaque détermine sa résistance et son apparence. Deux outils dans la zone {{ui:editor.group.arrange}} aident :
@@ -77,6 +79,17 @@ Avec plusieurs imprimantes, choisissez d'abord sous {{ui:workspace.printer}} cel
 
 Dès lors, les nouvelles utilisations partent du jeu au lieu de la valeur intégrée : {{ui:lid.gap}} et {{ui:lid.hingePinPlay}} dans l'outil {{ui:editor.tool.lid}}, le jeu d'une nouvelle forme {{ui:shape.dovetail}} ou {{ui:shape.snapFit}}, {{ui:prop.clearance}} d'un nouvel écrou ou trou taraudé – deux fois le jeu, puisque c'est la place sur tout le diamètre – et {{ui:clearance.threshold}} dans {{ui:editor.tool.clearance}}. De même pour le {{ui:split.connectorClearance}} des goujons, des tenons et des queues d'aronde dans {{ui:editor.tool.split}}. Tant qu'un tel champ garde cette valeur, « {{ui:printerPlay.fromFitTest}} » à côté indique d'où vient le nombre. Une charnière imprimée en place et les articulations de l'outil {{ui:editor.tool.flexi}} gardent leurs 0,4 mm : imprimées d'une seule pièce, leurs interstices doivent aussi rester ouverts entre les couches, ce qu'une goupille imprimée à part ne mesure pas. La place pour enfoncer un aimant ou une clé Gridfinity et celle pour une prise ou une carte achetée gardent aussi leurs propres valeurs. Les corps déjà présents dans un motif ne changent jamais, pas plus qu'un motif que vous ouvrez.
 
+## Contrôler les dimensions sur papier
+
+Une pièce qui doit s'adapter à quelque chose - un ventilateur, une carte, un schéma de trous - se contrôle vite sur papier avant l'impression 3D. Une feuille prend quelques secondes ; une impression d'essai coûte du temps et du filament, et si une cote est fausse, il faut recommencer.
+
+1. Sélectionnez la pièce, cliquez sur {{ui:editor.export}} et choisissez le format **2D**, puis PDF.
+2. Sous {{ui:export.drawing.paper}}, choisissez le papier de votre imprimante, A4, A3, US Letter ou US Tabloid. Un dessin plus grand est réparti sur plusieurs pages.
+3. Imprimez à 100 % ou en « taille réelle », jamais « ajuster à la page ».
+4. Mesurez une cote globale sur la feuille avec une règle. Si elle correspond au nombre indiqué, l'impression est à l'échelle : posez la vraie pièce dessus.
+
+Le papier ne montre pas les écarts de votre imprimante 3D : le plastique rétrécit un peu et les trous sont plus serrés. Le test d'ajustement plus haut le montre. Plus sur le dessin dans [Fichiers, sauvegarde et partage](chapter:files-and-saving).
+
 ## Vérifier l'impression
 
 {{ui:editor.tool.printCheck}}, à côté de {{ui:editor.tool.clearance}} dans {{ui:editor.group.combine}}, examine les objets sélectionnés, ou tous les objets visibles si rien n'est sélectionné, et dit dans une fenêtre ce qui raterait à l'impression. Chacune de ses cinq lignes est verte quand elle n'a rien trouvé, et orange avec quoi et où dans le cas contraire :
@@ -90,6 +103,14 @@ Dès lors, les nouvelles utilisations partent du jeu au lieu de la valeur intég
 ![Un bac dont la paroi droite ne fait que 0,6 mm : Vérifier l'impression la peint en rouge et la signale dans la fenêtre.](shot:print-check)
 
 {{ui:printCheck.show}} sur une ligne y amène la caméra ; il sélectionne les pièces en l'air, celles qui reposent sur trop peu et les maillages ouverts, et pour les surplombs il active **Afficher les surplombs**. Les corps qui se chevauchent sont vérifiés réunis, comme le trancheur les réunit. Si vous modifiez le modèle pendant que la fenêtre est ouverte, elle affiche {{ui:printCheck.stale}} ; cliquez dessus ou sur {{ui:printCheck.checkAgain}}. [[Esc]] ferme la fenêtre. Rien ne change dans le modèle. Une IA fait la même vérification avec `layerling_check_print`. La fenêtre ne fait que vérifier, elle n'imprime ni n'enregistre rien : pour imprimer, exportez le modèle pour votre trancheur avec {{ui:editor.export}} dans le groupe {{ui:editor.group.file}}. {{ui:printCheck.openExport}} dans la fenêtre ferme la vérification et ouvre l'export.
+
+### Analyse d'impression et vue des couches
+
+{{ui:editor.tool.layerCheck}}, à côté de {{ui:editor.tool.printCheck}}, va un pas plus loin : il découpe les objets sélectionnés (ou tous les objets visibles) en couches telles que votre imprimante les dépose et compare chaque couche à celle du dessous, en une seule fois. Vous n'avez pas à feuilleter les couches pour trouver un problème : la fenêtre énumère ses **constats**, d'abord les problèmes (rouge), puis les remarques (jaune), de bas en haut. Chaque ligne dit où et à quel point, par exemple « Couches 83–97 (16,6–19,4 mm) : Surplomb 62°, 1,4 cm² », et ce qui aide. Des couches successives avec le même problème au même endroit forment un seul constat.
+
+Avant de regarder les couches, il vérifie l'ensemble : une pièce qui entre dans le plateau ({{ui:finding.kind.inBed}} ; les couches sous le plan de travail ne sont pas comptées), une pièce qui flotte au-dessus, un maillage qui n'est pas fermé, une pièce plus grande que l'imprimante choisie dans les réglages. Puis, couche par couche : {{ui:finding.kind.unsupported}} (un endroit qui commence sans rien en dessous, comme les bras d'un T), {{ui:finding.kind.overhang}} (remarque à partir de 45°, problème à partir de 60° par rapport à la verticale), {{ui:finding.kind.bridge}} (remarque à partir d'une portée de 10 mm), {{ui:finding.kind.thinWall}} (moins de deux lignes de la buse), {{ui:finding.kind.smallIsland}} (un endroit séparé de moins de 2 mm² qui se poursuit sur 2 mm ou plus) et {{ui:finding.kind.adhesion}}. Choisissez {{ui:layerCheck.layerHeight}} et {{ui:layerCheck.nozzle}} en haut ; les seuils sont sous {{ui:layerCheck.advanced}}. Les endroits de moins de 0,05 mm², comme une pointe ou la dernière couche, ne sont pas évalués. La vérification tourne en arrière-plan avec une barre ; {{ui:layerCheck.stop}} l'arrête aussitôt.
+
+Cliquez sur un constat : la **vue des couches** s'ouvre à la première couche concernée, la caméra va à l'endroit, l'endroit est peint en rouge ou en jaune sur la couche, et les couches du dessous restent visibles. Le curseur se tient debout à côté d'un profil de la section sur toute la hauteur ; des repères sur son côté montrent où se trouvent les constats, un clic sur l'un d'eux y saute. Sur le curseur, [[↑]] et [[↓]] avancent d'une couche, [[Page Up]] et [[Page Down]] de dix, [[Home]] et [[End]] vont aux extrémités, [[Espace]] lance la lecture, [[N]] passe au constat suivant et [[Shift]]+[[N]] au précédent. {{ui:layerCheck.view.mode}} montre {{ui:layerCheck.view.mode.upTo}}, {{ui:layerCheck.view.mode.only}} ou {{ui:layerCheck.view.mode.range}} ; les couches encore à venir peuvent apparaître comme une ombre légère. Là où Layerling a un outil pour le constat, un bouton l'ouvre : {{ui:finding.action.dropToPlate}}, {{ui:finding.action.layFlat}} ou {{ui:finding.action.supportRib}}. Après une modification, la liste est marquée comme périmée jusqu'à ce que vous cliquiez sur {{ui:layerCheck.checkAgain}}. Fermer la fenêtre remet la caméra où elle était. Ce n'est pas un aperçu du trancheur : les supports, le remplissage et la durée d'impression viennent de votre trancheur.
 
 ## Quand tu es prêt
 

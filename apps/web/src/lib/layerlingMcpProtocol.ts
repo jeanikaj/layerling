@@ -1,4 +1,4 @@
-import type { GridSize, GroupResizeMode, ShapeKind, WorkplaneWorkspaceSettings } from "@/types/layerling";
+import type { GridSize, GroupResizeMode, ShapeKind, TagBack, WorkplaneShape, WorkplaneWorkspaceSettings } from "@/types/layerling";
 
 export const LAYERLING_MCP_ROUTE = "/api/layerling-mcp";
 export const LAYERLING_MCP_STALE_MS = 15_000;
@@ -59,6 +59,40 @@ export type LayerlingMcpShapeSummary = {
   cadDisplayEdgeCount: number | null;
   sketchPointCount: number;
   sketchSegmentCount: number;
+  /** A sketch body's fill (#197): its stroke or null, whether holes are left out, its inset. */
+  sketchStroke?: NonNullable<WorkplaneShape["sketchProfile"]>["stroke"] | null;
+  silhouette?: boolean;
+  sketchInset?: NonNullable<WorkplaneShape["sketchProfile"]>["inset"] | null;
+  /** A text's fill (#215) and lettering. */
+  textStroke?: WorkplaneShape["textStroke"] | null;
+  textSilhouette?: boolean;
+  textStretch?: boolean;
+  textVertical?: boolean;
+  textSpacing?: number;
+  textKerning?: boolean;
+  textLetterWidth?: number;
+  textFullCircle?: boolean;
+  textEdge?: WorkplaneShape["textEdge"] | null;
+  textKeyring?: WorkplaneShape["textKeyring"];
+  /** The text on a name tag's or an icon tag's back, on its bottom layer; `textBackFill` marks the part that fills it. */
+  textBack?: TagBack;
+  textBackFill?: boolean;
+  transparent?: boolean;
+  multicolor?: boolean;
+  /** The id of the body a lid or an insert was made for. */
+  lidFor?: string;
+  insertFor?: string;
+  vaseAssembled?: number;
+  layeredText?: boolean;
+  layeredIcon?: boolean;
+  qrCode?: WorkplaneShape["qrCode"];
+  sbcBoard?: WorkplaneShape["sbcBoard"];
+  fan?: WorkplaneShape["fan"];
+  /** A surface texture: its settings, the masks as a count, and whether it can still be changed. */
+  surfaceTexture?: Record<string, unknown> & { masks: number; changeable: boolean };
+  surfaceTextureLayers?: { pattern: unknown; faces: number; region?: number }[];
+  /** Paint: how many strokes the body carries and the colours they show. */
+  paint?: { strokes: number; colors: string[] };
   children?: LayerlingMcpShapeSummary[];
 };
 
@@ -79,6 +113,8 @@ export type LayerlingMcpSceneSummary = {
   workplane?: { onBase: boolean; hidden: boolean; origin: { x: number; y: number; z: number }; normal: { x: number; y: number; z: number } };
   /** The files kept with the design (#820): what they are, never what they hold; layerling_get_attachment reads one. */
   attachments?: { id: string; name: string; mediaType: string; bytes: number; sha256: string }[];
+  /** The selections kept under a name (layerling_select_objects with saveAs), with the ids each one remembers. */
+  selectionSets?: { name: string; ids: string[] }[];
 };
 
 export type LayerlingMcpEditorSummary = {
@@ -111,6 +147,7 @@ export type LayerlingMcpCommandName =
   | "place_on_face"
   | "perforate_face"
   | "thread_insert"
+  | "magnet_pocket"
   | "sweep_sketch"
   | "push_face"
   | "paint_object"
@@ -137,6 +174,7 @@ export type LayerlingMcpCommandName =
   | "separate_parts"
   | "split_objects"
   | "wrap_around_cylinder"
+  | "take_rotation_as_zero"
   | "texture_surface"
   | "simplify_mesh"
   | "make_exact"
@@ -175,6 +213,7 @@ export type LayerlingMcpCommandName =
   | "layer_icon"
   | "create_qr_code"
   | "create_sbc_board"
+  | "create_fan"
   | "reference_image"
   | "set_section_view"
   | "set_history_view"
@@ -183,8 +222,10 @@ export type LayerlingMcpCommandName =
   | "delete_history_steps"
   | "list_backups"
   | "open_backup"
+  | "open_project"
   | "show_workplane"
   | "focus_mode"
+  | "detail_level"
   | "saved_view"
   | "build_plates"
   | "measurements"

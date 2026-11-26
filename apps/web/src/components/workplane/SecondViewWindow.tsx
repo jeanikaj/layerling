@@ -1,6 +1,8 @@
 "use client";
 
 import * as THREE from "three";
+import { pressedKey } from "@/lib/keyPressed";
+import { installSafariBufferUploads } from "@/lib/safariBufferUploads";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
@@ -270,6 +272,7 @@ export function SecondViewWindow({ popup, threeRef, projectId, getSelectedIds, o
     if (!container || !host || !main) return;
 
     const canvas = popup.document.createElement("canvas");
+    installSafariBufferUploads();
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance", preserveDrawingBuffer: false, stencil: true });
     renderer.localClippingEnabled = true;
     renderer.outputColorSpace = main.renderer.outputColorSpace;
@@ -332,7 +335,7 @@ export function SecondViewWindow({ popup, threeRef, projectId, getSelectedIds, o
         return;
       }
       const face = viewFaceForKey(event.key, event.code, event.shiftKey);
-      const key = (event.key ?? "").toLowerCase();
+      const key = pressedKey(event);
       let move: ((view: CameraRig) => void) | null = null;
       if (face) {
         move = (view) => {
@@ -395,7 +398,7 @@ export function SecondViewWindow({ popup, threeRef, projectId, getSelectedIds, o
       const plateVisible = state.workplaneLayer.visible;
       state.workplaneLayer.visible = !workplaneHiddenRef.current;
       try {
-        renderFrame({ renderer, scene: state.scene, camera: rig.camera, shapeRecords: state.shapeRecords, sectionPlane: state.sectionPlane });
+        renderFrame({ renderer, scene: state.scene, camera: rig.camera, shapeLayer: state.shapeLayer, shapeRecords: state.shapeRecords, sectionPlane: state.sectionPlane });
       } finally {
         state.workplaneLayer.visible = plateVisible;
       }

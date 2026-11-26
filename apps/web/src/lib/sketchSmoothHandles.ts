@@ -12,7 +12,10 @@ export function cloneSketchProfile(profile: SketchProfile): SketchProfile {
     ...(profile.stroke ? { stroke: { ...profile.stroke } } : {}),
     ...(profile.silhouette ? { silhouette: true } : {}),
     ...(profile.keyring ? { keyring: { ...profile.keyring } } : {}),
+    ...(profile.flush ? { flush: { ...profile.flush, ...(profile.flush.pocket ? { pocket: { ...profile.flush.pocket } } : {}) } } : {}),
     ...(profile.inset ? { inset: { ...profile.inset } } : {}),
+    ...(profile.back ? { back: { ...profile.back } } : {}),
+    ...(profile.backFill ? { backFill: true } : {}),
     ...(profile.sweepAnchor && profile.sweepAnchor !== "center" ? { sweepAnchor: profile.sweepAnchor } : {}),
     ...(profile.notes ? { notes: profile.notes.map((note) => ({ ...note })) } : {}),
   };

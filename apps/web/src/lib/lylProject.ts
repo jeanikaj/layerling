@@ -1,4 +1,5 @@
 import { checkedTypefaceData, customFontName, isCustomFontId, textCharacters, typefaceSubset } from "@/lib/customFonts";
+import { normalizeFlushLayer } from "@/lib/flushLayers";
 import { customFontEntry, registerCustomFont } from "@/lib/textFonts";
 import { strFromU8, strToU8, unzip } from "fflate";
 import { boundedProjectZip } from "@/lib/boundedProjectZip";
@@ -8,7 +9,8 @@ import { importedShapeFromObj } from "@/lib/objImport";
 import { normalizeProjectAsset, sha256Hex } from "@/lib/projectAssets";
 import { canonicalizeShape } from "@/lib/workplaneShapes";
 import { normalizeSketchStroke, SKETCH_STROKE_JOINS } from "@/lib/sketchStroke";
-import { normalizeTextEdge } from "@/lib/textEdge";
+import { isTextEdgeSide, normalizeTextEdge } from "@/lib/textEdge";
+import { normalizeTagBack } from "@/lib/tagBack";
 import { isTextKeyring } from "@/lib/textGeometry";
 import { normalizeNotes } from "@/lib/workplaneNotes";
 import {
@@ -19,11 +21,15 @@ import {
   attachmentsFormatVersion,
 } from "@/lib/projectAttachments";
 import { normalizeQrSettings } from "@/lib/qrCode";
+import { FAN_ORDER, MAX_FAN_CLEARANCE, MAX_FAN_REACH } from "@/lib/fans";
+import { pattiesSettingsProblem } from "@/lib/pattiesPattern";
 import { MAX_SBC_BUTTON_REACH, MAX_SBC_CLEARANCE, MAX_SBC_REACH, MAX_SBC_UP_REACH, MIN_SBC_UP_REACH, SBC_BOARD_ORDER } from "@/lib/sbcBoards";
 import { importedShapeFromStl, stlReadBeforeZUp, type StlReadOptions } from "@/lib/stlImport";
 import { importedShapeFromSvg } from "@/lib/svgImport";
 import { importedShapeFrom3mf } from "@/lib/threemfImport";
+import { normalizeSelectionSets, readSelectionSets, type SelectionSet } from "@/lib/selectionSets";
 import { normalizeDesignView, normalizeSavedViews, readDesignView, readSavedViews, type DesignView, type SavedDesignViews } from "@/lib/designView";
+import { normalizeDesignDrawingInfo, readDesignDrawingInfo, type DesignDrawingInfo } from "@/lib/drawingInfo";
 import { normalizeSavedCornerRulers, readCornerRulers, type SavedCornerRuler } from "@/lib/cornerRulerStore";
 import { normalizeSavedTape, readTape, type SavedTape } from "@/lib/tapeStore";
 import { isSketchKeyring } from "@/lib/sketchKeyring";
@@ -64,7 +70,7 @@ export const LYL_FILE_TYPES_FORMAT_VERSION = 4;
 /** The newest format this layerling reads. */
 export const LYL_NEWEST_READABLE_FORMAT_VERSION = LYL_FILE_TYPES_FORMAT_VERSION;
 export const LYL_OLDEST_READABLE_FORMAT_VERSION = 1;
-export const LYL_CREATED_WITH_VERSION = "1.166.0";
+export const LYL_CREATED_WITH_VERSION = "1.175.0";
 export const LYL_MEDIA_TYPE = "application/vnd.layerling.project+zip";
 
 export const LYL_LIMITS = {
@@ -82,7 +88,7 @@ export const LYL_LIMITS = {
 
 const SHAPE_KINDS = new Set([
   "box", "roundedBox", "cylinder", "slot", "ellipse", "sphere", "sketch", "scribble", "cone", "pyramid", "roof", "text", "roundRoof",
-  "halfSphere", "paraboloid", "curvedCone", "torus", "tube", "bentTube", "star", "heart", "crescent", "sector", "gear", "hirth", "pulley", "honeycomb", "hinge", "knurl", "dovetail", "screwBoss", "snapFit", "rib", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "teardrop", "port", "loft", "vase", "thread", "spring", "gridfinity", "ring", "wedge", "polygon", "icosahedron", "ruler", "mesh",
+  "halfSphere", "paraboloid", "curvedCone", "torus", "tube", "bentTube", "star", "heart", "crescent", "sector", "gear", "hirth", "pulley", "patties", "honeycomb", "hinge", "knurl", "dovetail", "screwBoss", "snapFit", "rib", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "teardrop", "port", "loft", "vase", "thread", "spring", "gridfinity", "ring", "wedge", "polygon", "icosahedron", "ruler", "mesh",
 ]);
 
 const FEATURE_TYPES = new Set([
@@ -256,6 +262,10 @@ export type LylProjectDocumentV1 = {
     view?: DesignView;
     /** The views saved under 7, 8, 9 and 0, null where a slot is empty; older readers pass over them. */
     savedViews?: SavedDesignViews;
+    /** The named selections (Discussion #1472); older readers pass over them. */
+    selectionSets?: SelectionSet[];
+    /** The drawing number and revision of its 2D drawings (forum, Lofo); older readers pass over them. */
+    drawingInfo?: DesignDrawingInfo;
     /** The framing square where it was set (#829); older readers pass over it. */
     cornerRulers?: SavedCornerRuler[];
     /** The tape measure's measurements and whether they are shown (#881); older readers pass over it. */
@@ -284,6 +294,10 @@ export type LylProjectExportInput = {
   view?: DesignView | null;
   /** The views saved under 7 to 0; when left out, the ones the browser keeps for this design go in. */
   savedViews?: SavedDesignViews | null;
+  /** The named selections; when left out, the ones the browser keeps for this design go in. */
+  selectionSets?: SelectionSet[] | null;
+  /** The drawing number and revision; when left out, the ones the browser keeps for this design go in. */
+  drawingInfo?: DesignDrawingInfo | null;
   /** The framing square; when left out, the one the browser keeps for this design goes in (#829). */
   cornerRulers?: SavedCornerRuler[] | null;
   /** The tape measure's measurements; when left out, the ones the browser keeps for this design go in (#881). */
@@ -314,6 +328,10 @@ export type LylRestoredProject = {
   view?: DesignView;
   /** The views saved under 7 to 0, when the file has any. */
   savedViews?: SavedDesignViews;
+  /** The named selections, when the file has any. */
+  selectionSets?: SelectionSet[];
+  /** The drawing number and revision, when the file has them. */
+  drawingInfo?: DesignDrawingInfo;
   /** The framing square, when the file has one (#829). */
   cornerRulers?: SavedCornerRuler[];
   /** The tape measure's measurements, when the file has them (#881). */
@@ -551,7 +569,9 @@ function encodedAssetPayload(resource: object, encode: () => Uint8Array) {
 // exact bodies or more each one had pushed out the next before it was asked for,
 // and nothing was ever found. Now it holds as many as fit in a budget of text,
 // so a design full of large bodies does not keep copies of all of them either.
-const TEXT_PAYLOAD_CACHE_LIMIT = 256;
+// The count was 256, which an imported assembly of a few hundred small parts
+// passed in the same way (#1794); the budget of text is what bounds the memory.
+const TEXT_PAYLOAD_CACHE_LIMIT = 4096;
 const TEXT_PAYLOAD_CACHE_CHARS = 48 * 1024 * 1024;
 const encodedTextPayloads = new Map<string, Promise<EncodedAssetPayload>>();
 let encodedTextChars = 0;
@@ -834,6 +854,9 @@ async function serializeShapeNode(
       ...(sketchProfile.stroke ? { stroke: sketchProfile.stroke } : {}),
       ...(sketchProfile.silhouette ? { silhouette: true } : {}),
       ...(sketchProfile.keyring ? { keyring: sketchProfile.keyring } : {}),
+      ...(sketchProfile.flush ? { flush: sketchProfile.flush } : {}),
+      ...(sketchProfile.back ? { back: sketchProfile.back } : {}),
+      ...(sketchProfile.backFill ? { backFill: true } : {}),
       ...(sketchProfile.inset ? { inset: sketchProfile.inset } : {}),
       ...(sketchProfile.sweepAnchor && sketchProfile.sweepAnchor !== "center" ? { sweepAnchor: sketchProfile.sweepAnchor } : {}),
     };
@@ -1050,8 +1073,8 @@ function activeProjectIndexes(state: LylStateV1) {
   return { features, groups, sketches, exactCad };
 }
 
-function zipAsync(files: ArchiveFiles, level: NonNullable<LylProjectExportInput["compressionLevel"]> = 6, stored?: ReadonlySet<string>) {
-  return boundedProjectZip(files, level, stored);
+function zipAsync(files: ArchiveFiles, level: NonNullable<LylProjectExportInput["compressionLevel"]> = 6, stored?: ReadonlySet<string>, unchanging?: ReadonlySet<string>) {
+  return boundedProjectZip(files, level, stored, unchanging);
 }
 
 function unzipAsync(bytes: Uint8Array) {
@@ -1164,6 +1187,8 @@ export async function exportLylProject(input: LylProjectExportInput) {
   const sketchPlacementWorkplane = normalizePlacementWorkplane(input.sketchPlacementWorkplane);
   const view = input.view === undefined ? readDesignView(input.projectId) : normalizeDesignView(input.view);
   const savedViews = normalizeSavedViews(input.savedViews === undefined ? readSavedViews(input.projectId) : input.savedViews);
+  const selectionSets = normalizeSelectionSets(input.selectionSets === undefined ? readSelectionSets(input.projectId) : input.selectionSets);
+  const drawingInfo = normalizeDesignDrawingInfo(input.drawingInfo === undefined ? readDesignDrawingInfo(input.projectId) : input.drawingInfo);
   const cornerRulers = normalizeSavedCornerRulers(input.cornerRulers === undefined ? readCornerRulers(input.projectId) : input.cornerRulers);
   const tapeMeasurements = normalizeSavedTape(input.tapeMeasurements === undefined ? readTape(input.projectId) : input.tapeMeasurements);
   const selectedWorkplaneId = placementWorkplaneIsBase(placementWorkplane) ? "workplane-base" : "workplane-active";
@@ -1206,6 +1231,8 @@ export async function exportLylProject(input: LylProjectExportInput) {
       sketchPlacementWorkplane,
       ...(view ? { view } : {}),
       ...(savedViews ? { savedViews } : {}),
+      ...(selectionSets ? { selectionSets } : {}),
+      ...(drawingInfo ? { drawingInfo } : {}),
       ...(cornerRulers ? { cornerRulers } : {}),
       ...(tapeMeasurements ? { tapeMeasurements } : {}),
     },
@@ -1226,7 +1253,9 @@ export async function exportLylProject(input: LylProjectExportInput) {
   }
   // Attached pictures and PDF files are compressed already: they go in as they are (see `compressed`).
   const stored = new Set(builder.assets.filter((asset) => asset.kind === "attachment" && attachmentTypeForMediaType(asset.mediaType)?.compressed).map((asset) => asset.path));
-  return zipAsync(Object.fromEntries(Object.entries(builder.files).sort(([a], [b]) => a.localeCompare(b))), input.compressionLevel, stored);
+  // An asset's path is the hash of its bytes, so the same path is the same file in every save: deflated once (#1794).
+  const unchanging = new Set(builder.assets.map((asset) => asset.path));
+  return zipAsync(Object.fromEntries(Object.entries(builder.files).sort(([a], [b]) => a.localeCompare(b))), input.compressionLevel, stored, unchanging);
 }
 
 function inspectZipBeforeExpansion(bytes: Uint8Array) {
@@ -1328,6 +1357,10 @@ function validateSketchProfile(value: unknown, label: string) {
     if (segment.construction !== undefined && typeof segment.construction !== "boolean") throw new Error(`${label}.segments[${index}].construction must be true or false`);
   });
   if (profile.silhouette !== undefined && typeof profile.silhouette !== "boolean") throw new Error(`${label}.silhouette must be true or false`);
+  if (profile.flush !== undefined && !normalizeFlushLayer(profile.flush)) throw new Error(`${label}.flush must be { depth, height } above 0 and, if it has one, a pocket { grow, join, silhouette }`);
+  // Text on an icon tag's back, and the part that fills it.
+  if (profile.back !== undefined && !normalizeTagBack(profile.back)) throw new Error(`${label}.back must be { text, size, depth } with some text`);
+  if (profile.backFill !== undefined && typeof profile.backFill !== "boolean") throw new Error(`${label}.backFill must be true or false`);
   if (profile.keyring !== undefined && !isSketchKeyring(profile.keyring)) throw new Error(`${label}.keyring must be { side, diameter, x, z } and a free place (#598) with corners of -1 or 1 if it has one`);
   if (profile.sweepAnchor !== undefined && profile.sweepAnchor !== "left" && profile.sweepAnchor !== "center" && profile.sweepAnchor !== "right") throw new Error(`${label}.sweepAnchor must be left, center or right`);
   if (profile.inset !== undefined) {
@@ -1435,6 +1468,17 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
   if (definition.textSilhouette !== undefined && typeof definition.textSilhouette !== "boolean") {
     throw new Error(`${label}.textSilhouette must be true or false`);
   }
+  // A name tag layer laid in flush (#215).
+  if (definition.textFlush !== undefined && !normalizeFlushLayer(definition.textFlush)) {
+    throw new Error(`${label}.textFlush must be { depth, height } above 0 and, if it has one, a pocket { grow, join, silhouette }`);
+  }
+  // Text on a name tag's back, and the part that fills it.
+  if (definition.textBack !== undefined && !normalizeTagBack(definition.textBack)) {
+    throw new Error(`${label}.textBack must be { text, size, depth } with some text`);
+  }
+  if (definition.textBackFill !== undefined && typeof definition.textBackFill !== "boolean") {
+    throw new Error(`${label}.textBackFill must be true or false`);
+  }
   if (definition.textStretch !== undefined && typeof definition.textStretch !== "boolean") {
     throw new Error(`${label}.textStretch must be true or false`);
   }
@@ -1452,9 +1496,16 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
   if (definition.textLetterWidth !== undefined && !(typeof definition.textLetterWidth === "number" && Number.isFinite(definition.textLetterWidth) && definition.textLetterWidth >= 25 && definition.textLetterWidth <= 400)) {
     throw new Error(`${label}.textLetterWidth must be a number from 25 to 400`);
   }
-  // The top edge of a text's letters (#225): round or chamfer, with a size.
+  // Curved text that closes its circle (#1840).
+  if (definition.textFullCircle !== undefined && typeof definition.textFullCircle !== "boolean") {
+    throw new Error(`${label}.textFullCircle must be true or false`);
+  }
+  // The edge of a text's letters (#225): round or chamfer, with a size, on the top unless its side says the bottom or both.
   if (definition.textEdge !== undefined && !normalizeTextEdge(definition.textEdge)) {
     throw new Error(`${label}.textEdge must be a round or chamfer edge with a size`);
+  }
+  if (definition.textEdge !== undefined && (definition.textEdge as { side?: unknown }).side !== undefined && !isTextEdgeSide((definition.textEdge as { side?: unknown }).side)) {
+    throw new Error(`${label}.textEdge.side must be top, bottom or both`);
   }
   if (definition.layeredText !== undefined && typeof definition.layeredText !== "boolean") {
     throw new Error(`${label}.layeredText must be true or false`);
@@ -1468,6 +1519,12 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
   // A reference image's see-through (#680): 0.1 to 1, or none on an old picture plate.
   if (definition.imagePlate !== undefined && !isReferenceImageOpacity((definition.imagePlate as { opacity?: unknown } | null)?.opacity)) {
     throw new Error(`${label}.imagePlate.opacity must be a number from 0.1 to 1`);
+  }
+  // A pattern plate's settings: an object of known choices and numbers. Each is clamped where it is read, so only
+  // what could not be read at all is refused.
+  if (definition.patties !== undefined) {
+    const problem = pattiesSettingsProblem(definition.patties);
+    if (problem) throw new Error(`${label}.patties${problem}`);
   }
   // A QR code's settings (#553): a text and known choices. Old projects have none.
   if (definition.qrCode !== undefined && !normalizeQrSettings(definition.qrCode)) {
@@ -1494,6 +1551,22 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
     }
     if (board.buttonReach !== undefined && (typeof board.buttonReach !== "number" || !Number.isFinite(board.buttonReach) || board.buttonReach < 0 || board.buttonReach > MAX_SBC_BUTTON_REACH)) {
       throw new Error(`${label}.sbcBoard.buttonReach is outside the supported range`);
+    }
+  }
+  // A fan's settings (Discussion #1962): a known fan, a clearance of 0 to 2 mm, reaches of 0 to 50 mm. Old projects have none.
+  if (definition.fan !== undefined) {
+    const fan = definition.fan as { fan?: unknown; clearance?: unknown; inletReach?: unknown; outletReach?: unknown; screwReach?: unknown } | null;
+    if (!fan || typeof fan !== "object" || !FAN_ORDER.includes(fan.fan as never)) {
+      throw new Error(`${label}.fan.fan must be one of ${FAN_ORDER.join(", ")}`);
+    }
+    if (fan.clearance !== undefined && (typeof fan.clearance !== "number" || !Number.isFinite(fan.clearance) || fan.clearance < 0 || fan.clearance > MAX_FAN_CLEARANCE)) {
+      throw new Error(`${label}.fan.clearance is outside the supported range`);
+    }
+    for (const key of ["inletReach", "outletReach", "screwReach"] as const) {
+      const value = fan[key];
+      if (value !== undefined && (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > MAX_FAN_REACH)) {
+        throw new Error(`${label}.fan.${key} is outside the supported range`);
+      }
     }
   }
   // The corners of a text's line (#215): a layer of a name tag can be bevelled or sharp now, so an
@@ -1638,8 +1711,12 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
     if (definition.springForm !== undefined && definition.springForm !== "coil" && definition.springForm !== "flat") {
       throw new Error(`${label}.springForm is invalid`);
     }
-    if (definition.springPattern !== undefined && !["round", "zigzag", "square"].includes(definition.springPattern as string)) {
+    if (definition.springPattern !== undefined && !["round", "zigzag", "square", "spiral"].includes(definition.springPattern as string)) {
       throw new Error(`${label}.springPattern is invalid`);
+    }
+    if (definition.springInner !== undefined) {
+      const springInner = finiteNumber(definition.springInner, `${label}.springInner`);
+      if (springInner <= 0 || springInner > 480) throw new Error(`${label}.springInner is outside the supported range`);
     }
     if (definition.springEnds !== undefined && !["eye", "tab", "none"].includes(definition.springEnds as string)) {
       throw new Error(`${label}.springEnds is invalid`);
@@ -1825,10 +1902,10 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
     if (definition.gridfinityType !== undefined && definition.gridfinityType !== "bin" && definition.gridfinityType !== "baseplate" && definition.gridfinityType !== "tray") {
       throw new Error(`${label}.gridfinityType is invalid`);
     }
-    for (const key of ["gridfinityLip", "gridfinityMagnets", "gridfinityHalfGrid", "gridfinityLargePlate", "gridfinitySwallowtail", "gridfinityLabelBack", "gridfinityLabelFront", "gridfinityLabelLeft", "gridfinityLabelRight", "gridfinityScoopBack", "gridfinityScoopFront", "gridfinityScoopLeft", "gridfinityScoopRight", "gridfinityOpenBack", "gridfinityOpenFront", "gridfinityOpenLeft", "gridfinityOpenRight", "gridfinityOverhangSolid", "gridfinityOverhangLipOnGrid", "hingePinless"] as const) {
+    for (const key of ["gridfinityLip", "gridfinityMagnets", "gridfinityHalfGrid", "gridfinityLargePlate", "gridfinitySwallowtail", "gridfinityClipNotches", "gridfinityPuzzle", "gridfinityLabelBack", "gridfinityLabelFront", "gridfinityLabelLeft", "gridfinityLabelRight", "gridfinityScoopBack", "gridfinityScoopFront", "gridfinityScoopLeft", "gridfinityScoopRight", "gridfinityOpenBack", "gridfinityOpenFront", "gridfinityOpenLeft", "gridfinityOpenRight", "gridfinityOverhangSolid", "gridfinityOverhangLipOnGrid", "hingePinless"] as const) {
       if (definition[key] !== undefined && typeof definition[key] !== "boolean") throw new Error(`${label}.${key} must be true or false`);
     }
-    for (const key of ["gridfinityLabelBackWidth", "gridfinityLabelBackLength", "gridfinityLabelBackOffset", "gridfinityLabelFrontWidth", "gridfinityLabelFrontLength", "gridfinityLabelFrontOffset", "gridfinityLabelLeftWidth", "gridfinityLabelLeftLength", "gridfinityLabelLeftOffset", "gridfinityLabelRightWidth", "gridfinityLabelRightLength", "gridfinityLabelRightOffset", "gridfinityLabelCornerSize", "gridfinityLabelTextSize", "gridfinityOverhangBack", "gridfinityOverhangFront", "gridfinityOverhangLeft", "gridfinityOverhangRight", "gridfinityOverhangChamfer", "gridfinityScoopRadius", "gridfinityFloorHeight", "gridfinityLipChamfer", "gridfinityWallThickness", "gridfinityOpeningCornerSize", "gridfinityPaddingBack", "gridfinityPaddingFront", "gridfinityPaddingLeft", "gridfinityPaddingRight", "gridfinityCornerRadius", "gridfinityBinCornerRadius", "gridfinitySwallowtailClearance", "gridfinityCompartmentsX", "gridfinityCompartmentsZ", "gridfinityDividerThickness", "gridfinityDividerHeight"] as const) {
+    for (const key of ["gridfinityLabelBackWidth", "gridfinityClipCount", "gridfinityPuzzleFit", "gridfinityLabelBackLength", "gridfinityLabelBackOffset", "gridfinityLabelFrontWidth", "gridfinityLabelFrontLength", "gridfinityLabelFrontOffset", "gridfinityLabelLeftWidth", "gridfinityLabelLeftLength", "gridfinityLabelLeftOffset", "gridfinityLabelRightWidth", "gridfinityLabelRightLength", "gridfinityLabelRightOffset", "gridfinityLabelCornerSize", "gridfinityLabelTextSize", "gridfinityOverhangBack", "gridfinityOverhangFront", "gridfinityOverhangLeft", "gridfinityOverhangRight", "gridfinityOverhangChamfer", "gridfinityScoopRadius", "gridfinityFloorHeight", "gridfinityLipChamfer", "gridfinityWallThickness", "gridfinityOpeningCornerSize", "gridfinityPaddingBack", "gridfinityPaddingFront", "gridfinityPaddingLeft", "gridfinityPaddingRight", "gridfinityCornerRadius", "gridfinityBinCornerRadius", "gridfinitySwallowtailClearance", "gridfinityCompartmentsX", "gridfinityCompartmentsZ", "gridfinityDividerThickness", "gridfinityDividerHeight"] as const) {
       if (definition[key] === undefined) continue;
       const value = finiteNumber(definition[key], `${label}.${key}`);
       // Only an offset runs both ways along a wall.
@@ -1880,6 +1957,30 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
         if (entry.align !== undefined && entry.align !== "start" && entry.align !== "middle" && entry.align !== "end") throw new Error(`${entryLabel}.align is invalid`);
         if (entry.text !== undefined && (typeof entry.text !== "string" || entry.text.length > MAX_GRIDFINITY_LABEL_TEXT_LENGTH)) throw new Error(`${entryLabel}.text must be a string of at most ${MAX_GRIDFINITY_LABEL_TEXT_LENGTH} characters`);
       });
+    }
+    if (definition.gridfinityCompartmentSplits !== undefined) {
+      if (!Array.isArray(definition.gridfinityCompartmentSplits)) throw new Error(`${label}.gridfinityCompartmentSplits must be an array`);
+      const splits = definition.gridfinityCompartmentSplits as unknown[];
+      if (splits.length > 576) throw new Error(`${label}.gridfinityCompartmentSplits has an unsupported number of entries`);
+      splits.forEach((raw, index) => {
+        const entryLabel = `${label}.gridfinityCompartmentSplits[${index}]`;
+        const entry = objectRecord(raw, entryLabel);
+        for (const key of ["column", "row"] as const) {
+          const value = finiteNumber(entry[key], `${entryLabel}.${key}`);
+          if (value < 0 || value > 1e6) throw new Error(`${entryLabel}.${key} is outside the supported range`);
+        }
+        for (const key of ["x", "z"] as const) {
+          if (entry[key] === undefined) continue;
+          const value = finiteNumber(entry[key], `${entryLabel}.${key}`);
+          if (value < 0 || value > 1e6) throw new Error(`${entryLabel}.${key} is outside the supported range`);
+        }
+      });
+    }
+    if (definition.gridfinityPuzzleSides !== undefined) {
+      const sides = definition.gridfinityPuzzleSides;
+      if (!Array.isArray(sides) || sides.length > 4 || sides.some((side) => side !== "back" && side !== "front" && side !== "left" && side !== "right") || new Set(sides).size !== sides.length) {
+        throw new Error(`${label}.gridfinityPuzzleSides must list back, front, left or right at most once each`);
+      }
     }
     if (definition.gridfinityOpenings !== undefined) {
       if (!Array.isArray(definition.gridfinityOpenings)) throw new Error(`${label}.gridfinityOpenings must be an array`);
@@ -1962,6 +2063,20 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
       throw new Error(`${label}.loftThrough must be smooth or straight`);
     }
   }
+  if (definition.insertFor !== undefined) {
+    const link = definition.insertFor as { body?: unknown } | null;
+    if (!link || typeof link !== "object" || Array.isArray(link) || typeof link.body !== "string" || !link.body) throw new Error(`${label}.insertFor.body must be an object id`);
+  }
+  if (definition.lidFor !== undefined) {
+    const link = definition.lidFor as { body?: unknown; options?: unknown; parts?: unknown; rooms?: unknown } | null;
+    if (!link || typeof link !== "object" || Array.isArray(link)) throw new Error(`${label}.lidFor must be an object`);
+    if (typeof link.body !== "string" || !link.body) throw new Error(`${label}.lidFor.body must be an object id`);
+    if (!link.options || typeof link.options !== "object" || Array.isArray(link.options)) throw new Error(`${label}.lidFor.options must be an object`);
+    if (link.parts !== undefined && (!Array.isArray(link.parts) || link.parts.length > 16 || link.parts.some((id) => typeof id !== "string"))) throw new Error(`${label}.lidFor.parts must be a list of object ids`);
+    if (link.rooms !== undefined && (!Array.isArray(link.rooms) || link.rooms.length > 256 || link.rooms.some((at) => !Array.isArray(at) || at.length !== 2 || !at.every((value) => typeof value === "number" && Number.isFinite(value))))) throw new Error(`${label}.lidFor.rooms must be a list of points`);
+    const up = (link as { up?: unknown }).up;
+    if (up !== undefined && (!Array.isArray(up) || up.length !== 3 || !up.every((value) => typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= 1))) throw new Error(`${label}.lidFor.up must be a direction`);
+  }
   if (kind === "dovetail") {
     // Lenient on purpose: the geometry clamps the values itself; only nonsense is refused.
     for (const key of ["dovetailNeckWidth", "dovetailClearance"] as const) {
@@ -1998,6 +2113,10 @@ function validateShapeDefinition(definition: Record<string, unknown>, label: str
   if (kind === "port" && definition.portClearance !== undefined) {
     const portClearance = finiteNumber(definition.portClearance, `${label}.portClearance`);
     if (portClearance < 0 || portClearance > 2) throw new Error(`${label}.portClearance is outside the supported range`);
+  }
+  if (kind === "polygon" && definition.polygonFlat !== undefined && typeof definition.polygonFlat !== "boolean") {
+    // A polygon with a flat side in front (Discussion #1787): on or off.
+    throw new Error(`${label}.polygonFlat must be true or false`);
   }
   if ((kind === "port" || kind === "polygon") && definition.cornerFillet !== undefined) {
     const cornerFillet = finiteNumber(definition.cornerFillet, `${label}.cornerFillet`);
@@ -2431,6 +2550,8 @@ async function restoreV1(document: LylProjectDocumentV1, assetById: Map<string, 
   const hydrated = hydrateEditorHistoryState(shapes, history, document.history.index, "unlimited", notes, placementWorkplane);
   const restoredView = normalizeDesignView(document.editor.view);
   const restoredSavedViews = normalizeSavedViews(document.editor.savedViews);
+  const restoredSelectionSets = normalizeSelectionSets(document.editor.selectionSets);
+  const restoredDrawingInfo = normalizeDesignDrawingInfo(document.editor.drawingInfo);
   const restoredCornerRulers = normalizeSavedCornerRulers(document.editor.cornerRulers);
   const restoredTape = normalizeSavedTape(document.editor.tapeMeasurements);
   // The files were checked with the document; each is copied out of the archive.
@@ -2458,6 +2579,8 @@ async function restoreV1(document: LylProjectDocumentV1, assetById: Map<string, 
     sketchPlacementWorkplane: normalizePlacementWorkplane(document.editor.sketchPlacementWorkplane),
     ...(restoredView ? { view: restoredView } : {}),
     ...(restoredSavedViews ? { savedViews: restoredSavedViews } : {}),
+    ...(restoredSelectionSets ? { selectionSets: restoredSelectionSets } : {}),
+    ...(restoredDrawingInfo ? { drawingInfo: restoredDrawingInfo } : {}),
     ...(restoredCornerRulers ? { cornerRulers: restoredCornerRulers } : {}),
     ...(restoredTape ? { tapeMeasurements: restoredTape } : {}),
     ...(document.formatVersion < LYL_FORMAT_VERSION ? { migratedFromVersion: document.formatVersion } : {}),

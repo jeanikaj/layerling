@@ -12,6 +12,7 @@ summary: 以八種字型或自訂字型製作凸起或凹刻的文字，還可�
 - **{{ui:prop.height}}：** 文字高出表面的距離。
 - **{{ui:prop.bevel}}：** 把字母邊緣做成圓角，看起來更柔和。以 {{ui:prop.segments}} 決定分成幾段。
 - **{{ui:nameTag.letterEdge}}：** 對字母頂邊做圓角或倒角，就像名牌那樣：{{ui:nameTag.edge.none}}、{{ui:nameTag.edge.round}} 或 {{ui:nameTag.edge.chamfer}}，並設定 {{ui:nameTag.letterEdgeSize}}（初始 0.4 mm，最大不超過文字高度）。它的作用範圍比 {{ui:prop.bevel}} 更廣，但只到筆畫寬度允許的地方：筆畫若比該尺寸的兩倍還窄，邊緣會收成較窄的頂面。底面保持平整，因此單一字母之後還能黏上去。選擇邊緣處理後，它會取代 {{ui:prop.bevel}}。
+- **{{ui:prop.textEdgeSide}}：** 選擇邊緣處理後出現：{{ui:prop.textEdgeSide.top}}（預設，底面如上所述保持平整）、{{ui:prop.textEdgeSide.bottom}} 或 {{ui:prop.textEdgeSide.both}}。底部適用於把文字當作孔，從另一個物體中切出凹陷字母：{{ui:nameTag.edge.chamfer}} 與切入深度一樣大時，每個字母會得到一條 V 形槽，即使在側壁上也無需橋接即可列印。筆畫比尺寸的兩倍還窄時，它的切口只是更淺，就像 V 形銑刀那樣；對於立在列印平台上的實心文字，這樣的筆畫會從空中開始，欄位會提示這一點。選擇 {{ui:prop.textEdgeSide.both}} 時，每個邊最多為文字高度的一半。底部的圓角會在列印平台處懸空，所以那裡用 {{ui:nameTag.edge.chamfer}} 列印更乾淨。名牌的各層仍把邊放在頂部。
 - **長度：** 一段文字最多可有 250 個字元。字母保持大小，行會依需要變長；要縮短它，就把字母調小。{{ui:nameTag.letterEdge}} 僅適用於不超過 40 個字元的文字，因為更長的文字需要幾分鐘才能算出。
 - **尺寸：** 與其他形狀一樣設定這一行的長度與寬度。拖曳控制點或輸入尺寸。
 - **{{ui:prop.textSpacing}}：** 在字型原有間距之上再加的字母間距，以字母大小的百分比表示：0 表示維持字型的原始間距，大於 0 時字母分得更開，小於 0 時（最低 -50）更緊密，自訂字型經常需要這樣。字母大小不變，外框會跟著這一行調整，直線文字與弧形文字都一樣。阿拉伯文與希伯來文的字母會相連，不套用此間距。
@@ -117,6 +118,8 @@ layerling 無法讀取 WOFF2 檔案（幾乎總是有 TTF 或 OTF 版本）、�
 - **{{ui:nameTag.layers}}：** 每個分層一列，由上往下排列。每列包含顏色（點擊色塊）、該層比字母寬出多少、高度，以及 {{ui:nameTag.noHoles}}，用來填平 O、A 等字母中的孔。{{ui:nameTag.corners}} 設定加寬的分層如何繞過字母轉角：{{ui:nameTag.corner.round}}、{{ui:nameTag.corner.bevel}} 或 {{ui:nameTag.corner.miter}}。最上面一列就是字母本身。**+** 會在底部新增一層，**–** 會移除最底層。名牌可有二到六層。
 - **{{ui:nameTag.keyring}}：** 在底層加上一個末端為圓形的直舌片，並開一個鑰匙圈孔；舌片會隨孔一起變大。預設的 3 mm 孔會做出寬 6.5 mm、外伸 6.75 mm 的舌片，孔緣距底層邊緣 2 mm。選擇 {{ui:nameTag.keyringDiameter}} 與 {{ui:nameTag.keyringSide}}：{{ui:nameTag.side.left}}、{{ui:nameTag.side.right}} 或 {{ui:nameTag.side.top}}。{{ui:nameTag.side.free}} 會把孔從名牌上拿開，並在旁邊放一個獨立的 {{ui:nameTag.keyringTab}}，顏色和高度都與底層相同：這是一般形狀，你可以用控制點把它移到名牌需要的任何位置並旋轉。放好後，其屬性中的 {{ui:nameTag.keyringTabFix}} 會把它併入最近的名牌，就固定在目前位置：孔會穿過它到達的每一層，耳片併入底層，而文字或尺寸改變時，兩者都會留在字母的該轉角處。{{ui:nameTag.side.free}} 會把舌片放回原位，讓你再次移動它。孔會穿過它接觸的每一層；改變文字、字母大小或字型時，舌片也會跟著移動。{{ui:nameTag.keyringAlong}} 會讓舌片沿所在邊上下移動（在頂邊上則是左右移動），直到即將離開該邊為止；0 表示中央。當邊的中央正好遇到空隙時（例如 J 旁邊），可以用它把舌片移到字母伸出的部位。
 - **{{ui:nameTag.letterEdge}}：** 對頂層字母的頂邊做圓角或倒角，就像列印出的名牌那樣收邊：{{ui:nameTag.edge.none}}、{{ui:nameTag.edge.round}} 或 {{ui:nameTag.edge.chamfer}}，並設定 {{ui:nameTag.letterEdgeSize}}（初始 0.4 mm，最大不超過層高）。它適用於所有字型與文字。這個邊是字母網格的一部分，因此邊工具會把這類文字當作網格處理，對如此精細的文字負擔很重；請改在這裡選擇邊緣處理。
+- **{{ui:nameTag.flush}}：** 把字母和邊框嵌入最底層，使所有顏色終止於同一個平面；列印時讓這一面朝下貼在列印板上。最底層是承載層：它的高度就是整個標牌的厚度。{{ui:nameTag.flushDepth}} 決定上面各層嵌入多深，所有層一起，初始為 0.8 公釐，對大多數 PLA 足夠；更透光的線材（PETG、部分白色）需要更深，請先列印一個試件。開啟時，上面各層的高度顯示為灰色。在 STEP 匯出中，這些層是網格。
+- **{{ui:tagBack.front}} | {{ui:tagBack.back}}：** 卡片頂端的切換開關。{{ui:tagBack.back}} 在底面加上文字，例如鑰匙遺失時用的電話號碼或電子郵件：按 Enter 換行，各行置中，{{ui:tagBack.size}}、{{ui:tagBack.depth}} 和 {{ui:tagBack.fill}} 決定外觀。字母嵌入最底層並做鏡像處理，把牌子左右翻面時讀起來是正的；選擇 {{ui:tagBack.back}} 時視角會轉到底面。開啟 {{ui:tagBack.fill}} 後，一個同色的獨立零件把字母填平；在 3MF 中它是單獨的零件和顏色。放不下的文字會在距邊緣 1 mm 處被截掉，卡片會提示。弧形文字沒有背面。
 
 每次變更都會立即顯示。名牌是一個綁定：它會整體移動，而每一層仍是各自獨立、各有顏色的實體，切片軟體進行多色列印正需要如此。要對某一層的邊做圓角或倒角，點擊 {{ui:group.editBundle}} 並選擇該層，見[邊緣倒角與抽殼實體](chapter:edges-and-hollowing)。
 
@@ -128,14 +131,16 @@ layerling 無法讀取 WOFF2 檔案（幾乎總是有 TTF 或 OTF 版本）、�
 
 圖示牌是相同的名牌，只是以 SVG 圖示取代字母：一顆心、一朵雲、社團標誌。最上層是圖示，下面是用第二種顏色、稍微加寬的相同輪廓，最底層則是沒有孔的底板。
 
-- **新圖示牌：** 在形狀庫中選擇 {{ui:shape.iconTag}}。會開啟一個小視窗：點擊 {{ui:iconTag.browse}}，選擇 SVG、PNG 或 JPG 檔案，確認圖片，輸入圖示的 {{ui:iconTag.width}}，再點擊 {{ui:iconTag.ok}}。圖示牌會立在平台中央，分層與新名牌相同。
+- **新圖示牌：** 在形狀庫中選擇 {{ui:shape.iconTag}}。會開啟一個小視窗：點擊 {{ui:iconTag.browse}}，選擇 SVG、PNG 或 JPG 檔案，確認圖片，輸入圖示牌的 {{ui:iconTag.width}}（最寬處，不含鑰匙圈耳片），再點擊 {{ui:iconTag.ok}}。圖示牌會立在平台中央，分層與新名牌相同。
 - **從草圖實體：** 匯入的 SVG，或你自己畫的草圖，其設定最上方有 {{ui:nameTag.makeLayers}}。
 
 設定最上方的 {{ui:iconTag.title}} 卡片包含：
 
 - **{{ui:iconTag.replace}}：** 把另一個檔案（SVG、PNG 或 JPG）的圖示換到圖示牌上；分層與寬度維持不變。
-- **{{ui:iconTag.iconWidth}}：** 上層圖示的寬度，單位為 mm。所有分層都會跟著調整並保持對齊。
+- **{{ui:iconTag.iconWidth}}：** 成品圖示牌最寬處的寬度（不含鑰匙圈耳片），單位為 mm。圖示和最底層以上的各層會跟著調整並保持對齊；某層加寬時圖示會變小，圖示牌不會變寬。
 - **{{ui:nameTag.layers}}：** 各列與名牌相同——顏色、加寬多少、{{ui:nameTag.corners}}、高度與 {{ui:nameTag.noHoles}}，以及 **+** 與 **–**，二到六層。最上面一列就是圖示本身。
+- **{{ui:nameTag.flush}}** 和 **{{ui:nameTag.flushDepth}}：** 與名牌相同：圖示和邊框嵌入最底層，所有顏色終止於同一個平面。
+- **{{ui:tagBack.front}} | {{ui:tagBack.back}}：** 與名牌相同：在底面加上文字，例如電話號碼。
 - **{{ui:nameTag.keyring}}：** 與名牌相同：穿過每一層的鑰匙圈孔，底層在圖示之外有一個末端為圓形的舌片。{{ui:nameTag.keyringDiameter}} 與 {{ui:nameTag.keyringSide}} 選擇大小與位置；{{ui:nameTag.side.free}} 會產生獨立舌片，與名牌相同。舌片是依圖示輪廓製作，因此輪廓很不規則的圖示請確認它與底板相接的位置。{{ui:nameTag.keyringAlong}} 會讓舌片沿所在邊移動，與名牌相同。
 - **{{ui:iconTag.count}}：** 想要幾個圖示牌，1 到 100。{{ui:iconTag.fill}} 會依設定中所選印表機的列印平台計算，小標誌可以排滿一整個平台。下方按鈕會製作出來，間距 5 mm，以平台中央為中心排列；第一個就是圖示牌本身。
 
@@ -174,6 +179,7 @@ QR Code 與其他實體一樣：可以移動、旋轉、縮放（保持寬度與
 
 - **{{ui:prop.textRadius}}**（5 至 500 mm）：字母基線所在圓的半徑。字母保持原位，只改變彎曲程度。
 - **{{ui:prop.textLetterWidth}}**（25 至 400 %）：每個字母繪製的寬度，以其本身寬度的百分比表示。小於 100 字母變窄，大於 100 變寬；高度不變，所佔的弧長隨之變長或變短。例如在硬幣上做高而窄的文字。直排文字則用 {{ui:prop.textStretch}} 配合外框達成。
+- **{{ui:prop.textFullCircle}}：** 讓文字繞滿整個圓：字母沿整圈平均分布，最後一個字母與第一個字母之間的間隔和其他字母之間的間隔相同。適合日期環（「1 2 3 … 31」）、錶盤或刻度。如果文字中有空格，接合處也會有一個空格。接合處位於文字中點的正對面；旋轉文字即可移動它。字母保持原有大小，只有對圓來說太長的文字才會縮小。未開啟時，文字最多佔圓周的 84 %。不適用於{{ui:prop.textVertical}}。
 - **{{ui:nameTag.letterSize}}：** 字母的高度。不再取決於形狀的寬度。
 - **{{ui:prop.textInward}}：** 把文字從圓的頂部移到圓的底部。字母的頭部便朝向圓心。
 - **{{ui:prop.textFlipped}}：** 只把字母翻面，讓你能從另一側閱讀。文字在圓上的位置不變。

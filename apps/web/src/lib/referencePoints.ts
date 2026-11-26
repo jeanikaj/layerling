@@ -163,6 +163,27 @@ export function boxSnapSpots(corners: readonly ReferencePosition[]): ReferencePo
   return spots;
 }
 
+/** Whether two positions count as the same point. */
+export function sameReferencePoint(a: ReferencePosition, b: ReferencePosition) {
+  return Math.abs(a.x - b.x) <= REFERENCE_POINT_TOLERANCE
+    && Math.abs(a.y - b.y) <= REFERENCE_POINT_TOLERANCE
+    && Math.abs(a.z - b.z) <= REFERENCE_POINT_TOLERANCE;
+}
+
+/**
+ * The reference point a rotation pivot goes to, dragged or clicked: the nearest within `reach` pixels. None while
+ * the notes are hidden, and none with Shift held (`faceCentre`), which takes the centre of a face instead.
+ */
+export function pivotReference<T extends ReferencePosition>(
+  points: readonly T[],
+  { visible, faceCentre }: { visible: boolean; faceCentre: boolean },
+  project: (point: ReferencePosition) => { x: number; y: number },
+  pointer: { x: number; y: number },
+  reach: number,
+): T | null {
+  return visible && !faceCentre ? nearestReferenceOnScreen(points, project, pointer, reach) : null;
+}
+
 /**
  * The reference point nearest to a pointer on the screen, within `reach` pixels; null if none is that close.
  * The tape measure snaps to it like to a measuring point (#334). `project` gives a point's place on the screen.

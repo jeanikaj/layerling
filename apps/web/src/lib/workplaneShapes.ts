@@ -3,11 +3,12 @@ import { repairClampedMeshBase } from "@/lib/importedMeshBase";
 import { fieldFormulasEqual } from "@/lib/fieldFormulas";
 import { threadFootprintPatch } from "@/lib/threadGeometry";
 import { pulleyFootprint } from "@/lib/pulleyGeometry";
-import { GRIDFINITY_OVERHANG_KEYS, GRIDFINITY_PADDING_KEYS, normalizeGridfinityOverhang, gridfinityCompartmentLabelsEqual, gridfinityDividerPositionsEqual, gridfinityFootprintPatch, gridfinityOpeningsEqual, gridfinityOutlinesEqual, normalizeGridfinityPadding } from "@/lib/gridfinityGeometry";
+import { GRIDFINITY_OVERHANG_KEYS, GRIDFINITY_PADDING_KEYS, normalizeGridfinityOverhang, gridfinityCompartmentLabelsEqual, gridfinityCompartmentSplitsEqual, gridfinityDividerPositionsEqual, gridfinityFootprintPatch, gridfinityOpeningsEqual, gridfinityOutlinesEqual, gridfinityPuzzleFit, normalizeGridfinityPadding, normalizeGridfinityPuzzleSides } from "@/lib/gridfinityGeometry";
 import { MCP_SHAPE_SETTING_KEYS } from "@/lib/mcpShapeSettings";
 import { bentTubeSegmentsEqual } from "@/lib/bentTubeGeometry";
 import { vaseSettingsEqual } from "@/lib/vaseSettings";
 import { qrSettingsEqual } from "@/lib/qrCode";
+import { pattiesSettingsEqual } from "@/lib/pattiesPattern";
 import { torusTubeRatio } from "@/lib/torusShape";
 import { shapeHasAlongDeform } from "@/lib/slopeAlong";
 import type { EdgeTreatmentHistoryEntry, GroupResizeMode, SketchStroke, WorkplaneShape } from "@/types/layerling";
@@ -144,7 +145,7 @@ export function shapeTaperDimensions(shape: WorkplaneShape) {
  * haben feste Masse fuer Einsatz, Haken und Fuss. Die Liste steht hier, damit das Merkmalsfeld, die
  * Vorschau und die MCP-Bruecke nicht je ihre eigene fuehren.
  */
-const SHAPES_WITHOUT_TAPER = new Set<WorkplaneShape["kind"]>(["gear", "hirth", "pulley", "thread", "spring", "pyramid", "ruler", "hinge", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "teardrop", "port", "bentTube", "loft", "vase", "gridfinity", "screwBoss", "snapFit", "rib"]);
+const SHAPES_WITHOUT_TAPER = new Set<WorkplaneShape["kind"]>(["gear", "hirth", "pulley", "thread", "spring", "pyramid", "ruler", "hinge", "counterbore", "countersink", "doubleCountersink", "finishingWasher", "teardrop", "port", "bentTube", "loft", "vase", "gridfinity", "screwBoss", "snapFit", "rib", "patties"]);
 
 export function shapeSupportsTaper(kind: WorkplaneShape["kind"]) {
   return !SHAPES_WITHOUT_TAPER.has(kind);
@@ -604,6 +605,13 @@ export function canonicalizeShape(unrepaired: WorkplaneShape): WorkplaneShape {
     mirrorY: shape.mirrorY || undefined,
     mirrorZ: shape.mirrorZ || undefined,
   };
+  // The Roof (#1931) keeps its three sides and a corner on top, whatever else asks to change them.
+  if (shape.kind === "polygon" && shape.polygonRoof) {
+    next.sides = 3;
+    next.polygonFlat = undefined;
+  } else if (next.polygonRoof !== undefined) {
+    next.polygonRoof = undefined;
+  }
   if (shape.kind === "thread") {
     const footprint = threadFootprintPatch(next);
     Object.assign(next, footprint);
@@ -614,6 +622,9 @@ export function canonicalizeShape(unrepaired: WorkplaneShape): WorkplaneShape {
     // Padding is stored as the geometry reads it, 0 to 41 mm, so a saved project opens again whatever gave it (#455).
     for (const key of Object.values(GRIDFINITY_PADDING_KEYS)) if (typeof next[key] === "number") next[key] = normalizeGridfinityPadding(next[key]);
     for (const key of Object.values(GRIDFINITY_OVERHANG_KEYS)) if (typeof next[key] === "number") next[key] = normalizeGridfinityOverhang(next[key]);
+    // The GridFlock puzzle's sides as the geometry reads them, its fit 0 to 1.
+    if (next.gridfinityPuzzleSides !== undefined) next.gridfinityPuzzleSides = normalizeGridfinityPuzzleSides(next.gridfinityPuzzleSides);
+    if (typeof next.gridfinityPuzzleFit === "number") next.gridfinityPuzzleFit = gridfinityPuzzleFit(next);
     if (typeof next.gridfinityOverhangChamfer === "number") next.gridfinityOverhangChamfer = Number.isFinite(next.gridfinityOverhangChamfer) ? Math.max(0, Math.round(next.gridfinityOverhangChamfer * 100) / 100) : 0;
     const footprint = gridfinityFootprintPatch(next);
     Object.assign(next, footprint);
@@ -636,7 +647,7 @@ export function canonicalizeShape(unrepaired: WorkplaneShape): WorkplaneShape {
     next.torusTubeRatio = torusTubeRatio(next);
   }
   if (shape.groupedShapes) {
-    next.groupedShapes = shape.groupedShapes.map(canonicalizeShape);
+    next.groupedShapes = canonicalGroupedShapes(shape.groupedShapes);
   }
   if ("groupResize" in shape) {
     const groupResize = normalizeGroupResize(shape.groupResize);
@@ -659,6 +670,27 @@ export function canonicalizeShape(unrepaired: WorkplaneShape): WorkplaneShape {
   if (shape.edgeTreatmentHistory) {
     next.edgeTreatmentHistory = canonicalEdgeTreatmentHistory(shape.edgeTreatmentHistory);
   }
+  return next;
+}
+
+const canonicalGroupParts = new WeakMap<readonly WorkplaneShape[], WorkplaneShape[]>();
+
+/**
+ * A group's parts canonicalized once (Issue #1875). Moving a group, or moving something else in the design, keeps the
+ * group's array of parts, and handing back the same canonical array each time is what lets the view keep what it has
+ * built from it: the view tells a group in its parts' colours by this array (shapeGeometrySignature) and keeps the
+ * coloured mesh under it (getPartColoredMeshGeometry). Every step of the history canonicalizes the whole design, and a
+ * new array for every group each time made every arrow key, every Undo and every Redo build all Multicolor groups of
+ * the design again, not only what had moved - seconds in a large design, while a mouse drag, which hands the bodies it
+ * does not touch on as they are, stayed quick. A group whose parts change gets a new array from whoever changes them,
+ * and with it a new canonical one.
+ */
+function canonicalGroupedShapes(parts: readonly WorkplaneShape[]): WorkplaneShape[] {
+  const cached = canonicalGroupParts.get(parts);
+  if (cached) return cached;
+  const next = parts.map(canonicalizeShape);
+  canonicalGroupParts.set(parts, next);
+  canonicalGroupParts.set(next, next);
   return next;
 }
 
@@ -772,6 +804,7 @@ export function workplaneShapesEqual(a: WorkplaneShape, b: WorkplaneShape) {
     a.centerHoleSize === b.centerHoleSize &&
     a.hirthSteepFlank === b.hirthSteepFlank &&
     a.hirthReverse === b.hirthReverse &&
+    pattiesSettingsEqual(a.patties, b.patties) &&
     a.pulleyBeltWidth === b.pulleyBeltWidth &&
     a.pulleyFlange === b.pulleyFlange &&
     a.pulleyFlangeRise === b.pulleyFlangeRise &&
@@ -824,6 +857,7 @@ export function workplaneShapesEqual(a: WorkplaneShape, b: WorkplaneShape) {
     a.springForm === b.springForm &&
     a.springPattern === b.springPattern &&
     a.springEnds === b.springEnds &&
+    a.springInner === b.springInner &&
     a.starPoints === b.starPoints &&
     a.starInnerSize === b.starInnerSize &&
     a.starOuterFillet === b.starOuterFillet &&
@@ -866,6 +900,11 @@ export function workplaneShapesEqual(a: WorkplaneShape, b: WorkplaneShape) {
     a.gridfinityHalfGrid === b.gridfinityHalfGrid &&
     a.gridfinityLargePlate === b.gridfinityLargePlate &&
     a.gridfinitySwallowtail === b.gridfinitySwallowtail &&
+    a.gridfinityClipNotches === b.gridfinityClipNotches &&
+    a.gridfinityPuzzle === b.gridfinityPuzzle &&
+    (a.gridfinityPuzzleSides === undefined) === (b.gridfinityPuzzleSides === undefined) && (a.gridfinityPuzzleSides ?? []).join() === (b.gridfinityPuzzleSides ?? []).join() &&
+    a.gridfinityPuzzleFit === b.gridfinityPuzzleFit &&
+    a.gridfinityClipCount === b.gridfinityClipCount &&
     a.gridfinitySwallowtailClearance === b.gridfinitySwallowtailClearance &&
     a.gridfinityLabelBack === b.gridfinityLabelBack &&
     a.gridfinityLabelFront === b.gridfinityLabelFront &&
@@ -924,12 +963,15 @@ export function workplaneShapesEqual(a: WorkplaneShape, b: WorkplaneShape) {
     gridfinityDividerPositionsEqual(a.gridfinityDividerPositionsX, b.gridfinityDividerPositionsX) &&
     gridfinityDividerPositionsEqual(a.gridfinityDividerPositionsZ, b.gridfinityDividerPositionsZ) &&
     gridfinityCompartmentLabelsEqual(a.gridfinityCompartmentLabels, b.gridfinityCompartmentLabels) &&
+    gridfinityCompartmentSplitsEqual(a.gridfinityCompartmentSplits, b.gridfinityCompartmentSplits) &&
     gridfinityOpeningsEqual(a.gridfinityOpenings, b.gridfinityOpenings) &&
     a.gridfinityOpeningCorner === b.gridfinityOpeningCorner &&
     a.gridfinityOpeningCornerSize === b.gridfinityOpeningCornerSize &&
     gridfinityOutlinesEqual(a.gridfinityOutline, b.gridfinityOutline) &&
     a.dovetailNeckWidth === b.dovetailNeckWidth &&
     a.dovetailClearance === b.dovetailClearance &&
+    JSON.stringify(a.lidFor ?? null) === JSON.stringify(b.lidFor ?? null) &&
+    (a.insertFor?.body ?? null) === (b.insertFor?.body ?? null) &&
     a.loftBottomOutline === b.loftBottomOutline &&
     a.loftTopOutline === b.loftTopOutline &&
     a.loftBottomWidth === b.loftBottomWidth &&
@@ -963,6 +1005,8 @@ export function workplaneShapesEqual(a: WorkplaneShape, b: WorkplaneShape) {
     a.portProfile === b.portProfile &&
     a.portClearance === b.portClearance &&
     a.cornerFillet === b.cornerFillet &&
+    Boolean(a.polygonFlat) === Boolean(b.polygonFlat) &&
+    Boolean(a.polygonRoof) === Boolean(b.polygonRoof) &&
     sameNumberList(a.cornerFillets, b.cornerFillets) &&
     a.topBottomFillet === b.topBottomFillet &&
     a.bottomFillet === b.bottomFillet &&
@@ -990,7 +1034,9 @@ export function workplaneShapesEqual(a: WorkplaneShape, b: WorkplaneShape) {
     (a.paint === b.paint || JSON.stringify(a.paint ?? null) === JSON.stringify(b.paint ?? null)) &&
     vaseSettingsEqual(a.vase, b.vase) &&
     a.vasePartOf === b.vasePartOf &&
+    a.vaseAssembled === b.vaseAssembled &&
     a.gridfinityKeyOf === b.gridfinityKeyOf &&
+    a.gridfinityClipOf === b.gridfinityClipOf &&
     a.textRadius === b.textRadius &&
     a.textSize === b.textSize &&
     a.textInward === b.textInward &&
@@ -1002,8 +1048,12 @@ export function workplaneShapesEqual(a: WorkplaneShape, b: WorkplaneShape) {
     (a.textSpacing ?? 0) === (b.textSpacing ?? 0) &&
     Boolean(a.textKerning) === Boolean(b.textKerning) &&
     (a.textLetterWidth ?? 100) === (b.textLetterWidth ?? 100) &&
+    Boolean(a.textFullCircle) === Boolean(b.textFullCircle) &&
     JSON.stringify(a.textKeyring ?? null) === JSON.stringify(b.textKeyring ?? null) &&
     JSON.stringify(a.textEdge ?? null) === JSON.stringify(b.textEdge ?? null) &&
+    JSON.stringify(a.textFlush ?? null) === JSON.stringify(b.textFlush ?? null) &&
+    JSON.stringify(a.textBack ?? null) === JSON.stringify(b.textBack ?? null) &&
+    Boolean(a.textBackFill) === Boolean(b.textBackFill) &&
     qrSettingsEqual(a.qrCode, b.qrCode) &&
     (a.sbcBoard?.board ?? null) === (b.sbcBoard?.board ?? null) &&
     (a.sbcBoard?.clearance ?? 0) === (b.sbcBoard?.clearance ?? 0) &&
@@ -1014,6 +1064,7 @@ export function workplaneShapesEqual(a: WorkplaneShape, b: WorkplaneShape) {
     Boolean(a.sbcBoard?.lensUp) === Boolean(b.sbcBoard?.lensUp) &&
     (a.sbcBoard?.upReach ?? 0) === (b.sbcBoard?.upReach ?? 0) &&
     (a.sbcBoard?.buttonReach ?? 0) === (b.sbcBoard?.buttonReach ?? 0) &&
+    JSON.stringify(a.fan ?? null) === JSON.stringify(b.fan ?? null) &&
     a.importedMesh === b.importedMesh &&
     a.imagePlate === b.imagePlate &&
     a.sketchProfile === b.sketchProfile &&

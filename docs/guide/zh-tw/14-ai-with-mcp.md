@@ -102,6 +102,7 @@ AI 使用的是與你相同的功能，走的也是你在編輯器中操作時�
 | `layerling_place_on_face` | 把物件放到另一個物件的面上，斜面也可以，就像 C 鍵 |
 | `layerling_perforate_face` | 在平面上或繞圓柱、圓管、孔的側壁切出孔陣列；孔仍會以孔的形式與實體群組在一起 |
 | `layerling_thread_insert` | 在平面上或圓柱、圓管的外側壁上做出熱熔螺紋嵌件的孔（M2 至 M8、1/4-20 或自訂尺寸），事先檢查孔旁的壁厚與孔後的深度是否足夠；孔仍會以孔的形式與實體群組在一起 |
+| `layerling_magnet_pocket` | 在平面或圓柱、圓管外壁上為圓形磁鐵（2 × 1 到 12 × 3 公釐或自訂尺寸）挖槽，下方帶較窄的膠槽，檢查方式相同，並在此處貼合的零件上正對著挖同樣的槽；每個槽都是與零件編組的孔 |
 | `layerling_sweep_sketch` | 沿著由點構成的路徑，把矩形或圓形斷面掃掠成一個精確實體；封閉路徑會形成圓環 |
 | `layerling_push_face` | 把平面推出，或在其中挖出凹槽，可設定距邊緣的內縮與轉角半徑；新零件是與實體群組在一起的草圖實體 |
 | `layerling_paint` | 為多色列印給實體的部分表面上自己的顏色（上色）：把面填色到銳利邊緣、圓斑，或在平面檢視中畫的套索；橡皮擦、全部清除；隨實體儲存，並在 3MF 中寫成已上色的面 |
@@ -136,11 +137,12 @@ AI 使用的是與你相同的功能，走的也是你在編輯器中操作時�
 | `layerling_delete_faces` | 刪除面並補平缺口 |
 | `layerling_array_objects` | 以直線、網格排列或環繞圓周複製 |
 | `layerling_bundle_objects` | 像 Ctrl+B 一樣綁定物件：它們一起移動、保留各自的顏色與類型，匯出時分開輸出 |
-| `layerling_layer_text` | 把文字變成多色列印用的分層堆疊（字母、較寬的外框、無孔底板），或再次重建這樣的堆疊，可加入鑰匙圈孔、設定每層轉角，以及圓角或倒角的字母邊緣；給出名稱清單時，每個名稱做一個名牌 |
+| `layerling_layer_text` | 把文字變成多色列印用的分層堆疊（字母、較寬的外框、無孔底板），或再次重建這樣的堆疊，可加入鑰匙圈孔、設定每層轉角，以及圓角或倒角的字母邊緣；給出名稱清單時，每個名稱做一個名牌；`flush` 把各層嵌入最底層，使所有顏色終止於同一個平面（true、false 或 0.2 至 5 公釐的深度） |
 | `layerling_text_block` | 產生文字區塊：一段文字成為多行中的第一行，每行都是上一行下方的獨立文字，靠左、置中或靠右對齊，每行大小相同或更小 |
-| `layerling_layer_icon` | 把 SVG 圖示（檔案中的文字，或擠出後的草圖實體）變成多色列印用的分層圖示牌——圖示、較寬的外框、無孔底板——或以新的寬度或層數重建；給出數量時，用副本鋪滿平台 |
+| `layerling_layer_icon` | 把 SVG 圖示（檔案中的文字，或擠出後的草圖實體）變成多色列印用的分層圖示牌——圖示、較寬的外框、無孔底板——或以新的寬度或層數重建；給出數量時，用副本鋪滿平台；`flush` 把各層嵌入最底層，使所有顏色終止於同一個平面（true、false 或 0.2 至 5 公釐的深度） |
 | `layerling_create_qr_code` | 從文字或網址產生 QR Code，就像形狀庫中的 {{ui:shape.qrCode}}——可只留 QR Code 本身、在平台上凸起或雕刻，並設定糾錯等級、寬度、高度與靜區，也能指定做成孔；模組小於 0.8 mm 時會提出警告 |
 | `layerling_create_sbc_board` | 放置按實際尺寸的 SBC 主機板，就像形狀庫中的 {{ui:shape.sbcBoard}}——Raspberry Pi 5、4、3 B+、Zero 2 W 或 BIGTREETECH Pi，帶孔和接頭，可設定邊緣接頭的間隙與位置，也可作為孔來切割外殼 |
+| `layerling_create_fan` | 放置按實際尺寸的風扇，就像形狀庫中的 {{ui:shape.fan}}——5015 鼓風機或 30 x 10 軸流風扇；進風口、出風口和螺絲孔可以向外延伸以切穿牆壁 |
 | `layerling_reference_image` | 像 {{ui:import.referenceImage}} 一樣從圖片新增參考圖片，或移動、旋轉、校準（圖片上的兩個點及其實際距離）、淡化或鎖定參考圖片——這是一種永遠不會被匯出或列印的輔助參考；`trace` 將其暗部或亮部變為立在其上的草圖實體 |
 | `layerling_measure_section` | 在兩點之間的剖切平面上量測，兩點會吸附到輪廓——壁厚、間隙、配合 |
 | `layerling_show_overhangs` | 開啟或關閉懸垂剖面線、設定角度，並回報每個實體需要支撐的面積 |
@@ -160,6 +162,7 @@ AI 使用的是與你相同的功能，走的也是你在編輯器中操作時�
 | `layerling_remove_notes` | 依 id 刪除備註 |
 | `layerling_inspect_errors` | 顯示最後一則訊息與最後一個錯誤，以及本次工作階段的訊息與錯誤 |
 | `layerling_wrap_around_cylinder` | 把平放的實體（例如 SVG 或文字）包覆到圓柱上，可向外，或向內作為雕刻 |
+| `layerling_take_rotation_as_zero` | 把旋轉後的網格的目前姿態設為零：實體保持原位，角度為 0 |
 | `layerling_texture_surface` | 為實體加上表面紋理：凹槽、滾花、蜂巢或凸點，用於止滑或美觀，之後仍可修改或移除 |
 | `layerling_simplify_mesh` | 減少匯入網格的三角面數量，可縮減到某個百分比，或指定三角面數 |
 | `layerling_make_exact` | 將匯入網格轉為精確的 CAD 實體：平面、圓柱面、圓錐面、球面和圓環面成為真正的面，邊能乾淨地倒圓角，STEP 也會帶上它們 |
@@ -169,6 +172,7 @@ AI 使用的是與你相同的功能，走的也是你在編輯器中操作時�
 | `layerling_delete_custom_shape` | 移除自訂形狀；已插入的實體會保留 |
 | `layerling_show_workplane` | 隱藏或顯示帶格線的平台，例如為了拍攝底面（只影響檢視） |
 | `layerling_focus_mode` | 開啟或關閉專注模式：隱藏標題列和頁尾以留出更多空間（只影響編輯器框架） |
+| `layerling_detail_level` | 讀取或設定編輯器或草圖的細節等級：模型周圍繪製多少輔助顯示（只影響檢視） |
 | `layerling_set_section_view` | 沿平面剖開檢視以查看內部（只影響檢視，不會真的切開任何東西） |
 | `layerling_measurements` | 顯示或隱藏捲尺的量測，並列出它們及其長度，並像 [[Q]] 一樣隱藏或顯示所選物件周圍的尺寸，並可為其中一個量測輸入長度，像點擊其數字一樣移動其一端的物體 |
 | `layerling_measure_angle` | 像量角器一樣量測角度：三點的頂點處或兩個平面之間，並在檢視中顯示 |
@@ -185,6 +189,7 @@ AI 使用的是與你相同的功能，走的也是你在編輯器中操作時�
 | `layerling_export_drawing` | 製作「2D」匯出的工程圖：在 ISO 圖紙上以 1:1 繪出三個視圖，標註整體尺寸並附圓孔表格，可輸出 SVG 文字或 PDF |
 | `layerling_export_mesh` | 寫出匯出視窗的檔案，可為 STL、3MF、OBJ、SVG（俯視、底面輪廓或可見邊）或用於雷射切割的 DXF，所用實體相同；可寫到這台電腦上的路徑，或以 base64 回傳 |
 | `layerling_save_project` | 把整個可編輯設計儲存成 .lyl 檔，寫到執行 MCP 伺服器的那台電腦上的路徑，不會跳出對話方塊；既有檔案只有在指定 `overwrite` 時才會被取代，寫入時會先經過暫存檔，而編輯器中 Ctrl+S 的目標維持不變 |
+| `layerling_open_project` | 從執行 MCP 伺服器的那台電腦上的路徑開啟已儲存的 .lyl 檔，成為一個新設計，就像你自己開啟該檔案一樣；新設計與檔案沒有關聯，要把修改寫回去，請用 `layerling_save_project` 寫到同一路徑並指定 `overwrite` |
 | `layerling_list_attachments` | 列出附加到設計的檔案（名稱、類型、大小），與「Attachments」面板顯示的一致 |
 | `layerling_get_attachment` | 讀取一個附件，以 base64 傳回其位元組，與面板中的「Download」相同 |
 | `layerling_add_attachment` | 附加一個以 base64 提供的檔案，並經過面板的檢查；已附加的同名檔案只有在 `replace` 時才會被覆寫 |

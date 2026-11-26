@@ -3,7 +3,7 @@ title: Atalhos de teclado
 summary: Todas as teclas num só lugar, tiradas direto do programa, então a lista está sempre certa.
 ---
 
-Os atalhos funcionam enquanto o plano de trabalho estiver em foco. Enquanto você digita num campo, eles não atrapalham. No Mac, [[Cmd]] vale sempre que aqui aparece [[Ctrl]].
+Os atalhos funcionam enquanto o plano de trabalho estiver em foco. Enquanto você digita num campo, eles não atrapalham. No Mac, [[Cmd]] vale sempre que aqui aparece [[Ctrl]]. As teclas têm os nomes do teclado do seu idioma. Uma letra é a letra do seu teclado; em um teclado de outra escrita (cirílica, grega, árabe, hebraica) vale a tecla no lugar da letra latina.
 
 No editor, {{ui:editor.keyboardShortcuts}} na área {{ui:editor.group.help}} abre a mesma lista numa janela. O botão de impressora na janela ({{ui:shortcuts.print}}) imprime só a lista, em preto sobre branco, a lista inteira em um lado de uma folha A4 ou Carta, em três colunas, para deixar à mão como referência rápida. Na janela de impressão do navegador, você também pode salvar como PDF.
 
@@ -19,7 +19,7 @@ Não acha uma ferramenta? Pressione [[Ctrl]]+[[K]] ou clique na lupa na área {{
 - Cada entrada mostra o atalho de teclado e o grupo da barra de opções em que ela fica. Assim, você aprende onde encontrá-la.
 - Entradas em cinza não podem ser executadas agora, na maioria das vezes porque nada está selecionado. Elas continuam na lista para que a pesquisa ainda mostre onde a ferramenta fica.
 
-O guia que você está lendo também tem uma caixa de pesquisa, no topo de cada página: digite uma ou duas palavras e ela lista as seções que contêm todas elas, com as palavras encontradas destacadas. Clique numa delas, ou pressione [[Enter]] para a primeira, para ir direto até lá. A página que se abre destaca cada lugar onde suas palavras aparecem e rola até o primeiro naquela seção; [[Esc]] ou um clique num destaque os remove.
+O guia que você está lendo também tem uma caixa de pesquisa, no topo de cada página: digite uma ou duas palavras e ela lista as seções que contêm todas elas, com as palavras encontradas destacadas. Clique numa delas, ou pressione [[Enter]] para a primeira, para ir direto até lá. A página que se abre destaca cada lugar onde suas palavras aparecem e rola até o primeiro naquela seção; [[Esc]] ou um clique num destaque os remove. Palavras entre aspas são procuradas como frase exata: só aparecem as seções em que elas estão juntas e nessa ordem, e uma única palavra entre aspas só é encontrada inteira, não como parte de uma palavra maior.
 - O nome de uma forma adiciona essa forma ao plano de trabalho, como clicar nela no menu de formas.
 - Com o campo vazio, a pesquisa de comandos lista no topo os comandos que você usou por último.
 - O nome de um sólido do seu projeto encontra esse sólido e o seleciona, o que ajuda num projeto com muitas peças. Os sólidos só aparecem depois que você digita.

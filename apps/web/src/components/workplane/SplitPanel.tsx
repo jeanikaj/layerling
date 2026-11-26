@@ -11,6 +11,7 @@ import { EdgeModifierSlider } from "@/components/workplane/EdgeModifierPanel";
 import { MovableToolPanel } from "@/components/workplane/MovableToolPanel";
 import { t } from "@/lib/i18n";
 import { fromPrinterPlay } from "@/lib/printerPlay";
+import { CUSTOM_MAGNET_SIZE, MAGNET_POCKET_SIZES, magnetPocketSummary, magnetSizeFromId, magnetSizeId, magnetSizeName, MAX_MAGNET_POCKET_DIAMETER, MAX_MAGNET_POCKET_HEIGHT, MIN_MAGNET_POCKET_DIAMETER, MIN_MAGNET_POCKET_HEIGHT } from "@/lib/magnetPocket";
 import {
   MAX_CONNECTOR_CLEARANCE,
   MAX_CONNECTOR_COUNT,
@@ -26,6 +27,9 @@ import {
   MIN_DOVETAIL_DEPTH,
   MIN_DOVETAIL_WIDTH,
   SPLIT_CONNECTOR_KINDS,
+  filamentDowelLength,
+  filamentDowels,
+  splitMagnetPocket,
   type SplitConnectorKind,
   type SplitConnectorOptions,
   type SplitConnectorTally,
@@ -66,9 +70,10 @@ export type SplitConnectorPreviewState =
 
 /**
  * What the panel says under the connectors' settings: how many fit and on how many cut faces, and why some got none - in
- * a dovetail's own words where the dowels' would not fit it.
+ * a dovetail's own words where the dowels' would not fit it. With `filamentTip`, printed dowels that found no room on any
+ * cut face point to the filament dowels, which fit a thinner plate (Discussion #1986).
  */
-export function splitConnectorSummary(preview: SplitConnectorPreviewState, kind: SplitConnectorKind = "dowels"): string[] {
+export function splitConnectorSummary(preview: SplitConnectorPreviewState, kind: SplitConnectorKind = "dowels", filamentTip = false): string[] {
   if (preview.state === "working") return [t("split.connectorsFinding")];
   if (preview.state !== "done") return [];
   const { tally, holes } = preview;
@@ -76,6 +81,7 @@ export function splitConnectorSummary(preview: SplitConnectorPreviewState, kind:
   const lines: string[] = [];
   if (tally.faces > 0 && tally.placed === 0) {
     lines.push(t(dovetail ? "split.dovetailNoRoom" : "split.connectorsNoRoom"));
+    if (filamentTip && kind === "dowels") lines.push(t("split.dowelFilamentTip", { label: t("split.dowelFilament") }));
   } else if (tally.placed > 0) {
     lines.push(tally.faces === 1 ? t("split.connectorsFitOne", { count: tally.placed }) : t("split.connectorsFitMany", { count: tally.placed, faces: tally.faces }));
     if (tally.tooSmall === 1) lines.push(t(dovetail ? "split.dovetailTooSmallOne" : "split.connectorsTooSmallOne"));
@@ -287,19 +293,20 @@ export function SplitPanel({
               }}
             />
             <small id="split-position-unit">{unit}</small>
-            <button
-              type="button"
-              className={`split-position-pick ${picking ? "active" : ""}`}
-              aria-pressed={picking}
-              aria-label={t("split.pickFace")}
-              title={t("split.pickFaceHint")}
-              disabled={busy}
-              onClick={onPickToggle}
-            >
-              <MousePointerClick size={17} />
-            </button>
           </span>
         </span>
+        {/* With its name beside the symbol (Discussion #2082): the symbol alone did not say what it does. */}
+        <button
+          type="button"
+          className={`split-position-pick ${picking ? "active" : ""}`}
+          aria-pressed={picking}
+          title={t("split.pickFaceHint")}
+          disabled={busy}
+          onClick={onPickToggle}
+        >
+          <MousePointerClick size={17} aria-hidden="true" />
+          <span>{t("split.pickFace")}</span>
+        </button>
         <input
           type="range"
           min={displayMin}
@@ -414,18 +421,70 @@ export function SplitPanel({
             disabled={busy}
             onChange={(value) => onConnectorsChange({ dovetailTurn: value })}
           />
-        </>) : (<>
+        </>) : connectors.kind === "magnets" ? (<>
+          <label className="edge-modifier-field">
+            <span>{t("magnetPocket.size")}</span>
+            <select
+              aria-label={t("magnetPocket.size")}
+              value={magnetSizeId({ diameter: connectors.magnetDiameter, height: connectors.magnetHeight })}
+              disabled={busy}
+              onChange={(event) => {
+                const size = magnetSizeFromId(event.currentTarget.value);
+                if (size) onConnectorsChange({ magnetDiameter: size.diameter, magnetHeight: size.height });
+              }}
+            >
+              {MAGNET_POCKET_SIZES.map((size) => <option key={`${size.diameter}x${size.height}`} value={`${size.diameter}x${size.height}`}>{t("magnetPocket.sizeOption", { size: magnetSizeName(size) })}</option>)}
+              <option value={CUSTOM_MAGNET_SIZE}>{t("magnetPocket.custom")}</option>
+            </select>
+          </label>
           <EdgeModifierSlider
-            label={t("split.connectorDiameter")}
-            value={connectors.diameter}
-            min={MIN_CONNECTOR_DIAMETER}
-            max={MAX_CONNECTOR_DIAMETER}
+            label={t("magnetPocket.diameter")}
+            value={connectors.magnetDiameter}
+            min={MIN_MAGNET_POCKET_DIAMETER}
+            max={MAX_MAGNET_POCKET_DIAMETER}
             step={0.5}
             workspace={workspace}
             length
             disabled={busy}
-            onChange={(value) => onConnectorsChange({ diameter: value })}
+            onChange={(value) => onConnectorsChange({ magnetDiameter: value })}
           />
+          <EdgeModifierSlider
+            label={t("magnetPocket.height")}
+            value={connectors.magnetHeight}
+            min={MIN_MAGNET_POCKET_HEIGHT}
+            max={MAX_MAGNET_POCKET_HEIGHT}
+            step={0.5}
+            workspace={workspace}
+            length
+            disabled={busy}
+            onChange={(value) => onConnectorsChange({ magnetHeight: value })}
+          />
+          <label className="edge-modifier-check" title={t("magnetPocket.wellHint")}>
+            <input type="checkbox" checked={connectors.magnetWell} disabled={busy} onChange={(event) => onConnectorsChange({ magnetWell: event.currentTarget.checked })} />
+            <span>{t("magnetPocket.well")}</span>
+          </label>
+          <span className="shell-openings-summary">{magnetPocketSummary(splitMagnetPocket(connectors))}</span>
+        </>) : (<>
+          {connectors.kind === "dowels" ? (
+            // Pieces of filament as the dowels, for a plate too thin for a printed one (Discussion #1986).
+            <label className="edge-modifier-check" title={t("split.dowelFilamentHint")}>
+              <input type="checkbox" checked={connectors.dowelFilament} disabled={busy} onChange={(event) => onConnectorsChange({ dowelFilament: event.currentTarget.checked })} />
+              <span>{t("split.dowelFilament")}</span>
+            </label>
+          ) : null}
+          {filamentDowels(connectors) ? null : (
+            <EdgeModifierSlider
+              label={t("split.connectorDiameter")}
+              value={connectors.diameter}
+              min={MIN_CONNECTOR_DIAMETER}
+              max={MAX_CONNECTOR_DIAMETER}
+              step={0.5}
+              workspace={workspace}
+              length
+              disabled={busy}
+              onChange={(value) => onConnectorsChange({ diameter: value })}
+            />
+          )}
           <EdgeModifierSlider
             label={t("split.connectorDepth")}
             value={connectors.depth}
@@ -437,7 +496,9 @@ export function SplitPanel({
             disabled={busy}
             onChange={(value) => onConnectorsChange({ depth: value })}
           />
-          {connectors.kind === "dowels" ? (
+          {filamentDowels(connectors) ? (
+            <span className="shell-openings-summary">{t("split.dowelFilamentCut", { length: String(filamentDowelLength(connectors)) })}</span>
+          ) : connectors.kind === "dowels" ? (
             // For a printer whose bed moves, where the standing dowels wobble loose (breakawayBase.ts).
             <label className="edge-modifier-check" title={t("split.dowelBaseHint")}>
               <input type="checkbox" checked={connectors.dowelBase} disabled={busy} onChange={(event) => onConnectorsChange({ dowelBase: event.currentTarget.checked })} />
@@ -458,7 +519,7 @@ export function SplitPanel({
         />
         {fromPrinterPlay("split.connectorClearance", connectors.clearance, printerPlay) ? <span className="shell-openings-summary">{t("printerPlay.fromFitTest")}</span> : null}
         <div className="split-connector-summary" role="status">
-          {splitConnectorSummary(connectorPreview, connectors.kind).map((line) => <span key={line}>{line}</span>)}
+          {splitConnectorSummary(connectorPreview, connectors.kind, connectors.kind === "dowels" && !connectors.dowelFilament).map((line) => <span key={line}>{line}</span>)}
         </div>
       </>)}
       </>)}

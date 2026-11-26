@@ -7,7 +7,7 @@ Přesné modelování vyžaduje měření. Layerling nabízí několik nástroj�
 
 ## Měření vzdáleností
 
-Nástroj je ve spodní části levé lišty pohledu, {{ui:camera.tapeTools}}. Měří vzdálenosti mezi rohy, hranami a plochami. Kliknutím otevřete nabídku pěti tlačítek. Překáží-li, přetáhněte ji za úchyt vlevo na jiné místo. Dvojklik na úchyt ji vrátí.
+Nástroj je ve spodní části levé lišty pohledu, {{ui:camera.tapeTools}}. Měří vzdálenosti mezi rohy, hranami a plochami. Kliknutím otevřete nabídku pěti tlačítek. {{ui:camera.addMeasurement}} je hned zapnuté, takže další dvě kliknutí v pohledu už měří; druhé kliknutí na toto tlačítko nástroj odloží a nabídka zůstane otevřená. Jsou-li měření skrytá, zůstane vypnuté, dokud na něj nekliknete. Překáží-li, přetáhněte ji za úchyt vlevo na jiné místo. Dvojklik na úchyt ji vrátí.
 
 ![Nabídka měření: přidání, přesunutí bodů, odebrání, celé hrany a odstranění všech měření.](shot:tape-menu)
 
@@ -18,6 +18,7 @@ Nástroj je ve spodní části levé lišty pohledu, {{ui:camera.tapeTools}}. M�
 5. **{{ui:camera.deleteAllMeasurements}}:** Odstraní všechna měření. Protože operaci nelze vrátit, program si vyžádá potvrzení. Bez měření nemá příkaz co odstranit.
 6. **{{ui:camera.tapeMarkMiddle}}:** Uprostřed každého měření je malá kulatá značka se spodní polovinou vyplněnou. Vytvoří [referenční bod](#referencni-body) ve středu měření. U kruhové hrany, například okraje otvoru, je to střed kružnice, a to i u importované sítě. U průměru nebo přímého měření vznikne bod v polovině úsečky. Přetahovaný tvar se na něj přichytí svým středem. Již existující bod se nevytváří znovu. Měřicí pásmo se k referenčním bodům přichytává stejně jako k rohům. Chcete-li měřit od středu kružnice nebo úsečky, nejprve jej označte a potom na bod klikněte.
 7. **{{ui:camera.tapeTypeLength}}:** Leží-li aspoň jeden konec přímého měření na tělese, lze na jeho číslo kliknout. Zadejte novou délku a stiskněte [[Enter]]: těleso u druhého bodu se posune podél změřené čáry, až je vzdálenost přesně taková, jako u pravítka v Tinkercadu. Je-li vybráno jen těleso u prvního bodu, posune se to. Měřicí body zůstávají na tělese, takže měření jde s ním. Měřte od rohu, hrany nebo středu plochy či otvoru, a díly tak umístíte na přesnou vzdálenost: od středu otvoru ke středu horní plochy válce se válec posune střed na střed. Záporná délka ho posune o tolik za první bod, třeba 5 mm dovnitř za hranu kvádru. [Referenční bod](#referencni-body) nepatří k žádnému tělesu, mezi dvěma referenčními body se proto nic neposune. Vede-li měření podél dvou nebo tří os, má pole pod délkou ještě políčko pro každou z nich (ΔX, ΔY, ΔZ, vzdálenosti, které se ukážou při najetí na číslo): zadejte hodnotu tam a těleso se posune jen podél této osy. [[Tab]] přechází z políčka na políčko, [[Esc]] pole zavře a nic neposune. Při najetí na číslo uvidíte, které těleso se posune, nebo proč žádné nemůže: je zamčené, oba body leží na stejném tělese, nebo žádný neleží na tělese. Hlášení potom řekne, co se posunulo a o kolik; jedno Zpět to vrátí.
+8. **Tloušťka pod ukazatelem:** Dokud je aktivní **{{ui:camera.addMeasurement}}** a ještě není umístěn žádný bod, ukáže najetí na plochu, jak je tam těleso tlusté: měřeno kolmo k ploše přímo dovnitř až tam, kde materiál končí, s čárkovanou čarou skrz těleso. U vydutého boxu je to stěna, u plného kvádru celý kvádr, na boku válce jeho průměr. Přejíždějte ukazatelem po dílu a zkontrolujte jeho stěny, aniž byste umístili měření.
 
 [[Esc]] ukončí režim měření.
 
@@ -66,6 +67,8 @@ V nastavení {{ui:workspace.appearance}} jsou dva přepínače průběžného k�
 S volbou {{ui:workspace.dimensionAxisColors}} dostane každé políčko barvu své osy jako úchyty: červenou pro X, zelenou pro Y a modrou pro Z. I u malého dílu tak hned vidíš, které číslo je které.
 
 Když na chvíli překážejí, stiskněte [[Q]]: rozměry a vzdálenosti kolem výběru zmizí a díl, který posouváte, je dobře vidět. Další [[Q]] je vrátí. Úchyt, na který ukážete, svůj rozměr ukáže i tak.
+
+U velmi malého dílu mohou překážet i samotné úchyty. [[Shift+Q]] je všechny skryje - čtverečky pro velikost i šipky pro zvednutí, posun a otočení - a další [[Shift+Q]] je vrátí. I bez nich lze díl táhnout a jeho rozměry psát vpravo a seznam objektů ukazuje, který díl je vybrán.
 
 ## Kontrola vůle
 
@@ -118,6 +121,7 @@ Referenční obrázek je obrázek, podle kterého zarovnáte díly: položte fot
 - Posouvejte, otáčejte a měňte ho úchyty jako každý tvar. Těleso před ním se vybere jako první, takže při práci na něm obrázek omylem nechytnete.
 - {{ui:referenceImage.seeThrough}} v jeho nastavení ho zeslabí od plně viditelného po sotva patrný.
 - {{ui:referenceImage.calibrate}} mu dá skutečnou velikost jako ve skice: klikněte na dva body obrázku, jejichž skutečnou vzdálenost znáte - třeba dva montážní otvory desky - a zadejte tuto vzdálenost do pole {{ui:referenceImage.distance}}. Obrázek si zachová proporce i střed.
+- Ve skice na podložce je obrázek vidět pod vaší kresbou: na svém místě, ve své velikosti a natočení, zrcadlený, pokud jste ho zrcadlili, a s nastavením {{ui:referenceImage.seeThrough}}, takže ho můžete obkreslit. Nakloněný nebo nahoru a dolů zrcadlený obrázek a každý obrázek ve skice na ploše ukáže jen svůj obrys.
 - Zamkněte ho zámkem v záhlaví jeho nastavení a zůstane na místě: kliknutí pak jím procházejí na podložku. K odemčení ho vyberte v seznamu objektů.
 - Obrázek je v souboru návrhu uložen jednou, ať se kopíruje nebo vrací kolikrát chce. Velký obrázek zvětší soubor o tolik; hlášení při přidání uvede jeho velikost.
 - AI ho přidá, posune, kalibruje, zeslabí a zamkne pomocí `layerling_reference_image`. S `trace` obrázek obkreslí do tělesa náčrtu, které na něm stojí, jako {{ui:sketch.traceImage}} v náčrtu.

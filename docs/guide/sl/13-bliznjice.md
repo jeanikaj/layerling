@@ -3,7 +3,7 @@ title: Bližnjice na tipkovnici
 summary: Vse tipke na prvi pogled – prevzete neposredno iz programa, da je seznam vedno pravilen.
 ---
 
-Bližnjice delujejo, dokler ima delovna površina fokus. Pri vpisovanju v polje se ne vmešavajo. Na Macu povsod tam, kjer tu piše [[Ctrl]], velja [[Cmd]].
+Bližnjice delujejo, dokler ima delovna površina fokus. Pri vpisovanju v polje se ne vmešavajo. Na Macu povsod tam, kjer tu piše [[Ctrl]], velja [[Cmd]]. Tipke se imenujejo tako kot na tipkovnici vašega jezika. Črka je črka na vaši tipkovnici; na tipkovnici z drugo pisavo (cirilica, grška, arabska, hebrejska) šteje tipka na mestu latinične črke.
 
 V urejevalniku {{ui:editor.keyboardShortcuts}} v področju {{ui:editor.group.help}} odpre isti seznam kot okno. Gumb s tiskalnikom v oknu ({{ui:shortcuts.print}}) natisne samo seznam, črno na belem in z veliko pisavo; pogovorno okno za tiskanje v brskalniku ponuja tudi shranjevanje v PDF.
 
@@ -19,7 +19,7 @@ Ne najdeš orodja? Pritisni [[Ctrl]]+[[K]] ali klikni povečevalno steklo v podr
 - Vsak vnos pokaže tipke, ki naredijo isto, in področje vrstice, v katerem leži, tako se naučiš, kje je.
 - Zasivljenih vnosov trenutno ni mogoče izvesti, običajno zato, ker ni nič izbrano. Ostanejo na seznamu, da iskanje vseeno izda, kje orodje leži.
 
-Navodila, ki jih bereš, imajo tudi iskalno polje, na vrhu vsake strani: vpiši eno ali dve besedi in pokaže razdelke, ki vsebujejo vse, z označenimi iskanimi besedami. Klikni enega ali pritisni [[Enter]] za prvega, da skočiš naravnost tja. Stran, ki se odpre, označi vsako mesto, kjer stojijo tvoje besede, in se pomakne do prvega v izbranem razdelku; [[Esc]] ali klik na oznako jih odstrani.
+Navodila, ki jih bereš, imajo tudi iskalno polje, na vrhu vsake strani: vpiši eno ali dve besedi in pokaže razdelke, ki vsebujejo vse, z označenimi iskanimi besedami. Klikni enega ali pritisni [[Enter]] za prvega, da skočiš naravnost tja. Stran, ki se odpre, označi vsako mesto, kjer stojijo tvoje besede, in se pomakne do prvega v izbranem razdelku; [[Esc]] ali klik na oznako jih odstrani. Besede v narekovajih išče kot natančno besedno zvezo: pokaže samo razdelke, kjer stojijo skupaj v tem vrstnem redu, ena sama beseda v narekovajih pa se najde le kot cela beseda, ne kot del daljše.
 
 - Ime oblike vstavi to obliko na delovno površino, popolnoma tako kot klik v meniju oblik.
 - Pri praznem polju so zadnje uporabljeni ukazi zgoraj.

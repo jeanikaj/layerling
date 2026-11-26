@@ -23,7 +23,7 @@ Vsi tvoji načrti se pozneje pojavijo na začetni strani s sličico predogleda. 
 - **V sredini** je delovna ravnina. Tu postavljaš oblike, jih naravnaš in vidiš rezultat.
 - **Desno** se pokažejo **lastnosti** izbrane oblike: barva, mere, lega in vse drugo, kar oblika še ima. Vpisovanje številk je natančnejše od vlečenja.
 - **Levo** je vrstica pogleda z orientacijsko kocko nad njo. S tem se premikaš po prizoru, več o tem v poglavju [Pogled in delovna ravnina](chapter:pogled-in-delovna-ravnina).
-- **Ob vrstici pogleda** se odpre **seznam objektov** ([[Ctrl]]+[[U]]) z vsemi oblikami načrta. Več v poglavju [Izbiranje in razporejanje](chapter:izbiranje-in-razporejanje).
+- **Ob vrstici pogleda** se odpre **seznam objektov** ([[Ctrl]]+[[Shift]]+[[O]]) z vsemi oblikami načrta. Več v poglavju [Izbiranje in razporejanje](chapter:izbiranje-in-razporejanje).
 - **Desno od orientacijske kocke** se pokaže **sporočilo stanja**, ko ti ima layerling kaj povedati, na primer kaj orodje pričakuje od tebe. Ko ni kaj povedati, ga ni. Po koraku, kot je združitev, na kratko pove, kaj se je zgodilo, in ponudi {{ui:shortcuts.undo}}; {{ui:workspace.showStepNotices}} v nastavitvah ta sporočila izklopi.
 - **Okna orodij** se odprejo nad delovno ravnino, ko zaženeš orodje, kot je {{ui:editor.tool.fillet}}, {{ui:editor.tool.array}} ali {{ui:editor.tool.hollow}}. Če kaj zakrivajo, jih za naslovno vrstico odmakni.
 - **Čisto zgoraj** preklapljaš med {{ui:editor.modeGeometry}} in {{ui:editor.modeSketch}}, preimenuješ načrt ter nastaviš jezik in barvno shemo.
@@ -34,7 +34,7 @@ Z miško se ustavite nad gumbom in videli boste njegovo ime. Če niste prepriča
 
 ### Prilepi
 
-{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) doda v načrt to, kar si kopiral z {{ui:editor.tool.copy}}. {{ui:common.duplicate}} kopira in prilepi v enem koraku. Lepljenje postavi vsak del malo ob mesto, kjer je bil. Deli iz drugega programa lahko pristanejo daleč od plošče; zanje je v nastavitvah, pod {{ui:workspace.appearance}}, {{ui:workspace.pasteCentered}}: lepljenje potem dele skupaj postavi na sredino delovne ravnine in jih spusti nanjo.
+{{ui:editor.tool.paste}} ([[Ctrl]]+[[V]]) doda v načrt to, kar si kopiral z {{ui:editor.tool.copy}}. {{ui:common.duplicate}} kopira in prilepi v enem koraku. Lepljenje postavi vsak del malo ob mesto, kjer je bil. Deli iz drugega programa lahko pristanejo daleč od plošče; zanje je v nastavitvah, pod {{ui:workspace.controls}}, {{ui:workspace.pasteCentered}}: lepljenje potem dele skupaj postavi na sredino delovne ravnine in jih spusti nanjo.
 
 ### Izbriši
 

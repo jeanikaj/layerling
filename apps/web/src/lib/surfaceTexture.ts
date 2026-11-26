@@ -103,7 +103,7 @@ import {
   type SurfaceTextureOwnImage,
 } from "@/lib/surfaceTextureImages";
 
-export const SURFACE_TEXTURE_PATTERNS = ["grooves", "knurl", "honeycomb", "bumps", "cells", "bricks", "timber", "stones", "squares", "triangles", "knit", "rope", "weave", "bark", "wood", "carbon", "grain", "image", "cracks", "text"] as const;
+export const SURFACE_TEXTURE_PATTERNS = ["grooves", "knurl", "honeycomb", "bumps", "cells", "hammered", "bricks", "timber", "stones", "squares", "triangles", "knit", "rope", "weave", "bark", "wood", "carbon", "grain", "image", "cracks", "text"] as const;
 export type SurfaceTexturePattern = (typeof SURFACE_TEXTURE_PATTERNS)[number];
 /** Cross-section of a groove or joint: round (cosine), pointed (V) or flat (a flat floor with steep flanks). */
 /** round: a soft bell; pointed: a V (a cone on a bump); flat: a flat floor or top; dome: a half circle (half a ball on a bump). */
@@ -166,10 +166,11 @@ export type SurfaceTextureWoodCut = (typeof SURFACE_TEXTURE_WOOD_CUTS)[number];
 export const SURFACE_TEXTURE_IMAGES = [...SURFACE_TEXTURE_IMAGE_PRESETS, "own"] as const;
 export type SurfaceTextureImage = (typeof SURFACE_TEXTURE_IMAGES)[number];
 /**
- * Image tiles: repeated, mirrored (no seam at their borders), every other row half a tile along - or once: a single image
- * pressed on where it is put, like a text (see imageOnce).
+ * Image tiles: repeated, mirrored (no seam at their borders), as a kaleidoscope (mirrored, and folded over the tile's
+ * diagonal as well, so a small piece of the image becomes an ornament; Discussion #1975), every other row half a tile
+ * along - or once: a single image pressed on where it is put, like a text (see imageOnce).
  */
-export const SURFACE_TEXTURE_TILINGS = ["repeat", "mirror", "staggered", "once"] as const;
+export const SURFACE_TEXTURE_TILINGS = ["repeat", "mirror", "kaleidoscope", "staggered", "once"] as const;
 export type SurfaceTextureTiling = (typeof SURFACE_TEXTURE_TILINGS)[number];
 /** Bumps: every other row half a spacing along (a hexagon grid), or in straight rows and columns (issue #1030). */
 export const SURFACE_TEXTURE_BUMP_GRIDS = ["staggered", "straight"] as const;
@@ -770,7 +771,7 @@ const TILE_SNAP = 1.25 * SURFACE_MIN_EDGE;
 const TILE_COST = 160;
 const TILE_CUT_LIMIT = 2;
 /** Around a cylinder a whole number of cells, stitches, strands, stakes or tiles goes round. */
-const ROUND_PATTERNS: readonly SurfaceTexturePattern[] = ["honeycomb", "bumps", "cells", "knit", "rope", "weave", "carbon", "bark", "image"];
+const ROUND_PATTERNS: readonly SurfaceTexturePattern[] = ["honeycomb", "bumps", "cells", "hammered", "knit", "rope", "weave", "carbon", "bark", "image"];
 const SQRT3 = Math.sqrt(3);
 
 function clamp(value: number, min: number, max: number) {
@@ -854,6 +855,8 @@ export const SURFACE_TEXTURE_STARTERS: Partial<Record<SurfaceTexturePattern, Par
   grooves: { angle: 0 },
   bumps: { profile: "dome" },
   cells: { spacing: 9, depth: 0.8, width: 0.22, profile: "round" },
+  // Hammered dents soft as a hammer's round face leaves them, about 7 mm across: the look of a hand-hammered mug.
+  hammered: { spacing: 5, depth: 0.5, profile: "round" },
   // Bricks run into a box's corners: kept smooth there, the corner stood in a strip of its own between two walls.
   bricks: { spacing: 12, depth: 0.6, profile: "flat", keepEdges: false },
   // A panel about a metre wide and beams of 20 cm at 1:87; a corner post on both sides of a corner, as on a house.
@@ -1095,6 +1098,45 @@ function cellEdge(u: number, v: number, cell: number, around: number | null, see
     if (d < best) best = d;
   }
   return best;
+}
+
+/** A hammered dent is this share of the spacing across at `width` 0, and this much more at `width` 1, before its own spread. */
+const HAMMER_SIZE = 0.45;
+const HAMMER_SIZE_WIDTH = 0.5;
+/** How much each dent's size and depth go up or down from the others' (0 to 1). */
+const HAMMER_SIZE_SPREAD = 0.4;
+const HAMMER_DEPTH_SPREAD = 0.35;
+/** Where two dents meet, the ridge between them is rounded over this share of the depth (a smooth maximum), so it prints and shades without a staircase. */
+const HAMMER_RIDGE = 0.18;
+
+/**
+ * Hammered metal (Discussion #1892): round dents, each where a hammer struck, one at a random point in every grid cell of
+ * `cell` mm (the cells' points, see cellSites), each a little larger or smaller and deeper or shallower than the others
+ * by the seed. They overlap, and where they do the deeper one wins, so little ridges (rounded a touch) stay between them as on a
+ * hand-hammered copper mug. `width` sets their size (at 0.6 about three quarters of the spacing across), the profile
+ * their shape (round: a soft hollow; dome: a ball's print). 1 is the deepest point, 0 the surface between dents.
+ */
+function hammeredValue(u: number, v: number, cell: number, around: number | null, seed: number, width: number, profile: SurfaceTextureProfile) {
+  const { n } = cellSites(u, v, cell, around, seed);
+  const base = cell * (HAMMER_SIZE + HAMMER_SIZE_WIDTH * clamp(width, 0.02, 1));
+  let best = 0;
+  let second = 0;
+  for (let k = 0; k < n; k += 1) {
+    const key = CELL_KEY[k];
+    const size = base * (1 - HAMMER_SIZE_SPREAD / 2 + HAMMER_SIZE_SPREAD * hash3(key % 100000, Math.floor(key / 100000), seed + 104729));
+    const t = Math.sqrt(CELL_D[k]) / size;
+    if (t >= 1) continue;
+    const depth = 1 - HAMMER_DEPTH_SPREAD * hash3(Math.floor(key / 100000), key % 100000, seed + 15485863);
+    const value = surfaceFalloff(t, profile) * depth;
+    if (value > best) {
+      second = best;
+      best = value;
+    } else if (value > second) second = value;
+  }
+  // The two deepest dents here meet in a rounded ridge; the rounding fades out where the second dent ends, so a dent's rim
+  // stays where it is.
+  const near = Math.max(HAMMER_RIDGE - (best - second), 0) / HAMMER_RIDGE;
+  return Math.min(1, best + ((near * near * HAMMER_RIDGE) / 4) * Math.min(1, second / HAMMER_RIDGE));
 }
 
 /** The cross-section of a yarn or strand: round (and dome) a half circle, else as the other patterns. */
@@ -1924,10 +1966,14 @@ function imageValue(u: number, v: number, s: SurfaceTextureSettings, layout: Sur
   let tu = uu / layout.cell, tv = vv / (layout.tileHeight || layout.cell);
   // Once: a single tile (the session lays it on round its anchor; see onceValues), nothing beside it.
   if (s.imageTiling === "once" && (tu < 0 || tu > 1 || tv < 0 || tv > 1)) return 0;
-  const mirror = s.imageTiling === "mirror";
+  const kaleidoscope = s.imageTiling === "kaleidoscope";
+  const mirror = kaleidoscope || s.imageTiling === "mirror";
   if (mirror) {
     tu = mirrorTile(tu);
     tv = mirrorTile(tv);
+    // A kaleidoscope folds the mirrored tile over its diagonal too: only the triangle below the diagonal is ever read,
+    // and eight copies of it meet at every corner. The folds are mirrors, so the pattern has no seam along them.
+    if (kaleidoscope && tv > tu) [tu, tv] = [tv, tu];
   } else if (s.imageTiling === "staggered" && Math.floor(tv) % 2) tu += 0.5;
   const grey = sampleGreyImage(image, tu, tv, mirror);
   return s.imageInvert ? 1 - grey : grey;
@@ -2466,6 +2512,8 @@ function patternValue(u: number, v: number, s: SurfaceTextureSettings, layout: S
     }
     case "cells":
       return surfaceFalloff(cellEdge(u, v, layout.cell, layout.around, s.seed) / ((layout.cell / 2) * s.width), s.profile);
+    case "hammered":
+      return hammeredValue(u, v, layout.cell, layout.around, s.seed, s.width, s.profile);
     case "bricks":
       return brickValue(u, v, s, layout, axis, face);
     case "timber":
@@ -3330,7 +3378,7 @@ function stripesAreCut(s: SurfaceTextureSettings) {
  * weave and crossing bands, the bricks' bond, joint and courses (not how unevenly they lie: that only moves their faces).
  */
 function patternExtras(s: SurfaceTextureSettings, layout: SurfaceTextureLayout) {
-  if (s.pattern === "cells" || s.pattern === "grain") return [s.seed];
+  if (s.pattern === "cells" || s.pattern === "grain" || s.pattern === "hammered") return [s.seed];
   if (s.pattern === "bumps") return [s.bumpGrid];
   if (s.pattern === "carbon") return [s.carbonWeave, s.carbonCross];
   if (s.pattern === "bricks") return [s.brickBond, s.brickJoint, layout.rowHeight ?? s.brickHeight, layout.rowOrigin ?? 0, layout.brickAxes ?? null, layout.capBricks ?? null];
@@ -3364,7 +3412,9 @@ function targetEdge(s: SurfaceTextureSettings) {
   // Bark: its marks are a share of its size (a birch's lenticels are thin); wood: a ring (flanks refined after).
   // A stone wall: its faces' bulge and lumps a quarter of a stone at medium detail; the edges are refined and cut after
   // (see stoneCuts), finer, every grid triangle cost as many more there.
-  const size = s.pattern === "stones" ? s.spacing / 0.8 : s.pattern === "bricks" ? Math.min(s.spacing, s.brickHeight) : s.pattern === "bark" ? s.spacing / BARK_STARTS[s.barkType].detail : s.pattern === "wood" ? s.ringWidth : s.pattern === "grain" ? s.spacing / 2 : s.pattern === "knit" ? s.spacing / 2.2 : s.pattern === "rope" ? s.spacing / 1.5 : s.pattern === "weave" ? s.spacing / 2 : s.pattern === "carbon" ? Math.min(s.spacing, s.carbonCross || s.spacing) * (s.projection === "cylinder" ? 2 : 0.5) : s.spacing;
+  // Hammered dents: their rims and the ridges between them run across the grid at every angle; at a third of a dent
+  // across they ran over the grid's triangles in a zigzag that showed as teeth along every rim.
+  const size = s.pattern === "stones" ? s.spacing / 0.8 : s.pattern === "bricks" ? Math.min(s.spacing, s.brickHeight) : s.pattern === "bark" ? s.spacing / BARK_STARTS[s.barkType].detail : s.pattern === "wood" ? s.ringWidth : s.pattern === "grain" ? s.spacing / 2 : s.pattern === "knit" ? s.spacing / 2.2 : s.pattern === "rope" ? s.spacing / 1.5 : s.pattern === "weave" ? s.spacing / 2 : s.pattern === "hammered" ? s.spacing / 2.2 : s.pattern === "carbon" ? Math.min(s.spacing, s.carbonCross || s.spacing) * (s.projection === "cylinder" ? 2 : 0.5) : s.spacing;
   return (size / steps) * narrow;
 }
 
@@ -3449,7 +3499,7 @@ function profileLevels(profile: SurfaceTextureProfile, steps: number) {
  * across, along as coarse as the mesh. Triangles of faces that surely stay smooth (`smoothFace`)
  * stay whole.
  */
-function sliceStripes(mesh: SurfaceMesh, s: SurfaceTextureSettings, layout: SurfaceTextureLayout, steps: number, smoothFace: Uint8Array, first: SurfaceTextureLayout | null = null) {
+function sliceStripes(mesh: SurfaceMesh & { field?: Float64Array }, s: SurfaceTextureSettings, layout: SurfaceTextureLayout, steps: number, smoothFace: Uint8Array, first: SurfaceTextureLayout | null = null, withField = false) {
   const P = layout.period;
   const F = stripeFields(mesh, s, layout);
   const offsets = stripeOffsets(P, s, steps);
@@ -3458,9 +3508,29 @@ function sliceStripes(mesh: SurfaceMesh, s: SurfaceTextureSettings, layout: Surf
   for (let f = 0; f < sliced.length; f += 1) sliced[f] = smoothFace[mesh.parents[f]] || F.pole[I[f * 3]] || F.pole[I[f * 3 + 1]] || F.pole[I[f * 3 + 2]] ? 0 : 1;
   // Knurling's second family: two triangles over an edge along the first one's lines stay apart, or the quad's new
   // triangles reached across a line of the first family (its profile bent inside them: lumps in the diamonds).
+  // Whether a point lies on such a line is taken from the first cut (`mesh.field`, see withField), not measured again:
+  // round a cylinder a point cut on a facet lies on its chord, and measured again by its angle round the axis it lay off
+  // its line - up to 0.06 mm on 20 facets 200 mm across - and a grid point closer to a line than the cut's snap (see
+  // sliceByField) took the line's place without lying on it. With only exact edges kept, a planter came out with
+  // crumpled diamonds here and there (Facebook group). Two points on lines are on the same one when they lie closer
+  // together across than half the narrowest step between two lines.
   const A = first ? stripeFields(mesh, s, first) : null;
-  const keep = A ? (p: number, q: number) => Math.abs(A.crossDiff(p, q)) < 1e-6 : null;
-  return sliceByField(mesh, F.cross, F.crossDiff, P, offsets, sliced, F.alongDiff, false, keep);
+  let keep: ((p: number, q: number) => boolean) | null = null;
+  if (A) {
+    const level = mesh.field ?? A.cross;
+    const snap = Math.min(SURFACE_MIN_EDGE, P / 4) + 1e-9;
+    let gap = P - offsets[offsets.length - 1] + offsets[0];
+    for (let k = 1; k < offsets.length; k += 1) gap = Math.min(gap, offsets[k] - offsets[k - 1]);
+    const onLine = (p: number) => {
+      const x = level[p] - P * Math.floor(level[p] / P);
+      return offsets.some((o) => Math.abs(x - o) <= snap || Math.abs(x - o - P) <= snap || Math.abs(x - o + P) <= snap);
+    };
+    keep = (p, q) => {
+      const d = Math.abs(A.crossDiff(p, q));
+      return d < 1e-6 || (d < gap / 2 && onLine(p) && onLine(q));
+    };
+  }
+  return sliceByField(mesh, F.cross, F.crossDiff, P, offsets, sliced, F.alongDiff, withField, keep);
 }
 
 /** A groove's places of the profile within a period P: its middle at P/2 (stripe: |x - floor(x) - 0.5|), edges at P/2 ± w P/2. */
@@ -4324,7 +4394,23 @@ function sliceCells(mesh: SurfaceMesh, s: SurfaceTextureSettings, layout: Surfac
     if (skip[f]) continue;
     if (Math.min(dField[I[f * 3]], dField[I[f * 3 + 1]], dField[I[f * 3 + 2]]) < hw * 1.001) sliced[f] = 1;
   }
-  let out = sliceByField(cur, dField, (i, j) => dField[j] - dField[i], 1e6, levels, sliced);
+  const cut = sliceByField(cur, dField, (i, j) => dField[j] - dField[i], 1e6, levels, sliced, null, true);
+  let out: SurfaceMesh = cut;
+  // A point on a level takes that level's value, not its own: a point just off a level counts as on it, and the new
+  // points on the edges from it are placed along the field as snapped, so they lie a few thousandths of a mm off the
+  // joint too (Discussion #1771). Just inside the joint's edge such a point was moved a little, every large flat
+  // triangle of the cell round it sank towards it in a spike, and the pattern as a part of its own reached across
+  // them. Only points whose triangles were all cut here: on a face left smooth or seen along another axis the point's
+  // value is not this cut's.
+  const fixed = new Float32Array(out.vertices.length / 3).fill(NaN);
+  const onLevel = cut.field;
+  if (onLevel) {
+    const outRec = recordsOf(out.vertices);
+    const outSkip = skipOf(out.vertices, outRec, out.indices, out.parents);
+    const touchesSkipped = new Uint8Array(fixed.length);
+    for (let f = 0; f < outSkip.length; f += 1) if (outSkip[f]) for (let k = 0; k < 3; k += 1) touchesSkipped[out.indices[f * 3 + k]] = 1;
+    for (let i = 0; i < fixed.length; i += 1) if (!touchesSkipped[i] && levels.includes(onLevel[i])) fixed[i] = surfaceFalloff(onLevel[i] / hw, s.profile);
+  }
   // Short edges (levels close to a corner, narrow triangles at border and corner line) are pulled together here
   // already, once for all depths - otherwise the output would do it again after every move.
   for (let pass = 0; pass < 12; pass += 1) {
@@ -4334,7 +4420,7 @@ function sliceCells(mesh: SurfaceMesh, s: SurfaceTextureSettings, layout: Surfac
     out = { vertices: out.vertices, indices: c.indices, parents: Uint32Array.from(c.faces, (f) => parents[f]) };
   }
   out.limited = Boolean(mesh.limited);
-  return { mesh: out, reduced: count < Math.max(2, steps) };
+  return { mesh: out, reduced: count < Math.max(2, steps), fixed };
 }
 
 /**
@@ -6995,7 +7081,7 @@ export function createSurfaceTextureSession(positions: ArrayLike<number>) {
       // A round profile gets half the places across per flank; too many triangles: fewer, at least one.
       let steps = CROSS_STEPS[s.detail] / 2;
       for (;;) {
-        mesh = sliceStripes(coarse, s, layout, steps, roundSkip);
+        mesh = sliceStripes(coarse, s, layout, steps, roundSkip, null, s.pattern === "knurl");
         if (s.pattern === "knurl") {
           mesh = sliceStripes(mesh, s, { ...layout, angle: -layout.angle }, steps, roundSkip, layout);
           mesh = sliceKnurlCrease(mesh, s, layout, roundSkip);
@@ -7116,7 +7202,7 @@ export function createSurfaceTextureSession(positions: ArrayLike<number>) {
       }
       let cut: SurfaceMesh = sliceByField(from, F0.along, F0.alongDiff, 6 * scale, [0], alongSliced, F0.crossDiff);
       const steps = CROSS_STEPS[s.detail] / 2;
-      cut = sliceStripes(cut, sk, layout, steps, skip);
+      cut = sliceStripes(cut, sk, layout, steps, skip, null, s.pattern === "knurl");
       if (s.pattern === "knurl") {
         cut = sliceStripes(cut, sk, { ...layout, angle: -layout.angle }, steps, skip, layout);
         cut = sliceKnurlCrease(cut, sk, layout, skip);
@@ -7568,7 +7654,10 @@ export function createSurfaceTextureSession(positions: ArrayLike<number>) {
         if (maskFree && maskFree(v[i * 3], v[i * 3 + 1], z)) free = true;
         else if (regionFree && regionFree[i]) free = true;
         else if (placed) free = false;
-        else if (notChosen) free = (notChosen[i] === 1 && !bed?.[i]) || keptAt(i);
+        else if (notChosen && notChosen[i] === 1 && !bed?.[i]) free = true;
+        // Picked faces go before what stays smooth; with only faces another layer takes, the rest keeps the height band,
+        // the smooth top and bottom and the walls (issue #1983).
+        else if (chosen) free = keptAt(i);
         else if (keptAt(i)) free = true;
         else if (s.bottomFree > 0 && down[i] >= cosBottom && !bed?.[i]) free = true;
         else if (s.topFree > 0 && up[i] >= cosTop) free = true;
@@ -7694,9 +7783,11 @@ export function createSurfaceTextureSession(positions: ArrayLike<number>) {
     // straight faces of an angular body cut along lines of equal distance to the edge.
     // A pattern standing out: its run-out, finer still (see RUN_OUT_STEPS).
     // Bark all round fades out at the edges it keeps (see weightsFor): over its grid's triangles there in teeth.
-    if (r.crossMax > 0 || r.straightAxis || standsOut(s) || endsInWall(s) || (s.pattern === "bark" && s.projection === "allRound")) {
+    // Hammered dents fade out along the edges they stop at as well (a box's top and bottom, its corners): over the
+    // grid's triangles the fade ran out in a row of teeth there, so it is refined as finely as a run-out.
+    if (r.crossMax > 0 || r.straightAxis || standsOut(s) || endsInWall(s) || (s.pattern === "bark" && s.projection === "allRound") || s.pattern === "hammered") {
       const weightKey = JSON.stringify([r.key, s.bottomFree, s.topFree, s.zoneFrom, s.zoneTo, s.keepEdges, s.edgeAngle, s.fade, s.direction, s.margin, s.outside, s.inside, layout.center, s.masks, s.faces, s.region, s.exceptFaces, s.exceptRegions]);
-      const runOut = standsOut(s) ? Math.min(0.5, Math.max(s.fade, 0.25) / RUN_OUT_STEPS) : Math.min(0.5, Math.max(s.fade, 0.25) / 2);
+      const runOut = standsOut(s) || s.pattern === "hammered" ? Math.min(0.5, Math.max(s.fade, 0.25) / RUN_OUT_STEPS) : Math.min(0.5, Math.max(s.fade, 0.25) / 2);
       if (fadeCache?.key === weightKey) state = fadeCache.state;
       else {
         state = refineTransitions(r, s, layout, weights, faded.distance, Math.max(2 * r.crossMax, runOut), maxTriangles);

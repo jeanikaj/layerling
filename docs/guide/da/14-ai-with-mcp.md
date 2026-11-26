@@ -102,6 +102,7 @@ AI'en arbejder med de samme funktioner som dig, gennem den samme vej som din han
 | `layerling_place_on_face` | sætter objekter ned på en flade af en anden, også skrå, som C-tasten |
 | `layerling_perforate_face` | skærer et hulmønster ind i en flad flade eller rundt om væggen på en cylinder, et rør eller en boring; hullerne bliver som huller grupperet med formen |
 | `layerling_thread_insert` | laver hullet til en varmeindsat med gevind (M2 til M8, 1/4-20 eller din egen størrelse) i en flad flade eller på ydersiden af væggen på en cylinder eller et rør, efter at have kontrolleret, at væggen ved siden af hullet og dybden bagved er nok; hullet bliver som hul grupperet med formen |
+| `layerling_magnet_pocket` | skærer en lomme til en rund magnet (2 × 1 til 12 × 3 mm eller egen størrelse) med en smallere limbrønd under i en plan flade eller ydervæggen på en cylinder eller et rør, efter samme kontrol, og samme lomme lige overfor i den del, der ligger op ad; hver forbliver et hul grupperet med sin del |
 | `layerling_sweep_sketch` | trækker et rektangulært eller rundt tværsnit langs en sti af punkter som ét eksakt legeme; en lukket sti giver en ring |
 | `layerling_push_face` | skubber en flad flade ud eller skærer en lomme ind i den, med en indrykning fra kanten og en hjørneradius; den nye del er en skitseform grupperet med formen, eller et frit legeme for sig med `separate` |
 | `layerling_paint` | maler dele af et legeme i egne farver til print i flere farver (Mal): fyld en flade ud til de skarpe kanter, en rund plet eller en lasso i en flad visning; viskelæder, fjern alt; gemt med legemet og skrevet til 3MF som malede flader |
@@ -136,11 +137,12 @@ AI'en arbejder med de samme funktioner som dig, gennem den samme vej som din han
 | `layerling_delete_faces` | sletter flader og lukker åbningen |
 | `layerling_array_objects` | mangfoldiggør i en række, et gitter eller på en cirkel |
 | `layerling_bundle_objects` | bundter objekter som Ctrl+B: de flytter sammen, beholder deres farve og slags og går ud hver for sig i en eksport |
-| `layerling_layer_text` | laver en tekst om til en stak lag til et flerfarvet print (bogstaver, bredere kanter, en plade uden huller) eller bygger en stak igen, med et nøgleringshul, hjørnerne pr. lag og en rundet eller faset bogstavkant; med en navneliste, ét tag pr. navn |
+| `layerling_layer_text` | laver en tekst om til en stak lag til et flerfarvet print (bogstaver, bredere kanter, en plade uden huller) eller bygger en stak igen, med et nøgleringshul, hjørnerne pr. lag og en rundet eller faset bogstavkant; med en navneliste, ét tag pr. navn; `flush` sænker lagene ned i det nederste, så alle farver ender i én plan flade (true, false eller en dybde på 0,2 til 5 mm) |
 | `layerling_text_block` | laver en tekstblok: en tekst bliver den første af flere linjer, hver en tekst for sig under den ovenover, venstre-, midter- eller højrejusteret, hver linje lige stor eller mindre |
-| `layerling_layer_icon` | laver et SVG-ikon (filens tekst, eller en udtrukket skitseform) til et lagdelt ikon-tag til et flerfarvet print - ikonet, bredere kanter, en plade uden huller - eller bygger et igen med en ny bredde eller lag; med et antal fylder den pladen med kopier |
+| `layerling_layer_icon` | laver et SVG-ikon (filens tekst, eller en udtrukket skitseform) til et lagdelt ikon-tag til et flerfarvet print - ikonet, bredere kanter, en plade uden huller - eller bygger et igen med en ny bredde eller lag; med et antal fylder den pladen med kopier; `flush` sænker lagene ned i det nederste, så alle farver ender i én plan flade (true, false eller en dybde på 0,2 til 5 mm) |
 | `layerling_create_qr_code` | laver en QR-kode af en tekst eller webadresse som {{ui:shape.qrCode}} i formbiblioteket - koden alene, hævet på en plade eller graveret, med fejlkorrektion, bredde, højde, stillezone og som hul, hvis du vil; advarer, når et modul kommer under 0,8 mm |
 | `layerling_create_sbc_board` | sætter et SBC-print i fuld størrelse ind som {{ui:shape.sbcBoard}} i formbiblioteket - Raspberry Pi 5, 4, 3 B+, Zero 2 W eller BIGTREETECH Pi, med huller og stik, frigang om kantstikkene, placering og som hul til at skære en kasse |
+| `layerling_create_fan` | sætter en blæser i fuld størrelse ind som {{ui:shape.fan}} i formbiblioteket - 5015-radialblæseren eller 30 x 10 aksialblæseren; indløb, udløb og skruehuller kan nå ud og skære gennem en væg |
 | `layerling_reference_image` | tilføjer et referencebillede fra et billede som {{ui:import.referenceImage}}, eller flytter, drejer, kalibrerer (to punkter på billedet og deres virkelige afstand), toner eller låser et - en hjælp, der aldrig eksporteres eller printes; `trace` gør den mørke eller lyse del til et skitselegeme, der står på det |
 | `layerling_measure_section` | måler på et skæreplan mellem to punkter der snapper til omridset - vægtykkelse, mellemrum, pasninger |
 | `layerling_show_overhangs` | slår overhængsskraveringen til eller fra, sætter vinklen og rapporterer for hver form det areal der ville have brug for støtte |
@@ -160,6 +162,7 @@ AI'en arbejder med de samme funktioner som dig, gennem den samme vej som din han
 | `layerling_remove_notes` | sletter noter efter id |
 | `layerling_inspect_errors` | viser den seneste besked og den seneste fejl, plus sessionens beskeder og fejl |
 | `layerling_wrap_around_cylinder` | vikler en form der ligger fladt, for eksempel en SVG eller tekst, rundt om en cylinder, udad eller indad som gravering |
+| `layerling_take_rotation_as_zero` | bruger et drejet nets stilling som 0: formen bliver stående, dens vinkler er 0 |
 | `layerling_texture_surface` | lægger en overfladestruktur på en form: riller, riflinger, bikager eller knopper, for bedre greb eller for udseendet, og ændrer eller fjerner den senere |
 | `layerling_simplify_mesh` | reducerer trekantsantallet i et importeret mesh, til en andel i procent eller til et antal trekanter |
 | `layerling_make_exact` | gør et importeret mesh til en eksakt CAD-form: planer, cylindre, kegler, kugler og tori bliver rigtige flader, så kanter rundes rent, og STEP bærer dem |
@@ -169,6 +172,7 @@ AI'en arbejder med de samme funktioner som dig, gennem den samme vej som din han
 | `layerling_delete_custom_shape` | fjerner en egen form; indsatte former bevares |
 | `layerling_show_workplane` | skjuler og viser pladen med sit gitter, for et billede af undersiden for eksempel (kun visningen) |
 | `layerling_focus_mode` | slår fokustilstand til og fra: skjuler titellinjen og sidefoden for mere plads (kun editorens ramme) |
+| `layerling_detail_level` | læser eller sætter detaljeniveauet for editoren eller skitsen: hvor mange hjælpevisninger der tegnes omkring modellen (kun visningen) |
 | `layerling_set_section_view` | skærer visningen op langs et plan for at kigge indeni (kun visningen, intet skæres fra hinanden) |
 | `layerling_measurements` | viser eller skjuler målebåndets målinger og viser dem med deres længder, og skjuler eller viser målene omkring markeringen som [[Q]], og skriver en længde for en af dem, som flytter legemet i dens ende som et klik på tallet |
 | `layerling_measure_angle` | måler en vinkel som gradskiven: i hjørnet af tre punkter eller mellem to plane flader, og viser den i visningen |
@@ -185,6 +189,7 @@ AI'en arbejder med de samme funktioner som dig, gennem den samme vej som din han
 | `layerling_export_drawing` | laver værkstedstegningen fra "2D"-eksporten: tre visninger i 1:1 på et ISO-ark med samlede størrelser og en tabel over de runde boringer, som SVG-tekst eller PDF |
 | `layerling_export_mesh` | skriver eksportvinduets fil som STL, 3MF, OBJ, SVG (topvisning, fodaftryk eller synlige kanter) eller DXF til laserskæring af de samme legemer; til en sti på denne computer eller som base64 |
 | `layerling_save_project` | gemmer hele det redigerbare design som en .lyl-fil på en sti på den computer, hvor MCP-serveren kører, uden dialog; en eksisterende fil erstattes kun med `overwrite`, der skrives via en midlertidig fil, og målet for Ctrl+S i editoren bliver, som det var |
+| `layerling_open_project` | åbner en gemt .lyl-fil fra en sti på den computer, hvor MCP-serveren kører, som et nyt design, ligesom når du selv åbner filen; det nye design er ikke knyttet til filen, så ændringer skrives tilbage med `layerling_save_project` til samme sti med `overwrite` |
 | `layerling_list_attachments` | viser filerne, der er vedhæftet designet (navn, type, størrelse), som panelet {{ui:panel.attachments}} viser dem |
 | `layerling_get_attachment` | læser én vedhæftet fil, dens bytes som base64, som Download i panelet |
 | `layerling_add_attachment` | vedhæfter en fil givet som base64, med panelets kontroller; et navn, der allerede er vedhæftet, overskrives kun med `replace` |

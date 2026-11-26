@@ -7,17 +7,18 @@ Kdor želi del zgraditi natančno, mora znati meriti. layerling ima za to več o
 
 ## Merilni trak
 
-Merilni trak je na spodnjem koncu vrstice pogleda ob levem robu ({{ui:camera.tapeTools}}). Meri razdalje med vogali, robovi in ploskvami. Klik nanj odpre pet gumbov. Če zakrivajo tisto, kar želiš izmeriti, jih za ročaj levo prosto povlečeš po delovni površini; dvoklik na ročaj jih vrne nazaj:
+Merilni trak je na spodnjem koncu vrstice pogleda ob levem robu ({{ui:camera.tapeTools}}). Meri razdalje med vogali, robovi in ploskvami. Klik nanj odpre pet gumbov. {{ui:camera.addMeasurement}} je takoj vklopljen, zato naslednja dva klika v pogledu že merita; še en klik na ta gumb orodje odloži, gumbi pa ostanejo odprti. Če so mere skrite, ostane izklopljen, dokler ga ne klikneš. Če zakrivajo tisto, kar želiš izmeriti, jih za ročaj levo prosto povlečeš po delovni površini; dvoklik na ročaj jih vrne nazaj:
 
 ![Merilni trak z gumbi: Dodaj mero, Premakni merilne točke, Odstrani mero, Cele robove, Odstrani vse mere.](shot:tape-menu)
 
 1. **{{ui:camera.addMeasurement}}:** Klikni točko, povleci do naslednje in jo klikni. Razdalja se označi, pred njo pa osi, vzdolž katerih poteka: X, Y ali Z za ravno, XY, XZ ali YZ prek ravnine, 3D za vse tri. S kazalcem nad oznako vidiš, kako daleč meritev seže vzdolž vsake osi, nad točko pa njene koordinate. Medtem ko postavljaš drugo točko, so osi, razdalja in doseg vzdolž vsake osi prikazani ob kazalcu. Meritev, ki leži večinoma za drugim telesom, zbledi; ko s kazalcem greš nad njeno črto ali oznako, je spet v celoti vidna. Poleg oglišč in robov se točka zaskoči tudi na sredino ravne ploskve pod kazalcem in na središče okroglega roba, na primer roba luknje ali valja: ponujeno središče označuje majhen križec v krogu; ko se mu kazalec približa, se točka zaskoči nanj in namig pove, središče česa je ({{ui:camera.tapeCentreFace}}, {{ui:camera.tapeCentreHole}} ali {{ui:camera.tapeCentreCircle}}).
 2. **{{ui:camera.moveMeasurement}}:** Primi točke in jih premakni, številka sledi.
-3. **{{ui:camera.deleteMeasurement}}:** Potem klikneš mero, da jo odstraniš.
+3. **{{ui:camera.deleteMeasurement}}:** Potem klikneš mero, da jo odstraniš. Dokler je dejaven **{{ui:camera.addMeasurement}}**, mero takoj izbrišeš brez preklopa načina, če držiš [[Shift]] ali [[Ctrl]] ([[Cmd]] na Macu) in klikneš njeno merilno točko ali črto.
 4. **{{ui:camera.tapeWholeEdges}}:** Klik na rob izmeri ves rob, na primer obseg kroga. Ko je to stikalo izklopljeno, klik namesto tega postavi točko na rob, druga točka pa je lahko kjer koli, tako da lahko izmeriš premer ali katero koli drugo razdaljo. [[Alt]] stikalo obrne za en klik. Pri krogu se točka čez, nasproti prve, pripne, ko se kazalec približa, točki pa ležita na pravem krogu, zato je premer natančen.
 5. **{{ui:camera.deleteAllMeasurements}}:** Odstrani vse mere naenkrat. Ker se tega ne da razveljaviti, layerling prej vpraša; če mer ni, se nič ne zgodi.
 6. **{{ui:camera.tapeMarkMiddle}}:** Na sredini vsake meritve je majhna okrogla oznaka s polno spodnjo polovico. Na sredino meritve postavi [referenčno točko](#referencne-tocke): po kliku na okrogli rob, na primer rob luknje, v središče tega kroga – tudi pri uvoženi mreži, kjer sicer nič ne označuje sredine luknje –, pri premeru ali kateri koli ravni meritvi pa na sredino poti. Oblika, ki jo potem vlečeš, se s sredino zaskoči na točko. Točke, ki že obstaja, ne naredi dvakrat. Merilni trak se zaskoči na referenčno točko kakor na oglišče, zato lahko meriš od središča kroga ali od sredine črte: označi jo, nato klikni točko.
 7. **{{ui:camera.tapeTypeLength}}:** Ko vsaj en konec ravne meritve leži na telesu, lahko kliknete njeno število. Vnesite novo dolžino in pritisnite [[Enter]]: telo pri drugi točki se premakne vzdolž izmerjene črte, dokler razdalja ni točno taka, kot pri ravnilu v Tinkercadu. Če je izbrano le telo pri prvi točki, se premakne to. Merilne točke ostanejo na telesu, zato meritev sledi. Merite od vogala, roba ali središča ploskve ali luknje, da dele postavite na točno razdaljo: od središča luknje do središča zgornje ploskve valja se valj premakne od središča do središča. Negativna dolžina ga premakne toliko čez prvo točko, na primer 5 mm navznoter od roba škatle. [Referenčna točka](#referencne-tocke) ne pripada nobenemu telesu, zato se med dvema referenčnima točkama nič ne premakne. Če meritev poteka vzdolž dveh ali treh osi, ima polje pod dolžino še okence za vsako od njih (ΔX, ΔY, ΔZ, razdalje, ki se pokažejo, ko pokažete na število): vnesite vrednost tja in telo se premakne samo vzdolž te osi. [[Tab]] skoči iz okenca v okence, [[Esc]] zapre polje in nič ne premakne. Ko pokažete na število, piše, katero telo se bo premaknilo ali zakaj se nobeno ne more: zaklenjeno je, obe točki ležita na istem telesu ali nobena ne leži na telesu. Sporočilo nato pove, kaj se je premaknilo in za koliko; ena razveljavitev to vrne.
+8. **Debelina pod kazalcem:** Dokler je **{{ui:camera.addMeasurement}}** dejaven in še ni postavljena nobena točka, kazanje na ploskev pokaže, kako debelo je telo na tem mestu: merjeno naravnost navznoter, pravokotno na ploskev, do tja, kjer se material konča, s črtkano črto skozi telo. Pri izdolbeni škatli je to stena, pri polnem kvadru ves kvader, na strani valja njegov premer. Premikaj kazalec po delu in preveri njegove stene, ne da bi postavil meritev.
 
 S [[Esc]] zapustiš način merjenja.
 
@@ -42,6 +43,8 @@ Kotno ravnilo se položi na delovno ravnino. Če leži na strani telesa, torej l
 
 Če označiš telo, kotno ravnilo zeleno pokaže, kako daleč je od vogala, vzdolž obeh krakov in v višino. Klik na zeleno številko odpre vnosno polje: vpiši želeno razdaljo in telo se premakne natanko tja. Če je označenih več teles, štejejo skupaj kot eno. Meri se njihov skupni obris in vpisana vrednost premakne vse skupaj, ne da bi se njihova lega drugo glede na drugo spremenila.
 
+Pomožne črte zelenih številk tečejo po tleh, ravnini, v kateri leži kotno ravnilo, do točke pod telesom ali ob njem; višina ima svojo puščico. Stikalo vsake številke je v okvirju številke. Kraka in oznake so črte v prostoru: telo pred njimi jih zakrije, kot bi zakrilo pravo kotno ravnilo. Majhno oko pod ročajem to preklopi: s prečrtanim očesom telesa zakrijejo ravnilo (začetno stanje), z odprtim očesom ostane ravnilo vidno nad vsem. Številke na krakih zbledijo, kjer pred njimi stoji telo.
+
 S središčem zelene številke štejejo do sredine telesa, tudi v višini. Tako na primer postaviš kroglo s sredino natanko 15 mm ob rob, ne da bi odštel polmer. Na steni tako postaviš luknjo 40 mm z leve in 190 mm od zgoraj: označi luknjo, vklopi središče, vpiši 40 in 190. Višina tam šteje od stene navzven.
 
 Merilni trak in kotno ravnilo ostaneta tam, kjer sta, ko skiciraš in se vrneš v 3D pogled. Nobenega ni v zgodovini. Kotno ravnilo se shrani z načrtom, prav tako meritve merilnega traku, v brskalniku in v datoteki .lyl: ko načrt odpreš, so spet tam. Gumb z očesom med gumbi merilnega traku skrije vse meritve in jih spet pokaže; shrani se tudi, ali so skrite, in kdor meritev doda, premakne ali izbriše, jih najprej spet vidi.
@@ -59,13 +62,15 @@ Naslednji klik po končanem kotu začne novega, {{ui:camera.protractorClear}} pa
 
 V nastavitvah pod {{ui:workspace.appearance}} sta dve stikali za tekoče mere:
 
-- {{ui:workspace.showMoveDimensions}} pri premikanju pokaže, za koliko se premikaš. To velja tudi pri dvigovanju z modro puščico nad telesom; pot se pokaže ob njegovem sprednjem vogalu. Ko spustiš, klikni takšno število in vpiši natančno razdaljo; minus gre navzdol.
+- {{ui:workspace.showMoveDimensions}} pri premikanju pokaže, za koliko se premikaš. To velja tudi pri dvigovanju z modro puščico nad telesom; pot se pokaže ob njegovem sprednjem vogalu. Svojo pot pokažejo tudi smerne tipke: pritiski se seštevajo, dokler ne izbereš česa drugega ali ne vlečeš, [[Ctrl]]+[[↑]] in [[Ctrl]]+[[↓]] pa pokažeta pot navzgor ali navzdol. Ko spustiš, klikni takšno število in vpiši natančno razdaljo; minus gre navzdol.
 - {{ui:workspace.showOriginDimensions}} pokaže razdalje izbora do ničle plošče, tudi pri več označenih telesih.
 
 Z {{ui:workspace.dimensionsAlwaysVisible}} mere ostanejo trajno vidne. Če telo ne stoji na delovni ravnini, je prikazana tudi njegova višina nad njo; klikni številko, da vneseš novo.
 Z {{ui:workspace.dimensionAxisColors}} dobi vsako polje barvo svoje osi, kot ročaji: rdečo za X, zeleno za Y in modro za Z. Tako tudi pri majhnem delu na prvi pogled vidiš, katero število je katero.
 
 Če vas za trenutek motijo, pritisnite [[Q]]: mere in razdalje okoli izbora izginejo, zato je del, ki ga premikate, dobro viden. Ponovni [[Q]] jih vrne. Ročica, na katero pokažete, svojo mero vseeno pokaže.
+
+Pri zelo majhnem delu so lahko v napoto same ročice. [[Shift+Q]] skrije vse - kvadratke za velikost ter puščice za dvig, premik in vrtenje - ponovni [[Shift+Q]] pa jih vrne. Tudi brez njih lahko del vlečete in njegove mere vpisujete na desni, seznam predmetov pa pokaže, kateri del je izbran.
 
 ## Preverjanje zračnosti
 
@@ -118,6 +123,7 @@ Referenčna slika je slika, po kateri poravnaš dele: položi fotografijo tiskan
 - Premikaj, vrti in spreminjaj jo z ročaji kot vsako obliko. Telo pred njo je izbrano prvo, zato pri delu na njej ne zgrabiš slike po nesreči.
 - {{ui:referenceImage.seeThrough}} v njenih nastavitvah jo zbledi od povsem vidne do komaj vidne.
 - {{ui:referenceImage.calibrate}} ji da pravo velikost kot v skici: klikni dve točki na sliki, katerih pravo razdaljo poznaš - na primer dve pritrdilni luknji vezja - in vpiši to razdaljo v {{ui:referenceImage.distance}}. Slika ohrani razmerja in sredino.
+- V skici na plošči je slika vidna pod tvojo risbo: na svojem mestu, v svoji velikosti in zasuku, zrcaljena, če si jo zrcalil, in z nastavitvijo {{ui:referenceImage.seeThrough}}, zato lahko rišeš čeznjo. Nagnjena ali navzgor/navzdol zrcaljena slika in vsaka slika v skici na ploskvi pokaže le svoj obris.
 - Zakleni jo s ključavnico v glavi njenih nastavitev in ostane na mestu: kliki gredo tedaj skozi njo na ploščo. Za odklepanje jo izberi v seznamu objektov.
 - Slika je v datoteki načrta shranjena enkrat, kolikorkrat jo kopiraš ali razveljaviš. Velika slika poveča datoteko za toliko; sporočilo ob dodajanju pove njeno velikost.
 - UI jo doda, premakne, umeri, zbledi in zaklene z `layerling_reference_image`. S `trace` sliko obriše v telo skice, ki stoji na njej, kot {{ui:sketch.traceImage}} v skici.

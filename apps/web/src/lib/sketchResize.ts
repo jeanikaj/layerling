@@ -64,7 +64,12 @@ export function stretchedSketchProfile(profile: SketchProfile, x: number, z: num
     ...(profile.silhouette ? { silhouette: true } : {}),
     // The hole keeps its size and moves with the outline it sits beside.
     ...(profile.keyring ? { keyring: { ...profile.keyring, ...map(profile.keyring) } } : {}),
+    // A layer laid in flush (#215) keeps its depth; its pocket follows the outline.
+    ...(profile.flush ? { flush: { ...profile.flush } } : {}),
     // The inset keeps its distance and radius.
     ...(profile.inset ? { inset: { ...profile.inset } } : {}),
+    // Text on a tag's back keeps its letter size and stays centred (tagBack.ts).
+    ...(profile.back ? { back: { ...profile.back } } : {}),
+    ...(profile.backFill ? { backFill: true } : {}),
   };
 }

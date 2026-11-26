@@ -4,8 +4,9 @@ import { NAME_TAG_GAP, NAME_TAG_LAYERS } from "@/lib/nameTag";
 import { sketchBodyStretch, stretchedSketchProfile } from "@/lib/sketchResize";
 import { normalizeSketchStroke } from "@/lib/sketchStroke";
 import { iconKeyringFor } from "@/lib/sketchKeyring";
-import { DEFAULT_TEXT_LAYERS, MAX_TEXT_LAYERS, normalizeTextLayer, type NameTagKeyring, type TextLayer } from "@/lib/textLayers";
-import type { SketchProfile, WorkplaneShape } from "@/types/layerling";
+import { normalizeTagBack } from "@/lib/tagBack";
+import { DEFAULT_TEXT_LAYERS, MAX_TEXT_LAYERS, normalizeTextLayer, type NameTagKeyring, type TagFlush, type TextLayer } from "@/lib/textLayers";
+import type { FlushLayer, SketchProfile, WorkplaneShape, TagBack } from "@/types/layerling";
 
 /**
  * The icon tag: the name tag's layers (#215) for an SVG icon instead of letters. Every layer is an
@@ -21,6 +22,38 @@ export const ICON_TAG_LAYERS: readonly TextLayer[] = NAME_TAG_LAYERS.map(({ edge
 export const DEFAULT_ICON_TAG_WIDTH = 30;
 export const MIN_ICON_TAG_WIDTH = 2;
 export const MAX_ICON_TAG_WIDTH = 250;
+/**
+ * How far the start layers reach out past the icon on each side, in mm: the widest layer's "Wider".
+ * The icon tag window asks for the finished tag's width (Discussion #2059) - at its widest point,
+ * without the key ring tab - and the icon is that less this on both sides.
+ */
+export const ICON_TAG_START_REACH = Math.max(0, ...ICON_TAG_LAYERS.map((layer) => layer.grow));
+/** The finished width a new icon tag starts with, and its range: the icon's, with the start layers round it. */
+export const DEFAULT_ICON_TAG_FINISHED_WIDTH = DEFAULT_ICON_TAG_WIDTH + 2 * ICON_TAG_START_REACH;
+export const MIN_ICON_TAG_FINISHED_WIDTH = MIN_ICON_TAG_WIDTH + 2 * ICON_TAG_START_REACH;
+export const MAX_ICON_TAG_FINISHED_WIDTH = MAX_ICON_TAG_WIDTH + 2 * ICON_TAG_START_REACH;
+/** How far layers reach out past the icon on each side: the widest layer's "Wider", in mm. */
+export function iconLayersReach(layers: readonly TextLayer[]) {
+  return Math.max(0, ...layers.map((layer) => layer.grow));
+}
+
+/** A tag's finished width (Discussion #2059): its widest layer, without the key ring tab. */
+export function iconTagFinishedWidth(stack: Pick<IconLayerStack, "width" | "layers">) {
+  return Math.round((stack.width + 2 * iconLayersReach(stack.layers)) * 1000) / 1000;
+}
+
+/**
+ * The icon's width that keeps a tag `finished` mm wide in `layers` (Discussion #2059): the bottom
+ * layer stays as wide, the layers above it and the icon give way. Never under the smallest icon.
+ */
+export function iconWidthInFinished(finished: number, layers: readonly TextLayer[]) {
+  return Math.max(MIN_ICON_TAG_WIDTH, Math.round((finished - 2 * iconLayersReach(layers)) * 1000) / 1000);
+}
+
+/** The icon's width for a new tag `finished` mm wide in the start layers. */
+export function iconWidthForFinishedWidth(finished: number) {
+  return Math.round((finished - 2 * ICON_TAG_START_REACH) * 1000) / 1000;
+}
 /** How many copies of a tag the card makes at most, as the name list. */
 export const MAX_ICON_TAGS = 100;
 /** The space between the copies on the plate, in mm, as between the tags of a name list. */
@@ -42,7 +75,23 @@ export type IconLayerStack = {
   name: string;
   /** The key ring hole the layers carry (#391), or null: its side and size; its middle follows from the icon and the layers. */
   keyring: NameTagKeyring | null;
+  /** Laid in flush (#215): how deep the layers above the bottom one are set into it; null when stacked. */
+  flush: TagFlush | null;
+  /** Text on the back (tagBack.ts), the fill's colour from its part; null without. */
+  back: TagBack | null;
 };
+
+/**
+ * Whether new layers differ from the old ones in their colours only. Such a change needs no new
+ * build: the layers are recoloured, and what they carry of their own - a surface texture, rounded
+ * or bevelled edges, paint - stays on them (Discussion #1999).
+ */
+export function layersOnlyRecolored(before: readonly TextLayer[], after: readonly TextLayer[]) {
+  if (before.length !== after.length) return false;
+  const shape = (layer: TextLayer) => JSON.stringify([layer.grow, layer.height, Boolean(layer.silhouette), layer.join ?? null, layer.edge ?? null]);
+  return before.every((layer, index) => shape(layer) === shape(after[index]))
+    && before.some((layer, index) => layer.color.toLowerCase() !== after[index].color.toLowerCase());
+}
 
 /** A body the icon layers can be built from or read back from: an extruded sketch, not a group. */
 export function isIconLayerBody(shape: WorkplaneShape | null | undefined): shape is WorkplaneShape & { sketchProfile: SketchProfile } {
@@ -68,13 +117,18 @@ export function iconSourceProfile(profile: SketchProfile): SketchProfile {
  * A layer's sketch: the icon's area, with a "Wider" line round it and without its holes as the row says.
  * With a key ring hole (#391) every layer has the hole; the bottom one, `ear`, has the tab round it too.
  */
-export function iconLayerProfile(area: SketchProfile, layer: TextLayer, keyring?: NonNullable<SketchProfile["keyring"]>): SketchProfile {
+export function iconLayerProfile(area: SketchProfile, layer: TextLayer, keyring?: NonNullable<SketchProfile["keyring"]>, flush?: FlushLayer, back?: TagBack, backFill?: boolean): SketchProfile {
   return {
     points: area.points.map((point) => ({ ...point })),
     segments: area.segments.map((segment) => ({ ...segment })),
     ...(layer.grow > 0 ? { stroke: { width: layer.grow, align: "grow" as const, join: layer.join ?? "round", cap: "flat" as const } } : {}),
     ...(layer.silhouette ? { silhouette: true } : {}),
     ...(keyring ? { keyring: { ...keyring } } : {}),
+    // Laid in flush (#215): the pocket the layer above lies in.
+    ...(flush ? { flush: { ...flush } } : {}),
+    // Text on the back (tagBack.ts): on the bottom layer, and on the part that fills it.
+    ...(back ? { back: { ...back } } : {}),
+    ...(backFill ? { backFill: true } : {}),
   };
 }
 
@@ -105,21 +159,31 @@ const outlineKey = (profile: SketchProfile) => `${profile.points.length}/${profi
  * stack of one layer, itself. Null when the parts are not one icon's layers - another kind among
  * them, or outlines that differ.
  */
-export function iconLayersOf(shapes: WorkplaneShape[]): IconLayerStack | null {
+export function iconLayersOf(all: WorkplaneShape[]): IconLayerStack | null {
+  // The back text's fill (tagBack.ts) is no layer: it is read with the back.
+  const fillPart = all.find((shape) => shape.sketchProfile?.backFill);
+  const shapes = all.filter((shape) => !shape.sketchProfile?.backFill);
   if (!shapes.length || shapes.length > MAX_TEXT_LAYERS || !shapes.every(isIconLayerBody)) return null;
   const bodies = shapes as Array<WorkplaneShape & { sketchProfile: SketchProfile }>;
   if (new Set(bodies.map((shape) => outlineKey(shape.sketchProfile))).size !== 1) return null;
   // Ordered along the tag's own up, which is not the world's on a side face (#696).
   const up = new THREE.Vector3(0, 1, 0).applyQuaternion(quaternionForShape(bodies[0]));
   const footOf = (shape: WorkplaneShape) => new THREE.Vector3(shape.x, (shape.elevation ?? 0) + shape.height / 2, shape.z).addScaledVector(up, -shape.height / 2);
-  const topDown = [...bodies].sort((a, b) => footOf(b).dot(up) - footOf(a).dot(up));
+  // Laid in flush (#215) the layers above the bottom one start on one level: the narrower is the one above.
+  const grownBy = (shape: WorkplaneShape & { sketchProfile: SketchProfile }) => {
+    const stroke = normalizeSketchStroke(shape.sketchProfile.stroke);
+    return stroke?.align === "grow" ? stroke.width : 0;
+  };
+  const level = (shape: WorkplaneShape) => footOf(shape).dot(up);
+  const topDown = [...bodies].sort((a, b) => (Math.abs(level(b) - level(a)) > 1e-6 ? level(b) - level(a) : grownBy(a) - grownBy(b)));
   const layers = topDown.map((shape, index) => {
     const stroke = normalizeSketchStroke(shape.sketchProfile.stroke);
     const grown = stroke?.align === "grow";
     return normalizeTextLayer({
       // The top layer is the icon itself: a line round it belongs to the icon, not to the layer.
       grow: index > 0 && grown ? stroke.width : 0,
-      height: shape.height,
+      // A layer laid in flush keeps its own height in the stack (#215).
+      height: shape.sketchProfile.flush?.height ?? shape.height,
       color: shape.color,
       silhouette: Boolean(shape.sketchProfile.silhouette),
       ...(index > 0 && grown && stroke.join !== "round" ? { join: stroke.join } : {}),
@@ -147,6 +211,15 @@ export function iconLayersOf(shapes: WorkplaneShape[]): IconLayerStack | null {
       }
       : null,
     ids: topDown.map((shape) => shape.id),
+    // Laid in flush (#215) when the bottom layer carries a pocket.
+    flush: topDown.length > 1 && bottom.sketchProfile.flush?.pocket ? { depth: bottom.sketchProfile.flush.depth } : null,
+    // Text on the back is the bottom layer's; its fill's colour is the fill part's own, which may have been recoloured.
+    back: (() => {
+      const read = normalizeTagBack(bottom.sketchProfile.back);
+      if (!read) return null;
+      const { fill: _fill, ...plain } = read;
+      return fillPart ? { ...plain, fill: fillPart.color } : plain;
+    })(),
     place: {
       x: foot.x,
       z: foot.z,
@@ -159,8 +232,15 @@ export function iconLayersOf(shapes: WorkplaneShape[]): IconLayerStack | null {
   };
 }
 
-/** The elevation of every layer, top to bottom: the bottom one on `base`, each next on the one below. */
-export function iconLayerElevations(layers: readonly TextLayer[], base: number): number[] {
+/**
+ * The elevation of every layer, top to bottom: the bottom one on `base`, each next on the one below. Laid in flush
+ * (#215, `depth`), every layer above the bottom one stands `depth` below the bottom layer's top.
+ */
+export function iconLayerElevations(layers: readonly TextLayer[], base: number, depth?: number): number[] {
+  if (depth !== undefined && layers.length > 1) {
+    const top = base + layers[layers.length - 1].height;
+    return layers.map((_, index) => Math.round((index === layers.length - 1 ? base : top - depth) * 1000) / 1000);
+  }
   const elevations: number[] = [];
   let elevation = base;
   for (let index = layers.length - 1; index >= 0; index -= 1) {

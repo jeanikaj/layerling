@@ -21,6 +21,14 @@ describe("displayShapeName", () => {
     expect(displayShapeName({ name: "Box", kind: "cylinder" })).toBe("Box");
   });
 
+  it("translates the roof from the shape library, also when its name was emptied (#1931)", () => {
+    setLanguage("de", false);
+    expect(displayShapeName({ name: "Roof", kind: "polygon", polygonRoof: true })).toBe("Dach");
+    expect(hasOwnShapeName({ name: "Roof", kind: "polygon", polygonRoof: true })).toBe(false);
+    expect(displayShapeName({ name: "", kind: "polygon", polygonRoof: true })).toBe("Dach");
+    expect(displayShapeName({ name: "", kind: "polygon" })).not.toBe("Dach");
+  });
+
   it("switches back with the language", () => {
     setLanguage("en", false);
     expect(displayShapeName({ name: "Sketch extrusion", kind: "mesh" })).toBe("Sketch body");
@@ -53,6 +61,27 @@ describe("renamedShapeName", () => {
     const shape = { name: "Lid", kind: "box" as const };
     expect(renamedShapeName(shape, "   ")).toBe("");
     expect(displayShapeName({ ...shape, name: "" })).toBe("Box");
+  });
+});
+
+// A plant pot showed as "Plant pot" in German although the library calls it "Pflanztopf": the library's own
+// entries and the names handed out by tools were not looked up (full audit, 26.11.2026).
+describe("names of library entries and tools", () => {
+  afterEach(() => setLanguage("en", false));
+
+  it("shows them in the interface language", () => {
+    setLanguage("de", false);
+    expect(displayShapeName({ name: "Plant pot", kind: "vase" })).toBe("Pflanztopf");
+    expect(displayShapeName({ name: "Lampshade", kind: "vase" })).not.toBe("Lampshade");
+    expect(displayShapeName({ name: "Loft", kind: "mesh" })).toBe("Übergang");
+    expect(displayShapeName({ name: "Sketch sweep", kind: "mesh" })).toBe("Skizze entlang Pfad");
+    expect(displayShapeName({ name: "Thread insert", kind: "mesh" })).not.toBe("Thread insert");
+    expect(displayShapeName({ name: "Magnet pocket", kind: "mesh" })).not.toBe("Magnet pocket");
+  });
+
+  it("does not take them for names somebody typed", () => {
+    expect(hasOwnShapeName({ name: "Plant pot", kind: "vase" })).toBe(false);
+    expect(hasOwnShapeName({ name: "Loft", kind: "mesh" })).toBe(false);
   });
 });
 
